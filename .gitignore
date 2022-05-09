@@ -35,5 +35,5 @@
 *.sh
 
 # Bazaar
-.bzr
+/.bzr
 
