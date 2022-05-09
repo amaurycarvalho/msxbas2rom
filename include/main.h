@@ -48,8 +48,8 @@ Options:
        --lin = register line numbers (compile mode)
 Output: <filename.rom>
 
-See more information at http://launchpad.net/msxbas2rom
-)";
+See more information at:
+https://github.com/amaurycarvalho/msxbas2rom )";
 
 const char * info_history = R"(
 Version history
@@ -579,9 +579,11 @@ SUPPORTERS SPECIAL THANKS
 
   Luciano Cadari (iplay.com.br)
   Mario Cavalcanti (clubemsx.com.br)
+  Pedro de Medeiros
   Claudio Rodrigues
   Gilberto Taborda
   Ronaldo Prado
+  Julio Berrincha
 )";
 
 #endif // MAIN_H_INCLUDED

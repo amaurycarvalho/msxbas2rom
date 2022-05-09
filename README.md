@@ -60,8 +60,10 @@ Note: MSXBas2ROM it's still an experimental prototype, so it's current status is
 
 ### SUPPORTERS SPECIAL THANKS
 
--   Luciano Cadari ([iPlay](http://www.iplay.com.br));
--   Mario Cavalcanti ([ClubeMSX](http://www.clubemsx.com.br));
--   Claudio Rodrigues;
--   Gilberto Taborda;
--   Ronaldo Prado.
+- Luciano Cadari ([iPlay](http://www.iplay.com.br));
+- Mario Cavalcanti ([ClubeMSX](http://www.clubemsx.com.br));
+- Pedro de Medeiros;
+- Claudio Rodrigues;
+- Gilberto Taborda;
+- Ronaldo Prado;
+- Julio Berrincha.
