@@ -1,0 +1,30 @@
+DADO:
+  9, 11, 11, 9
+
+ORIGINAL:
+ 1D DIRECT =  50
+ 1D INDIRECT =  228
+ 2D DIRECT =  50
+ 2D INDIRECT =  411
+ INTEGER FOR/NEXT = 46
+
+OTIMIZADO:
+ 1D DIRECT =  50
+ 1D INDIRECT =  57
+ 2D DIRECT =  50
+ 2D INDIRECT =  84
+ INTEGER FOR/NEXT = 33
+
+
+------------------
+
+g(9,3)
+
+0 1 2 3 4 5 6 7 8 9
+1
+2
+3
+
+1 * 10 = 1 * (8 + 2)
+
+

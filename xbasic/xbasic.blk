@@ -1,0 +1,16 @@
+; z80dasm -g 0x4000 -t -u -o xbasic2.asm -l -a -b xbasic2.blk -S xbasic2.sym Xbasic2.rom
+; command line: z80dasm -g 0x4000 -t -u -o xbasic.asm -l -a -b xbasic.blk -S xbasic.sym xbasic.rom
+
+header1:     start 0x4000 end 0x4010 type pointers
+header2:     start 0x4010 end 0x4031 type bytedata
+init:        start 0x4032 end 0x4047 type code
+cmd_run:     start 0x4047 end 0x404b type bytedata
+cmd_runp:    start 0x404b end 0x404d type pointers
+cmd_ton:     start 0x404d end 0x4056 type bytedata
+cmd_tonp:    start 0x4056 end 0x4058 type pointers
+cmd_toff:    start 0x4058 end 0x4062 type bytedata
+cmd_toffp:   start 0x4062 end 0x4064 type pointers
+kernel:      start 0x4065 end 0x4096 type code 
+parse_table: start 0x4097 end 0x4149 type pointers
+parse_code:  start 0x4149 end 0x8000 type code
+

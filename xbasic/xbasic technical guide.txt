@@ -1,0 +1,59 @@
+XBASIC DISASSEMBLY DOCUMENTATION
+https://sourceforge.net/p/msxsyssrc/git/ci/master/tree/kun210/
+
+GUIDE HISTORY
+=============
+
+2020.07.12: first draft of this guide (Amaury Carvalho)
+
+INTRODUCTION
+============
+
+According to MSX.ORG: "X-BASIC" aka "MSX-BASIC KUN" or "KUN BASIC" is a runtime compiler for MSX-BASIC that is commonly used to speed up existing MSX-BASIC programs and create demos and games. 
+
+XBasic is presented in two file forms: BIN and ROM. This guide explore the ROM version only (cartridge), that's load at page 2 (0x4000...0x7FFF) on MSX and it's file has 16kb of binary code.
+
+At it's ROM header (first 16 bytes), the STATEMENT field pointer (0x4004) sets the user defined CALL command address (0x4032), that's read the user instruction (PROCNM, 0xfd89) searching by RUN and TURBO ON/OFF instructions.
+
+Xbasic RUN instruction (CMD_CALL_RUN) is implemented at 0x4149, TURBO ON (CMD_CALL_TURBO_ON) at 0x4E88 and TURBO OFF (CMD_CALL_TURBO_OFF) at 0x4EFF.
+
+At start of CMD_CALL_TURBO_ON the CURLIN (current line, 0xf41c) BASIC variable is read to identify the next BASIC statement on user source code and compile process is started.
+
+The compiled binary is written to the next address after it's pointed by STREND (0xF6C6) BASIC variable, initialize the compiled program (EXEC_COMPILED_CODE_INIT, 0x422b) and jump into it (EXEC_JUMP_TO_COMPILED_CODE, 0x4257). 
+
+At compiled program end, it jump back to BASIC interpreter (EXEC_RETURN_TO_BASIC, 0x4DFA).
+
+FILES
+=====
+
+XBASIC.BLK: blocks address (header, data, code...)
+XBASIC.SYM: symbols address (variables, functions...)
+XBASIC.ASM: xbasic disassembled
+
+DISASSEMBLY COMMAND LINE
+========================
+
+z80dasm -g 0x4000 -t -u -o xbasic.asm -l -a -b xbasic.blk -S xbasic.sym xbasic.rom
+
+MEMORY SCHEME
+=============
+
+PAGE 0 (0x0000)
+  ROM: BIOS    <== O.S. ROUTINES + INTERRUPTIONS
+
+PAGE 1 (0x4000)
+  ROM: BASIC   <== INTERPRETER
+  ROM: XBASIC  <== COMPILER + SUPPORT ROUTINES
+
+PAGE 2 (0x8000)
+  RAM: USER BASIC CODE        <== START AT ADDRESS POINTED BY TXTTAB (0xF676)
+       BASIC VARIABLES        <== START AT ADDRESS POINTED BY VARTAB (0xF6C2)
+       XBASIC COMPILED CODE   <== START AFTER ADDRESS POINTED BY STREND (0xF6C6) 
+
+PAGE 3 (0xC000)
+  RAM: USER MEMORY
+       BASIC MEMORY
+       BIOS MEMORY
+
+
+

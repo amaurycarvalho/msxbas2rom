@@ -1,0 +1,188 @@
+===============================================================
+MEMORY SCHEME DOCUMENTATION
+===============================================================
+
+MEMORY SCHEME 1 (TOKENIZED)
+======================================
+
+PAGE 0
+
+  ROM BIOS
+
+  *--HOMEBREW RAM 
+     +--PT3TOOLS UNPACKED (0x2000)
+     +--PT3 FILE UNPACKED (0x2000)
+
+PAGE 1
+
+  ROM BASIC
+
+  *--HOMEBREW ROM (XBASIC)
+  
+PAGE 2
+
+  HOMEBREW ROM:
+  +--SUPPORT ROUTINES (INIT, CMD, USR, PLETTER, VPLETTER, ~1,2kb)
+  +--RESOURCES MAP (COUNT, [ADDRESS, SIZE], [PT3ADDRESS], ~10b)
+  +--HOMEBREW RESOURCES 
+     +--TEXT RESOURCES UNPACKED (~100b)
+     +--FILE RESOURCES PACKED (~2kb)
+     +--PT3TOOLS PACKED (~1,5kb)
+  +--BASIC SOURCE CODE (~10kb)
+
+PAGE 3
+
+  RAM
+
+
+MEMORY SCHEME 2 (COMPILED)
+=====================================
+
+PAGE 0
+
+  ROM BIOS
+
+  *--HOMEBREW RAM 
+     +--PT3TOOLS UNPACKED (0x2000)
+     +--PT3 FILE UNPACKED (0x2000)
+
+PAGE 1
+
+  ROM BASIC
+
+  *--HOMEBREW ROM
+     +--SUPPORT ROUTINES (INIT, HOOKS, CMD, USR, PLETTER, PT3TOOLS PACKED, FONTS PACKED...)
+     +--XBASIC SUPPORT ROUTINES
+  
+PAGE 2 - 0
+
+  HOMEBREW ROM:
+  +--SUPPORT ROUTINES (START, HOOKS)
+  +--RESOURCES MAP (COUNT, [PAGE, SEGMENTS, ADDRESS, SIZE])
+     +--HOMEBREW RESOURCES (STANDARD MODE)
+  +--BASIC COMPILED CODE (~15kb)
+
+PAGE 2 - 1..255 (MEGAROM MODE, ASCII 16K Mapper)
+  +--HOMEBREW COMPILED CODE + RESOURCES
+
+PAGE 3
+
+  RAM
+
+RESOURCES MAP RECORD
+  dw COUNT 
+  RESOURCE_NODE:
+    db PAGE
+    db SEGMENTS
+    dw ADDRESS
+    dw SIZE
+  
+MEGAROM PROCESS FLOW
+====================
+
+Seg_P8000_SW:	equ	7000h	; Segment switch on page 8000h-BFFFh (ASCII 16k Mapper)
+
+- jumps
+
+  AT USER CODE (0x8000):
+
+    ld ix, <dest address>
+    ld a, <segm number>
+    jp MR_JUMP
+
+  AT SUPPORT CODE (0x4000):
+
+    MR_JUMP:    
+      ld (Seg_P8000_SW), a
+      push ix
+      ret
+
+- calls
+
+  AT USER CODE (0x8000):
+
+    ld ix, <dest address>
+    ld a, <segm number>
+    call MR_CALL
+
+  AT SUPPORT CODE (0x4000):
+
+    MR_CALL:
+      ex af, 'af
+      ld a, (Seg_P8000_SW)
+      push af                ; salve old segment number
+      ex af, 'af      
+      ld (Seg_P8000_SW), a
+      ld iy, MR_CALL_RET
+      push iy      
+      push ix
+      ret
+    MR_CALL_RET:
+      pop af
+      ld (Seg_P8000_SW), a   ; restore old segment number
+      ret
+
+- data
+
+  AT USER CODE (0x8000):
+
+    ld ix, <data address>
+    ld a, <segm number>
+    call MR_GET_DATA
+    ld hl, MR_DATA_POINTER
+
+  AT SUPPORT CODE (0x4000):
+
+    MR_GET_DATA:
+      ex af, 'af
+        ld a, (Seg_P8000_SW)   ; salve old segment number
+      ex af, 'af      
+      ld (Seg_P8000_SW), a
+      push ix
+      exx
+        ; copy string from ix to MR_DATA_POINTER
+        pop hl
+        ld de, MR_DATA_POINTER
+        ld bc, 256
+        ldir
+      exx
+      ex af, 'af      
+      ld (Seg_P8000_SW), a   ; restore old segment number
+      ret
+
+PT3 PROCESS FLOW
+================
+
+- On init: 
+-- populate slots data: RAMAD0, RAMAD1, RAMAD2, RAMAD3
+-- disable interrupts
+-- select ram on page 1 (same as RAMAD3)
+-- if standard mode: 
+----- copy resources from page 2 to page 1
+-- if extended mode: 
+----- select rom slot on page 0 (same as RAMAD2)
+----- copy resources from page 0 to page 1 
+----- restore slot on page 0 (RAMAD0)
+-- restore slot on page 1 (RAMAD1)
+-- clear PT3FPLAY flag
+-- set hook H.TIMI to PT3HTIMI handler at page 2
+-- enable interrupts
+
+- On CMD PT3PLAY:
+-- set PT3FPLAY flag
+
+- On CMD PT3PAUSE:
+-- clear PT3FPLAY flag
+
+- On CMD PT3STOP
+-- clear PT3FPLAY flag
+-- call PT3MUTE
+
+- On PT3HTIMI
+-- test PT3FPLAY flag and return if not settled
+-- else, select ram slot on page 1 (same as RAMAD3)
+--       call PT3HPLAY handler
+--       restore slot on page 1 (RAMAD1)
+
+
+

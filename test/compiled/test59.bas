@@ -1,0 +1,23 @@
+10 SCREEN 1
+
+20 'CMD SETFNT 1
+23 CLS
+
+30 FOR X% = 5 TO 15
+31   FOR Y% = 5 TO 15
+32     T% = 65 + RND(1)*10
+33     PUT TILE T%, (X%, Y%)
+34   NEXT
+35 NEXT
+
+40 A$ = INPUT$(1)
+41 IF A$ = "E" OR A$ = "e" THEN GOTO 90
+
+50 'COPY (5,5)-(15,7) TO (5,16)
+60 COPY (5,5)-(15,7) TO HEAP()
+70 COPY HEAP() TO (5,16)
+
+80 GOTO 40
+
+90 SCREEN 0
+

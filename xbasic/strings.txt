@@ -1,0 +1,42 @@
+0x4880:
+;       Subroutine      LET statement
+;       Inputs          ________________________
+;       Outputs         ________________________
+;J48D2: - string LET treatment
+
+----------------------------------------
+
+0x668E:
+;       Subroutine      allocate string space
+;       Inputs          A = size of string
+;       Outputs         DE = pointer to stringspace
+
+0x67D7:
+;       Subroutine      free temporary string
+;       Inputs          DE = string descriptor
+;       Outputs         HL = string descriptor
+
+----------------------------------------
+
+0x6611:
+;       Subroutine      copy string to new temporary string
+;       Inputs          HL = source string descriptor
+;       Outputs         ________________________
+
+0x662A:
+;       Subroutine      make temporary string descriptor
+;       Inputs          A = stringsize, DE = pointer to string
+;       Outputs         HL = pointer to temporary stringdescriptor
+
+0x67C7:
+;       Subroutine      copy string
+;       Inputs          L = size of string, BC = source string, DE = destination string
+;       Outputs         ________________________
+
+       
+0x6658:
+;       Subroutine      push descriptor to temporary descriptor heap
+;       Inputs          DE = descriptor
+;       Outputs         ________________________
+
+

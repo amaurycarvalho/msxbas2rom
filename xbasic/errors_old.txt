@@ -1,0 +1,61 @@
+FCDA=60
+FCDE=20 <--- deletar
+FCE2=20
+
+7C76 <--- initialization ram
+VARWRK F380
+
+H_ERRO (&HFFB1
+ERRFLG (&HF414
+
+F323H, 2
+Endereço do manipulador de erro de disco
+DISKVE
+(F323H, 2)
+Endereço do manipulador de erro de disco.
+
+F325H, 2
+Endereço do manipulador das teclas CTRL+C
+BREAKV
+(F325H, 2)
+Endereço do manipulador das teclas CTRL+C.
+
+F273H, 3
+Hook da rotina de manipulação de erro no acesso ao disco
+F1E2H, 6
+Rotina para abortar o programa em caso de erro.
+F338H, 1
+Flag para indicar a presença de relógio interno (0=não; outro valor, sim).
+F339H, 7
+Rotina usada pelo relógio interno.
+F340H, 1
+Estado da recarga do MSXDOS.
+F346H, 1
+Flag para indicar a presença do MSXDOS no disquete.
+(0=não; outro valor, sim)
+F34BH, 2
+ClearAddr MSXDOS (início para o COMMAND.COM).
+
+DEVICE: equ 0xfd99 = ff
+PRMSTK: equ 0xF6E4 = 0606
+PRMPRV: equ 0xF74C = F6E4
+STKTOP: equ 0xF674 = E415
+HIMEM:  equ 0xFC4A = F380
+BOTTOM: equ 0xFC48 = 8816
+MEMSIZ: equ 0xF672 = E4DD
+BASROM: equ 0xFBB1 = 88
+
+INIFNK: equ 0x003E
+INITIO: equ 0x003B
+INIT32: equ 0x006F
+CLRSPR: equ 0x0069
+HKEYI:  equ 0xFD9A
+
+ENDBUF: equ 0xF660
+AUTFLG: equ 0xF6AA
+BUFMIN: equ 0xF55D
+KBFMIN: equ 0xF41E
+CGTABL: equ 0x0004
+CGPNT:  equ 0xF91F
+
+

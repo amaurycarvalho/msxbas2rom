@@ -1,0 +1,10 @@
+EXX - 4
+LD (XX),RR - 20
+LD (XX),R  - 13
+LD (HL),R  - 7
+PUSH - 11
+POP  - 10
+LD R,R - 4
+BIT n,R - 8
+CP nn - 7
+CP r - 4

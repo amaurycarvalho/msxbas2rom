@@ -1,0 +1,16 @@
+1 DIM T(256) 
+2 R=RND(-1234)
+3 T(0)=46.0*rnd(1) + 20.0
+4 T(256)=46.0*rnd(1) + 20.0
+5 FOR H=0 TO 7
+6 B=2^(7-H)       
+7 FOR I=B TO 256 STEP B+B
+8 T(I)=((T(I-B)+T(I+B))/2.0+(2.0*B*rnd(1)-B))
+10 NEXT I
+11 NEXT H
+12 SCREEN 2
+13 FOR X=0 TO 255
+14 LINE(X, T(X))-(X, 191), 12
+15 NEXT X
+16 IF INKEY$ = "" THEN GOTO 16
+17 GOTO 4

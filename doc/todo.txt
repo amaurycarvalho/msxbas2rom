@@ -1,0 +1,55 @@
+TO DO LIST
+==========
+
+- Sprites support
+-- CMD SETSPRCOL <sprite number>, <enable collision:0/1>, <margim:0..15>
+-- CMD FLPSPR <sprite pattern number> [, <0=horizontal, 1=vertical>] = flip a sprite pattern
+-- CMD CPYC2S <tile number>, <sprite pattern number> = copy a tile pattern to sprite pattern
+
+- Player support
+-- CMD PLYVOL <volume>
+---- https://www.julien-nevo.com/arkostracker/index.php/forums/topic/music-fade-out/
+
+- Bug list
+-- 48kb ROM page 0 loading error of SofaRUN on MegaFlashROM cartridge
+-- COPY RESOURCE(0) TO (0,0)
+
+- WIP
+
+- Done
+-- RND(1) como parametro no PSET
+-- subtraction operation as COPY parameter: COPY (X-2, Y-2)-(X+2, Y+2)... OK
+-- sprite colision on disk machines loading with ODO - OK
+-- falha de segmentação (imagem do núcleo gravada) on compiling a test source code - OK
+-- Compilation error: IF X% < TIME THEN X% = TIME
+-- Compilation error: IF STRIG(0) OR INKEY > 0 THEN BEEP
+-- Wrong assign (must give error in compilation): A$ = "TEST";
+
+TEST MACHINES
+=============
+
+https://www.msx.org/wiki/Compatibility_testing
+
+- 8kb
+-- Casio PV-7
+
+- 16kb
+-- Philips VG-8000 (https://www.msx.org/wiki/Philips_VG-8000)
+-- Casio PV-8
+
+- 32kb
+-- Pioneer PX7 (https://www.msx.org/wiki/Pioneer_PX-7)
+-- Yamaha CX5M (https://en.wikipedia.org/wiki/Yamaha_CX5M)
+
+- Weird RAM slot setup (32kb/32kb)
+-- Toshiba HX-23F (https://www.msx.org/wiki/Toshiba_HX-23F)
+-- Victor HC-95 (https://www.msx.org/wiki/Victor-HC95)
+-- Sony HB-F500 (worst case)
+-- Sony HB-10P
+-- National CF-3300
+
+- 64kb
+-- Panasonic FS-A1FX (2+ do Mario)
+
+
+

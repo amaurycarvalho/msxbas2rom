@@ -1,0 +1,8 @@
+1 A=10: B=8.0/3: R=28
+2 X=1: Y=1: Z=1 
+3 SCREEN 2 
+4 TX=X+(A*Y-A*X)/100: TY=Y+(-X*Z+R*X-Y)/100: TZ=Z+(X*Y-B*Z)/100
+5 X=TX: Y=TY: Z=TZ
+6 IF X <= 0.0 THEN C = 15 ELSE C = 8
+7 PSET(X*3+128, 192-Z*3), C
+8 GOTO 4

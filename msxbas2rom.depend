@@ -1,0 +1,226 @@
+# depslib dependency file v1.0
+1587604133 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2asm/assembly.cpp
+	"assembly.h"
+	"kernel.h"
+	"symbols.h"
+	"float.h"
+	"gfx.h"
+
+1586529072 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2asm/assembly.h
+	<string.h>
+	<string>
+	<vector>
+	<math.h>
+	"lex.h"
+	"parse.h"
+
+1589227854 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2asm/lex.cpp
+	<stdio.h>
+	<string.h>
+	"lex.h"
+
+1579876261 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2asm/lex.h
+	<string>
+	<vector>
+	<stack>
+
+1589487225 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2asm/parse.cpp
+	"parse.h"
+
+1589486857 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2asm/parse.h
+	<string>
+	<vector>
+	<stack>
+	"lex.h"
+
+1579390601 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2asm/main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stddef.h>
+	<iostream>
+	<ctype.h>
+	<malloc.h>
+	<math.h>
+	"main.h"
+	"lex.h"
+	"parse.h"
+	"assembly.h"
+
+1589380701 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2asm/main.h
+
+1589468063 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2asm/symbols.h
+
+1563142523 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2asm/rules.h
+
+1589468552 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2asm/kernel.h
+
+1587421374 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2asm/float.h
+
+1586562827 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2asm/gfx.h
+
+1606498670 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/lex.cpp
+	<stdio.h>
+	<string.h>
+	"lex.h"
+
+1579876261 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/lex.h
+	<string>
+	<vector>
+	<stack>
+
+1605561225 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/rom.cpp
+	"rom.h"
+	"routines.h"
+	"turbo.h"
+	"pt3.h"
+
+1605556638 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/rom.h
+	<string.h>
+	<string>
+	<vector>
+	<math.h>
+	"lex.h"
+	"tokenizer.h"
+
+1605558284 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/tokenizer.h
+	<stdio.h>
+	<string.h>
+	<string>
+	<vector>
+	<math.h>
+	"lex.h"
+
+1605572855 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/tokenizer.cpp
+	"tokenizer.h"
+
+1605558284 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stddef.h>
+	<iostream>
+	<ctype.h>
+	<malloc.h>
+	<math.h>
+	"main.h"
+	"lex.h"
+	"tokenizer.h"
+	"rom.h"
+
+1608055366 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/main.h
+
+1608056014 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/routines.h
+
+1590355639 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/xbasic.h
+
+1598036919 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/turbo.h
+
+1608056014 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/pt3.h
+
+1650632732 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/compiler.cpp
+	"compiler.h"
+	"compiler_hooks.h"
+
+1649163957 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/compiler.h
+	<string.h>
+	<queue>
+	"parse.h"
+	"pletter.h"
+
+1650635254 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/lex.cpp
+	<stdio.h>
+	<string.h>
+	"lex.h"
+
+1650633618 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/lex.h
+	<string>
+	<vector>
+	<stack>
+
+1650632356 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/tokenizer.cpp
+	"tokenizer.h"
+
+1605558284 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/tokenizer.h
+	<stdio.h>
+	<string.h>
+	<string>
+	<vector>
+	<math.h>
+	"lex.h"
+
+1650632732 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/rom.cpp
+	"rom.h"
+	"routines.h"
+	"turbo.h"
+	"pt3.h"
+	"header.h"
+	"header_pt3.h"
+	"start.h"
+
+1643379879 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/rom.h
+	<string.h>
+	<string>
+	<vector>
+	<math.h>
+	"lex.h"
+	"tokenizer.h"
+	"compiler.h"
+	"compiler_pt3.h"
+
+1651777820 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/routines.h
+
+1598036919 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/turbo.h
+
+1651777820 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/pt3.h
+
+1650634585 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stddef.h>
+	<iostream>
+	<ctype.h>
+	<malloc.h>
+	<math.h>
+	"main.h"
+
+1650894710 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/main.h
+	"lex.h"
+	"tokenizer.h"
+	"rom.h"
+	"compiler.h"
+	"compiler_pt3.h"
+
+1650632732 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/parse.cpp
+	"parse.h"
+
+1646235041 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/parse.h
+	<string>
+	<vector>
+	<stack>
+	"lex.h"
+
+1651777820 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/header.h
+
+1651777820 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/start.h
+
+1643559364 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/pletter.cpp
+	"pletter.h"
+
+1615501188 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/pletter.h
+	<string.h>
+
+1650632733 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/compiler_pt3.cpp
+	"compiler_pt3.h"
+	"compiler_pt3_hooks.h"
+
+1623354655 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/compiler_pt3.h
+	"compiler.h"
+
+1643579492 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/compiler_hooks.h
+
+1623679929 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/compiler_pt3_hooks.h
+
+1651777820 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/header_pt3.h
+

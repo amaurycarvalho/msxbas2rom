@@ -1,0 +1,297 @@
+; MSXBAS2ROM Z80 routines
+; by: Amaury Carvalho, 2020
+; pasmo routines.asm routines.bin
+; xxd -i routines.bin routines.h
+
+  org 0x8010
+
+USRTAB:       equ 0xF39A   ; 20
+VALTYPE:      equ 0xF663   ; 1
+VALDATA:      equ 0xF7F8   ; 2
+HPRGE:        equ 0xFEF8   ; 2
+TEMP9:        equ 0xF7B8   ; 2
+RAWPRT:       equ 0xF41F   ; 1
+
+ERRORHANDLER: equ 0x406F
+CALBAS:       equ 0x0159
+CRUNCH:       equ 0x42B2
+NEWSTT:       equ 0x4601
+
+initialize:
+  ld hl, newusrtab
+  ld de, USRTAB
+  ld bc, 20
+  ldir
+  ret
+
+newusrtab: dw usr0, usr1, usr2, usr3, usr4, usr5, usr6, usr7, usr8, usr8
+
+; in  a  = vartype
+;     hl = point to var data
+; out hl = point to include initial data
+getinclude:
+  cp 2       ; integer type
+  ret nz
+  ld bc, (VALDATA) ; input integer
+  ld hl, data      ; data linked list start
+  ld a, b
+  or c
+  jr z, getinclude.ok
+
+getinclude.next:
+  ld e, (hl)
+  inc hl
+  ld d, (hl)
+  ex de, hl
+
+  ld a, d
+  or e
+  jr z, getinclude.error
+
+  dec bc
+  jr nz, getinclude.next
+
+getinclude.ok:
+  inc hl
+  inc hl
+  xor a
+  ret
+
+getinclude.error:
+  inc a
+  ret
+
+error:
+  ld e, 5    ; illegal function call
+  ld ix, ERRORHANDLER
+  jp CALBAS
+
+savehook:
+  push hl
+    ld hl,HPRGE
+    ld de,TEMP9
+    ld bc,5
+    ldir
+  pop hl
+  ret
+
+resthook:
+  push hl
+    ld hl,TEMP9
+    ld de,HPRGE
+    ld bc,5
+    ldir
+  pop hl
+  ret
+
+; hl = basic code in plain text
+execbas:
+  ld ix, CRUNCH
+  call CALBAS
+  pop hl
+  ld a,0xc3
+  ld (HPRGE),a
+  ld (HPRGE+1),hl
+  ld hl,RAWPRT
+  ld ix, NEWSTT
+  jp CALBAS
+
+; get include data address
+usr0:
+  call getinclude
+  jp nz, error
+  ld (VALDATA), hl
+  ret
+
+; exec as assembly code
+usr1:
+  call getinclude
+  jp nz, error
+  push hl
+  ret       ; indirect call
+
+; exec as basic code
+usr2:
+  call getinclude
+  jp nz, error
+  call savehook
+  call execbas   ; hl has the line code in plain text, null terminated
+  jp resthook
+
+; copy to vram tile pattern table
+usr3:
+  call getinclude
+  jp nz, error
+  ret
+
+; copy to vram tile color table
+usr4:
+  call getinclude
+  jp nz, error
+  ret
+
+; copy to vram screen table
+usr5:
+  call getinclude
+  jp nz, error
+  ret
+
+; copy to vram sprite pattern table
+usr6:
+  call getinclude
+  jp nz, error
+  ret
+
+; copy to vram sprite color table
+usr7:
+  call getinclude
+  jp nz, error
+  ret
+
+; copy to vram sprite attribute table
+usr8:
+  call getinclude
+  jp nz, error
+  ret
+
+; Pletter v0.5c1 adapted from XL2S Entertainment 2008
+; https://github.com/nanochess/Pletter
+; call unpack with hl pointing to some pletter5 data, and de pointing to the destination.
+; changes all registers (de' point to decoded data end address)
+; define lengthindata when the original size is written in the pletter data
+; define LENGTHINDATA
+
+  macro PLETTER.GETBIT
+    add a,a
+    call z,pletter.getbit
+  endm
+
+  macro PLETTER.GETBITEXX
+    add a,a
+    call z,pletter.getbitexx
+  endm
+
+pletter.modes
+  dw pletter.offsok
+  dw pletter.mode2
+  dw pletter.mode3
+  dw pletter.mode4
+  dw pletter.mode5
+  dw pletter.mode6
+
+pletter.unpack:
+
+  if defined LENGTHINDATA
+    inc hl
+    inc hl
+  endif
+
+  ld a,(hl)
+  inc hl
+  exx
+  ld de,0
+  add a,a
+  inc a
+  rl e
+  add a,a
+  rl e
+  add a,a
+  rl e
+  rl e
+  ld hl,pletter.modes
+  add hl,de
+  ld e,(hl)
+  ld ixl,e
+  inc hl
+  ld e,(hl)
+  ld ixh,e
+  ld e,1
+  exx
+  ld iy,pletter.loop
+pletter.literal:
+  ldi
+pletter.loop:
+  PLETTER.GETBIT
+  jr nc,pletter.literal
+  exx
+  ld h,d
+  ld l,e
+pletter.getlen:
+  PLETTER.GETBITEXX
+  jr nc,pletter.lenok
+pletter.lus:
+  PLETTER.GETBITEXX
+  adc hl,hl
+  ret c
+  PLETTER.GETBITEXX
+  jr nc,pletter.lenok
+  PLETTER.GETBITEXX
+  adc hl,hl
+  ret c
+  PLETTER.GETBITEXX
+  jp c,pletter.lus
+pletter.lenok
+  inc hl
+  exx
+  ld c,(hl)
+  inc hl
+  ld b,0
+  bit 7,c
+  jp z,pletter.offsok
+  ;jp ix
+  push ix
+  ret
+
+pletter.mode6
+  PLETTER.GETBIT
+  rl b
+pletter.mode5
+  PLETTER.GETBIT
+  rl b
+pletter.mode4
+  PLETTER.GETBIT
+  rl b
+pletter.mode3
+  PLETTER.GETBIT
+  rl b
+pletter.mode2
+  PLETTER.GETBIT
+  rl b
+  PLETTER.GETBIT
+  jr nc,pletter.offsok
+  or a
+  inc b
+  res 7,c
+pletter.offsok
+  inc bc
+  push hl
+  exx
+  push hl
+  exx
+  ld l,e
+  ld h,d
+  sbc hl,bc
+  pop bc
+  ldir
+  pop hl
+  ;jp iy
+  push iy
+  ret
+
+pletter.getbit
+  ld a,(hl)
+  inc hl
+  rla
+  ret
+
+pletter.getbitexx
+  exx
+  ld a,(hl)
+  inc hl
+  exx
+  rla
+  ret
+
+;eof
+
+data:

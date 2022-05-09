@@ -1,0 +1,27 @@
+DATA RESOURCE STRUCTURE
+=======================
+
+LINES MAP {
+  BYTE TYPE                         : 0=DATA, 1=RESOURCE CSV, 2=RESOURCE TXT
+
+  TYPE = 0-DATA:
+    WORD LINES_COUNT                  
+    LINES[LINES_COUNT] {
+       WORD LINE_NUMBER               
+       BYTE ITEMS_COUNT               
+    }
+
+  TYPE = 1-CSV:
+    WORD LINES_COUNT         
+    LINES[LINES_COUNT] {
+       BYTE ITEMS_COUNT               
+    }
+
+  TYPE = 2-TXT:
+
+}
+ITEMS DATA[TOTAL_ITEMS_COUNT] {
+  BYTE ITEM_LEN
+  STRING ITEM_DATA
+}
+

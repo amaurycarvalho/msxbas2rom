@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+
+ROOT = $(CURDIR)/debian/msxbas2rom
+
+override_dh_auto_clean:
+	$(RM) -r lib
+	$(RM) lib *.res msxbas2rom
+
+override_dh_auto_install:
+	install -d -m 755 $(ROOT)/usr/bin
+	install -s -m 755 bin/Release/msxbas2rom $(ROOT)/usr/bin
+%:
+	dh $@

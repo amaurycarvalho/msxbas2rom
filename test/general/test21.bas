@@ -1,0 +1,4 @@
+10 A$ = "TESTE"
+20 B = LEN(A$)
+30 PRINT B
+

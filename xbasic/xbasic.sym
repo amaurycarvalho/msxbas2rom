@@ -1,0 +1,595 @@
+; z80dasm -g 0x4000 -t -u -o xbasic.asm -l -a -b xbasic.blk -S xbasic.sym xbasic.rom
+
+PROCNM: equ 0xfd89
+SWPTMP1: equ 0xF7BD
+SUBFLG: equ 0xF6A5
+MODE: equ 0xFAFC
+
+VAR_NX: equ 0xF56A
+VAR_NY: equ 0xF56C
+VAR_ARGT: equ 0xF56F
+VAR_FNPTR: equ 0xF562
+VAR_DUMMY: equ 0xF564
+VAR_DX: equ 0xF566
+VAR_DY: equ 0xF568
+VAR_LOGOP: equ 0xF570
+VAR_CDUMMY: equ 0xF56E
+SAVSTK: equ 0xF6B1
+
+STATEMENT: equ 0x4032
+
+CMD_CALL_RUN: equ 0x4149
+CMD_CALL_RUN.PARSE: equ 0x4160
+CMD_CALL_TURBO_ON: equ 0x4e88
+CMD_CALL_TURBO_OFF: equ 0x4eff
+
+CMD_ON_INTERVAL: equ 0x4d1d
+CMD_CLS: equ 0x6ce1
+CMD_PRINT_STR: equ 0x74f5     ; HL = string address (first data byte = string size)
+CMD_PRINT_CRLF: equ 0x74ee     ; HL = string address (first data byte = string size)
+CMD_PRINT_INT: equ 0x74FF     ; HL = integer value
+CMD_PRINT_FLOAT: equ 0x7504   ; B, HL = 24bits float
+CMD_PAINT: equ 0x74b3         ; B=color, HL=X, DE=Y
+CMD_CIRCLE: equ 0x74d3        ; A=color, HL=ray, 0xFCB7|DE=X, 0xFCB9=Y
+CMD_LINE: equ 0x6da7          ; IX=X1, IY=Y1, DE=X2, HL=Y2, A=color, B=mode
+CMD_SCREEN: equ 0x7367        ; A=screen mode
+
+AUX_INT_TO_STR: equ 0x7b26    ; HL = integer value
+AUX_FLOAT_TO_STR: equ 0x7b80  ; B, HL = 24bits float
+
+GET_NEXT_TOKEN: equ 0x6030           ; A = token, IX = next token
+ASSERT_NEXT_TOKEN_BE: equ 0x6048
+ASSERT_NEXT_IS_PARENTESIS_OPENED: equ 0x6042
+ASSERT_NEXT_IS_PARENTESIS_CLOSED: equ 0x6046
+ASSERT_NEXT_IS_COMMA: equ 0x603e
+ASSERT_NEXT_IS_EQUAL: equ 0x603a
+
+GET_NUM_PARAMETER: equ 0x4f54   ; A = parameter
+GET_VAR_PARAMETER: equ 0x6501
+
+WRITE_OPCODE_A_L_H: equ 0x60a9      ; A, L, H = opcodes to write
+WRITE_OPCODE: equ 0x60b7      ; A = opcodes to write
+WRITE_CALL: equ 0x67d3    ; HL = address to call, A = opcode to CALL
+WRITE_NEXT_BYTES_UNTIL_2_NOPS: equ 0x6056
+
+TOKEN_81_END: equ 0x4d0a
+TOKEN_82_FOR: equ 0x480e
+TOKEN_83_NEXT: equ 0x48bf
+TOKEN_84_DATA: equ 0x4df2
+TOKEN_85_INPUT: equ 0x4a6b
+TOKEN_86_DIM: equ 0x452c
+TOKEN_87_READ: equ 0x4519
+TOKEN_88_LET: equ 0x445f
+TOKEN_89_GOTO: equ 0x4696
+TOKEN_8A_RUN: equ 0x467c
+TOKEN_8B_IF: equ 0x45dd
+TOKEN_8C_RESTORE: equ 0x4a2a
+TOKEN_8D_GOSUB: equ 0x4699
+TOKEN_8E_RETURN: equ 0x4689
+TOKEN_8F_REM: equ 0x43ba
+TOKEN_90_STOP: equ 0x4d13
+TOKEN_91_PRINT: equ 0x4b34
+TOKEN_95_ON: equ 0x46c0
+TOKEN_96_WAIT: equ 0x4ca6
+TOKEN_97_DEF: equ 0x4ce3
+TOKEN_98_POKE: equ 0x4b9e
+TOKEN_9C_OUT: equ 0x4c1b
+TOKEN_9D_LPRINT: equ 0x4b1d
+TOKEN_9F_CLS: equ 0x6954
+TOKEN_A4_SWAP: equ 0x47df
+TOKEN_AB_DEFSTR: equ 0x479a
+TOKEN_AC_DEFINT: equ 0x4797
+TOKEN_AD_DEFSNG: equ 0x479d
+TOKEN_AE_DEFDBL: equ 0x47a0
+TOKEN_AF_LINE: equ 0x66d3
+TOKEN_B3_PUT: equ 0x687e
+TOKEN_BC_CIRCLE: equ 0x6851
+TOKEN_BD_COLOR: equ 0x65a2
+TOKEN_BF_PAINT: equ 0x6abe
+TOKEN_C0_BEEP: equ 0x4b95
+TOKEN_C2_PSET: equ 0x6778
+TOKEN_C3_PRESET: equ 0x6779
+TOKEN_C4_SOUND: equ 0x4da5
+TOKEN_C5_SCREEN: equ 0x6931
+TOKEN_C6_VPOKE: equ 0x695a
+TOKEN_C7_SPRITE: equ 0x4d22
+TOKEN_C8_VDP: equ 0x6a7f
+TOKEN_CA_CALL: equ 0x4e36
+TOKEN_CB_TIME: equ 0x4de6
+TOKEN_CC_KEY: equ 0x4d34
+TOKEN_D2_SET: equ 0x69a1
+TOKEN_D6_COPY: equ 0x6b1b
+TOKEN_D8_LOCATE: equ 0x4dc7
+
+TOKEN_07_SQR: equ 0x7ab5
+TOKEN_09_SIN: equ 0x7936
+TOKEN_0C_COS: equ 0x792e
+TOKEN_0D_TAN: equ 0x7990
+TOKEN_0E_ATN: equ 0x79b2
+TOKEN_0A_LOG: equ 0x7a53
+TOKEN_0B_EXP: equ 0x79fa
+TOKEN_08_RND: equ 0x7678
+TOKEN_13_STR: equ 0x7dff
+TOKEN_MULTI_FUNCTION: equ 0x782d   ; INT/LEN/FIX...
+
+WRITE_CMD_PRINT_STR: equ 0x4b8c
+WRITE_CMD_PRINT_FLOAT: equ 0x4b83
+WRITE_CMD_PRINT_INT: equ 0x4b78
+WRITE_CMD_PRINT_CRLF: equ 0x4b5b
+
+WRITE_CMD_PAINT: equ 0x6b10
+WRITE_CMD_CIRCLE: equ 0x6878
+;WRITE_CMD_LINE: equ 0x
+WRITE_CMD_COLOR: equ 0x6678
+WRITE_CMD_SCREEN: equ 0x693b
+WRITE_CMD_SOUND: equ 0x4db4
+
+ERROR_MSG_CODES: equ 0x4e07
+PARSE_LINE: equ 0x4e97
+
+EXEC_RETURN_TO_BASIC: equ 0x4DFA
+EXEC_COMPILED_CODE_INIT: equ 0x422b
+EXEC_JUMP_TO_COMPILED_CODE: equ 0x4257
+
+;---------------------------------------------------------------------------------------------------------
+; BIOS FUNCTIONS
+;---------------------------------------------------------------------------------------------------------
+
+BIOS_CALBAS:    equ 0x0159
+BIOS_OUTDO:     equ 0x0018   ; output to current device (i.e. screen)
+BIOS_CHPUT:     equ 0x00A2
+BIOS_CLS:       equ 0x00C3
+BIOS_POSIT:     equ 0x00C6
+BIOS_BEEP:      equ 0x00C0
+BIOS_CHGET:     equ 0x009F
+BIOS_CHSNS:     equ 0x009C
+BIOS_INLIN:     equ 0x00B1
+BIOS_PINLIN:    equ 0x00AE
+BIOS_QINLIN:    equ 0x00B4
+BIOS_GTSTCK:    equ 0x00D5
+BIOS_GTTRIG:    equ 0x00D8
+BIOS_GTPAD:     equ 0x00DB
+BIOS_GTPDL:     equ 0x00DE
+BIOS_DISSCR:    equ 0x0041
+BIOS_ENASCR:    equ 0x0044
+BIOS_CHGMOD:    equ 0x005F
+BIOS_CHGCLR:    equ 0x0062
+BIOS_CLRSPR:    equ 0x0069
+BIOS_INITXT:    equ 0x006C    ; init text mode 40 columns
+BIOS_INIT32:    equ 0x006F    ; init text mode 32 columns
+BIOS_INIGRP:    equ 0x0072
+BIOS_INIMLT:    equ 0x0075
+BIOS_SETTXT:    equ 0x0078    ; set text mode 40 columns
+BIOS_SETT32:    equ 0x007B    ; set text mode 32 columns
+BIOS_SETGRP:    equ 0x007E
+BIOS_SETMLT:    equ 0x0081
+BIOS_CALPAT:    equ 0x0084
+BIOS_CALATR:    equ 0x0087
+BIOS_GSPSIZ:    equ 0x008A
+BIOS_GRPPRT:    equ 0x008D
+BIOS_ERAFNK:    equ 0x00CC
+BIOS_DSPFNK:    equ 0x00CF
+BIOS_TOTEXT:    equ 0x00D2
+BIOS_BREAKX:    equ 0x00B7
+BIOS_ISCNTC:    equ 0x03FB
+;BIOS_CHKRAM:    equ 0x0000
+BIOS_GICINI:    equ 0x0090
+BIOS_WRTPSG:    equ 0x0093
+BIOS_REDPSG:    equ 0x0096
+BIOS_STRTMS:    equ 0x0099
+BIOS_KEYINT:    equ 0x0038
+BIOS_CALSLT:    equ 0x001C
+BIOS_ENASLT:    equ 0x0024
+BIOS_RSLREG:    equ 0x0138
+BIOS_SCALXY:    equ 0x010E
+BIOS_MAPXYC:    equ 0x0111      ; in BC = X, DE = Y
+BIOS_READC:     equ 0x011D      ; out A = color of current pixel
+BIOS_SETATR:    equ 0x011A      ; in A = color code
+BIOS_SETC:      equ 0x0120      ; set current pixel to color from SETATR
+BIOS_NSETCX:    equ 0x0123      ; in HL = pixel fill count
+BIOS_SCANR:     equ 0x012C      ; in B=Fill switch, DE=Skip count, out DE=Skip remainder, HL=Pixel count
+BIOS_SCANL:     equ 0x012F      ; out HL=Pixel count
+BIOS_FETCHC:    equ 0x0114      ; out A = cursor mask, HL = VRAM address of cursor
+BIOS_STOREC:    equ 0x0117      ; in A = cursor mask, HL = VRAM address of cursor
+BIOS_RESET:     equ 0x7D17      ; restart BASIC
+BIOS_IOALLOC:   equ 0X7e6b      ; memory setup
+
+BIOS_GETVCP:    equ 0x0150      ; get PSG voice buffer address (in A = voice number, out HL = address of byte 2)
+BIOS_GETVC2:    equ 0x0153      ; get PSG voice buffer address (VOICEN = voice number, in L = byte number 0-36, out HL = address)
+
+BIOS_CHPUT_LF:  equ 0x0908
+BIOS_CHPUT_CR:  equ 0x0A81
+BIOS_CHPUT_TAB: equ 0x0A71
+
+; MSX2
+BIOS_CHKNEW:    equ 0x0165      ; C-flag set if screenmode = 5, 6, 7 or 8
+BIOS_EXTROM:	equ	0x015F
+BIOS_SCALXY2:   equ 0x008D      ; in BC = X, DE = Y
+BIOS_MAPXYC2:   equ 0x0091      ; in BC = X, DE = Y
+BIOS_SETC2:     equ 0x009D      ; set current pixel to color from SETATR
+BIOS_READC2:    equ 0x0095      ; out A = color of current pixel
+BIOS_CHGMOD2:   equ 0x00D1      ; in A = screenmode
+BIOS_DOBOXF:    equ 0x0079      ; hl = basic text pointer
+BIOS_GRPPRT2:   equ 0x0089      ; a = character
+BIOS_CHGCLR2:   equ 0x0111      ; change color, a = screen mode
+BIOS_CALPAT2:   equ 0x00F9
+BIOS_CALATR2:   equ 0x00FD
+BIOS_GSPSIZ2:   equ 0x0101
+BIOS_CLRSPR2:   equ 0x00F5
+
+;---------------------------------------------------------------------------------------------------------
+; BIOS WORK AREAS
+;---------------------------------------------------------------------------------------------------------
+
+BIOS_VERSION:   equ 0x002D   ; 0 = MSX1, 1 = MSX2, 2 = MSX2+, 3 = MSXturboR
+BIOS_FORCLR:    equ 0xF3E9
+BIOS_BAKCLR:    equ 0xF3EA
+BIOS_BDRCLR:    equ 0xF3EB
+BIOS_ATRBYT:    equ 0xF3F2
+BIOS_INTFLG:    equ 0xFC9B
+BIOS_EXPTBL:    equ 0xFCC1
+BIOS_JIFFY:     equ 0xFC9E
+BIOS_BOTTOM:    equ 0xFC48
+BIOS_HIMEM:     equ 0xFC4A
+BIOS_SCRMOD:    equ 0xFCAF   ; 0=40x24 Text Mode, 1=32x24 Text Mode, 2=Graphics Mode, 3=Multicolour Mode.
+BIOS_CLIKSW:    equ 0xF3DB   ; 0=keyboard click off, 1=keyboard click on
+BIOS_GRPACX:    equ 0xFCB7
+BIOS_GRPACY:    equ 0xFCB9
+BIOS_DATLIN:    equ 0xF6A3   ; 2 - line number of DATA statement read by READ statement
+;BIOS_DATPTR:    equ 0xF6C8   ; 2 - address of data read by executing READ statement
+BIOS_FLGINP:    equ 0xF6A6   ; 1 - flag used in INPUT or READ
+BIOS_TEMP:      equ 0xF6A7   ; 2
+BIOS_TEMP2:     equ 0xF6BC   ; 2
+BIOS_TEMP3:     equ 0xF69D   ; 2
+BIOS_TEMP8:     equ 0xF69F   ; 2
+BIOS_TEMP9:     equ 0xF7B8   ; 2
+BIOS_OLDSCR:    equ 0xFCB0   ; screen mode of the last text mode set
+BIOS_LINL40:    equ 0xF3AE   ; width for 40 columns screen mode
+BIOS_LINL32:    equ 0xF3AF   ; width for 32 columns screen mode
+BIOS_LINLEN:    equ 0xF3B0   ; current width for text screen mode
+BIOS_CLMLST:    equ 0xF3B2   ; minimum number of columns that must still be available on a line for a CRLF
+BIOS_TXTNAM:    equ 0xF3B3   ; characters table name
+
+BIOS_VOICEN:    equ 0xFB38   ; PSG voice number
+BIOS_MCLTAB:    equ 0xF956
+BIOS_PRSCNT:    equ 0xFB35
+BIOS_SAVSP:     equ 0xFB36
+BIOS_QUEUEN:    equ 0xFB3E
+BIOS_MUSICF:    equ 0xFB3F   ;contains 3 bit flags set by the STRTMS. Bits 0, 1 and 2 correspond to VOICAQ, VOICBQ and VOICCQ.
+BIOS_PLYCNT:    equ 0xFB40
+
+BIOS_DRWFLG:    equ 0xFCBB
+BIOS_MCLFLG:    equ 0xF958
+
+BIOS_SLTROM:    equ 0xFCC1
+BIOS_RAMAD0:	equ	0xF341	; Main-RAM Slot (00000h~03FFFh)
+BIOS_RAMAD1:	equ	0xF342	; Main-RAM Slot (04000h~07FFFh)
+BIOS_RAMAD2:	equ	0xF343	; Main-RAM Slot (08000h~0BFFFh)
+BIOS_RAMAD3:	equ	0xF344	; Main-RAM Slot (0C000h~0FFFFh)
+
+
+
+;--------------------------------------------------------
+; MSX BASIC DATA/FUNCTION POINTERS
+;--------------------------------------------------------
+
+;---------------------------------------------------------------------------------------------------------
+; MSX BASIC FUNCTIONS
+;---------------------------------------------------------------------------------------------------------
+
+BASIC_AUTO:   equ 0x3973
+BASIC_AND:    equ 0x3A18
+BASIC_ATTR:   equ 0x39FE
+BASIC_BASE:   equ 0x39BE
+BASIC_BSAVE:  equ 0x39CC
+BASIC_BLOAD:  equ 0x39CA
+BASIC_BEEP:   equ 0x39AC
+BASIC_CALL:   equ 0x39C0
+BASIC_CLOSE:  equ 0x3994
+BASIC_COPY:   equ 0x39D8
+BASIC_CONT:   equ 0x395E
+BASIC_CLEAR:  equ 0x3950
+BASIC_CLOAD:  equ 0x3962
+BASIC_CSAVE:  equ 0x3960
+BASIC_CSRLIN: equ 0x39FC
+BASIC_CIRCLE: equ 0x39A4
+BASIC_COLOR:  equ 0x39A6
+BASIC_CLS:    equ 0x396A
+BASIC_CMD:    equ 0x39DA
+BASIC_DELETE: equ 0x397C
+BASIC_DATA:   equ 0x3934
+BASIC_DIM:    equ 0x3938
+BASIC_DEFSTR: equ 0x3982
+BASIC_DEFINT: equ 0x3984
+BASIC_DEFSNG: equ 0x3986
+BASIC_DEFDBL: equ 0x3988
+BASIC_DSKO:   equ 0x39CE
+BASIC_DEF:    equ 0x395A
+BASIC_DSKI:   equ 0x3A00
+BASIC_DRAW:   equ 0x39A8
+BASIC_ELSE:   equ 0x396E
+BASIC_END:    equ 0x392E
+BASIC_ERASE:  equ 0x3976
+BASIC_ERROR:  equ 0x3978
+BASIC_ERL:    equ 0x39EE
+BASIC_ERR:    equ 0x39F0
+BASIC_EQU:    equ 0x3A1E
+BASIC_FOR:    equ 0x3920
+BASIC_FIELD:  equ 0x398E
+BASIC_FILES:  equ 0x39AA
+BASIC_FN:     equ 0x39E8
+BASIC_GOTO:   equ 0x393E
+BASIC_GOSUB:  equ 0x3948
+BASIC_GET:    equ 0x3990
+BASIC_INPUT:  equ 0x3936
+BASIC_IF:     equ 0x3942
+BASIC_INSTR:  equ 0x39F6
+BASIC_IMP:    equ 0x3A20
+BASIC_INKEY:  equ 0x3A04
+BASIC_IPL:    equ 0x39D6
+BASIC_KILL:   equ 0x39D4
+BASIC_KEY:    equ 0x3964
+BASIC_LPRINT: equ 0x394C
+BASIC_LLIST:  equ 0x3968
+BASIC_LET:    equ 0x393C
+BASIC_LOCATE: equ 0x39DC
+BASIC_LINE:   equ 0x398A
+BASIC_LOAD:   equ 0x3996
+BASIC_LSET:   equ 0x399C
+BASIC_LIST:   equ 0x3952
+BASIC_LFILES: equ 0x39A2
+BASIC_MOTOR:  equ 0x39C8
+BASIC_MERGE:  equ 0x3998
+BASIC_MOD:    equ 0x3A22
+BASIC_MAX:    equ 0x39C6
+BASIC_NEXT:   equ 0x3932
+BASIC_NAME:   equ 0x39D2
+BASIC_NEW:    equ 0x3954
+BASIC_NOT:    equ 0x39EC
+BASIC_OPEN:   equ 0x398C
+BASIC_OUT:    equ 0x3964
+BASIC_ON:     equ 0x3956
+BASIC_OR:     equ 0x3A1A
+BASIC_OFF:    equ 0x3A02
+BASIC_PRINT:  equ 0x394E
+BASIC_PUT:    equ 0x3992
+BASIC_POKE:   equ 0x395C
+BASIC_PSET:   equ 0x39B0
+BASIC_PRESET: equ 0x39B2
+BASIC_POINT:  equ 0x3A06
+BASIC_PAINT:  equ 0x39AA
+BASIC_PLAY:   equ 0x39AE
+BASIC_RETURN: equ 0x3948
+BASIC_READ:   equ 0x393A
+BASIC_RUN:    equ 0x3940
+BASIC_RESTORE: equ 0x3944
+BASIC_REM:    equ 0x394A
+BASIC_RESUME: equ 0x397A
+BASIC_RSET:   equ 0x399E
+BASIC_RENUM:  equ 0x3980
+BASIC_SCREEN: equ 0x39B6
+BASIC_SPRITE: equ 0x39BA
+BASIC_STOP:   equ 0x394C
+BASIC_SWAP:   equ 0x3974
+BASIC_SET:    equ 0x39D0
+BASIC_SAVE:   equ 0x39A0
+BASIC_SPC:    equ 0x39EA
+BASIC_STEP:   equ 0x39E4
+BASIC_STRING: equ 0x39F2
+BASIC_SPACE1: equ 0x397E
+BASIC_SOUND:  equ 0x39B4
+BASIC_THEN:   equ 0x39E0
+BASIC_TRON:   equ 0x3970
+BASIC_TROFF:  equ 0x3972
+BASIC_TAB:    equ 0x39E2
+BASIC_TO:     equ 0x39DE
+BASIC_TIME:   equ 0x39C2
+BASIC_USING:  equ 0x39F4
+BASIC_USR:    equ 0x39E6
+BASIC_VARPTR: equ 0x39FA
+BASIC_VDP:    equ 0x39BC
+BASIC_VPOKE:  equ 0x39B8
+BASIC_WIDTH:  equ 0x396C
+BASIC_WAIT:   equ 0x3958
+BASIC_XOR:    equ 0x3A1C
+BASIC_ABS:    equ 0x39E8
+BASIC_ATN:    equ 0x39F8
+BASIC_ASC:    equ 0x3A06
+BASIC_BIN:    equ 0x3A16
+BASIC_CINT:   equ 0x3A18
+BASIC_CSNG:   equ 0x3A1A
+BASIC_CDBL:   equ 0x3A1C
+BASIC_CVI:    equ 0x3A2C
+BASIC_CVS:    equ 0x3A2E
+BASIC_CVD:    equ 0x3A30
+BASIC_COS:    equ 0x39F4
+BASIC_CHR:    equ 0x3A08
+BASIC_DSKF:   equ 0x3A28
+BASIC_EXP:    equ 0x39F2
+BASIC_EOF:    equ 0x3A32
+BASIC_FRE:    equ 0x39FA
+BASIC_FIX:    equ 0x3A1E
+BASIC_FPOS:   equ 0x3A2A
+BASIC_HEX:    equ 0x3A12
+BASIC_INT:    equ 0x39E6
+BASIC_INP:    equ 0x39FC
+BASIC_LPOS:   equ 0x3A14
+BASIC_LOG:    equ 0x39F0
+BASIC_LOC:    equ 0x3A34
+BASIC_LEN:    equ 0x3A00
+BASIC_LEFT:   equ 0x39DE
+BASIC_LOF:    equ 0x3A36
+BASIC_MKI:    equ 0x3A38
+BASIC_MKS:    equ 0x3A3A
+BASIC_MKD:    equ 0x3A3C
+BASIC_MID:    equ 0x39E2
+BASIC_OCT:    equ 0x3A10
+BASIC_POS:    equ 0x39FE
+BASIC_PEEK:   equ 0x3A0A
+BASIC_PDL:    equ 0x3A24
+BASIC_PAD:    equ 0x3A26
+BASIC_RIGHT:  equ 0x39E0
+BASIC_RND:    equ 0x39EC
+BASIC_SGN:    equ 0x39E4
+BASIC_SQR:    equ 0x39EA
+BASIC_SIN:    equ 0x39EE
+BASIC_STR:    equ 0x3A02
+BASIC_SPACE2: equ 0x3A0E
+BASIC_STICK:  equ 0x3A20
+BASIC_STRIG:  equ 0x3A22
+BASIC_TAN:    equ 0x39F6
+BASIC_VAL:    equ 0x3A04
+BASIC_VPEEK:  equ 0x3A0C
+
+BASIC_TRAP_ENABLE:  equ 0x631B    ; ON INTERVAL/KEY/SPRITE/STOP/STRIG - hl = pointer to trap block
+BASIC_TRAP_DISABLE: equ 0x632B    ; hl = pointer to trap block
+BASIC_TRAP_ACKNW:   equ 0x6358    ; hl, acknowledge trap (handle trap: sts=5? has handler? ackn, pause, run trap, sts=1? unpause)
+BASIC_TRAP_PAUSE:   equ 0x6331    ; hl
+BASIC_TRAP_UNPAUSE: equ 0x633E    ; hl
+BASIC_TRAP_CLEAR:   equ 0x636E
+
+BASIC_PLAY_DIRECT:  equ 0x744C
+BASIC_DRAW_DIRECT:  equ 0x568C
+
+;BASIC_READYR:       equ 0x409B
+BASIC_READYC:       equ 0x7D17
+;BASIC_FACEVAL:      equ 0x4DC7
+
+BASIC_ERROR_HANDLER: equ 0x406F
+;BASIC_ERROR_SYNTAX: equ 0x4055
+;BASIC_ERROR_DIVZER: equ 0x4058
+;BASIC_ERROR_OVRFLW: equ 0x4067
+;BASIC_ERROR_ARRAY:  equ 0x405E
+;BASIC_ERROR_TYPMIS: equ 0x406D
+
+; BASIC ERROR CODES TO BASIC_ERROR_HANDLER
+; 01 NEXT without FOR             19 Device I/O error
+; 02 Syntax error                 20 Verify error
+; 03 RETURN without GOSUB         21 No RESUME
+; 04 Out of DATA                  22 RESUME without error
+; 05 Illegal function call        23 Unprintable error
+; 06 Overflow                     24 Missing operand
+; 07 Out of memory                25 Line buffer overflow
+; 08 Undefined line number        50 FIELD overflow
+; 09 Subscript out of range       51 Internal error
+; 10 Redimensioned array          52 Bad file number
+; 11 Division by zero             53 File not found
+; 12 Illegal direct               54 File already open
+; 13 Type mismatch                55 Input past end
+; 14 Out of string space          56 Bad file name
+; 15 String too long              57 Direct statement in file
+; 16 String formula too complex   58 Sequential I/O only
+; 17 Can't CONTINUE               59 File not OPEN
+; 18 Undefined user function
+
+;---------------------------------------------------------------------------------------------------------
+; MSX BASIC WORK AREAS
+;---------------------------------------------------------------------------------------------------------
+
+BASIC_DAC:    equ 0xF7F6    ; 16
+BASIC_ARG:    equ 0xF847    ; 16
+BASIC_VALTYP: equ 0xF663
+BASIC_RNDX:   equ 0xF857
+BASIC_BUF:    equ 0xF55E    ; 259
+BASIC_KBUF:   equ 0xF41F    ; 318
+BASIC_SWPTMP: equ 0xF7BC    ; 8
+BASIC_STRBUF: equ 0xF7C5    ; 43
+BASIC_TXTTAB: equ 0xF676
+BASIC_VARTAB: equ 0xF6C2
+BASIC_ARYTAB: equ 0xF6C4
+BASIC_STREND: equ 0xF6C6
+BASIC_STKTOP: equ 0xF674
+BASIC_FRETOP: equ 0xF69B
+BASIC_MEMSIZ: equ 0xF672
+
+BASIC_TEMPPT: equ 0xF678    ; 2	Starting address of unused area of temporary descriptor.
+BASIC_TEMPST: equ 0xF67A    ; 30 Temporary descriptors.
+
+BASIC_DATPTR: equ 0xF6C8    ; 2 Pointer to next data to read from the instruction DATA. Modified by RESTORE.
+BASIC_DATLIN: equ 0xF6A3    ; 2 Número de linha do comando DATA para o comando READ.
+BASIC_DORES:  equ 0xF664    ; 1 Usada pelo comando DATA para manter o texto no formato ASCII.
+BASIC_DEFTBL: equ 0xF6CA    ; 26 table of variables defined by DEFINT, DEFSTR, DEFSNG and DEFDBL for each alphabet letter (2 = integer, 3 = String, 4 = Simple precision, 8 = Double precision).
+
+BASIC_CURLIN: equ 0xF41C    ; BASIC current line number
+BASIC_INTVAL: equ 0xFCA0    ; interval value
+BASIC_INTCNT: equ 0xFCA2    ; interval current count
+
+BASIC_PRMPRV: equ 0xF74C    ; Pointer to previous parameter block in PARM1
+
+BASIC_TRPTBL: equ 0xFC4C    ; 78 trap table - array of 3 bytes - state[1] (bit 0=on, bit 1=stop, bit 2=active) + address[2]
+
+BASIC_TRPTBL_KEY:        equ 0xFC4C  ; 30 ON KEY GOSUB
+BASIC_TRPTBL_STOP:       equ 0xFC6A  ; 3  ON STOP GOSUB
+BASIC_TRPTBL_SPRITE:     equ 0xFC6D  ; 3  ON SPRITE GOSUB
+BASIC_TRPTBL_STRIG:      equ 0xFC70  ; 15 ON STRIG GOSUB
+BASIC_TRPTBL_INTERVAL:   equ 0xFC7F  ; 3  ON INTERVAL GOSUB
+BASIC_TRPTBL_OTHER:      equ 0xFC82  ; 24 reserved for expansion
+
+BASIC_ONGSBF:            equ 0xFBD8  ; 1  trap occurred counter (0=not occurred)
+
+MATH_DECSUB: equ 0x268C
+MATH_DECADD: equ 0x269A
+MATH_DECMUL: equ 0x27E6
+MATH_DECDIV: equ 0x289F
+MATH_SNGEXP: equ 0x37C8
+MATH_DBLEXP: equ 0x37D7
+MATH_COS:   equ 0x2993
+MATH_SIN:   equ 0x29AC
+MATH_TAN:   equ 0x29FB
+MATH_ATN:   equ 0x2A14
+MATH_SQR:   equ 0x2AFF
+MATH_LOG:   equ 0x2A72
+MATH_EXP:   equ 0x2B4A
+MATH_DECNRM: equ 0x26FA
+MATH_SIGN:  equ 0x2E71
+MATH_ABSFN: equ 0x2E82
+MATH_NEG:   equ 0x2E8D
+MATH_SGN:   equ 0x2E97
+MATH_RND:   equ 0x2BDF
+MATH_UMULT: equ 0x314A
+MATH_ISUB:  equ 0x3167
+MATH_IADD:  equ 0x3172
+MATH_IMULT: equ 0x3193
+MATH_IDIV:  equ 0x31E6
+MATH_IMOD:  equ 0x323A
+MATH_INTEXP: equ 0x383F
+MATH_FRCINT: equ 0x2F8A
+MATH_FRCSGL: equ 0x2FB2
+MATH_FRCDBL: equ 0x303A
+MATH_FIXER: equ 0x30BE
+MATH_MAF:   equ 0x2C4D
+MATH_MAM:   equ 0x2C50
+MATH_MOV8DH: equ 0x2C53
+MATH_MFA:   equ 0x2C59
+MATH_MFM:   equ 0x2C5C
+MATH_MMF:   equ 0x2C67
+MATH_MOV8HD: equ 0x2C6A
+MATH_XTF:   equ 0x2C6F
+MATH_PHA:   equ 0x2CC7
+MATH_PHF:   equ 0x2CCC
+MATH_PPA:   equ 0x2CDC
+MATH_PPF:   equ 0x2CE1
+MATH_PUSHF: equ 0x2EB1
+MATH_MOVFM: equ 0x2EBE
+MATH_MOVFR: equ 0x2EC1
+MATH_MOVRF: equ 0x2ECC
+MATH_MOVRMI: equ 0x2ED6
+MATH_MOVRM: equ 0x2EDF
+MATH_MOVMF: equ 0x2EE8
+MATH_MOVE:  equ 0x2EEB
+MATH_VMOVAM: equ 0x2EEF
+MATH_MOVVFM: equ 0x2EF2
+MATH_VMOVE: equ 0x2EF3
+MATH_VMOVFA: equ 0x2F05
+MATH_VMOVFM: equ 0x2F08
+MATH_VMOVAF: equ 0x2F0D
+MATH_VMOVMF: equ 0x2F10
+MATH_ICOMP: equ 0x2F4D
+MATH_DCOMP: equ 0x2F21
+MATH_XDCOMP: equ 0x2F5C
+MATH_FIN:   equ 0x3299
+MATH_FOUT:  equ 0x3425
+MATH_PUFOUT: equ 0x3426
+MATH_FOUTB: equ 0x371A
+MATH_FOUTO: equ 0x371E
+MATH_FOUTH: equ 0x3722

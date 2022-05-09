@@ -1,0 +1,11 @@
+Source: msxbas2rom
+Maintainer: Amaury Carvalho <amauryspires@gmail.com>
+Section: utils
+Priority: optional
+Standards-Version: 3.9.3
+Build-Depends: debhelper (>= 8)
+
+Package: msxbas2rom
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+Description: MSX BASIC to ROM compiler

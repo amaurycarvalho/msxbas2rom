@@ -1,0 +1,90 @@
+    defw 04e16h		;4097	16 4e 	. N         80-ERR
+	defw l4d0ah		;4099	0a 4d 	. M         81-END
+	defw l480eh		;409b	0e 48 	. H         82-FOR
+	defw l48bfh		;409d	bf 48 	. H         83-NEXT
+	defw l4df2h		;409f	f2 4d 	. M         84-DATA
+	defw l4a6bh		;40a1	6b 4a 	k J         85-INPUT
+	defw l452ch		;40a3	2c 45 	, E         86-DIM
+	defw l4519h		;40a5	19 45 	. E         87-READ
+	defw l445fh		;40a7	5f 44 	_ D         88-LET
+	defw l4696h		;40a9	96 46 	. F         89-GOTO
+	defw l467ch		;40ab	7c 46 	| F         8A-RUN
+	defw l45ddh		;40ad	dd 45 	. E         8B-IF
+	defw l4a2ah		;40af	2a 4a 	* J         8C-RESTORE
+	defw 04699h		;40b1	99 46 	. F         8D-GOSUB
+	defw l4689h		;40b3	89 46 	. F         8E-RETURN
+	defw l43bah		;40b5	ba 43 	. C         8F-REM
+	defw l4d13h		;40b7	13 4d 	. M         90-STOP
+	defw l4b34h		;40b9	34 4b 	4 K         91-PRINT
+	defw 04e16h		;40bb	16 4e 	. N         92-ERR (CLEAR)
+	defw 04e16h		;40bd	16 4e 	. N         93-ERR (LIST)
+	defw 04e16h		;40bf	16 4e 	. N         94-ERR
+	defw l46c0h		;40c1	c0 46 	. F         95-ON
+	defw l4ca6h		;40c3	a6 4c 	. L         96-WAIT
+	defw l4ce3h		;40c5	e3 4c 	. L         97-DEF
+	defw l4b9eh		;40c7	9e 4b 	. K         98-POKE
+	defw 04e16h		;40c9	16 4e 	. N         99-ERR
+	defw 04e16h		;40cb	16 4e 	. N         9A-ERR
+	defw 04e16h		;40cd	16 4e 	. N         9B-ERR (CLOAD)
+	defw l4c1bh		;40cf	1b 4c 	. L         9C-OUT
+	defw l4b1dh		;40d1	1d 4b 	. K         9D-LPRINT
+	defw 04e16h		;40d3	16 4e 	. N         9E-ERR (LLIST)
+	defw WRITE_CMD_CLS		;40d5	54 69 	T i 9F-CLS   
+	defw 04e16h		;40d7	16 4e 	. N         A0-ERR (WIDTH)
+	defw 04e16h		;40d9	16 4e 	. N         A1-ERR (ELSE)
+	defw 04e16h		;40db	16 4e 	. N         A2-ERR (TRON)
+	defw 04e16h		;40dd	16 4e 	. N         A3-ERR (TROFF)
+	defw l47dfh		;40df	df 47 	. G         A4-SWAP
+	defw 04e16h		;40e1	16 4e 	. N         A5-ERR (ERASE)
+	defw 04e16h		;40e3	16 4e 	. N         A6-ERR (ERROR)
+	defw 04e16h		;40e5	16 4e 	. N         A7-ERR (RESUME)
+	defw 04e16h		;40e7	16 4e 	. N         A8-ERR (DELETE)
+	defw 04e16h		;40e9	16 4e 	. N         A9-ERR (AUTO)
+	defw 04e16h		;40eb	16 4e 	. N         AA-ERR (RENUM)
+	defw 0479ah		;40ed	9a 47 	. G         AB-DEFSTR
+	defw l4797h		;40ef	97 47 	. G         AC-DEFINT
+	defw 0479dh		;40f1	9d 47 	. G         AD-DEFSNG
+	defw 047a0h		;40f3	a0 47 	. G         AE-DEFDBL
+	defw l66d3h		;40f5	d3 66 	. f         AF-LINE
+	defw 04e16h		;40f7	16 4e 	. N         B0-ERR (OPEN)
+	defw 04e16h		;40f9	16 4e 	. N         B1-ERR (FIELD)
+	defw 04e16h		;40fb	16 4e 	. N         B2-ERR (GET)
+	defw l687eh		;40fd	7e 68 	~ h         B3-PUT
+	defw 04e16h		;40ff	16 4e 	. N         B4-ERR (CLOSE)
+	defw 04e16h		;4101	16 4e 	. N         B5-ERR (LOAD)
+	defw 04e16h		;4103	16 4e 	. N         B6-ERR (MERGE)
+	defw 04e16h		;4105	16 4e 	. N         B7-ERR (FILES)
+	defw 04e16h		;4107	16 4e 	. N         B8-ERR (LSET)
+	defw 04e16h		;4109	16 4e 	. N         B9-ERR (RSET)
+	defw 04e16h		;410b	16 4e 	. N         BA-ERR (SAVE)
+	defw 04e16h		;410d	16 4e 	. N         BB-ERR (LFILES)
+	defw l6851h		;410f	51 68 	Q h         BC-CIRCLE
+	defw l65a2h		;4111	a2 65 	. e         BD-COLOR
+	defw 04e16h		;4113	16 4e 	. N         BE-ERR (DRAW)
+	defw l6abeh		;4115	be 6a 	. j         BF-PAINT
+	defw WRITE_CMD_BEEP		;4117	95 4b 	. K C0-BEEP
+	defw 04e16h		;4119	16 4e 	. N         C1-ERR (PLAY)
+	defw l6778h		;411b	78 67 	x g         C2-PSET
+	defw l6778h+1		;411d	79 67 	y g     C3-PRESET
+	defw l4da5h		;411f	a5 4d 	. M         C4-SOUND
+	defw l6931h		;4121	31 69 	1 i         C5-SCREEN
+	defw l695ah		;4123	5a 69 	Z i         C6-VPOKE
+	defw l4d22h		;4125	22 4d 	" M         C7-SPRITE
+	defw l6a7fh		;4127	7f 6a 	 j        C8-VDP
+	defw 04e16h		;4129	16 4e 	. N         C9-ERR (BASE)
+	defw l4e36h		;412b	36 4e 	6 N         CA-CALL
+	defw l4de6h		;412d	e6 4d 	. M         CB-TIME
+	defw l4d34h		;412f	34 4d 	4 M         CC-KEY
+	defw 04e16h		;4131	16 4e 	. N         CD-ERR (MAX)
+	defw 04e16h		;4133	16 4e 	. N         CE-ERR (MOTOR)
+	defw 04e16h		;4135	16 4e 	. N         CF-ERR (BLOAD)
+	defw 04e16h		;4137	16 4e 	. N         D0-ERR
+	defw 04e16h		;4139	16 4e 	. N         D1-ERR (DSKO$)
+	defw l69a1h		;413b	a1 69 	. i         D2-SET
+	defw 04e16h		;413d	16 4e 	. N         D3-ERR (NAME)
+	defw 04e16h		;413f	16 4e 	. N         D4-ERR (KILL)
+	defw 04e16h		;4141	16 4e 	. N         D5-ERR (IPL)
+	defw l6b1bh		;4143	1b 6b 	. k         D6-COPY
+	defw 04e16h		;4145	16 4e 	. N         D7-ERR (CMD)
+	defw l4dc7h		;4147	c7 4d 	. M         D8-LOCATE
+

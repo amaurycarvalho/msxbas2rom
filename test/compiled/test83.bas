@@ -1,0 +1,15 @@
+FILE "test83.akm"
+
+10 CMD PLYLOAD 0
+20 CMD PLYLOOP 0
+30 CMD PLYPLAY
+40 PRINT "Playing song..."
+50 S% = PLYSTATUS()
+60 PRINT S%,
+70 IF S% < 128 THEN 50
+80 PRINT : PRINT "Song finished" : PRINT "Press a key to restart..."
+90 A$ = INPUT$(1)
+95 CMD PLYREPLAY
+100 GOTO 40
+
+

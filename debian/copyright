@@ -1,0 +1,10 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+
+Files: *
+Copyright: 2020 Amaury Carvalho
+License: GPL-3
+ The MSX BASIC to ROM compiler is an open source project.
+ Its totally free to use and to make any changes in the code you wish.
+ The only restriction is that you must maintain the original author citation 
+ written in the code and in the presentation screen of the program.   
+
