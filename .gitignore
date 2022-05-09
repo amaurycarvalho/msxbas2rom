@@ -34,3 +34,6 @@
 # Scripts
 *.sh
 
+# Bazaar
+.bzr
+
