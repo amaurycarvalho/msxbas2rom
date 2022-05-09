@@ -1,5 +1,5 @@
 #msxbas2rom
-##**MSX BASIC to ROM compiler tool**
+##MSX BASIC to ROM compiler tool
 
 Create a ROM file from your old MSX BASIC code!
 
