@@ -33,7 +33,7 @@ Help us to maintain this project, support us on Patreon:
 https://www.patreon.com/msxbas2rom)";
 
 const char * info_usage = R"(
-Usage: MSXBAS2ROM <filename.bas>
+Usage: msxbas2rom [options] <filename.bas>
 Options:
        -q  = quiet (no verbose)
        -d  = debug mode (show details)
