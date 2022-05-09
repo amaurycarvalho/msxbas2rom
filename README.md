@@ -1,9 +1,9 @@
-#msxbas2rom
-##MSX BASIC to ROM compiler tool
+# MSXBAS2ROM
+## MSX BASIC to ROM compiler tool
 
 Create a ROM file from your old MSX BASIC code!
 
-###USAGE 
+### USAGE 
 
 Use command below to transform your Basic program from plain text code to a tokenized form on a ROM file.
 
@@ -22,7 +22,7 @@ Run it at command line to get more conversion options:
 
 	  msxbas2rom
 
-###INSTALL 
+### INSTALL 
 
 Install it into your Linux system using the commands below:
 
@@ -32,7 +32,7 @@ Install it into your Linux system using the commands below:
 
 See Downloads tab to get MSXBas2ROM for Windows 32 and 64 bits.
 
-###DOCUMENTATION AND VERSION HISTORY
+### DOCUMENTATION AND VERSION HISTORY
 
 See the current version with command line below:
 
@@ -42,7 +42,7 @@ All documentation can be listed too:
 
 	  msxbas2rom --doc
 
-###SUPPORT THE PROJECT!
+### SUPPORT THE PROJECT!
 
 Support us on Patreon, Catarse.me, PayPal or Brazilian PIX, so we can buy new resources (ex: msx related hardware) to help us to speed up in coding new functionalities and test bug fixes.
 
@@ -58,7 +58,7 @@ Also, once in a while games developed using MSXBAS2ROM will be released as gift 
 
 Note: MSXBas2ROM it's still an experimental prototype, so it's current status is development in progress.
 
-###SUPPORTERS SPECIAL THANKS
+### SUPPORTERS SPECIAL THANKS
 
 -   Luciano Cadari ([iPlay](http://www.iplay.com.br));
 -   Mario Cavalcanti ([ClubeMSX](http://www.clubemsx.com.br));
