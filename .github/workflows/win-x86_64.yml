@@ -5,28 +5,42 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-
-env:
-  target_cpu: x86_64
-  target_os: mingw-w64
-  target_flavour: opt
-  
 jobs:
-  build:
-
+  build-linux:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
-    - name: Fetch entire repository
-      run: git fetch --prune --unshallow
-    - name: Install prerequisites
-      run: sudo apt-get install mingw-w64 gcc make tcl
-    - name: Make
-      run: make release OS=Windows_NT
-    - name: Upload artifact
-      uses: actions/upload-artifact@v1
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: make clean all
+      run: make -C source clean all
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - name: Install argp
+      run: brew install argp-standalone
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: find it
+      run: find / -name *argp*
+    - name: make clean all
+      run: make -C source clean all
+
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - uses: msys2/setup-msys2@v2
       with:
-        name: Windows64
-        path: bin/Release/msxbas2rom.exe
-        
+        update: true
+        install: >-
+          base-devel
+          gcc
+          git
+          libargp-devel
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: make clean all
+      run: make -C source clean all
