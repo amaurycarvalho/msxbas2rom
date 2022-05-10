@@ -1,4 +1,4 @@
-name: Build Windows x86_64 Distributable
+name: Build all releases
 
 on:
   push:
@@ -11,28 +11,55 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2.0.0
-    - name: make clean all
-      run: make -C source clean all
+    - uses: actions-ecosystem/action-release-label@v1
+      id: release-label
+      if: ${{ github.event.pull_request.merged == true }}
+    - uses: actions-ecosystem/action-get-latest-tag@v1
+      id: get-latest-tag
+      if: ${{ steps.release-label.outputs.level != null }}
+      with:
+        semver_only: true
+    - name: Make (clean, release)
+      run: make clean release
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: msxbas2rom_linux64_${{ steps.get-latest-tag.outputs.tag }}
+        path: bin/Release/msxbas2rom*.*
 
   build-macos:
     runs-on: macos-latest
     steps:
-    - name: Install argp
+    - name: Setup
       run: brew install argp-standalone
     - name: Checkout
       uses: actions/checkout@v2.0.0
-    - name: find it
+    - uses: actions-ecosystem/action-release-label@v1
+      id: release-label
+      if: ${{ github.event.pull_request.merged == true }}
+    - uses: actions-ecosystem/action-get-latest-tag@v1
+      id: get-latest-tag
+      if: ${{ steps.release-label.outputs.level != null }}
+      with:
+        semver_only: true
+    - name: Check system
       run: find / -name *argp*
-    - name: make clean all
-      run: make -C source clean all
+    - name: Make -> clean release
+      run: make clean release
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: msxbas2rom_macos_${{ steps.get-latest-tag.outputs.tag }}
+        path: bin/Release/msxbas2rom*.*
 
-  build-windows:
+  build-windows64:
     runs-on: windows-latest
     defaults:
       run:
         shell: msys2 {0}
     steps:
-    - uses: msys2/setup-msys2@v2
+    - name: Setup
+      uses: msys2/setup-msys2@v2
       with:
         update: true
         install: >-
@@ -42,5 +69,19 @@ jobs:
           libargp-devel
     - name: Checkout
       uses: actions/checkout@v2
-    - name: make clean all
-      run: make -C source clean all
+    - uses: actions-ecosystem/action-release-label@v1
+      id: release-label
+      if: ${{ github.event.pull_request.merged == true }}
+    - uses: actions-ecosystem/action-get-latest-tag@v1
+      id: get-latest-tag
+      if: ${{ steps.release-label.outputs.level != null }}
+      with:
+        semver_only: true
+    - name: Make -> clean release
+      run: make clean release
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: msxbas2rom_win64_${{ steps.get-latest-tag.outputs.tag }}
+        path: bin/Release/msxbas2rom*.*
+
