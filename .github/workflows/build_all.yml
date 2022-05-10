@@ -1,0 +1,46 @@
+name: Build Windows x86_64 Distributable
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: make clean all
+      run: make -C source clean all
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - name: Install argp
+      run: brew install argp-standalone
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: find it
+      run: find / -name *argp*
+    - name: make clean all
+      run: make -C source clean all
+
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >-
+          base-devel
+          gcc
+          git
+          libargp-devel
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: make clean all
+      run: make -C source clean all
