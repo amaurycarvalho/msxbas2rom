@@ -5,7 +5,7 @@ Create a ROM file from your old MSX BASIC code!
 
 ### USAGE 
 
-Use command below to transform your Basic program from plain text code to a tokenized form on a ROM file.
+Use command below to transform your Basic program from plain text code into a tokenized form on a ROM file.
 
 	  msxbas2rom test.bas
 
@@ -13,7 +13,7 @@ You can also compile it into a ROM binary form using the command below:
 
 	  msxbas2rom -c test.bas
 
-After, test your brand new MSX Basic ROM file with an emulator like WebMSX or OpenMSX!
+To test your brand new MSX Basic ROM file, use an emulator like WebMSX or OpenMSX:
 
 -   [WebMSX](https://webmsx.org/);
 -   [OpenMSX](https://openmsx.org/).

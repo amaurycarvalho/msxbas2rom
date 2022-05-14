@@ -1,30 +1,25 @@
 name: Build all releases
 
 on:
-  push:
+  workflow_dispatch:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    inputs:
+      release:
+        description: 'Release number'     
+        required: true
+        default: 'v0.0.0.0'
 jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2.0.0
-    - uses: actions-ecosystem/action-release-label@v1
-      id: release-label
-      if: ${{ github.event.pull_request.merged == true }}
-    - uses: actions-ecosystem/action-get-latest-tag@v1
-      id: get-latest-tag
-      if: ${{ steps.release-label.outputs.level != null }}
-      with:
-        semver_only: true
     - name: Make (clean, release)
       run: make clean release
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: msxbas2rom_linux64_${{ steps.get-latest-tag.outputs.tag }}
+        name: msxbas2rom_linux64_${{ github.event.inputs.release }}
         path: bin/Release/msxbas2rom*.*
 
   build-macos:
@@ -34,14 +29,6 @@ jobs:
       run: brew install argp-standalone
     - name: Checkout
       uses: actions/checkout@v2.0.0
-    - uses: actions-ecosystem/action-release-label@v1
-      id: release-label
-      if: ${{ github.event.pull_request.merged == true }}
-    - uses: actions-ecosystem/action-get-latest-tag@v1
-      id: get-latest-tag
-      if: ${{ steps.release-label.outputs.level != null }}
-      with:
-        semver_only: true
     - name: Check system
       run: find / -name *argp*
     - name: Make -> clean release
@@ -49,7 +36,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: msxbas2rom_macos_${{ steps.get-latest-tag.outputs.tag }}
+        name: msxbas2rom_macos_${{ github.event.inputs.release }}
         path: bin/Release/msxbas2rom*.*
 
   build-windows64:
@@ -69,19 +56,11 @@ jobs:
           libargp-devel
     - name: Checkout
       uses: actions/checkout@v2
-    - uses: actions-ecosystem/action-release-label@v1
-      id: release-label
-      if: ${{ github.event.pull_request.merged == true }}
-    - uses: actions-ecosystem/action-get-latest-tag@v1
-      id: get-latest-tag
-      if: ${{ steps.release-label.outputs.level != null }}
-      with:
-        semver_only: true
     - name: Make -> clean release
       run: make clean release
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: msxbas2rom_win64_${{ steps.get-latest-tag.outputs.tag }}
+        name: msxbas2rom_win64_${{ github.event.inputs.release }}
         path: bin/Release/msxbas2rom*.*
 
