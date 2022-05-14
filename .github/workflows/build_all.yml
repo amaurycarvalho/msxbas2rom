@@ -8,6 +8,10 @@ on:
         description: 'Release number'     
         required: true
         default: 'v0.0.0.0'
+      publish_artifacts:
+        description: 'Upload artifacts'
+        required: true
+        default: 'true'
 jobs:
   build-linux:
     runs-on: ubuntu-latest
@@ -16,7 +20,8 @@ jobs:
       uses: actions/checkout@v2.0.0
     - name: Make (clean, release)
       run: make clean release
-    - name: Upload artifact
+    - if: github.event.inputs.publish_artifacts == 'true'
+      name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: msxbas2rom_linux64_${{ github.event.inputs.release }}
@@ -33,7 +38,8 @@ jobs:
       run: find / -name *argp*
     - name: Make -> clean release
       run: make clean release
-    - name: Upload artifact
+    - if: github.event.inputs.publish_artifacts == 'true'
+      name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: msxbas2rom_macos_${{ github.event.inputs.release }}
@@ -58,7 +64,8 @@ jobs:
       uses: actions/checkout@v2
     - name: Make -> clean release
       run: make clean release
-    - name: Upload artifact
+    - if: github.event.inputs.publish_artifacts == 'true'
+      name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: msxbas2rom_win64_${{ github.event.inputs.release }}
