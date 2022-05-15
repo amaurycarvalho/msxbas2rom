@@ -5,7 +5,7 @@
 WORKDIR = `pwd`
 
 ifeq ($(OS),Windows_NT)
- OSFLAG += -D Win
+ OSFLAG += -D Win -m64 -DWINVER=0x0400 -D__WIN95__ -D__GNUWIN32__ -DSTRICT -DHAVE_W32API_H -D__WXMSW__ -D__WINDOWS__
 else
  UNAME_S := $(shell uname -s)
  ifeq ($(UNAME_S),Linux)

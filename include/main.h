@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.2.9.4"
+#define app_version "0.2.9.4b"
 
 char inputFilename[255]="",
      outputFilename[255]="",

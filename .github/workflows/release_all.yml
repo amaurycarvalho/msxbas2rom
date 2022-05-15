@@ -2,9 +2,8 @@ name: Build a new release
 
 on:
   push:
-    branches: [ master ]
     tags:
-    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+    - 'v*.*.*.*' # v0.0.0.0
 
 jobs:
   build-linux:
@@ -17,7 +16,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: msxbas2rom_linux64_${{ github.ref }}   # tag name
+        name: msxbas2rom_linux64 
         path: bin/Release/msxbas2rom
 
   build-macos:
@@ -32,7 +31,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: msxbas2rom_macos_${{ github.ref }}   # tag name
+        name: msxbas2rom_macos
         path: bin/Release/msxbas2rom*
 
   build-windows64:
@@ -57,7 +56,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: msxbas2rom_win64_${{ github.ref }}   # tag name
+        name: msxbas2rom_win64
         path: bin/Release/msxbas2rom.exe
 
   release:
@@ -81,7 +80,7 @@ jobs:
       uses: actions/download-artifact@v3
     - name: Packing linux artifact
       run: |
-          zip --junk-paths msxbas2rom_linux64_${{ github.ref }} msxbas2rom_linux64_${{ github.ref }}/*
+          zip --junk-paths msxbas2rom_linux64_${{ github.ref }} msxbas2rom_linux64/*
     - name: Upload linux artifact
       uses: actions/upload-release-asset@v1
       env:
@@ -93,7 +92,7 @@ jobs:
         asset_content_type: application/gzip
     - name: Packing macos artifact
       run: |
-          zip --junk-paths msxbas2rom_macos_${{ github.ref }} msxbas2rom_macos_${{ github.ref }}/*
+          zip --junk-paths msxbas2rom_macos_${{ github.ref }} msxbas2rom_macos/*
     - name: Upload macos artifact
       uses: actions/upload-release-asset@v1
       env:
@@ -105,7 +104,7 @@ jobs:
         asset_content_type: application/gzip
     - name: Packing windows64 artifact
       run: |
-          zip --junk-paths msxbas2rom_win64_${{ github.ref }} msxbas2rom_win64_${{ github.ref }}/*
+          zip --junk-paths msxbas2rom_win64_${{ github.ref }} msxbas2rom_win64/*
     - name: Upload linux artifact
       uses: actions/upload-release-asset@v1
       env:

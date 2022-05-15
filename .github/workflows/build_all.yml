@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: [ master ]
   workflow_dispatch:
+    branches: [ master ]
 jobs:
   build-linux:
     runs-on: ubuntu-latest
@@ -32,7 +33,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: msxbas2rom_macos_${{ github.event.inputs.release }}
+        name: msxbas2rom_macos
         path: bin/Release/msxbas2rom*
 
   build-windows64:
@@ -57,7 +58,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: msxbas2rom_win64_${{ github.event.inputs.release }}
+        name: msxbas2rom_win64
         path: bin/Release/msxbas2rom.exe
 
 
