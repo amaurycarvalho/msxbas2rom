@@ -20,16 +20,16 @@ jobs:
       uses: actions/download-artifact@v3
     - name: Packing linux artifact (x64)
       run: |
-          tar cvzf  msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz ./msxbas2rom/msxbas2rom-linux-x64-bin/*
+          tar cvzf  msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz msxbas2rom-linux-x64-bin/*
     - name: Packing macos artifact (x86_64)
       run: |
-          zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin ./msxbas2rom/msxbas2rom-mac-x86_64-bin/*
+          zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin msxbas2rom-mac-x86_64-bin/*
     - name: Packing windows artifact (x32)
       run: |
-          zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x32-bin ./msxbas2rom/msxbas2rom-windows-x32-bin/*
+          zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x32-bin msxbas2rom-windows-x32-bin/*
     - name: Packing windows artifact (x64)
       run: |
-          zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x64-bin ./msxbas2rom/msxbas2rom-windows-x64-bin/*
+          zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x64-bin msxbas2rom-windows-x64-bin/*
     - name: Create release
       uses: actions/create-release@v1
       id: create_release
