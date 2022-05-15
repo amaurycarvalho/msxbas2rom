@@ -24,14 +24,8 @@ jobs:
           tar cvzf  msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz msxbas2rom-linux-x64-bin/*
     - name: Packing macos artifact (x86_64)
       run: |
-          sudo apt-get install hfsprogs hfsplus
-          sudo modprobe hfsplus
-          dd if=/dev/zero of=msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg bs=1M count=3 status=progress
-          mkfs.hfsplus -v msxbas2rom msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg
-          mkdir -pv mount
-          sudo mount -t hfsplus -o force,rw,loop msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg mount
-          sudo cp -av msxbas2rom-mac-x86_64-bin/* mount
-          sudo umount mount
+          sudo apt-get install genisoimage
+          genisoimage -V msxbas2rom -D -R -apple -no-pad -o msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg msxbas2rom-mac-x86_64-bin
           gzip -k msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg
           zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.zip msxbas2rom-mac-x86_64-bin/*
     - name: Packing windows artifact (x32)
