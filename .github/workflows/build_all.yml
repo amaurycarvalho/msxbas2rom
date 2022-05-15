@@ -47,13 +47,13 @@ jobs:
     - name: Setup
       uses: msys2/setup-msys2@v2
       with:
+        msystem: MINGW32
         update: true
         install: >-
           base-devel
           gcc
           git
           libargp-devel
-          mingw-w64-i686-toolchain
     - name: Checkout
       uses: actions/checkout@v2
     - name: Make -> clean release (32bits)
