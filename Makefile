@@ -4,11 +4,11 @@
 
 WORKDIR = `pwd`
 
-LDFLAGS_PLUS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc -lodbc32 -lwsock32 -lwinspool -lwinmm -lshell32 -lcomctl32 -ladvapi32 -lglu32 -lole32 -loleaut32 -luuid 
+LDFLAGS_PLUS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc 
 
 ifeq ($(OS),Windows_NT)
  OSFLAG += -D Win $(PARMS)
- LDFLAGS_PLUS += $(PARMS)
+ LDFLAGS_PLUS += $(PARMS) #-lodbc32 -lwsock32 -lwinspool -lwinmm -lshell32 -lcomctl32 -ladvapi32 -lglu32 -lole32 -loleaut32 -luuid 
 else
  UNAME_S := $(shell uname -s)
  ifeq ($(UNAME_S),Linux)
