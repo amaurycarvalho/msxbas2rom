@@ -6,7 +6,7 @@ WORKDIR = `pwd`
 
 ifeq ($(OS),Windows_NT)
  OSFLAG += -D Win $(PARMS)
- LDFLAGS_WIN = $(PARMS) -static-libstdc++ -static-libgcc -static
+ LDFLAGS_WIN = $(PARMS) -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc -lodbc32 -lwsock32 -lwinspool -lwinmm -lshell32 -lcomctl32 -ladvapi32 -lglu32 -lole32 -loleaut32 -luuid 
 else
  UNAME_S := $(shell uname -s)
  LDFLAGS_WIN = 
