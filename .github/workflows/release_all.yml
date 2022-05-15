@@ -9,6 +9,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
     - name: Build all
       uses: ./.github/workflows/build_all.yml
     - name: Download all artifacts
