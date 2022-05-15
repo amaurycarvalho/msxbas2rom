@@ -51,16 +51,16 @@ jobs:
           libargp-devel
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Make -> clean release (32bits)
-      run: make PARMS=-m32 clean release
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: msxbas2rom_win32
-        path: bin/Release/msxbas2rom.exe
+#    - name: Make -> clean release (32bits)
+#      run: make PARMS=-m32 clean release
+#    - name: Upload artifact (32bits)
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: msxbas2rom_win32
+#        path: bin/Release/msxbas2rom.exe
     - name: Make -> clean release (64bits)
       run: make PARMS=-m64 clean release
-    - name: Upload artifact
+    - name: Upload artifact (64bits)
       uses: actions/upload-artifact@v3
       with:
         name: msxbas2rom_win64
@@ -109,18 +109,18 @@ jobs:
         asset_path: msxbas2rom_macos_${{ github.ref }}.zip
         asset_name: msxbas2rom_macos_${{ github.ref }}.zip
         asset_content_type: application/gzip
-    - name: Packing windows 32bits artifact
-      run: |
-          zip --junk-paths msxbas2rom_win32_${{ github.ref }} msxbas2rom_win32/*
-    - name: Upload windows 32bits artifact
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom_win32_${{ github.ref }}.zip
-        asset_name: msxbas2rom_win32_${{ github.ref }}.zip
-        asset_content_type: application/gzip
+#    - name: Packing windows 32bits artifact
+#      run: |
+#          zip --junk-paths msxbas2rom_win32_${{ github.ref }} msxbas2rom_win32/*
+#    - name: Upload windows 32bits artifact
+#      uses: actions/upload-release-asset@v1
+#      env:
+#        GITHUB_TOKEN: ${{ github.token }}
+#      with:
+#        upload_url: ${{ steps.create_release.outputs.upload_url }}
+#        asset_path: msxbas2rom_win32_${{ github.ref }}.zip
+#        asset_name: msxbas2rom_win32_${{ github.ref }}.zip
+#        asset_content_type: application/gzip
     - name: Packing windows 64bits artifact
       run: |
           zip --junk-paths msxbas2rom_win64_${{ github.ref }} msxbas2rom_win64/*

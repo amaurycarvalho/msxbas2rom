@@ -53,13 +53,13 @@ jobs:
           libargp-devel
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Make -> clean release (32bits)
-      run: make PARMS=-m32 clean release
-    - name: Upload artifact (32bits)
-      uses: actions/upload-artifact@v3
-      with:
-        name: msxbas2rom_win32
-        path: bin/Release/msxbas2rom.exe
+#    - name: Make -> clean release (32bits)
+#      run: make PARMS=-m32 clean release
+#    - name: Upload artifact (32bits)
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: msxbas2rom_win32
+#        path: bin/Release/msxbas2rom.exe
     - name: Make -> clean release (64bits)
       run: make PARMS=-m64 clean release
     - name: Upload artifact (64bits)
