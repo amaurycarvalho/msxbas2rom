@@ -44,17 +44,12 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-    - name: Setup
+    - name: Setup 32 bits compiler
       uses: msys2/setup-msys2@v2
       with:
         msystem: MINGW32
         update: true
         install: >-
-          base-devel
-          gcc
-          git
-          libargp-devel
-          mingw-w64-x86_64-toolchain
           mingw-w64-i686-toolchain
     - name: Checkout
       uses: actions/checkout@v2
@@ -65,8 +60,13 @@ jobs:
       with:
         name: msxbas2rom-windows-x32-bin
         path: bin/Release/msxbas2rom.exe
-    - name: Setup 64 bit commpiler
-      run: set MSYSTEM=MINGW64
+    - name: Setup 64 bits compiler
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        install: >-
+          mingw-w64-x86_64-toolchain
     - name: Make -> clean release (64bits)
       run: make PARMS=-m64 clean release
     - name: Upload artifact (64bits)
