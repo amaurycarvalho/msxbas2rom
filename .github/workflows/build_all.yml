@@ -53,6 +53,7 @@ jobs:
           gcc
           git
           libargp-devel
+          mingw-w64-i686-toolchain
     - name: Checkout
       uses: actions/checkout@v2
     - name: Make -> clean release (32bits)
