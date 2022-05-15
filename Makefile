@@ -1,5 +1,6 @@
 #------------------------------------------------------------------------------#
 # MSXBAS2ROM makefile                                                          #
+# by Amaury Carvalho (2022)                                                    #
 #------------------------------------------------------------------------------#
 
 WORKDIR = `pwd`
@@ -9,6 +10,14 @@ CXX = g++
 AR = ar
 LD = g++
 WINDRES = windres
+
+INC = -I include
+CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG)
+RESINC = 
+LIBDIR = 
+LIB = 
+LDFLAGS = 
+SRC = src
 
 LDFLAGS_PLUS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc 
 
@@ -25,14 +34,6 @@ else
    LDFLAGS_PLUS = 
  endif
 endif
-
-INC = -I include
-CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG)
-RESINC = 
-LIBDIR = 
-LIB = 
-LDFLAGS = 
-SRC = src
 
 INC_DEBUG = $(INC)
 CFLAGS_DEBUG = $(CFLAGS) -g

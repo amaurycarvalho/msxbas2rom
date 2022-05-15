@@ -10,7 +10,7 @@ on:
 #  workflow_call:
 #    branches: [ master ]
 jobs:
-  build-linux:
+  build-linux-x64:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -23,7 +23,7 @@ jobs:
         name: msxbas2rom-linux-x64-bin
         path: bin/Release/msxbas2rom
 
-  build-macos:
+  build-mac-x86_64:
     runs-on: macos-latest
     steps:
     - name: Setup
@@ -38,7 +38,7 @@ jobs:
         name: msxbas2rom-mac-x86_64-bin
         path: bin/Release/msxbas2rom*
 
-  build-windows:
+  build-windows-x32:
     runs-on: windows-latest
     defaults:
       run:
@@ -64,13 +64,22 @@ jobs:
       with:
         name: msxbas2rom-windows-x32-bin
         path: bin/Release/msxbas2rom.exe
+
+  build-windows-x64:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
     - name: Setup 64 bits compiler
       uses: msys2/setup-msys2@v2
       with:
-        msystem: MINGW64
         update: true
         install: >-
-          mingw-w64-x86_64-toolchain
+          base-devel
+          gcc
+          git
+          libargp-devel
     - name: Make -> clean release (64bits)
       run: make PARMS=-m64 clean release
     - name: Upload artifact (64bits)
