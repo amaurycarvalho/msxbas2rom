@@ -6,70 +6,26 @@ on:
     - 'v*.*.*.*' # v0.0.0.0
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2.0.0
-    - name: Make (clean, release)
-      run: make clean release
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: msxbas2rom_linux64 
-        path: bin/Release/msxbas2rom
-
-  build-macos:
-    runs-on: macos-latest
-    steps:
-    - name: Setup
-      run: brew install argp-standalone
-    - name: Checkout
-      uses: actions/checkout@v2.0.0
-    - name: Make -> clean release
-      run: make clean release
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: msxbas2rom_macos
-        path: bin/Release/msxbas2rom*
-
-  build-windows:
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
-    steps:
-    - name: Setup
-      uses: msys2/setup-msys2@v2
-      with:
-        update: true
-        install: >-
-          base-devel
-          gcc
-          git
-          libargp-devel
-    - name: Checkout
-      uses: actions/checkout@v2
-#    - name: Make -> clean release (32bits)
-#      run: make PARMS=-m32 clean release
-#    - name: Upload artifact (32bits)
-#      uses: actions/upload-artifact@v3
-#      with:
-#        name: msxbas2rom_win32
-#        path: bin/Release/msxbas2rom.exe
-    - name: Make -> clean release (64bits)
-      run: make PARMS=-m64 clean release
-    - name: Upload artifact (64bits)
-      uses: actions/upload-artifact@v3
-      with:
-        name: msxbas2rom_win64
-        path: bin/Release/msxbas2rom.exe
-
   release:
-    needs: [build-linux, build-macos, build-windows]
     runs-on: ubuntu-latest
     steps:
+    - name: Build all
+      uses: ./.github/workflows/build_all.yml
+      secrets: inherit
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+    - name: Packing linux artifact (x64)
+      run: |
+          tar cvzf  msxbas2rom-${{ github.ref }}-linux-x64-bin.tar.gz msxbas2rom-linux-x64-bin/*
+    - name: Packing macos artifact (x86_64)
+      run: |
+          zip --junk-paths msxbas2rom-${{ github.ref }}-mac-x86_64-bin msxbas2rom-mac-x86_64-bin/*
+    - name: Packing windows artifact (x32)
+      run: |
+          zip --junk-paths msxbas2rom-${{ github.ref }}-windows-x32-bin msxbas2rom-windows-x32-bin/*
+    - name: Packing windows artifact (x64)
+      run: |
+          zip --junk-paths msxbas2rom-${{ github.ref }}-windows-x64-bin msxbas2rom-windows-x64-bin/*
     - name: Create release
       uses: actions/create-release@v1
       id: create_release
@@ -79,58 +35,44 @@ jobs:
         release_name: Release ${{ github.ref }}
         tag_name: ${{ github.ref }}
         body: |
-            Changes in this release:
-            - See project backlog.
+            Changes in this release, run:
+            msxbas2rom --ver
       env:
-        GITHUB_TOKEN: ${{ github.token }}
-    - name: Download all artifacts
-      uses: actions/download-artifact@v3
-    - name: Packing linux artifact
-      run: |
-          zip --junk-paths msxbas2rom_linux64_${{ github.ref }} msxbas2rom_linux64/*
-    - name: Upload linux artifact
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload linux artifact (x64)
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom_linux64_${{ github.ref }}.zip
-        asset_name: msxbas2rom_linux64_${{ github.ref }}.zip
+        asset_path: msxbas2rom-${{ github.ref }}-linux-x64-bin.tar.gz
+        asset_name: msxbas2rom-${{ github.ref }}-linux-x64-bin.tar.gz
         asset_content_type: application/gzip
-    - name: Packing macos artifact
-      run: |
-          zip --junk-paths msxbas2rom_macos_${{ github.ref }} msxbas2rom_macos/*
-    - name: Upload macos artifact
+    - name: Upload macos artifact (x86_64)
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom_macos_${{ github.ref }}.zip
-        asset_name: msxbas2rom_macos_${{ github.ref }}.zip
+        asset_path: msxbas2rom-${{ github.ref }}-mac-x86_64-bin.zip
+        asset_name: msxbas2rom-${{ github.ref }}-mac-x86_64-bin.zip
         asset_content_type: application/gzip
-#    - name: Packing windows 32bits artifact
-#      run: |
-#          zip --junk-paths msxbas2rom_win32_${{ github.ref }} msxbas2rom_win32/*
-#    - name: Upload windows 32bits artifact
-#      uses: actions/upload-release-asset@v1
-#      env:
-#        GITHUB_TOKEN: ${{ github.token }}
-#      with:
-#        upload_url: ${{ steps.create_release.outputs.upload_url }}
-#        asset_path: msxbas2rom_win32_${{ github.ref }}.zip
-#        asset_name: msxbas2rom_win32_${{ github.ref }}.zip
-#        asset_content_type: application/gzip
-    - name: Packing windows 64bits artifact
-      run: |
-          zip --junk-paths msxbas2rom_win64_${{ github.ref }} msxbas2rom_win64/*
-    - name: Upload windows 64bits artifact
+    - name: Upload windows artifact (x32)
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom_win64_${{ github.ref }}.zip
-        asset_name: msxbas2rom_win64_${{ github.ref }}.zip
+        asset_path: msxbas2rom-${{ github.ref }}-windows-x32-bin.zip
+        asset_name: msxbas2rom-${{ github.ref }}-windows-x32-bin.zip
+        asset_content_type: application/gzip
+    - name: Upload windows artifact (x64)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: msxbas2rom-${{ github.ref }}-windows-x64-bin.zip
+        asset_name: msxbas2rom-${{ github.ref }}-windows-x64-bin.zip
         asset_content_type: application/gzip
 

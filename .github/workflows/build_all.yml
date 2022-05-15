@@ -7,6 +7,8 @@ on:
     branches: [ master ]
   workflow_dispatch:
     branches: [ master ]
+  workflow_call:
+    branches: [ master ]
 jobs:
   build-linux:
     runs-on: ubuntu-latest
@@ -18,7 +20,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: msxbas2rom_linux64
+        name: msxbas2rom-linux-x64-bin
         path: bin/Release/msxbas2rom
 
   build-macos:
@@ -33,7 +35,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: msxbas2rom_macos
+        name: msxbas2rom-mac-x86_64-bin
         path: bin/Release/msxbas2rom*
 
   build-windows:
@@ -51,21 +53,22 @@ jobs:
           gcc
           git
           libargp-devel
+          g++-multilib
     - name: Checkout
       uses: actions/checkout@v2
-#    - name: Make -> clean release (32bits)
-#      run: make PARMS=-m32 clean release
-#    - name: Upload artifact (32bits)
-#      uses: actions/upload-artifact@v3
-#      with:
-#        name: msxbas2rom_win32
-#        path: bin/Release/msxbas2rom.exe
+    - name: Make -> clean release (32bits)
+      run: make PARMS=-m32 clean release
+    - name: Upload artifact (32bits)
+      uses: actions/upload-artifact@v3
+      with:
+        name: msxbas2rom-windows-x32-bin
+        path: bin/Release/msxbas2rom.exe
     - name: Make -> clean release (64bits)
       run: make PARMS=-m64 clean release
     - name: Upload artifact (64bits)
       uses: actions/upload-artifact@v3
       with:
-        name: msxbas2rom_win64
+        name: msxbas2rom-windows-x64-bin
         path: bin/Release/msxbas2rom.exe
 
 

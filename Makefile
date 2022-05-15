@@ -4,17 +4,19 @@
 
 WORKDIR = `pwd`
 
+LDFLAGS_PLUS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc -lodbc32 -lwsock32 -lwinspool -lwinmm -lshell32 -lcomctl32 -ladvapi32 -lglu32 -lole32 -loleaut32 -luuid 
+
 ifeq ($(OS),Windows_NT)
  OSFLAG += -D Win $(PARMS)
- LDFLAGS_WIN = $(PARMS) -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc -lodbc32 -lwsock32 -lwinspool -lwinmm -lshell32 -lcomctl32 -ladvapi32 -lglu32 -lole32 -loleaut32 -luuid 
+ LDFLAGS_PLUS += $(PARMS)
 else
  UNAME_S := $(shell uname -s)
- LDFLAGS_WIN = 
  ifeq ($(UNAME_S),Linux)
- OSFLAG += -D LINUX
+   OSFLAG += -D LINUX
  endif
  ifeq ($(UNAME_S),Darwin)
- OSFLAG += -D MacOS
+   OSFLAG += -D MacOS
+   LDFLAGS_PLUS = 
  endif
 endif
 
@@ -49,7 +51,7 @@ RESINC_RELEASE = $(RESINC)
 RCFLAGS_RELEASE = $(RCFLAGS)
 LIBDIR_RELEASE = $(LIBDIR)
 LIB_RELEASE = $(LIB)
-LDFLAGS_RELEASE = $(LDFLAGS) -s $(LDFLAGS_WIN)
+LDFLAGS_RELEASE = $(LDFLAGS) -s $(LDFLAGS_PLUS)
 OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = bin/Release/msxbas2rom
