@@ -6,8 +6,10 @@ WORKDIR = `pwd`
 
 ifeq ($(OS),Windows_NT)
  OSFLAG += -D Win $(PARMS)
+ LDFLAGS_WIN = $(PARMS) -static-libstdc++ -static-libgcc -static
 else
  UNAME_S := $(shell uname -s)
+ LDFLAGS_WIN = 
  ifeq ($(UNAME_S),Linux)
  OSFLAG += -D LINUX
  endif
@@ -47,7 +49,7 @@ RESINC_RELEASE = $(RESINC)
 RCFLAGS_RELEASE = $(RCFLAGS)
 LIBDIR_RELEASE = $(LIBDIR)
 LIB_RELEASE = $(LIB)
-LDFLAGS_RELEASE = $(LDFLAGS) -s -static-libstdc++ -static-libgcc -static
+LDFLAGS_RELEASE = $(LDFLAGS) -s $(LDFLAGS_WIN)
 OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = bin/Release/msxbas2rom
