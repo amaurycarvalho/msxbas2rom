@@ -25,6 +25,7 @@ jobs:
     - name: Packing macos artifact (x86_64)
       run: |
           sudo apt-get install hfsprogs hfsplus
+          sudo modprobe hfsplus
           dd if=/dev/zero of=msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg bs=1M count=3 status=progress
           mkfs.hfsplus -v msxbas2rom msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg
           mkdir -pv mount
