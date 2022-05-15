@@ -53,7 +53,7 @@ jobs:
           gcc
           git
           libargp-devel
-          gcc-multilib
+          multilib
     - name: Checkout
       uses: actions/checkout@v2
     - name: Make -> clean release (32bits)
