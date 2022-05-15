@@ -80,6 +80,8 @@ jobs:
           gcc
           git
           libargp-devel
+    - name: Checkout
+      uses: actions/checkout@v2
     - name: Make -> clean release (64bits)
       run: make PARMS=-m64 clean release
     - name: Upload artifact (64bits)
