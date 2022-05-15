@@ -24,13 +24,21 @@ jobs:
           tar cvzf  msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz msxbas2rom-linux-x64-bin/*
     - name: Packing macos artifact (x86_64)
       run: |
-          zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin msxbas2rom-mac-x86_64-bin/*
+          sudo apt-get install hfsprogs
+          dd if=/dev/zero of=msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg bs=1M count=3 status=progress
+          mkfs.hfsplus -v msxbas2rom msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg
+          mkdir -pv /mnt/tmp
+          sudo mount -o loop msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg /mnt/tmp
+          sudo cp -av msxbas2rom-mac-x86_64-bin/* /mnt/tmp
+          sudo umount /mnt/tmp
+          gzip -k msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg
+          zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.zip msxbas2rom-mac-x86_64-bin/*
     - name: Packing windows artifact (x32)
       run: |
-          zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x32-bin msxbas2rom-windows-x32-bin/*
+          zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x32-bin.zip msxbas2rom-windows-x32-bin/*
     - name: Packing windows artifact (x64)
       run: |
-          zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x64-bin msxbas2rom-windows-x64-bin/*
+          zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x64-bin.zip msxbas2rom-windows-x64-bin/*
     - name: Create release
       uses: actions/create-release@v1
       id: create_release
@@ -53,7 +61,7 @@ jobs:
         asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz
         asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz
         asset_content_type: application/gzip
-    - name: Upload macos artifact (x86_64)
+    - name: Upload macos artifact (x86_64) - zip
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -61,6 +69,24 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.zip
         asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.zip
+        asset_content_type: application/gzip
+    - name: Upload macos artifact (x86_64) - dmz
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmz
+        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmz
+        asset_content_type: application/gzip
+    - name: Upload macos artifact (x86_64) - dmz.gz
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmz.gz
+        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmz.gz
         asset_content_type: application/gzip
     - name: Upload windows artifact (x32)
       uses: actions/upload-release-asset@v1
