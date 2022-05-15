@@ -8,7 +8,7 @@
 #include "pletter.h"
 
 #ifdef Win
-  #define strcasecmp stricmp
+  #define strcasecmp _strcmpi
 #endif
 
 #define COMPILE_CODE_SIZE (20*0xFFFF)
