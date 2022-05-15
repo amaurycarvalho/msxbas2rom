@@ -7,8 +7,7 @@ on:
     branches: [ master ]
   workflow_dispatch:
     branches: [ master ]
-#  workflow_call:
-#    branches: [ master ]
+  workflow_call:
 jobs:
   build-linux-x64:
     runs-on: ubuntu-latest
