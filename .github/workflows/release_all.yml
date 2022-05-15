@@ -13,27 +13,30 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
+    - name: Get tag version
+      id: get_tag
+      run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
     - name: Download all artifacts
       uses: actions/download-artifact@v3
     - name: Packing linux artifact (x64)
       run: |
-          tar cvzf  msxbas2rom-${{ github.ref }}-linux-x64-bin.tar.gz msxbas2rom-linux-x64-bin/*
+          tar cvzf  msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz ./msxbas2rom/msxbas2rom-linux-x64-bin/*
     - name: Packing macos artifact (x86_64)
       run: |
-          zip --junk-paths msxbas2rom-${{ github.ref }}-mac-x86_64-bin msxbas2rom-mac-x86_64-bin/*
+          zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin ./msxbas2rom/msxbas2rom-mac-x86_64-bin/*
     - name: Packing windows artifact (x32)
       run: |
-          zip --junk-paths msxbas2rom-${{ github.ref }}-windows-x32-bin msxbas2rom-windows-x32-bin/*
+          zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x32-bin ./msxbas2rom/msxbas2rom-windows-x32-bin/*
     - name: Packing windows artifact (x64)
       run: |
-          zip --junk-paths msxbas2rom-${{ github.ref }}-windows-x64-bin msxbas2rom-windows-x64-bin/*
+          zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x64-bin ./msxbas2rom/msxbas2rom-windows-x64-bin/*
     - name: Create release
       uses: actions/create-release@v1
       id: create_release
       with:
         draft: false
         prerelease: false
-        release_name: Release ${{ github.ref }}
+        release_name: Release ${{ steps.get_tag.outputs.VERSION }}
         tag_name: ${{ github.ref }}
         body: |
             Changes in this release, run:
@@ -46,8 +49,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom-${{ github.ref }}-linux-x64-bin.tar.gz
-        asset_name: msxbas2rom-${{ github.ref }}-linux-x64-bin.tar.gz
+        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz
+        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz
         asset_content_type: application/gzip
     - name: Upload macos artifact (x86_64)
       uses: actions/upload-release-asset@v1
@@ -55,8 +58,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom-${{ github.ref }}-mac-x86_64-bin.zip
-        asset_name: msxbas2rom-${{ github.ref }}-mac-x86_64-bin.zip
+        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.zip
+        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.zip
         asset_content_type: application/gzip
     - name: Upload windows artifact (x32)
       uses: actions/upload-release-asset@v1
@@ -64,8 +67,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom-${{ github.ref }}-windows-x32-bin.zip
-        asset_name: msxbas2rom-${{ github.ref }}-windows-x32-bin.zip
+        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x32-bin.zip
+        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x32-bin.zip
         asset_content_type: application/gzip
     - name: Upload windows artifact (x64)
       uses: actions/upload-release-asset@v1
@@ -73,7 +76,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom-${{ github.ref }}-windows-x64-bin.zip
-        asset_name: msxbas2rom-${{ github.ref }}-windows-x64-bin.zip
+        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x64-bin.zip
+        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x64-bin.zip
         asset_content_type: application/gzip
 
