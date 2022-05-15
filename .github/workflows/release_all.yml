@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Build all
-      uses: build_all.yml
+      uses: build_all.yml@master
     - name: Download all artifacts
       uses: actions/download-artifact@v3
     - name: Packing linux artifact (x64)
