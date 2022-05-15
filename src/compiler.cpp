@@ -12837,7 +12837,7 @@ int FileNode::ParseTinySpriteFile(char *filename, unsigned char *data, int maxle
 
 }
 
-//#ifdef Win
+#ifdef Win
 int _strcasecmp(const char * str1, const char * str2) {
     int d = 0;
     while(1) {
@@ -12849,4 +12849,4 @@ int _strcasecmp(const char * str1, const char * str2) {
     }
     return d;
 }
-//#endif
+#endif
