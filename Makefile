@@ -8,9 +8,10 @@ LDFLAGS_PLUS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc
 
 ifeq ($(OS),Windows_NT)
  OSFLAG += -D Win $(PARMS)
- LDFLAGS_PLUS += $(PARMS) #-lodbc32 -lwsock32 -lwinspool -lwinmm -lshell32 -lcomctl32 -ladvapi32 -lglu32 -lole32 -loleaut32 -luuid 
+ LDFLAGS_PLUS += $(PARMS) -lodbc32 -lwsock32 -lwinspool -lwinmm -lshell32 -lcomctl32 -ladvapi32 -lglu32 -lole32 -loleaut32 -luuid 
  ifeq ($(PARMS), -m32)
-   LDFLAGS_PLUS += -L /usr/lib/gcc/i686-pc-msys/11.3.0/
+   OSFLAG += -I /usr/i686-w64-mingw32/include
+   LDFLAGS_PLUS += -L /usr/i686-w64-mingw32/lib
  endif
 else
  UNAME_S := $(shell uname -s)
