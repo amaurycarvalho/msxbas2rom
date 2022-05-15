@@ -7,6 +7,10 @@
 #include "parse.h"
 #include "pletter.h"
 
+#ifdef Win
+  #define strcasecmp _stricmp
+#endif
+
 #define COMPILE_CODE_SIZE (20*0xFFFF)
 #define COMPILE_RAM_SIZE (0xFFFF)
 

@@ -1,17 +1,11 @@
-name: Build all releases
+name: Build all artifacts
 
 on:
-  workflow_dispatch:
+  push:
     branches: [ master ]
-    inputs:
-      release:
-        description: 'Release number'     
-        required: true
-        default: 'v0.0.0.0'
-      publish_artifacts:
-        description: 'Upload artifacts'
-        required: true
-        default: 'true'
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
@@ -20,11 +14,10 @@ jobs:
       uses: actions/checkout@v2.0.0
     - name: Make (clean, release)
       run: make clean release
-    - if: github.event.inputs.publish_artifacts == 'true'
-      name: Upload artifact
+    - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: msxbas2rom_linux64_${{ github.event.inputs.release }}
+        name: msxbas2rom_linux64
         path: bin/Release/msxbas2rom
 
   build-macos:
@@ -36,8 +29,7 @@ jobs:
       uses: actions/checkout@v2.0.0
     - name: Make -> clean release
       run: make clean release
-    - if: github.event.inputs.publish_artifacts == 'true'
-      name: Upload artifact
+    - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: msxbas2rom_macos_${{ github.event.inputs.release }}
@@ -62,10 +54,10 @@ jobs:
       uses: actions/checkout@v2
     - name: Make -> clean release
       run: make clean release
-    - if: github.event.inputs.publish_artifacts == 'true'
-      name: Upload artifact
+    - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: msxbas2rom_win64_${{ github.event.inputs.release }}
         path: bin/Release/msxbas2rom.exe
+
 
