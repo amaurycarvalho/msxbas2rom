@@ -65,23 +65,23 @@ jobs:
         asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.zip
         asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.zip
         asset_content_type: application/gzip
-    - name: Upload macos artifact (x86_64) - dmz
+    - name: Upload macos artifact (x86_64) - dmg
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmz
-        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmz
+        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg
+        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg
         asset_content_type: application/gzip
-    - name: Upload macos artifact (x86_64) - dmz.gz
+    - name: Upload macos artifact (x86_64) - dmg.gz
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmz.gz
-        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmz.gz
+        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg.gz
+        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg.gz
         asset_content_type: application/gzip
     - name: Upload windows artifact (x32)
       uses: actions/upload-release-asset@v1
