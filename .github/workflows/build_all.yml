@@ -50,6 +50,10 @@ jobs:
         msystem: MINGW32
         update: true
         install: >-
+          base-devel
+          gcc
+          git
+          libargp-devel
           mingw-w64-i686-toolchain
     - name: Checkout
       uses: actions/checkout@v2
