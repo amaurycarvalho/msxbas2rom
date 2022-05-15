@@ -9,6 +9,9 @@ LDFLAGS_PLUS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc
 ifeq ($(OS),Windows_NT)
  OSFLAG += -D Win $(PARMS)
  LDFLAGS_PLUS += $(PARMS) #-lodbc32 -lwsock32 -lwinspool -lwinmm -lshell32 -lcomctl32 -ladvapi32 -lglu32 -lole32 -loleaut32 -luuid 
+ if eq($(PARMS), -m32)
+   LDFLAGS_PLUS += -L /usr/lib32
+ endif
 else
  UNAME_S := $(shell uname -s)
  ifeq ($(UNAME_S),Linux)
