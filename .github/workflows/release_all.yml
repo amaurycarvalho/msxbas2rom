@@ -27,10 +27,10 @@ jobs:
           sudo apt-get install hfsprogs
           dd if=/dev/zero of=msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg bs=1M count=3 status=progress
           mkfs.hfsplus -v msxbas2rom msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg
-          mkdir -pv /mnt/tmp
-          sudo mount -o loop msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg /mnt/tmp
-          sudo cp -av msxbas2rom-mac-x86_64-bin/* /mnt/tmp
-          sudo umount /mnt/tmp
+          mkdir -pv mount
+          sudo mount -o loop msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg mount
+          sudo cp -av msxbas2rom-mac-x86_64-bin/* mount
+          sudo umount mount
           gzip -k msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg
           zip --junk-paths msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.zip msxbas2rom-mac-x86_64-bin/*
     - name: Packing windows artifact (x32)
