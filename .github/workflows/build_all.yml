@@ -64,6 +64,8 @@ jobs:
       with:
         name: msxbas2rom-windows-x32-bin
         path: bin/Release/msxbas2rom.exe
+    - run: |
+      set MSYSTEM=MINGW64
     - name: Make -> clean release (64bits)
       run: make PARMS=-m64 clean release
     - name: Upload artifact (64bits)

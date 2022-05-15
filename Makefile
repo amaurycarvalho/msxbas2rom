@@ -4,6 +4,12 @@
 
 WORKDIR = `pwd`
 
+CC = gcc
+CXX = g++
+AR = ar
+LD = g++
+WINDRES = windres
+
 LDFLAGS_PLUS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc 
 
 ifeq ($(OS),Windows_NT)
@@ -19,12 +25,6 @@ else
    LDFLAGS_PLUS = 
  endif
 endif
-
-CC = gcc
-CXX = g++
-AR = ar
-LD = g++
-WINDRES = windres
 
 INC = -I include
 CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG)
