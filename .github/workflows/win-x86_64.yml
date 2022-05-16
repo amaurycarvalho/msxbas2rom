@@ -21,11 +21,10 @@ jobs:
     - name: Do test
       run: |
         cd test/check/simple
-        myarray=${{ fromJson(steps.finding-files.outputs.FILELIST) }}
+        myarray=${{steps.finding-files.outputs.FILELIST}}
         echo ${myarray[0]}
         for i in ${myarray[@]}; do
-          file_name=${myarray[$i]}
-          echo ${file_name}
-          ./msxbas2rom -c ${file_name}
+          echo ${i}
+          ./msxbas2rom -c ${i}
         done           
 
