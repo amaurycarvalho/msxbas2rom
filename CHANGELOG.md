@@ -1,4 +1,4 @@
-#Version history
+# Version history
 
 - 0.2.9.4 – (2022/04/25) Several bug fixes: try..catch exceptions,              tokenized source code input detection, DATA/RESTORE misbehaviour;
 - 0.2.9.3 – (2022/04/05) IRESTORE new command (for IREAD binary files), RESOURCESIZE function;
