@@ -82,9 +82,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Upload artifacts
-        uses: alexellis/upload-assets
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          asset_paths: '["msxbas2rom*.deb", "msxbas2rom?[0-9]*.rpm", "msxbas2rom*-linux-*.tar.gz", "msxbas2rom*-mac-*.*", "msxbas2rom*-windows-*.zip"]'
+      uses: alexellis/upload-assets
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        asset_paths: '["msxbas2rom*.deb", "msxbas2rom?[0-9]*.rpm", "msxbas2rom*-linux-*.tar.gz", "msxbas2rom*-mac-*.*", "msxbas2rom*-windows-*.zip"]'
 
