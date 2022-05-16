@@ -33,9 +33,10 @@ jobs:
           cp -av msxbas2rom-linux-x64-bin/* .rpmpkg/usr/bin
           chmod +x .rpmpkg/usr/bin/*
     - name: Packing linux artifact (x64) - .deb
+      id: pack_deb
       uses: jiro4989/build-deb-action@v2
       with:
-        package: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.deb
+        package: msxbas2rom
         package_root: .debpkg
         maintainer: amauryspires@gmail.com
         version: ${{ steps.get_tag.outputs.VERSION }}
@@ -43,10 +44,11 @@ jobs:
         depends: 'debhelper (>= 8)'
         desc: 'msxbas2rom package'
     - name: Packing linux artifact (x64) - .rpm
+      id: pack_rpm
       uses: jiro4989/build-rpm-action@v2
       with:
         summary: 'msxbas2rom package'
-        package: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.rpm
+        package: msxbas2rom
         package_root: .rpmpkg
         maintainer: amauryspires@gmail.com
         version: ${{ steps.get_tag.outputs.VERSION }}
@@ -90,8 +92,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.deb
-        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.deb
+        asset_path: ${{ steps.pack_deb.outputs.file_name }}
+        asset_name: ${{ steps.pack_deb.outputs.file_name }}
         asset_content_type: application/gzip
     - name: Upload linux artifact (x64) - .rpm
       uses: actions/upload-release-asset@v1
@@ -99,8 +101,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.rpm
-        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.rpm
+        asset_path: ${{ steps.pack_rpm.outputs.file_name }}
+        asset_name: ${{ steps.pack_rpm.outputs.file_name }}
         asset_content_type: application/gzip
     - name: Upload macos artifact (x86_64) - .zip
       uses: actions/upload-release-asset@v1
