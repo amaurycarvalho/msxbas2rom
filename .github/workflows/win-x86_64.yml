@@ -9,8 +9,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2.0.0
-    - name: Make (clean, release)
-      run: make clean release
+#    - name: Make (clean, release)
+#      run: make clean release
     - name: Setup test
       id: finding-files
       run: |
@@ -22,9 +22,9 @@ jobs:
       run: |
         cd test/check/simple
         myarray=${{ fromJson(steps.finding-files.outputs.FILELIST) }}
-        echo ${myarray[0]}
+        echo ${myarray}[0]
         for i in ${myarray[@]}; do
-          file_name=$(echo $i)
+          file_name=$(myarray[$i])
           echo ${file_name}
           ./msxbas2rom -c ${file_name}
         done           
