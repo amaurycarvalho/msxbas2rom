@@ -22,9 +22,9 @@ jobs:
       run: |
         cd test/check/simple
         myarray=${{ fromJson(steps.finding-files.outputs.FILELIST) }}
-        echo ${myarray}[0]
+        echo ${myarray[0]}
         for i in ${myarray[@]}; do
-          file_name=$(myarray[$i])
+          file_name=${myarray[$i]}
           echo ${file_name}
           ./msxbas2rom -c ${file_name}
         done           
