@@ -87,10 +87,11 @@ jobs:
         echo "::set-output name=asset_name::$(ls msxbas2rom*.deb msxbas2rom?[0-9]*.rpm msxbas2rom*-linux-*.tar.gz msxbas2rom*-mac-*.* msxbas2rom*-windows-*.zip | jq -R -s -c 'split("\n")[:-1]')"
 
   upload:
+    runs-on: ubuntu-latest
     needs: release
     strategy:
-        files:
-            asset_name: ${{ fromJson(needs.release.outputs.file) }}
+      matrix:
+        asset_name: ${{ fromJson(needs.release.outputs.files) }}
     steps:
     - name: Upload artifacts
       uses: actions/upload-release-asset@v1
@@ -98,7 +99,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.release.outputs.upload_url }}
-        asset_path: ${{ files.asset_name }}
-        asset_name: ${{ files.asset_name }}
+        asset_path: ${{ matrix.asset_name }}
+        asset_name: ${{ matrix.asset_name }}
         asset_content_type: application/gzip
 
