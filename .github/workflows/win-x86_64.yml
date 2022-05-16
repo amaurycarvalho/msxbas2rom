@@ -21,8 +21,7 @@ jobs:
     - name: Do test
       run: |
         cd test/check/simple
-        myarray = ${{ fromJson(steps.finding-files.outputs.FILELIST) }}
-        for i in "${myarray[@]}"; do
+        for i in ${{ fromJson(steps.finding-files.outputs.FILELIST) }}; do
           file_path=$(dirname "${i}")
           file_name=$(basename "${i}")
           ./msxbas2rom -c ${file_name}
