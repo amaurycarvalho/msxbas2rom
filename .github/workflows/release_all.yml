@@ -24,7 +24,7 @@ jobs:
     - name: Packing linux artifact (x64) - tar.gz
       run: |
           tar cvzf  msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz msxbas2rom-linux-x64-bin/*
-    - name: Preparing linux artifact (x64) - .deb and .rpm
+    - name: Setup linux artifact (x64) - .deb and .rpm
       run: |
           mkdir -p .debpkg/usr/bin
           cp -av msxbas2rom-linux-x64-bin/* .debpkg/usr/bin
@@ -77,76 +77,21 @@ jobs:
         body_path: CHANGELOG.md
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Upload linux artifact (x64) - .tar.gz
+    - name: Setup upload
+      id: files
+      run: |
+        echo "::set-output name=asset_name::$(ls msxbas2rom-*.deb | head -n 1)"
+        echo "::set-output name=asset_name::$(ls msxbas2rom-[0-9]*.rpm | head -n 1)"
+        echo "::set-output name=asset_name::$(ls msxbas2rom-*-linux-*.tar.gz | head -n 1)"
+        echo "::set-output name=asset_name::$(ls msxbas2rom-*-mac-*.* | head -n 1)"
+        echo "::set-output name=asset_name::$(ls msxbas2rom-*-windows-*.zip | head -n 1)"
+    - name: Upload artifacts
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz
-        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz
-        asset_content_type: application/gzip
-    - name: Upload linux artifact (x64) - .deb
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.pack_deb.outputs.file_name }}
-        asset_name: ${{ steps.pack_deb.outputs.file_name }}
-        asset_content_type: application/gzip
-    - name: Upload linux artifact (x64) - .rpm
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.pack_rpm.outputs.file_name }}
-        asset_name: ${{ steps.pack_rpm.outputs.file_name }}
-        asset_content_type: application/gzip
-    - name: Upload macos artifact (x86_64) - .zip
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.zip
-        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.zip
-        asset_content_type: application/gzip
-    - name: Upload macos artifact (x86_64) - .dmg
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg
-        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg
-        asset_content_type: application/gzip
-    - name: Upload macos artifact (x86_64) - .dmg.gz
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg.gz
-        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg.gz
-        asset_content_type: application/gzip
-    - name: Upload windows artifact (x32) - .zip
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x32-bin.zip
-        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x32-bin.zip
-        asset_content_type: application/gzip
-    - name: Upload windows artifact (x64) - .zip
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x64-bin.zip
-        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x64-bin.zip
+        asset_path: ${{ steps.files.outputs.asset_name }}
+        asset_name: ${{ steps.files.outputs.asset_name }}
         asset_content_type: application/gzip
 
