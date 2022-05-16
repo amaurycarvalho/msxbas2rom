@@ -80,11 +80,11 @@ jobs:
     - name: Setup upload
       id: files
       run: |
-        echo "::set-output name=asset_name::$(ls msxbas2rom-*.deb | head -n 1)"
-        echo "::set-output name=asset_name::$(ls msxbas2rom-[0-9]*.rpm | head -n 1)"
-        echo "::set-output name=asset_name::$(ls msxbas2rom-*-linux-*.tar.gz | head -n 1)"
-        echo "::set-output name=asset_name::$(ls msxbas2rom-*-mac-*.* | head -n 1)"
-        echo "::set-output name=asset_name::$(ls msxbas2rom-*-windows-*.zip | head -n 1)"
+        echo "::set-output name=asset_name::$(ls msxbas2rom*.deb | head -n 1)"
+        echo "::set-output name=asset_name::$(ls msxbas2rom?[0-9]*.rpm | head -n 1)"
+        echo "::set-output name=asset_name::$(ls msxbas2rom*-linux-*.tar.gz | head -n 1)"
+        echo "::set-output name=asset_name::$(ls msxbas2rom*-mac-*.* | head -n 1)"
+        echo "::set-output name=asset_name::$(ls msxbas2rom*-windows-*.zip | head -n 1)"
     - name: Upload artifacts
       uses: actions/upload-release-asset@v1
       env:
