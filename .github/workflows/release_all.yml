@@ -17,11 +17,41 @@ jobs:
     - name: Get tag version
       id: get_tag
       run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
     - name: Download all artifacts
       uses: actions/download-artifact@v3
-    - name: Packing linux artifact (x64)
+    - name: Packing linux artifact (x64) - tar.gz
       run: |
           tar cvzf  msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz msxbas2rom-linux-x64-bin/*
+    - name: Preparing linux artifact (x64) - .deb and .rpm
+      run: |
+          mkdir -p .debpkg/usr/bin
+          cp -av msxbas2rom-linux-x64-bin/* .debpkg/usr/bin
+          chmod +x .debpkg/usr/bin/*
+          mkdir -p .rpmpkg/usr/bin
+          cp -av msxbas2rom-linux-x64-bin/* .rpmpkg/usr/bin
+          chmod +x .rpmpkg/usr/bin/*
+    - name: Packing linux artifact (x64) - .deb
+        uses: jiro4989/build-deb-action@v2
+        with:
+          package: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.deb
+          package_root: .debpkg
+          maintainer: amauryspires@gmail.com
+          version: ${{ steps.get_tag.outputs.VERSION }}
+          arch: 'amd64'
+          depends: 'debhelper (>= 8)'
+          desc: 'msxbas2rom package'
+    - name: Packing linux artifact (x64) - .rpm
+        uses: jiro4989/build-rpm-action@v2
+        with:
+          summary: 'msxbas2rom package'
+          package: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.rpm
+          package_root: .rpmpkg
+          maintainer: amauryspires@gmail.com
+          version: ${{ steps.get_tag.outputs.VERSION }}
+          arch: 'x86_64'
+          desc: 'msxbas2rom package'
     - name: Packing macos artifact (x86_64)
       run: |
           sudo apt-get install genisoimage
@@ -42,12 +72,10 @@ jobs:
         prerelease: false
         release_name: Release ${{ steps.get_tag.outputs.VERSION }}
         tag_name: ${{ github.ref }}
-        body: |
-            Changes in this release, run:
-            msxbas2rom --ver
+        body_path: CHANGELOG.md
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Upload linux artifact (x64)
+    - name: Upload linux artifact (x64) - .tar.gz
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -56,7 +84,25 @@ jobs:
         asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz
         asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz
         asset_content_type: application/gzip
-    - name: Upload macos artifact (x86_64) - zip
+    - name: Upload linux artifact (x64) - .deb
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.deb
+        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.deb
+        asset_content_type: application/gzip
+    - name: Upload linux artifact (x64) - .rpm
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.rpm
+        asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.rpm
+        asset_content_type: application/gzip
+    - name: Upload macos artifact (x86_64) - .zip
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -65,7 +111,7 @@ jobs:
         asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.zip
         asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.zip
         asset_content_type: application/gzip
-    - name: Upload macos artifact (x86_64) - dmg
+    - name: Upload macos artifact (x86_64) - .dmg
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -74,7 +120,7 @@ jobs:
         asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg
         asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg
         asset_content_type: application/gzip
-    - name: Upload macos artifact (x86_64) - dmg.gz
+    - name: Upload macos artifact (x86_64) - .dmg.gz
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -83,7 +129,7 @@ jobs:
         asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg.gz
         asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-mac-x86_64-bin.dmg.gz
         asset_content_type: application/gzip
-    - name: Upload windows artifact (x32)
+    - name: Upload windows artifact (x32) - .zip
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -92,7 +138,7 @@ jobs:
         asset_path: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x32-bin.zip
         asset_name: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-windows-x32-bin.zip
         asset_content_type: application/gzip
-    - name: Upload windows artifact (x64)
+    - name: Upload windows artifact (x64) - .zip
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
