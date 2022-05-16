@@ -25,6 +25,6 @@ jobs:
         for i in "${myarray[@]}"; do
           file_path=$(dirname "${i}")
           file_name=$(basename "${i}")
-          ./msxbas2rom -c file_name
+          ./msxbas2rom -c ${file_name}
         done           
 
