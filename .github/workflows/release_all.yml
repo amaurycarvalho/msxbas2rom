@@ -15,7 +15,7 @@ jobs:
     needs: build
     permissions: write-all
     outputs:
-      files: ${{ steps.files.outputs.asset_names }}    
+      files: ${{ steps.files.outputs.asset_name }}    
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - name: Get tag version
