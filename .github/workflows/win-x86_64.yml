@@ -16,9 +16,11 @@ jobs:
       run: |
         cp -av bin/Release/* test/check/simple
         cd test/check/simple
+        chmod +x msxbas2rom
         echo "::set-output name=FILELIST::$(find . -name '*.bas' -print)"
     - name: Do test
       run: |
+        cd test/check/simple
         IFS="," read -a myarray <<< ${{ steps.finding-files.outputs.FILELIST }}
         for i in "${myarray[@]}"; do
           file_path=$(dirname "${i}")
