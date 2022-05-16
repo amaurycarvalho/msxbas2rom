@@ -9,10 +9,14 @@ jobs:
   build:
     name: Build all
     uses: ./.github/workflows/build_all.yml
+
   release:
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: build
     permissions: write-all
+    outputs:
+      files: ${{ steps.files.outputs.asset_names }}    
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - name: Get tag version
       id: get_tag
@@ -80,18 +84,21 @@ jobs:
     - name: Setup upload
       id: files
       run: |
-        echo "::set-output name=asset_name::$(ls msxbas2rom*.deb | head -n 1)"
-        echo "::set-output name=asset_name::$(ls msxbas2rom?[0-9]*.rpm | head -n 1)"
-        echo "::set-output name=asset_name::$(ls msxbas2rom*-linux-*.tar.gz | head -n 1)"
-        echo "::set-output name=asset_name::$(ls msxbas2rom*-mac-*.* | head -n 1)"
-        echo "::set-output name=asset_name::$(ls msxbas2rom*-windows-*.zip | head -n 1)"
+        echo "::set-output name=asset_name::$(ls msxbas2rom*.deb msxbas2rom?[0-9]*.rpm msxbas2rom*-linux-*.tar.gz msxbas2rom*-mac-*.* msxbas2rom*-windows-*.zip | jq -R -s -c 'split("\n")[:-1]')"
+
+  upload:
+    needs: release
+    strategy:
+        files:
+            asset_name: ${{ fromJson(needs.release.outputs.file) }}
+    steps:
     - name: Upload artifacts
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.files.outputs.asset_name }}
-        asset_name: ${{ steps.files.outputs.asset_name }}
+        upload_url: ${{ needs.release.outputs.upload_url }}
+        asset_path: ${{ files.asset_name }}
+        asset_name: ${{ files.asset_name }}
         asset_content_type: application/gzip
 
