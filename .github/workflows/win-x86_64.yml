@@ -21,7 +21,8 @@ jobs:
     - name: Do test
       run: |
         cd test/check/simple
-        for i in "${{ fromJson(steps.finding-files.outputs.FILELIST) }[@]}"; do
+        myarray=${{ fromJson(steps.finding-files.outputs.FILELIST) }}
+        for i in "${myarray[@]}"; do
           file_path=$(dirname "${i}")
           file_name=$(basename "${i}")
           echo ${i} ${file_path} ${file_name}
