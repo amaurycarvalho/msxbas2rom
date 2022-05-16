@@ -21,8 +21,8 @@ jobs:
     - name: Do test
       run: |
         cd test/check/simple
-        echo ${steps.finding-files.outputs.FILELIST}
         myarray=${{ fromJson(steps.finding-files.outputs.FILELIST) }}
+        echo ${myarray[0]}
         for i in ${myarray[@]}; do
           file_name=$(echo $i)
           echo ${file_name}
