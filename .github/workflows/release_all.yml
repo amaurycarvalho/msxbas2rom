@@ -33,25 +33,25 @@ jobs:
           cp -av msxbas2rom-linux-x64-bin/* .rpmpkg/usr/bin
           chmod +x .rpmpkg/usr/bin/*
     - name: Packing linux artifact (x64) - .deb
-        uses: jiro4989/build-deb-action@v2
-        with:
-          package: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.deb
-          package_root: .debpkg
-          maintainer: amauryspires@gmail.com
-          version: ${{ steps.get_tag.outputs.VERSION }}
-          arch: 'amd64'
-          depends: 'debhelper (>= 8)'
-          desc: 'msxbas2rom package'
+      uses: jiro4989/build-deb-action@v2
+      with:
+        package: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.deb
+        package_root: .debpkg
+        maintainer: amauryspires@gmail.com
+        version: ${{ steps.get_tag.outputs.VERSION }}
+        arch: 'amd64'
+        depends: 'debhelper (>= 8)'
+        desc: 'msxbas2rom package'
     - name: Packing linux artifact (x64) - .rpm
-        uses: jiro4989/build-rpm-action@v2
-        with:
-          summary: 'msxbas2rom package'
-          package: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.rpm
-          package_root: .rpmpkg
-          maintainer: amauryspires@gmail.com
-          version: ${{ steps.get_tag.outputs.VERSION }}
-          arch: 'x86_64'
-          desc: 'msxbas2rom package'
+      uses: jiro4989/build-rpm-action@v2
+      with:
+        summary: 'msxbas2rom package'
+        package: msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.rpm
+        package_root: .rpmpkg
+        maintainer: amauryspires@gmail.com
+        version: ${{ steps.get_tag.outputs.VERSION }}
+        arch: 'x86_64'
+        desc: 'msxbas2rom package'
     - name: Packing macos artifact (x86_64)
       run: |
           sudo apt-get install genisoimage
