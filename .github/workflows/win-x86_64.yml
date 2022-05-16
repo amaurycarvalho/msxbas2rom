@@ -24,6 +24,7 @@ jobs:
         for i in ${{ fromJson(steps.finding-files.outputs.FILELIST) }}; do
           file_path=$(dirname "${i}")
           file_name=$(basename "${i}")
+          echo ${i} ${file_path} ${file_name}
           ./msxbas2rom -c ${file_name}
         done           
 
