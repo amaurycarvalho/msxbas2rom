@@ -25,6 +25,8 @@ jobs:
     - name: Do test
       run: |
         cd test/check/simple
-        ./msxbas2rom -c ${{ steps.file-list.outputs.stringList }}
+        for i in ${{ steps.file-list.outputs.stringList }}; do
+          ./msxbas2rom -c ${i}
+        done         
                    
 
