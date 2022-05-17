@@ -38,7 +38,7 @@ See the current version with command line below:
 
 	  msxbas2rom --ver
 
-All documentation can be listed too:
+All [documentation](https://github.com/amaurycarvalho/msxbas2rom/wiki) can be listed too:
 
 	  msxbas2rom --doc
 
