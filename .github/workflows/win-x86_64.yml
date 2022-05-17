@@ -27,7 +27,6 @@ jobs:
         cd test/check/simple
         for i in ${{ steps.finding-files.outputs.FILELIST }}; do
           echo $i
-#          ./msxbas2rom -c '$i'
         done         
                    
 
