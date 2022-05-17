@@ -24,11 +24,11 @@ jobs:
         stringArray: ${{ steps.finding-files.outputs.FILELIST }}
     - name: Do test
       run: |
-        echo ${{ steps.file-list.outputs.stringList }}
+        echo '${{ steps.file-list.outputs.stringList }}'
         cd test/check/simple
         for i in ${{ steps.file-list.outputs.stringList }}; do
-          echo $i
-          ./msxbas2rom -c $i
+          echo '$i'
+          ./msxbas2rom -c '$i'
         done         
                    
 
