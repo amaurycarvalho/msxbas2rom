@@ -21,4 +21,31 @@ jobs:
           ./msxbas2rom -c $i
         done
                    
+  test-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - name: Setup 64 bits compiler
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >-
+          base-devel
+          gcc
+          git
+          libargp-devel
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Make -> clean release (64bits)
+      run: make PARMS=-m64 clean release
+    - name: Do test
+      run: |
+        cp -av bin/Release/*.exe test/check/simple
+        cd test/check/simple
+        array="$(ls *.bas)"
+        for i in ${array[*]}; do
+          ./msxbas2rom -c $i
+        done
 
