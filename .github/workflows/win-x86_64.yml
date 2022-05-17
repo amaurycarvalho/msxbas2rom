@@ -17,11 +17,11 @@ jobs:
         cp -av bin/Release/* test/check/simple
         cd test/check/simple
         chmod +x msxbas2rom
-        echo "::set-output name=FILELIST::$(ls *.bas | jq -R -r -s -c 'split("\n")[:-1]')"
+        echo "::set-output name=FILELIST::$(ls *.bas | jq -R -s -c 'split("\n")[:-1]')"
     - name: Do test
       run: |
         cd test/check/simple
-        for i in ${{ fromJson(steps.finding-files.outputs.FILELIST) }}; do
+        for i in ${{ fromJson(steps.finding-files.outputs.FILELIST) }[*]}; do
           echo "$i"
         done         
                    
