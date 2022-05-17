@@ -30,7 +30,7 @@ Install it into your Linux system using the commands below:
 	  sudo apt-get update
 	  sudo apt-get install msxbas2rom
 
-See Downloads tab to get MSXBas2ROM for Windows 32 and 64 bits.
+See [releases](https://github.com/amaurycarvalho/msxbas2rom/releases) area to get MSXBAS2ROM for Windows 32 and 64 bits.
 
 ### DOCUMENTATION AND VERSION HISTORY
 
@@ -56,7 +56,7 @@ Also, once in a while games developed using MSXBAS2ROM will be released as gift 
 - ON [CATARSE.ME](https://www.catarse.me/msxbas2rom_msx_basic_compiler_21ec);
 - BRAZILIAN [PIX KEY](amauryspires@gmail.com).
 
-Note: MSXBas2ROM it's still an experimental prototype, so it's current status is development in progress.
+Note: MSXBAS2ROM it's still an experimental prototype, so it's current status is development in progress.
 
 ### SUPPORTERS SPECIAL THANKS
 
