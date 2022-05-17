@@ -2,6 +2,7 @@ name: Build a new release
 
 on:
   push:
+#    branches: [ master ]
     tags:
     - 'v*.*.*.*' # v0.0.0.0
 

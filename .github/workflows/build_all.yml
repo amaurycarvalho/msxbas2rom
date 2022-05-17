@@ -1,10 +1,10 @@
 name: Build all artifacts
 
 on:
-  push:
-    branches: [ master ]
-    tags-ignore:
-      - 'v*.*.*.*' # v0.0.0.0
+#  push:
+#    branches: [ master ]
+#    tags-ignore:
+#      - 'v*.*.*.*' # v0.0.0.0
   pull_request:
     branches: [ master ]
   workflow_dispatch:
