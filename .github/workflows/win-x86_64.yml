@@ -21,11 +21,9 @@ jobs:
     - name: Do test
       run: |
         cd test/check/simple
-        array=${{ fromJson(steps.finding-files.outputs.FILELIST) }}
+        array=[ $(ls *.bas) ]
         for i in ${array[*]}; do
-          for k in ${i[*]}; do
-            echo "$k"
-          done
+          echo "$i"
         done         
                    
 
