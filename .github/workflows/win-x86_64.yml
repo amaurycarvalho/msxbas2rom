@@ -18,14 +18,10 @@ jobs:
         cd test/check/simple
         chmod +x msxbas2rom
         echo "::set-output name=FILELIST::$(ls *.bas | jq -R -s -c 'split("\n")[:-1]')"
-    - id: file-list
-      uses: lucaspinheirogit/list-from-string-array-action@v1.4.3
-      with:
-        stringArray: ${{ steps.finding-files.outputs.FILELIST }}
     - name: Do test
       run: |
         cd test/check/simple
-        for i in ${{ fromJson(steps.finding-files.outputs.FILELIST) }}; do
+        for i in ${ fromJson(steps.finding-files.outputs.FILELIST) }; do
           echo "$i"
         done         
                    
