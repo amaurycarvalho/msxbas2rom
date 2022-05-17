@@ -18,7 +18,7 @@ jobs:
         chmod +x msxbas2rom
         array="$(ls *.bas)"
         for i in ${array[*]}; do
-          ./msxbas2rom -c $i
+          ./msxbas2rom -c -q $i
         done
                    
   test-windows:
@@ -46,6 +46,6 @@ jobs:
         cd test/check/simple
         array="$(ls *.bas)"
         for i in ${array[*]}; do
-          ./msxbas2rom -c $i
+          ./msxbas2rom -c -q $i
         done
 
