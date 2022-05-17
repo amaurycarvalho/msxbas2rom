@@ -22,8 +22,10 @@ jobs:
       run: |
         cd test/check/simple
         array=${{ fromJson(steps.finding-files.outputs.FILELIST) }}
-        for i in ${array[*]}; do
-          echo "$i"
+        for i in ${array[*]} do
+          for k in ${i[*]} do
+            echo "$k"
+          done
         done         
                    
 
