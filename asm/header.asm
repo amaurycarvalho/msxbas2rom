@@ -2979,6 +2979,168 @@ cmd_plysound:
   ret
 
 ;---------------------------------------------------------------------------------------------------------
+; NEW COMMANDS
+;---------------------------------------------------------------------------------------------------------
+
+; a = scroll direction (same as STRIG)
+; hl = ram destination
+cmd_screen_copy:
+  push af
+    ex de, hl
+    call cmd_screen.get_start
+    push de
+      call LDIRMV     ; vram to ram - hl=vram, de=ram, bc=size
+    pop hl
+  pop af
+  or a
+  ret z
+  cp 4
+  jr z, cmd_screen_copy.4
+  jr nc, cmd_screen_copy.above
+  cp 2
+  jr z, cmd_screen_copy.2
+  jr nc, cmd_screen_copy.3
+  jr cmd_screen_copy.1
+
+cmd_screen_copy.4:  ; scroll down-right
+  push hl
+    call cmd_screen_copy.5
+  pop hl
+  jr cmd_screen_copy.3
+
+cmd_screen_copy.2:  ; scroll up-right
+  push hl
+    call cmd_screen_copy.1
+  pop hl
+
+cmd_screen_copy.3:  ; scroll right
+  ld bc, 0x02FF
+  add hl, bc
+  ld a, (hl)
+  ld e, l
+  ld d, h
+  dec hl
+  lddr
+  ex de, hl
+  push af
+    ld c, 0x20
+    ld a, 23
+cmd_screen_copy.3.loop:
+    push af
+      ld e, l
+      ld d, h
+      add hl, bc
+      ld a, (hl)
+      ld (de), a
+    pop af
+    dec a
+    jr nz, cmd_screen_copy.3.loop
+  pop af
+  ld (hl), a
+  ret
+
+cmd_screen_copy.1:  ; scroll up
+  ld de, BUF
+  ld bc, 0x0020
+  push bc
+    push de
+      push hl
+        ldir
+      pop de
+      ld bc, 0x02E0
+      ldir
+    pop hl
+  pop bc
+  ldir
+  ret
+
+cmd_screen_copy.above:
+  cp 7
+  jr z, cmd_screen_copy.7
+  jr nc, cmd_screen_copy.8
+  cp 6
+  jr z, cmd_screen_copy.6
+
+cmd_screen_copy.5:  ; scroll down
+  ld de, BUF
+  push de
+    push hl
+      ld bc, 0x02E0
+      push bc
+        add hl, bc
+        ld bc, 0x0020
+        push hl
+          ldir
+          dec hl
+          ex de, hl
+        pop hl
+        dec hl
+      pop bc
+      lddr
+    pop de
+  pop hl
+  ld c, 0x20
+  ldir
+  ret
+
+cmd_screen_copy.8:  ; scroll left-up
+  push hl
+    call cmd_screen_copy.1
+  pop hl
+  jr cmd_screen_copy.7
+
+cmd_screen_copy.6:  ; scroll down-left
+  push hl
+    call cmd_screen_copy.5
+  pop hl
+
+cmd_screen_copy.7:  ; scroll left
+  ld a, (hl)
+  push af
+    ld e, l
+    ld d, h
+    inc hl
+    ld bc, 0x02FF
+    ldir
+    ex de, hl
+    ld a, 23
+    ld c, 0x20
+cmd_screen_copy.7.loop:
+    push af
+      ld e, l
+      ld d, h
+      xor a
+      sbc hl, bc
+      ld a, (hl)
+      ld (de), a
+    pop af
+    dec a
+    jr nz, cmd_screen_copy.7.loop
+  pop af
+  ld (hl), a
+  ret
+
+; hl = ram source
+cmd_screen_paste:
+  ex de,hl
+    call cmd_screen.get_start
+  ex de,hl
+  jp LDIRVM     ; ram to vram - hl=ram, de=vram, bc=size
+
+; hl = resource number
+cmd_screen_load:
+  ret
+
+cmd_screen.get_start:
+  ld a, (SCRMOD)
+  ld hl, 0x1800   ; screen start
+  ld bc, 0x0300   ; screen size (tiled only)
+  or a
+  ret nz
+  ld h, a
+  ret
+
+;---------------------------------------------------------------------------------------------------------
 ; MEMORY / SLOT / PAGE ROUTINES
 ;---------------------------------------------------------------------------------------------------------
 

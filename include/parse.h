@@ -61,6 +61,11 @@ class Parser {
     bool eval_cmd_circle(LexerLine *statement);
     bool eval_cmd_paint(LexerLine *statement);
     bool eval_cmd_copy(LexerLine *statement);
+    bool eval_cmd_screen(LexerLine *statement);
+    bool eval_cmd_screen_copy(LexerLine *statement);
+    bool eval_cmd_screen_paste(LexerLine *statement);
+    bool eval_cmd_screen_scroll(LexerLine *statement);
+    bool eval_cmd_screen_load(LexerLine *statement);
     bool eval_cmd_set(LexerLine *statement);
     bool eval_cmd_set_tile(LexerLine *statement);
     bool eval_cmd_set_tile_colpat(LexerLine *statement);
@@ -79,6 +84,7 @@ class Parser {
     bool eval_cmd_key(LexerLine *statement);
     bool eval_cmd_strig(LexerLine *statement);
     bool eval_cmd_sprite(LexerLine *statement);
+    bool eval_cmd_sprite_load(LexerLine *statement);
     bool eval_cmd_data(LexerLine *statement, Lexeme::LexemeSubType subtype);
     bool eval_cmd_call(LexerLine *statement);
     bool eval_cmd_cmd(LexerLine *statement);

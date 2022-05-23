@@ -145,6 +145,7 @@ bool Lexeme::isKeyword() {
              || value == "CLRKEY" || value == "COLLISION" || value == "MUTE"
              || value == "PSG" || value == "NTSC" || value == "IDATA" || value == "IREAD" || value == "IRESTORE"
              || value == "MAKER" || value == "UPDFNTCLR" || value == "PATTERN" || value == "TRANSPOSE"
+             || value == "FROM" || value == "PASTE"
            );
 }
 

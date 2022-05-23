@@ -228,7 +228,6 @@ bool Parser::eval_statement(LexerLine *statement) {
         } else if(lexeme->value == "WIDTH" ||
                   lexeme->value == "CLEAR" ||
                   lexeme->value == "ERASE" ||
-                  lexeme->value == "SCREEN" ||
                   lexeme->value == "LOCATE" ||
                   lexeme->value == "DRAW" ||
                   lexeme->value == "GOTO" ||
@@ -248,6 +247,8 @@ bool Parser::eval_statement(LexerLine *statement) {
                   lexeme->value == "SEED" ||
                   lexeme->value == "BLOAD") {
             result = eval_cmd_generic(statement);
+        } else if(lexeme->value == "SCREEN") {
+            result = eval_cmd_screen(statement);
         } else if(lexeme->value == "PLAY") {
             has_play = true;
             result = eval_cmd_generic(statement);
@@ -1800,12 +1801,25 @@ bool Parser::eval_cmd_sprite(LexerLine *statement) {
 
                 return true;
 
+            } else if(next_lexeme->value == "LOAD") {
+
+                return eval_cmd_sprite_load(statement);
+
             }
         }
 
     }
 
     return false;
+}
+
+bool Parser::eval_cmd_sprite_load(LexerLine *statement) {
+    Lexeme *next_lexeme = statement->getCurrentLexeme();
+    bool result;
+    pushActionFromLexeme(next_lexeme);
+    result = eval_cmd_generic(statement);
+    popActionRoot();
+    return result;
 }
 
 bool Parser::eval_cmd_key(LexerLine *statement) {
@@ -3943,6 +3957,133 @@ bool Parser::eval_cmd_set_sprite_colpattra(LexerLine *statement) {
     return true;
 }
 
+bool Parser::eval_cmd_screen(LexerLine *statement) {
+    Lexeme *next_lexeme;
+
+    if( (next_lexeme = statement->getNextLexeme()) ) {
+
+        if(next_lexeme->type == Lexeme::type_keyword) {
+
+            if (next_lexeme->value == "COPY") {
+                return eval_cmd_screen_copy(statement);
+            } else if(next_lexeme->value == "PASTE") {
+                return eval_cmd_screen_paste(statement);
+            } else if(next_lexeme->value == "SCROLL") {
+                return eval_cmd_screen_scroll(statement);
+            } else if(next_lexeme->value == "LOAD") {
+                return eval_cmd_screen_load(statement);
+            }
+
+        }
+
+        next_lexeme = statement->getPreviousLexeme();
+
+        return eval_cmd_generic(statement);
+
+    }
+
+    return false;
+}
+
+bool Parser::eval_cmd_screen_copy(LexerLine *statement) {
+    Lexeme *next_lexeme = statement->getCurrentLexeme();
+    LexerLine parm;
+    int state = 0;
+    bool result = false;
+
+    pushActionFromLexeme(next_lexeme);
+
+    parm.clearLexemes();
+
+    while( (next_lexeme = statement->getNextLexeme()) ) {
+
+        next_lexeme = coalesceSymbols(next_lexeme);
+
+        switch(state) {
+            case 0 : {
+                    if( next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "TO") {
+                        state = 1;
+                        continue;
+                    } else {
+                        return false;
+                    }
+                }
+                break;
+
+            case 1 : {
+                    if( next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "SCROLL" ) {
+                        if(parm.getLexemeCount()) {
+                            parm.setLexemeBOF();
+                            if(!eval_expression(&parm)) {
+                                return false;
+                            }
+                            parm.clearLexemes();
+                        } else {
+                            return false;
+                        }
+                        state = 2;
+                    }
+                }
+                break;
+
+        }
+
+        parm.addLexeme(next_lexeme);
+
+    }
+
+    if(parm.getLexemeCount()) {
+
+        parm.setLexemeBOF();
+        if(!eval_expression(&parm)) {
+            return false;
+        }
+
+        result = true;
+
+    }
+
+    popActionRoot();
+
+    return result;
+}
+
+bool Parser::eval_cmd_screen_paste(LexerLine *statement) {
+    Lexeme *next_lexeme = statement->getCurrentLexeme();
+    bool result = false;
+
+    pushActionFromLexeme(next_lexeme);
+
+    if( (next_lexeme = statement->getNextLexeme()) ) {
+
+        if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "FROM") {
+            result = eval_cmd_generic(statement);
+        }
+
+    }
+
+    popActionRoot();
+
+    return result;
+}
+
+bool Parser::eval_cmd_screen_scroll(LexerLine *statement) {
+    Lexeme *next_lexeme = statement->getCurrentLexeme();
+    bool result;
+    pushActionFromLexeme(next_lexeme);
+    result = eval_cmd_generic(statement);
+    popActionRoot();
+    return result;
+}
+
+bool Parser::eval_cmd_screen_load(LexerLine *statement) {
+    Lexeme *next_lexeme = statement->getCurrentLexeme();
+    bool result;
+    pushActionFromLexeme(next_lexeme);
+    result = eval_cmd_generic(statement);
+    popActionRoot();
+    return result;
+}
 
 bool Parser::eval_cmd_on(LexerLine *statement) {
     Lexeme *next_lexeme;

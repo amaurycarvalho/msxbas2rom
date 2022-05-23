@@ -65,6 +65,7 @@ class FileNode {
     int blocks;
     Lexeme *current_lexeme;
     Lexeme *first_lexeme;
+    unsigned char *buffer;
 
     unsigned char file_header[255];
 
@@ -78,6 +79,7 @@ class FileNode {
     void close();
     void clear();
 
+    int read();
     int readAsLexeme();
     int readAsLexeme(unsigned char *data, int data_length);
     void stripQuotes(string text, char *buf);
@@ -162,6 +164,10 @@ class Compiler {
     void cmd_next();
     void cmd_locate();
     void cmd_screen();
+    void cmd_screen_copy();
+    void cmd_screen_paste();
+    void cmd_screen_scroll();
+    void cmd_screen_load();
     void cmd_color();
     void cmd_width();
     void cmd_pset(bool forecolor);
@@ -200,6 +206,7 @@ class Compiler {
     void cmd_interval();
     void cmd_stop();
     void cmd_sprite();
+    void cmd_sprite_load();
     void cmd_key();
     void cmd_strig();
     void cmd_swap();

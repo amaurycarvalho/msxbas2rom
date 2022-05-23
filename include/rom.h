@@ -46,6 +46,7 @@ class Rom {
     void buildMapAndResourcesFileTXT(char *filename);
     void buildMapAndResourcesFileCSV(char *filename);
     void buildMapAndResourcesFileSPR(char *filename);
+    void buildMapAndResourcesFileSCR(char *filename);
     void buildMapAndResourcesFileBIN(char *filename, char *fileext);
     void buildXBASIC();
     void buildPT3TOOLS();

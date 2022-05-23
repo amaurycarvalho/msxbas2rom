@@ -612,6 +612,23 @@ void Rom::buildMapAndResourcesFile(Lexeme *lexeme) {
 
         buildMapAndResourcesFileSPR(filename);
 
+        // screen resource file
+    } else if(strcasecmp(fileext, ".SC0")==0
+              || strcasecmp(fileext, ".SC1")==0
+              || strcasecmp(fileext, ".SC2")==0
+              || strcasecmp(fileext, ".SC3")==0
+              || strcasecmp(fileext, ".SC4")==0
+              || strcasecmp(fileext, ".SC5")==0
+              || strcasecmp(fileext, ".SC6")==0
+              || strcasecmp(fileext, ".SC7")==0
+              || strcasecmp(fileext, ".SC8")==0
+              || strcasecmp(fileext, ".SC9")==0
+              || strcasecmp(fileext, ".S10")==0
+              || strcasecmp(fileext, ".S11")==0
+              || strcasecmp(fileext, ".S12")==0) {
+
+        buildMapAndResourcesFileSCR(filename);
+
         // binary resource file
     } else {
 
@@ -805,6 +822,74 @@ void Rom::buildMapAndResourcesFileCSV(char *filename) {
     }
 }
 
+// bload alternative via resource file
+void Rom::buildMapAndResourcesFileSCR(char *filename) {
+    FileNode *file;
+    int block_start;
+    int bytes, size_read;
+
+    file = new FileNode();
+    file->name = filename;
+    file->packed = true;
+
+    size_read = 0;
+
+    if (file->open()) {
+
+        block_start = filInd;
+        filInd += 1;
+
+        while(!file->eof()) {
+
+            bytes = file->read();
+            if(bytes == 0) {
+                file->close();
+                errorMessage = "Error packing image file resource (empty block size)";
+                errorFound = true;
+                delete file;
+                return;
+            }
+            if(bytes > 255) {
+                file->close();
+                errorMessage = "Error packing image file resource (block size > 255 bytes)";
+                errorFound = true;
+                delete file;
+                return;
+            }
+
+            memcpy(&data[filInd], file->buffer, bytes);
+
+            filInd += bytes;
+            size_read += bytes;
+
+        }
+        file->close();
+
+        if(size_read) {
+            // blocks count
+            data[block_start] = file->blocks;
+
+            memcpy(&data[mapInd], &block_start, 2);
+            mapInd += 2;
+            memcpy(&data[mapInd], &size_read, 2);
+            mapInd += 2;
+
+            txtInd += size_read;
+            filLen += size_read;
+        } else {
+            errorMessage = "Empty image file resource";
+            errorFound = true;
+        }
+
+    } else {
+        errorMessage = "Resource file not found: " + string(filename);
+        errorFound = true;
+    }
+
+    delete file;
+
+}
+
 void Rom::buildMapAndResourcesFileSPR(char *filename) {
     unsigned char *buffer = (unsigned char *) malloc(0x4000);
     int size_read = file.ParseTinySpriteFile(filename, buffer, 0x4000);
@@ -812,24 +897,10 @@ void Rom::buildMapAndResourcesFileSPR(char *filename) {
 
     if(size_read > 0) {
 
-        /*
-        printf("TINY SPRITE TEST:\n");
-        printf("%s\n", filename);
-        for(int i = 0; i < size_read; i++) {
-            if( i > 1 && ((i-2)%8) == 0)
-                printf("\n");
-            printf("%02X ", buffer[i]);
-        }
-        printf("\n");
-        printf("TINY SPRITE COMPRESSED FROM %i TO", size_read);
-        */
-
         compiler->has_tiny_sprite = true;
 
         // compress buffer to data[filInd]
         size_read = pletter.pack(buffer, size_read, (unsigned char *) &data[filInd]);
-
-        //printf(" %i\n", size_read);
 
         memcpy(&data[mapInd], &filInd, 2);
         mapInd += 2;

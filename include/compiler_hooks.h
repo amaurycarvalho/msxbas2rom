@@ -60,6 +60,11 @@
 #define def_cmd_ramtovram             	 0x47AF
 #define def_cmd_restore                  0x4937
 #define def_cmd_runasm	                 0x4618
+
+#define def_cmd_screen_copy              0x4E5E
+#define def_cmd_screen_load              0x4F12
+#define def_cmd_screen_paste             0x4F0A
+
 #define def_cmd_setfnt	                 0x47E4
 #define def_cmd_turbo                    0x4913
 #define def_cmd_updfntclr                0x48F7

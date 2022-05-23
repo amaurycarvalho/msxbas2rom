@@ -7367,10 +7367,31 @@ void Compiler::cmd_locate() {
 
 void Compiler::cmd_screen() {
     ActionNode *action;
+    Lexeme *lexeme;
     unsigned int i, t = current_action->actions.size();
     int result_subtype;
 
     if(t) {
+
+        action = current_action->actions[0];
+        lexeme = action->lexeme;
+        if(lexeme->value == "COPY") {
+            current_action = action;
+            cmd_screen_copy();
+            return;
+        } else if(lexeme->value == "PASTE") {
+            current_action = action;
+            cmd_screen_paste();
+            return;
+        } else if(lexeme->value == "SCROLL") {
+            current_action = action;
+            cmd_screen_scroll();
+            return;
+        } else if(lexeme->value == "LOAD") {
+            current_action = action;
+            cmd_screen_load();
+            return;
+        }
 
         for(i = 0; i < t; i++) {
 
@@ -7509,6 +7530,116 @@ void Compiler::cmd_screen() {
 
     } else {
         syntax_error("SCREEN with empty parameters");
+    }
+
+}
+
+void Compiler::cmd_screen_copy() {
+    ActionNode *action;
+    unsigned int i, t = current_action->actions.size();
+    int result_subtype;
+
+    if(t) {
+
+        for(i = 0; i < t; i++) {
+
+            action = current_action->actions[i];
+            result_subtype = evalExpression(action);
+            addCast(result_subtype, Lexeme::subtype_numeric);
+
+
+        }
+
+    } else {
+        syntax_error("SCREEN COPY with empty parameters");
+    }
+
+}
+
+void Compiler::cmd_screen_paste() {
+    ActionNode *action;
+    unsigned int i, t = current_action->actions.size();
+    int result_subtype;
+
+    if(t) {
+
+        for(i = 0; i < t; i++) {
+
+            action = current_action->actions[i];
+            result_subtype = evalExpression(action);
+            addCast(result_subtype, Lexeme::subtype_numeric);
+
+
+        }
+
+    } else {
+        syntax_error("SCREEN PASTE with empty parameters");
+    }
+
+}
+
+void Compiler::cmd_screen_scroll() {
+    ActionNode *action;
+    unsigned int i, t = current_action->actions.size();
+    int result_subtype;
+
+    if(t) {
+
+        if(t > 1) {
+            syntax_error("SCREEN SCROLL with excess of parameters");
+            return;
+        }
+
+        for(i = 0; i < t; i++) {
+
+            action = current_action->actions[i];
+            result_subtype = evalExpression(action);
+            addCast(result_subtype, Lexeme::subtype_numeric);
+
+            // ld a, l                 ; copy parameter to A
+            addByte(0x7D);
+
+            // ld hl, (HEAPSTR)
+            addCmd(0x2A, def_HEAPSTR);
+
+            // push hl
+            addByte(0xE5);
+
+            // call screen_copy
+            addCmd(0xCD, def_cmd_screen_copy);
+
+            // pop hl
+            addByte(0xE1);
+
+            // call screen_paste
+            addCmd(0xCD, def_cmd_screen_paste);
+
+        }
+
+    } else {
+        syntax_error("SCREEN SCROLL with empty parameters");
+    }
+
+}
+
+void Compiler::cmd_screen_load() {
+    ActionNode *action;
+    unsigned int i, t = current_action->actions.size();
+    int result_subtype;
+
+    if(t) {
+
+        for(i = 0; i < t; i++) {
+
+            action = current_action->actions[i];
+            result_subtype = evalExpression(action);
+            addCast(result_subtype, Lexeme::subtype_numeric);
+
+
+        }
+
+    } else {
+        syntax_error("SCREEN LOAD with empty parameters");
     }
 
 }
@@ -10004,6 +10135,12 @@ void Compiler::cmd_sprite() {
         action = current_action->actions[0];
         next_lexeme = action->lexeme;
 
+        if(next_lexeme->value == "LOAD") {
+            current_action = action;
+            cmd_sprite_load();
+            return;
+        }
+
         // ld hl, 0xFC6D   ; SPRITE state
         addCmd(0x21, 0xFC6D);
 
@@ -10022,6 +10159,28 @@ void Compiler::cmd_sprite() {
 
     } else {
         syntax_error("Empty SPRITE statement");
+    }
+
+}
+
+void Compiler::cmd_sprite_load() {
+    ActionNode *action;
+    unsigned int i, t = current_action->actions.size();
+    int result_subtype;
+
+    if(t) {
+
+        for(i = 0; i < t; i++) {
+
+            action = current_action->actions[i];
+            result_subtype = evalExpression(action);
+            addCast(result_subtype, Lexeme::subtype_numeric);
+
+
+        }
+
+    } else {
+        syntax_error("SPRITE LOAD with empty parameters");
     }
 
 }
@@ -12436,6 +12595,20 @@ int FileNode::read(unsigned char *data, int max_length) {
     if(handle) {
         bytes = fread(data, 1, max_length, handle);
         length += bytes;
+    }
+    return bytes;
+}
+
+int FileNode::read() {
+    buffer = buf_plain;
+    if(read(buffer, 200)) {
+        if(packed) {
+            memset(buf_packed, 0, 1024);
+            bytes = pletter.pack(buffer, 200, &buf_packed[0]);
+            buffer = buf_packed;
+
+            packed_length += bytes;
+        }
     }
     return bytes;
 }
