@@ -3014,22 +3014,22 @@ cmd_screen_copy.2:  ; scroll up-right
   pop hl
 
 cmd_screen_copy.3:  ; scroll right
-  ld bc, 0x02FF
-  add hl, bc
   ld a, (hl)
-  ld e, l
-  ld d, h
-  dec hl
-  lddr
-  ex de, hl
   push af
-    ld c, 0x20
+    ld e, l
+    ld d, h
+    inc hl
+    ld bc, 0x02FF
+    ldir
+    ex de, hl
     ld a, 23
+    ld c, 0x20
 cmd_screen_copy.3.loop:
     push af
       ld e, l
       ld d, h
-      add hl, bc
+      xor a
+      sbc hl, bc
       ld a, (hl)
       ld (de), a
     pop af
@@ -3040,28 +3040,6 @@ cmd_screen_copy.3.loop:
   ret
 
 cmd_screen_copy.1:  ; scroll up
-  ld de, BUF
-  ld bc, 0x0020
-  push bc
-    push de
-      push hl
-        ldir
-      pop de
-      ld bc, 0x02E0
-      ldir
-    pop hl
-  pop bc
-  ldir
-  ret
-
-cmd_screen_copy.above:
-  cp 7
-  jr z, cmd_screen_copy.7
-  jr nc, cmd_screen_copy.8
-  cp 6
-  jr z, cmd_screen_copy.6
-
-cmd_screen_copy.5:  ; scroll down
   ld de, BUF
   push de
     push hl
@@ -3083,6 +3061,28 @@ cmd_screen_copy.5:  ; scroll down
   ldir
   ret
 
+cmd_screen_copy.above:
+  cp 7
+  jr z, cmd_screen_copy.7
+  jr nc, cmd_screen_copy.8
+  cp 6
+  jr z, cmd_screen_copy.6
+
+cmd_screen_copy.5:  ; scroll down
+  ld de, BUF
+  ld bc, 0x0020
+  push bc
+    push de
+      push hl
+        ldir
+      pop de
+      ld bc, 0x02E0
+      ldir
+    pop hl
+  pop bc
+  ldir
+  ret
+
 cmd_screen_copy.8:  ; scroll left-up
   push hl
     call cmd_screen_copy.1
@@ -3095,22 +3095,22 @@ cmd_screen_copy.6:  ; scroll down-left
   pop hl
 
 cmd_screen_copy.7:  ; scroll left
+  ld bc, 0x02FF
+  add hl, bc
   ld a, (hl)
+  ld e, l
+  ld d, h
+  dec hl
+  lddr
+  ex de, hl
   push af
-    ld e, l
-    ld d, h
-    inc hl
-    ld bc, 0x02FF
-    ldir
-    ex de, hl
-    ld a, 23
     ld c, 0x20
+    ld a, 23
 cmd_screen_copy.7.loop:
     push af
       ld e, l
       ld d, h
-      xor a
-      sbc hl, bc
+      add hl, bc
       ld a, (hl)
       ld (de), a
     pop af
@@ -3127,10 +3127,6 @@ cmd_screen_paste:
   ex de,hl
   jp LDIRVM     ; ram to vram - hl=ram, de=vram, bc=size
 
-; hl = resource number
-cmd_screen_load:
-  ret
-
 cmd_screen.get_start:
   ld a, (SCRMOD)
   ld hl, 0x1800   ; screen start
@@ -3139,6 +3135,55 @@ cmd_screen.get_start:
   ret nz
   ld h, a
   ret
+
+; hl = resource number
+cmd_screen_load:
+  ld (DAC), hl
+  ld a, (RAMAD2)           ; test RAM on page 2
+  cp 0xFF
+  jr nz, cmd_screen_load.ram_on_page_2
+
+cmd_screen_load.ram_on_page_3:
+  di
+    call select_rsc_on_page_0
+
+    ld bc, (DAC)             ; bc = resource number
+    call resource.address    ; hl = resource start address, bc = resource size
+
+    ld de, (FONTADDR)
+    push de
+    ldir
+
+    call select_rom_on_page_0
+  ei
+  pop hl
+  jr cmd_screen_load.do
+
+cmd_screen_load.ram_on_page_2:
+  di
+    call select_ram_on_page_2
+    call select_rsc_on_page_0
+
+    ld bc, (DAC)             ; bc = resource number
+    call resource.address    ; hl = resource start address, bc = resource size
+
+    ld de, 0x8000
+    push de
+    ldir
+
+    call select_rom_on_page_0
+  ei
+  pop hl
+  call cmd_screen_load.do
+  jp select_rom_on_page_2
+
+cmd_screen_load.do:
+  ld c, (hl)
+  inc hl
+  ld b, (hl)
+  inc hl
+  jp XBASIC_BLOAD     ; hl = block start, bc = block count
+
 
 ;---------------------------------------------------------------------------------------------------------
 ; MEMORY / SLOT / PAGE ROUTINES

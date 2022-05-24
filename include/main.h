@@ -60,9 +60,9 @@ Version history
                        to double precision type (BCD);
 0.2.9.8 – (2022/xx/xx) Full disk file support;
 0.2.9.7 – (2022/xx/xx) Partial disk file support;
-0.2.9.6 – (2022/04/xx) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
+0.2.9.6 – (2022/06/xx) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
 
-0.2.9.5 – (2022/05/24) SCREEN COPY/PASTE, SCREEN SCROLL,
+0.2.9.5 – (2022/05/23) SCREEN COPY/PASTE, SCREEN SCROLL,
                        SCREEN LOAD (.SCn as resources),
                        SPRITE LOAD (CMD WRTSPR alternative);
 0.2.9.4 – (2022/04/25) Several bug fixes: try..catch exceptions,
@@ -479,6 +479,23 @@ EXTENDED COMMANDS
 
   Transpose a sprite pattern
     SET SPRITE TRANSPOSE <n>, <dir: 0=horizontal, 1=vertical, 2=both>
+
+  Copy screen to array (only for modes 1, 2 and 4)
+    SCREEN COPY TO <array> [SCROLL <direction>]
+    *direction = same as STRIG
+
+  Copy array to screen (only for modes 1, 2, and 4)
+    SCREEN PASTE FROM <array>
+
+  Do a screen scroll (only for modes 1, 2 and 4)
+    SCREEN SCROLL <direction>
+    *direction = same as STRIG
+
+  Load a screen resource
+    SCREEN LOAD <resource>
+
+  Load a sprite resource
+    SPRITE LOAD <resource>
 
 EXTENDED FUNCTIONS
 

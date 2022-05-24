@@ -4022,6 +4022,7 @@ bool Parser::eval_cmd_screen_copy(LexerLine *statement) {
                             return false;
                         }
                         state = 2;
+                        continue;
                     }
                 }
                 break;

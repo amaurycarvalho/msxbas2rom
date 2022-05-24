@@ -7535,20 +7535,55 @@ void Compiler::cmd_screen() {
 }
 
 void Compiler::cmd_screen_copy() {
+    Lexeme *lexeme;
     ActionNode *action;
     unsigned int i, t = current_action->actions.size();
     int result_subtype;
 
     if(t) {
 
+        if(t > 2) {
+            syntax_error("SCREEN COPY with excess of parameters");
+            return;
+        }
+
         for(i = 0; i < t; i++) {
 
             action = current_action->actions[i];
-            result_subtype = evalExpression(action);
-            addCast(result_subtype, Lexeme::subtype_numeric);
+            lexeme = action->lexeme;
 
+            if(i) {
+                // push hl
+                addByte(0xE5);
+
+                result_subtype = evalExpression(action);
+                addCast(result_subtype, Lexeme::subtype_numeric);
+
+                // ld a, l                 ; copy parameter to A
+                addByte(0x7D);
+
+                // pop hl
+                addByte(0xE1);
+            } else {
+                if(lexeme->type == Lexeme::type_identifier) {
+                    // ld hl, variable
+                    addFix( lexeme );
+                    addCmd(0x21, 0x0000);
+                    result_subtype = Lexeme::subtype_numeric;
+                } else {
+                    result_subtype = evalExpression(action);
+                }
+                addCast(result_subtype, Lexeme::subtype_numeric);
+                if(t == 1) {
+                    // xor a
+                    addByte(0xAF);
+                }
+            }
 
         }
+
+        // call screen_copy
+        addCmd(0xCD, def_cmd_screen_copy);
 
     } else {
         syntax_error("SCREEN COPY with empty parameters");
@@ -7557,20 +7592,37 @@ void Compiler::cmd_screen_copy() {
 }
 
 void Compiler::cmd_screen_paste() {
+    Lexeme *lexeme;
     ActionNode *action;
     unsigned int i, t = current_action->actions.size();
     int result_subtype;
 
     if(t) {
 
+        if(t > 1) {
+            syntax_error("SCREEN PASTE with excess of parameters");
+            return;
+        }
+
         for(i = 0; i < t; i++) {
 
             action = current_action->actions[i];
-            result_subtype = evalExpression(action);
-            addCast(result_subtype, Lexeme::subtype_numeric);
+            lexeme = action->lexeme;
 
+                if(lexeme->type == Lexeme::type_identifier) {
+                    // ld hl, variable
+                    addFix( lexeme );
+                    addCmd(0x21, 0x0000);
+                    result_subtype = Lexeme::subtype_numeric;
+                } else {
+                    result_subtype = evalExpression(action);
+                }
+                addCast(result_subtype, Lexeme::subtype_numeric);
 
         }
+
+        // call screen_paste
+        addCmd(0xCD, def_cmd_screen_paste);
 
     } else {
         syntax_error("SCREEN PASTE with empty parameters");
@@ -7635,6 +7687,8 @@ void Compiler::cmd_screen_load() {
             result_subtype = evalExpression(action);
             addCast(result_subtype, Lexeme::subtype_numeric);
 
+            // call screen_load
+            addCmd(0xCD, def_cmd_screen_load);
 
         }
 
@@ -10170,12 +10224,21 @@ void Compiler::cmd_sprite_load() {
 
     if(t) {
 
+        if(t > 1) {
+            syntax_error("SPRITE LOAD with excess of parameters");
+            return;
+        }
+
         for(i = 0; i < t; i++) {
 
             action = current_action->actions[i];
             result_subtype = evalExpression(action);
             addCast(result_subtype, Lexeme::subtype_numeric);
 
+            // ld (DAC), hl
+            addCmd(0x22, def_DAC);
+            // call cmd_wrtspr                    ; tiny sprite loader
+            addCmd(0xCD, def_cmd_wrtspr);
 
         }
 
@@ -12609,6 +12672,7 @@ int FileNode::read() {
 
             packed_length += bytes;
         }
+        blocks ++;
     }
     return bytes;
 }

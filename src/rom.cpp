@@ -837,7 +837,8 @@ void Rom::buildMapAndResourcesFileSCR(char *filename) {
     if (file->open()) {
 
         block_start = filInd;
-        filInd += 1;
+        filInd += 2;
+        size_read += 2;
 
         while(!file->eof()) {
 
@@ -857,17 +858,20 @@ void Rom::buildMapAndResourcesFileSCR(char *filename) {
                 return;
             }
 
+            data[filInd] = bytes;
+            filInd ++;
             memcpy(&data[filInd], file->buffer, bytes);
 
             filInd += bytes;
-            size_read += bytes;
+            size_read += bytes + 1;
 
         }
         file->close();
 
         if(size_read) {
             // blocks count
-            data[block_start] = file->blocks;
+            data[block_start] = (file->blocks & 0xff);
+            data[block_start+1] = (file->blocks >> 8) & 0xff;
 
             memcpy(&data[mapInd], &block_start, 2);
             mapInd += 2;

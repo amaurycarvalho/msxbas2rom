@@ -62,7 +62,7 @@
 #define def_cmd_runasm	                 0x4618
 
 #define def_cmd_screen_copy              0x4E5E
-#define def_cmd_screen_load              0x4F12
+#define def_cmd_screen_load              0x4F1F
 #define def_cmd_screen_paste             0x4F0A
 
 #define def_cmd_setfnt	                 0x47E4
