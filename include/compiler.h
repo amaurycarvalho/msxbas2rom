@@ -190,9 +190,14 @@ class Compiler {
     void cmd_put_sprite();
     void cmd_put_tile();
     void cmd_set();
+    void cmd_set_adjust();
     void cmd_set_page();
     void cmd_set_scroll();
     void cmd_set_video();
+    void cmd_set_screen();
+    void cmd_set_beep();
+    void cmd_set_title();
+    void cmd_set_prompt();
     void cmd_set_tile();
     void cmd_set_sprite();
     void cmd_on();
@@ -224,6 +229,10 @@ class Compiler {
     bool addCheckTraps();
     void addEnableBasicSlot();
     void addDisableBasicSlot();
+
+    void beginBasicSetStmt(string name);
+    void endBasicSetStmt();
+    void addBasicChar(char c);
 
     void syntax_error();
     void syntax_error(string msg);

@@ -67,6 +67,7 @@ class Parser {
     bool eval_cmd_screen_scroll(LexerLine *statement);
     bool eval_cmd_screen_load(LexerLine *statement);
     bool eval_cmd_set(LexerLine *statement);
+    bool eval_cmd_set_adjust(LexerLine *statement);
     bool eval_cmd_set_tile(LexerLine *statement);
     bool eval_cmd_set_tile_colpat(LexerLine *statement);
     bool eval_cmd_set_sprite(LexerLine *statement);

@@ -446,7 +446,10 @@ int Tokenizer::writeTokenKeyword(Lexeme *lexeme, unsigned char *s) {
                         result = 2;
                         goto_gosub = false;
                     } else if(s[0] == 0x89 || s[0] == 0x8D) {
-                        // goto and gosub case
+                        // goto and gosub cases
+                        goto_gosub = true;
+                    } else if(s[0] == 0xDA || s[0] == 0xA1) {
+                        // then or else cases
                         goto_gosub = true;
                     } else if(s[0] == 0x84) {
                         // data case

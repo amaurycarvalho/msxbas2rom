@@ -7609,15 +7609,15 @@ void Compiler::cmd_screen_paste() {
             action = current_action->actions[i];
             lexeme = action->lexeme;
 
-                if(lexeme->type == Lexeme::type_identifier) {
-                    // ld hl, variable
-                    addFix( lexeme );
-                    addCmd(0x21, 0x0000);
-                    result_subtype = Lexeme::subtype_numeric;
-                } else {
-                    result_subtype = evalExpression(action);
-                }
-                addCast(result_subtype, Lexeme::subtype_numeric);
+            if(lexeme->type == Lexeme::type_identifier) {
+                // ld hl, variable
+                addFix( lexeme );
+                addCmd(0x21, 0x0000);
+                result_subtype = Lexeme::subtype_numeric;
+            } else {
+                result_subtype = evalExpression(action);
+            }
+            addCast(result_subtype, Lexeme::subtype_numeric);
 
         }
 
@@ -9167,25 +9167,25 @@ void Compiler::cmd_set() {
         addCmd(0xCA, 0x0000);
 
         if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "ADJUST") {
-            syntax_error("Not supported yet");
+            cmd_set_adjust();
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "BEEP") {
-            syntax_error("Not supported yet");
+            cmd_set_beep();
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "DATE") {
             syntax_error("Not supported yet");
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "PAGE") {
             cmd_set_page();
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "PASSWORD") {
-            syntax_error("Not supported yet");
+            syntax_error("SET PASSWORD will not be supported for end-user security");
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "PROMPT") {
-            syntax_error("Not supported yet");
+            cmd_set_prompt();
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "SCREEN") {
-            syntax_error("Not supported yet");
+            cmd_set_screen();
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "SCROLL") {
             cmd_set_scroll();
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "TIME") {
             syntax_error("Not supported yet");
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "TITLE") {
-            syntax_error("Not supported yet");
+            cmd_set_title();
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "VIDEO") {
             cmd_set_video();
         } else {
@@ -9200,6 +9200,62 @@ void Compiler::cmd_set() {
 
 }
 
+void Compiler::beginBasicSetStmt(string name) {
+    int i, l = name.size();
+    char *s = (char *) name.c_str();
+
+    // ld hl, BUF
+    addCmd(0x21, def_BUF);
+    // push hl
+    addByte(0xE5);
+
+    // ; set subcommand
+    for(i = 0; i < l; i++) {
+        addBasicChar(s[i]);
+    }
+
+}
+
+void Compiler::endBasicSetStmt() {
+    //   xor a
+    addByte(0xAF);
+    //   ld (hl), a
+    addByte(0x77);
+    //   inc hl
+    addByte(0x23);
+    //   ld (hl), a
+    addByte(0x77);
+
+    // pop hl
+    addByte(0xE1);
+
+    // ld a, (VERSION)
+    addCmd(0x3A, def_VERSION);
+    // and a
+    addByte(0xA7);
+    // jr z, skip
+    addWord(0x28, 9);
+
+    //   ld a, (hl)      ; first character
+    addByte(0x7E);
+    //   ld ix, (SET)    ; SET
+    addWord(0xDD, 0x2A);
+    addWord(def_SET_STMT);
+    //   call CALBAS
+    addCmd( 0xcd, def_CALBAS );
+    //   ei
+    addByte(0xFB);
+
+    // skip:
+}
+
+void Compiler::addBasicChar(char c) {
+    // ld (hl), char
+    addWord(0x36, c);
+    // inc hl
+    addByte(0x23);
+}
+
 void Compiler::cmd_set_video() {
     ActionNode *action = current_action->actions[0], *sub_action;
     unsigned int i, t = action->actions.size();
@@ -9212,38 +9268,13 @@ void Compiler::cmd_set_video() {
             return;
         }
 
-        // ld hl, BUF
-        addCmd(0x21, def_BUF);
-        // push hl
-        addByte(0xE5);
-        //   ld (hl), 0x56  ; VIDEO tokens
-        addWord(0x36, 0x56);
-        //   inc hl
-        addByte(0x23);
-        //   ld (hl), 0x49
-        addWord(0x36, 0x49);
-        //   inc hl
-        addByte(0x23);
-        //   ld (hl), 0x44
-        addWord(0x36, 0x44);
-        //   inc hl
-        addByte(0x23);
-        //   ld (hl), 0x45
-        addWord(0x36, 0x45);
-        //   inc hl
-        addByte(0x23);
-        //   ld (hl), 0x4F
-        addWord(0x36, 0x4F);
-        //   inc hl
-        addByte(0x23);
+        beginBasicSetStmt("VIDEO");
 
         for(i = 0; i < t; i++) {
 
             if( i ) {
-                // ld (hl), 0x2C   ; comma
-                addWord(0x36, 0x2C);
-                // inc hl
-                addByte(0x23);
+                // comma
+                addBasicChar(',');
             }
 
             // push hl
@@ -9279,39 +9310,268 @@ void Compiler::cmd_set_video() {
 
         }
 
-        //   xor a
-        addByte(0xAF);
-        //   ld (hl), a
-        addByte(0x77);
-        //   inc hl
-        addByte(0x23);
-        //   ld (hl), a
-        addByte(0x77);
-
-        // pop hl
-        addByte(0xE1);
-
-        // ld a, (VERSION)
-        addCmd(0x3A, def_VERSION);
-        // and a
-        addByte(0xA7);
-        // jr z, skip
-        addWord(0x28, 9);
-
-        //   ld a, (hl)      ; first character
-        addByte(0x7E);
-        //   ld ix, (SET)    ; SET
-        addWord(0xDD, 0x2A);
-        addWord(def_SET_STMT);
-        //   call CALBAS
-        addCmd( 0xcd, def_CALBAS );
-        //   ei
-        addByte(0xFB);
-
-        // skip:
+        endBasicSetStmt();
 
     } else {
         syntax_error("SET VIDEO with empty parameters");
+    }
+
+}
+
+void Compiler::cmd_set_adjust() {
+    ActionNode *action = current_action->actions[0], *sub_action;
+    unsigned int i, t = action->actions.size();
+    int result_subtype;
+
+    if(t == 2) {
+
+        // get parameters
+
+        for(i = 0; i < t; i++) {
+            if(i) {
+                // push hl
+                addByte(0xE5);
+            }
+            // ld hl, parameter value
+            sub_action = action->actions[i];
+            result_subtype = evalExpression(sub_action);
+            addCast(result_subtype, Lexeme::subtype_numeric);
+        }
+
+        // ex de,hl   ; DE = second parameter
+        addByte(0xEB);
+        // pop bc     ; BC = first parameter
+        addByte(0xC1);
+
+        // build command string
+
+        beginBasicSetStmt("ADJUST");
+
+        // (
+        addBasicChar('(');
+
+        // integer prefix
+        addBasicChar(0x1C);
+        // ld (hl), c      ; first parameter
+        addByte(0x71);
+        // inc hl
+        addByte(0x23);
+        // ld (hl), b
+        addByte(0x70);
+        // inc hl
+        addByte(0x23);
+
+        // comma
+        addBasicChar(',');
+
+        // integer prefix
+        addBasicChar(0x1C);
+        // ld (hl), e      ; second parameter
+        addByte(0x73);
+        // inc hl
+        addByte(0x23);
+        // ld (hl), d
+        addByte(0x72);
+        // inc hl
+        addByte(0x23);
+
+        // )
+        addBasicChar(')');
+
+        endBasicSetStmt();
+
+    } else {
+        syntax_error("Wrong parameters count on SET ADJUST statement");
+    }
+
+}
+
+void Compiler::cmd_set_screen() {
+    ActionNode *action = current_action->actions[0];
+    unsigned int t = action->actions.size();
+
+    if(t == 0) {
+
+        // build command string
+
+        beginBasicSetStmt("");
+        addBasicChar(0xC5);   // token for SCREEN
+
+        endBasicSetStmt();
+
+    } else {
+        syntax_error("Wrong parameters count on SET SCREEN statement");
+    }
+
+}
+
+void Compiler::cmd_set_beep() {
+    ActionNode *action = current_action->actions[0], *sub_action;
+    unsigned int i, t = action->actions.size();
+    int result_subtype;
+
+    if(t == 2) {
+
+        // get parameters
+
+        for(i = 0; i < t; i++) {
+            if(i) {
+                // push hl
+                addByte(0xE5);
+            }
+            // ld hl, parameter value
+            sub_action = action->actions[i];
+            result_subtype = evalExpression(sub_action);
+            addCast(result_subtype, Lexeme::subtype_numeric);
+        }
+
+        // ex de,hl   ; DE = second parameter
+        addByte(0xEB);
+        // pop bc     ; BC = first parameter
+        addByte(0xC1);
+
+        // build command string
+
+        beginBasicSetStmt("");
+        addBasicChar(0xC0);   // token for BEEP
+
+        // short integer prefix
+        addBasicChar(0x0F);
+        // ld (hl), c      ; first parameter
+        addByte(0x71);
+        // inc hl
+        addByte(0x23);
+
+        // comma
+        addBasicChar(',');
+
+        // short integer prefix
+        addBasicChar(0x0F);
+        // ld (hl), e      ; second parameter
+        addByte(0x73);
+        // inc hl
+        addByte(0x23);
+
+        endBasicSetStmt();
+
+    } else {
+        syntax_error("Wrong parameters count on SET BEEP statement");
+    }
+
+}
+
+void Compiler::cmd_set_title() {
+    ActionNode *action = current_action->actions[0], *sub_action;
+    unsigned int t = action->actions.size();
+    int result_subtype;
+
+    if(t == 2) {
+
+        // get parameters
+
+        // ld hl, parameter value
+        sub_action = action->actions[1];
+        result_subtype = evalExpression(sub_action);
+        addCast(result_subtype, Lexeme::subtype_numeric);
+
+        // push hl
+        addByte(0xE5);
+
+        // ld hl, parameter value
+        sub_action = action->actions[0];
+        result_subtype = evalExpression(sub_action);
+        addCast(result_subtype, Lexeme::subtype_string);
+
+        // ex de,hl   ; DE = first parameter
+        addByte(0xEB);
+        // pop bc     ; BC = second parameter
+        addByte(0xC1);
+
+        // build command string
+
+        beginBasicSetStmt("TITLE");
+
+        // double quote
+        addBasicChar('"');
+        // push bc
+        addByte(0xC5);
+        // ex de,hl
+        addByte(0xEB);
+        //   ld c, (hl)  ; string size
+        addByte(0x4E);
+        //   ld b, 0
+        addWord(0x06, 0x00);
+        //   inc hl
+        addByte(0x23);
+        //   ldir
+        addWord(0xED, 0xB0);
+        // ex de,hl
+        addByte(0xEB);
+        // pop bc
+        addByte(0xC1);
+        // double quote
+        addBasicChar('"');
+
+        // comma
+        addBasicChar(',');
+
+        // short integer prefix
+        addBasicChar(0x0F);
+        // ld (hl), c      ; second parameter
+        addByte(0x71);
+        // inc hl
+        addByte(0x23);
+
+        endBasicSetStmt();
+
+    } else {
+        syntax_error("Wrong parameters count on SET TITLE statement");
+    }
+
+}
+
+void Compiler::cmd_set_prompt() {
+    ActionNode *action = current_action->actions[0], *sub_action;
+    unsigned int t = action->actions.size();
+    int result_subtype;
+
+    if(t == 1) {
+
+        // get parameters
+
+        // ld hl, parameter value
+        sub_action = action->actions[0];
+        result_subtype = evalExpression(sub_action);
+        addCast(result_subtype, Lexeme::subtype_string);
+
+        // ex de,hl   ; DE = first parameter
+        addByte(0xEB);
+
+        // build command string
+
+        beginBasicSetStmt("PROMPT");
+
+        // double quote
+        addBasicChar('"');
+        // ex de,hl
+        addByte(0xEB);
+        //   ld c, (hl)  ; string size
+        addByte(0x4E);
+        //   ld b, 0
+        addWord(0x06, 0x00);
+        //   inc hl
+        addByte(0x23);
+        //   ldir
+        addWord(0xED, 0xB0);
+        // ex de,hl
+        addByte(0xEB);
+        // double quote
+        addBasicChar('"');
+
+        endBasicSetStmt();
+
+    } else {
+        syntax_error("Wrong parameters count on SET PROMPT statement");
     }
 
 }

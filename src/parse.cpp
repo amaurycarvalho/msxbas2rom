@@ -3669,8 +3669,7 @@ bool Parser::eval_cmd_set(LexerLine *statement) {
 
         if (next_lexeme->type == Lexeme::type_keyword) {
 
-            if (next_lexeme->value == "ADJUST" ||
-                    next_lexeme->value == "BEEP" ||
+            if (    next_lexeme->value == "BEEP" ||
                     next_lexeme->value == "DATE" ||
                     next_lexeme->value == "PAGE" ||
                     next_lexeme->value == "PASSWORD" ||
@@ -3681,6 +3680,8 @@ bool Parser::eval_cmd_set(LexerLine *statement) {
                     next_lexeme->value == "TITLE" ||
                     next_lexeme->value == "VIDEO"  ) {
                 result = eval_cmd_generic(statement);
+            } else if(next_lexeme->value == "ADJUST") {
+                result = eval_cmd_set_adjust(statement);
             } else if(next_lexeme->value == "TILE") {
                 result = eval_cmd_set_tile(statement);
             } else if(next_lexeme->value == "SPRITE") {
@@ -3694,6 +3695,84 @@ bool Parser::eval_cmd_set(LexerLine *statement) {
     }
 
     return result;
+}
+
+bool Parser::eval_cmd_set_adjust(LexerLine *statement) {
+    Lexeme *next_lexeme;
+    //ActionNode *action;
+    LexerLine parm;
+    int state = 0, sepCount = 0, parmCount = 0;
+    bool mustPopAction = false;
+    string parmValue;
+
+    parm.clearLexemes();
+
+    while( (next_lexeme = statement->getNextLexeme()) ) {
+
+        next_lexeme = coalesceSymbols(next_lexeme);
+
+        if( state == 0 ) {
+            if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                state ++;
+                parmCount++;
+                //action = new ActionNode();
+                //action->lexeme = new Lexeme(Lexeme::type_keyword, Lexeme::subtype_any, "COORD");
+                //pushActionRoot(action);
+                continue;
+            } else {
+                error_message = "SET ADJUST without a valid complement.";
+                eval_expr_error = true;
+                return false;
+            }
+        } else if(state == 1) {
+            if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                sepCount ++;
+            } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+                if(sepCount) {
+                    sepCount --;
+                } else {
+                    mustPopAction = true;
+                    parmCount ++;
+                    continue;
+                }
+            } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0) {
+                if(parm.getLexemeCount()) {
+                    parm.setLexemeBOF();
+                    if(!eval_expression(&parm)) {
+                        return false;
+                    }
+                    parm.clearLexemes();
+                    if(mustPopAction) {
+                        popActionRoot();
+                        mustPopAction = false;
+                    } else
+                        parmCount ++;
+                } else {
+                    parmCount ++;
+                    next_lexeme = lex_null;
+                    pushActionFromLexeme(next_lexeme);
+                }
+                continue;
+            }
+            parm.addLexeme(next_lexeme);
+        }
+
+    }
+
+    if(parm.getLexemeCount()) {
+
+        next_lexeme = parm.getFirstLexeme();
+
+        parm.setLexemeBOF();
+        if(!eval_expression(&parm)) {
+            return false;
+        }
+
+        parm.clearLexemes();
+
+    }
+
+    return true;
 }
 
 bool Parser::eval_cmd_set_tile(LexerLine *statement) {

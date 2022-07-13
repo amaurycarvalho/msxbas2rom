@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.2.9.5"
+#define app_version "0.2.9.6"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -56,12 +56,13 @@ Version history
 
 0.3.1.0 – (2022/xx/xx) RUN support to call sub-programs;
 0.3.0.0 – (2022/xx/xx) MegaROM mode support for CMD and RESOURCES;
-0.2.9.9 – (2022/xx/xx) COPY screen data in tiled mode, Better support
+0.2.9.9 – (2022/xx/xx) Disk file support;
+0.2.9.8 – (2022/xx/xx) COPY screen data in tiled mode, Better support
                        to double precision type (BCD);
-0.2.9.8 – (2022/xx/xx) Full disk file support;
-0.2.9.7 – (2022/xx/xx) Partial disk file support;
-0.2.9.6 – (2022/06/xx) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
+0.2.9.7 – (2022/08/xx) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
 
+0.2.9.6 – (2022/07/15) Tokenized THEN/GOTO bug fix,
+                       SET ADJUST/SCREEN/BEEP/TITLE/PROMPT support;
 0.2.9.5 – (2022/05/23) SCREEN COPY/PASTE, SCREEN SCROLL,
                        SCREEN LOAD (.SCn as resources),
                        SPRITE LOAD (CMD WRTSPR alternative);
