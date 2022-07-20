@@ -7775,22 +7775,36 @@ void Compiler::cmd_color() {
         if(lexeme->type == Lexeme::type_keyword) {
 
             if(lexeme->value == "NEW") {
-                // ld ix, 0x0141
+                // ld a, (VERSION)
+                addCmd(0x3A, def_VERSION);
+                // and a
+                addByte(0xA7);
+                // jr z, skip
+                addWord(0x28, 8);
+                //   ld ix, 0x0141
                 addByte(0xDD);
                 addCmd(0x21, 0x0141);
-                // call EXTROM
+                //   call EXTROM
                 addCmd(0xCD, def_EXTROM);
-                // ei
+                //   ei
                 addByte(0xFB);
+                // skip:
 
             } else if(lexeme->value == "RESTORE") {
-                // ld ix, 0x0145
+                // ld a, (VERSION)
+                addCmd(0x3A, def_VERSION);
+                // and a
+                addByte(0xA7);
+                // jr z, skip
+                addWord(0x28, 8);
+                //   ld ix, 0x0145
                 addByte(0xDD);
                 addCmd(0x21, 0x0145);
-                // call EXTROM
+                //   call EXTROM
                 addCmd(0xCD, def_EXTROM);
-                // ei
+                //   ei
                 addByte(0xFB);
+                // skip:
 
             } else if(lexeme->value == "SPRITE") {
 
