@@ -35,11 +35,11 @@ jobs:
       run: make PARMS=-m64 clean release
     - name: Do test
       run: |
-          cp bin/Release/*.exe test/check/simple
-          cd test/check/simple
-          $files = Get-ChildItem -Path "." -Include *.bas
-          foreach ($f in $files) {
-            echo $f.FullName
-            ./msxbas2rom -c -q $f.FullName
-          }
+        cp bin\Release\*.exe test\check\simple
+        cd test\check\simple
+        $files = Get-ChildItem -Path "." -Include *.bas
+        foreach ($f in $files) {
+          echo $f.FullName
+          ./msxbas2rom -c -q $f.FullName
+        }
 
