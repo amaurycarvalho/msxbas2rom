@@ -35,8 +35,8 @@ jobs:
       run: make PARMS=-m64 clean release
     - name: Do test
       run: |
-          Copy-Item "bin\Release\*.exe" -Destination "test\check\simple"
-          Set-Location -Path "test\check\simple"
+          cp bin\Release\*.exe test\check\simple
+          cd test\check\simple
           $files = Get-ChildItem -Path "." -Include *.bas
           foreach ($f in $files) {
             echo $f.FullName
