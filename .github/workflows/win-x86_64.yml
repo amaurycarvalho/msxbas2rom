@@ -28,7 +28,7 @@ jobs:
 #        shell: msys2 {0}
     steps:
     - name: Set up MinGW (64 bits)
-      uses: egor-tensin/setup-mingw@v2
+      uses: Honeybunch/setup-mingw
       with:
         platform: x64
 #    - name: Setup 64 bits compiler
