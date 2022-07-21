@@ -23,19 +23,23 @@ jobs:
                    
   test-windows:
     runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
+#    defaults:
+#      run:
+#        shell: msys2 {0}
     steps:
-    - name: Setup 64 bits compiler
-      uses: msys2/setup-msys2@v2
+    - name: Set up MinGW (64 bits)
+      uses: egor-tensin/setup-mingw@v2
       with:
-        update: true
-        install: >-
-          base-devel
-          gcc
-          git
-          libargp-devel
+        platform: x64
+#    - name: Setup 64 bits compiler
+#      uses: msys2/setup-msys2@v2
+#      with:
+#        update: true
+#        install: >-
+#          base-devel
+#          gcc
+#          git
+#          libargp-devel
     - name: Checkout
       uses: actions/checkout@v2
     - name: Make -> clean release (64bits)
