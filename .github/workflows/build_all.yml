@@ -41,21 +41,11 @@ jobs:
 
   build-windows-x32:
     runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
     steps:
-    - name: Setup 32 bits compiler
-      uses: msys2/setup-msys2@v2
+    - name: Set up MinGW (32 bits)
+      uses: Honeybunch/setup-mingw@v3
       with:
-        msystem: MINGW32
-        update: true
-        install: >-
-          base-devel
-          gcc
-          git
-          libargp-devel
-          mingw-w64-i686-toolchain
+        platform: x86
     - name: Checkout
       uses: actions/checkout@v2
     - name: Make -> clean release (32bits)
@@ -68,19 +58,11 @@ jobs:
 
   build-windows-x64:
     runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
     steps:
-    - name: Setup 64 bits compiler
-      uses: msys2/setup-msys2@v2
+    - name: Set up MinGW (64 bits)
+      uses: Honeybunch/setup-mingw@v3
       with:
-        update: true
-        install: >-
-          base-devel
-          gcc
-          git
-          libargp-devel
+        platform: x64
     - name: Checkout
       uses: actions/checkout@v2
     - name: Make -> clean release (64bits)
