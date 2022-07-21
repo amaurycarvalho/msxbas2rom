@@ -37,9 +37,9 @@ jobs:
       run: |
         cp bin\Release\*.exe test\check\simple
         cd test\check\simple
-        $files = Get-ChildItem .\*.bas
+        $files = Get-ChildItem -Path .\*.bas -Name
         foreach ($f in $files) {
-          echo $f.FullName
-          ./msxbas2rom -c -q $f.FullName
+          echo $f
+          ./msxbas2rom -c -q $f
         }
 
