@@ -49,6 +49,7 @@ jobs:
     - name: Refresh environment
       run: |
           refreshenv
+          choco install make
     - name: Checkout
       uses: actions/checkout@v2
     - name: Make -> clean release (32bits)
