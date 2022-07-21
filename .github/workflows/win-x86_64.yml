@@ -28,7 +28,7 @@ jobs:
 #        shell: msys2 {0}
     steps:
     - name: Set up MinGW (64 bits)
-      uses: Honeybunch/setup-mingw
+      uses: Honeybunch/setup-mingw@v3
       with:
         platform: x64
 #    - name: Setup 64 bits compiler
