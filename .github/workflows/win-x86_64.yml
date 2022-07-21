@@ -18,6 +18,7 @@ jobs:
         chmod +x msxbas2rom
         array="$(ls *.bas)"
         for i in ${array[*]}; do
+          echo $i
           ./msxbas2rom -c -q $i
         done
                    
@@ -33,13 +34,12 @@ jobs:
     - name: Make -> clean release (64bits)
       run: make PARMS=-m64 clean release
     - name: Do test
-      uses: Amadevus/pwsh-script@v2
-      with:
-        script: |
+      run: |
           Copy-Item "bin\Release\*.exe" -Destination "test\check\simple"
           Set-Location -Path "test\check\simple"
           $files = Get-ChildItem -Path "." -Include *.bas
           foreach ($f in $files) {
+            echo $f.FullName
             ./msxbas2rom -c -q $f.FullName
           }
 
