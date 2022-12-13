@@ -1,0 +1,22 @@
+MEGAROM test
+
+--------------------
+
+  ld (SUBFLG), a          ; DATA start segment number
+  ld (DORES), a           ; DATA current segment number
+  ld (DATPTR), bc         ; DATA current pointer
+  ld (DATLIN), bc         ; DATA start pointer
+
+--------------------
+
+  ld hl, (resource.map.address)
+  ld a, (resource.map.segment)
+
+--------------------
+
+test54.bas
+test58.bas
+test69.bas
+test70.bas
+test71.bas
+
