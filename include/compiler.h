@@ -270,11 +270,11 @@ class Compiler {
     unsigned char *ram;  //[0xFFFF];
 
     int code_pointer, ram_pointer;
-    int mark_count, for_count, data_start;
+    int mark_count, for_count;
     unsigned char *last_code[5];
 
     SymbolNode *heap_mark, *temp_str_mark;
-    FixNode *data_mark, *end_mark;
+    FixNode *end_mark;
     FixNode *enable_basic_mark, *disable_basic_mark;
     FixNode *draw_mark;
     FixNode *io_redirect_mark, *io_screen_mark;

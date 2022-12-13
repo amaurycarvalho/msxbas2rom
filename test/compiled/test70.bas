@@ -1,6 +1,8 @@
 FILE "test70.txt"
+FILE "test70.txt"
+FILE "test70.txt"
 
-10 CMD RESTORE 0
+10 CMD RESTORE 2
 
 20 READ R$
 30 IF R$="*" THEN 60

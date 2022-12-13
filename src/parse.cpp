@@ -246,6 +246,8 @@ bool Parser::eval_statement(LexerLine *statement) {
                   lexeme->value == "WAIT" ||
                   lexeme->value == "SEED" ||
                   lexeme->value == "BLOAD") {
+            if(lexeme->value == "BLOAD")
+                resourceCount ++;
             result = eval_cmd_generic(statement);
         } else if(lexeme->value == "SCREEN") {
             result = eval_cmd_screen(statement);

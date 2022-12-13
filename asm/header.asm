@@ -291,18 +291,22 @@ TMPSTRBUF:    equ TMPSTRADDR+2 ; 2 - temporary string next pointer
 FONTOLDSLT:   equ TMPSTRBUF+2  ; 1 - old bios font slot
 FONTOLD:      equ FONTOLDSLT+1 ; 2 - old bios font address
 FONTADDR:     equ FONTOLD+2    ; 2 - new font space address
+RSCMAPAD:     equ FONTADDR+2   ; 2 - resource map address (copy on ram)
+RSCMAPSG:     equ RSCMAPAD+2   ; 1 - resource map segment number (copy on ram)
+RSCMAPT1:     equ RSCMAPSG+1   ; 1 - resource map temporary space for last segment number
 
-BASMEM:         equ FONTADDR+2
-BASTEXT:        equ 0x800E     ; 0x8008 - address of user basic code
+BASMEM:       equ RSCMAPT1+1   ; RAM starts after compiler internal variables
 
-PLYBUF:         equ 0xEF00
-SPRTBL:         equ PLYBUF - (32*5)    ; 32 sprites * (test, x0, x1, y0, y1)
-SPRSIZ:         equ SPRTBL - 1
-HEAPEND:        equ SPRSIZ - 1
+PLYBUF:       equ 0xEF00
+SPRTBL:       equ PLYBUF - (32*5)      ; 32 sprites * (test, x0, x1, y0, y1)
+SPRSIZ:       equ SPRTBL - 1
+HEAPEND:      equ SPRSIZ - 1
 
-PageSize:	    equ 4000h	   ; 16kB
+PageSize:	  equ 4000h	               ; 16kB
 
-resource.data:  equ 0x0010     ; resources map address
+BASTEXT:                equ 0x800E     ; address of user basic code
+resource.map.address:   equ 0x800B     ; resource map address
+resource.map.segment:   equ 0x800D     ; resource map segment
 
 ; ------------------------------------------------------------------------------------------------------
 ; MACROS
@@ -322,12 +326,13 @@ ENDM
 
 ; ### ROM header ###
 
-	db "AB"		; ID for auto-executable ROM
-	dw INIT1	; Main program execution address.
-    dw 0x0000	; STATEMENT
-	dw 0		; DEVICE
-	dw 0		; TEXT
-	dw 0,0,0	; Reserved
+	db "AB"		    ; ID for auto-executable ROM
+	dw INIT1	    ; Main program execution address.
+    dw 0x0000	    ; STATEMENT
+	dw 0		    ; DEVICE
+	dw 0		    ; TEXT
+    db 'MSXB2R'     ; MSXBAS2ROM signature
+	;dw 0,0,0	    ; Reserved
 
 INIT1:	; Program code entry point label - 'c' has rom slot id
 
@@ -421,20 +426,126 @@ run_user_basic_code_on_rom:
   jp 0x8010      	         ; Jump to above page (start code)
 
 ;---------------------------------------------------------------------------------------------------------
+; MAP OF XBASIC WRAPPER ROUTINES
+;---------------------------------------------------------------------------------------------------------
+
+wrapper_routines_map_start:
+  jp castParamFloatInt
+  jp cmd_clrkey
+  jp cmd_clrscr
+  jp cmd_disscr
+  jp cmd_draw
+  jp cmd_enascr
+  jp cmd_keyclkoff
+  jp cmd_mute
+  jp cmd_play
+
+  jp cmd_plyload
+  jp cmd_plyloop
+  jp cmd_plymute
+  jp cmd_plyplay
+  jp cmd_plyreplay
+  jp cmd_plysong
+  jp cmd_plysound
+
+  jp cmd_ramtoram
+  jp cmd_ramtovram
+  jp cmd_restore
+  jp cmd_runasm
+
+  jp cmd_screen_copy
+  jp cmd_screen_load
+  jp cmd_screen_paste
+
+  jp cmd_setfnt
+  jp cmd_turbo
+  jp cmd_updfntclr
+  jp cmd_vramtoram
+  jp cmd_wrtchr
+  jp cmd_wrtclr
+  jp cmd_wrtfnt
+  jp cmd_wrtscr
+  jp cmd_wrtspr
+  jp cmd_wrtspratr
+  jp cmd_wrtsprclr
+  jp cmd_wrtsprpat
+  jp cmd_wrtvram
+
+  jp floatNeg
+  jp gfxTileAddress
+
+  jp intCompareAND
+  jp intCompareEQ
+  jp intCompareGE
+  jp intCompareGT
+  jp intCompareLE
+  jp intCompareLT
+  jp intCompareNE
+  jp intCompareNOT
+  jp intCompareOR
+  jp intCompareXOR
+  jp intNeg
+  jp intSHL
+  jp intSHR
+
+  jp player.initialize
+  jp player.unhook
+
+  jp set_tile_color
+  jp set_tile_pattern
+
+  jp usr0
+  jp usr1
+  jp usr2
+  jp usr2_play
+  jp usr2_player_status
+  jp usr3
+  jp usr3.COLLISION_ALL
+  jp usr3.COLLISION_COUPLE
+  jp usr3.COLLISION_ONE
+
+  jp GET_NEXT_TEMP_STRING_ADDRESS
+
+  jp MR_CALL
+  jp MR_CALL_TRAP
+  jp MR_CHANGE_SGM
+  jp MR_GET_BYTE
+  jp MR_GET_DATA
+  jp MR_JUMP
+
+  jp XBASIC_BASE
+  jp XBASIC_BLOAD
+  jp XBASIC_BLOAD_SPRITE
+  jp XBASIC_CLS
+  jp XBASIC_COPY
+  jp XBASIC_COPY_FROM
+  jp XBASIC_COPY_TO
+  jp XBASIC_END
+  jp XBASIC_INIT
+  jp XBASIC_INPUT_1
+  jp XBASIC_INPUT_2
+  jp XBASIC_IREAD
+  jp XBASIC_LOCATE
+  jp XBASIC_PLAY
+  jp XBASIC_PRINT_STR
+  jp XBASIC_PUT_SPRITE
+  jp XBASIC_READ
+  jp XBASIC_RESTORE
+  jp XBASIC_SCREEN
+  jp XBASIC_SOUND
+  jp XBASIC_TAB
+  jp XBASIC_USING
+  jp XBASIC_USING.do
+  jp XBASIC_USR
+
+;---------------------------------------------------------------------------------------------------------
 ; XBASIC WRAPPER ROUTINES
 ;---------------------------------------------------------------------------------------------------------
 
 ; hl = heap start address
 ; de = temporary string start address
-; bc = data address
 ; ix = temporary font buffer address
-; a = data start segment number
 XBASIC_INIT:
-  ld (SUBFLG), a          ; DATA start segment number
-  ld (DORES), a           ; DATA current segment number
-  ld (DATPTR), bc         ; DATA current pointer
-  ld (DATLIN), bc         ; DATA start pointer
-
   xor a
   ld (TMPSTRIND), a       ; temporary string list current position
   ld (TMPSTRADDR), de     ; temporary string list start pointer
@@ -446,6 +557,11 @@ XBASIC_INIT:
   ld (HEAPSIZ), hl        ; heap size
 
   ld (FONTADDR), ix       ; temporary font buffer address
+
+  ld hl, (resource.map.address)
+  ld (RSCMAPAD), hl       ; resource map address (copy on ram)
+  ld a, (resource.map.segment)
+  ld (RSCMAPSG), a        ; resource map segment number (copy on ram)
 
   ld a, (CGPNTSLT)
   ld (FONTOLDSLT), a
@@ -953,24 +1069,28 @@ XBASIC_SOUND.1:
   jp WRTPSG
 
 XBASIC_READ:
+  ld a, (DORES)                 ; DATA current segment
+  or a
+  jp nz, XBASIC_READ_MR
+XBASIC_READ.cont:
   di
-    call select_rsc_on_page_0
+    call resource.open
       call XBASIC_GET_BUFFER
-      ld hl, (DATPTR)          ; DATA current pointer
+      ld hl, (DATPTR)           ; DATA current pointer
       ld de, (TMPSTRBUF)
       ld c, (hl)
       ld b, 0
       inc bc
       ldir
       ld (DATPTR), hl
-    call select_rom_on_page_0
+    call resource.close
   ei
   ld hl, (TMPSTRBUF)
   ret
 
 XBASIC_IREAD:
   di
-    call select_rsc_on_page_0
+    call resource.open
       ld hl, (DATPTR)          ; DATA current pointer
       ld e, (hl)
       inc hl
@@ -978,7 +1098,7 @@ XBASIC_IREAD:
       inc hl
       ld (DATPTR), hl
     push de
-    call select_rom_on_page_0
+    call resource.close
   ei
   pop hl
   ret
@@ -1000,32 +1120,43 @@ XBASIC_IREAD:
 ;       STRINGS item_data[line_items_count]
 ;   structure for TXT (2)
 ;     STRINGS item_data[...]
+;   structure for IDATA (3)
+;     WORD resource_items_count
+;     ARRAY lines_map[resource_items_count]
+;       WORD line_number
+;       BYTE line_items_count
+;     ARRAY lines_data[resource_items_count]
+;       WORD item_data[line_items_count]
 XBASIC_RESTORE:
   di
     push hl
-      call select_rsc_on_page_0
-    pop bc                 ; bc = new line position
-    ld hl, (DATLIN)        ; DATA map table start pointer
+      call resource.open
+    pop bc                      ; bc = new line position
+    ld hl, (DATLIN)             ; DATA map table start pointer
+    ld a, (SUBFLG)              ; DATA start segment
+    ld (DORES), a               ; DATA current segment
+    or a
+    call nz, MR_CHANGE_SGM
 XBASIC_RESTORE.cont:
     ld a, (hl)
-    ld (TEMP2), a          ; data resource type
+    ld (TEMP2), a               ; data resource type
     or a
-    jr z, XBASIC_RESTORE.0 ; 0=DATA
+    jr z, XBASIC_RESTORE.0      ; 0=DATA
     dec a
-    jr z, XBASIC_RESTORE.1 ; 1=CSV
+    jr z, XBASIC_RESTORE.1      ; 1=CSV
     dec a
-    jr z, XBASIC_RESTORE.2 ; 2=TXT
+    jr z, XBASIC_RESTORE.2      ; 2=TXT
 
-                           ; default = IDATA
+                                ; default = IDATA
 
-XBASIC_RESTORE.0:          ; DATA/IDATA resource
+XBASIC_RESTORE.0:               ; DATA/IDATA resource
   call XBASIC_RESTORE.get_start
-  push hl                  ; save data map start pointer
-    add hl, de             ; add lines_map size * resource_item_count
+  push hl                       ; save data map start pointer
+    add hl, de                  ; add lines_map size * resource_item_count
     add hl, de
     add hl, de
-    ld (DATPTR), hl        ; save lines data start pointer
-  pop hl                   ; restore data map start pointer
+    ld (DATPTR), hl             ; save lines data start pointer
+  pop hl                        ; restore data map start pointer
 
 XBASIC_RESTORE.0.loop:          ; search on the data map for the line number required
   ld e, (hl)
@@ -1042,12 +1173,12 @@ XBASIC_RESTORE.0.loop:          ; search on the data map for the line number req
 
   jr XBASIC_RESTORE.0.loop
 
-XBASIC_RESTORE.1:          ; CSV resource
+XBASIC_RESTORE.1:               ; CSV resource
   call XBASIC_RESTORE.get_start
-  push hl                  ; save data map start pointer
-    add hl, de             ; add lines_map size * resource_item_count
-    ld (DATPTR), hl        ; save lines data start pointer
-  pop hl                   ; restore data map start pointer
+  push hl                       ; save data map start pointer
+    add hl, de                  ; add lines_map size * resource_item_count
+    ld (DATPTR), hl             ; save lines data start pointer
+  pop hl                        ; restore data map start pointer
 
 XBASIC_RESTORE.1.loop:
   ld a, b
@@ -1060,37 +1191,56 @@ XBASIC_RESTORE.1.loop:
 
   jr XBASIC_RESTORE.1.loop
 
-XBASIC_RESTORE.2:          ; TXT resource
-  inc hl                   ; skip resource type
+XBASIC_RESTORE.2:               ; TXT resource
+  inc hl                        ; skip resource type
 XBASIC_RESTORE.2.init:
   ld d, 0
 XBASIC_RESTORE.2.loop:
-  ld (DATPTR), hl          ; save lines data current pointer
+  ld (DATPTR), hl               ; save lines data current pointer
   ld a, b
   or c
   jr z, XBASIC_RESTORE.end
 
   ld e, (hl)
-  add hl, de               ; add line size
+  add hl, de                    ; add line size
+
+  ld a, h
+  cp 0xC0
+  jr c, XBASIC_RESTORE.2.cont
+    call XBASIC_RESTORE.next_sgm
+    ld e, (hl)
+    add hl, de                    ; add line size
+
+XBASIC_RESTORE.2.cont:
   inc hl
 
   dec bc
   jr XBASIC_RESTORE.2.loop
 
+XBASIC_RESTORE.next_sgm:
+  ld a, (DORES)
+  inc a
+  inc a
+  ld (DORES), a
+  call MR_CHANGE_SGM
+  ld hl, 0x8000
+  ld (DATPTR), hl
+  ret
+
 XBASIC_RESTORE.get_start:
   ld de, 0
   ld (TEMP), de
 
-  inc hl                   ; skip resource type
+  inc hl                        ; skip resource type
 
   ld e, (hl)
   inc hl
-  ld d, (hl)               ; de = lines count
+  ld d, (hl)                    ; de = lines count
   inc hl
   ret
 
 XBASIC_RESTORE.add_item:
-  ld e, (hl)               ; a = items in the line
+  ld e, (hl)                    ; a = items in the line
   ld d, 0
   inc hl
   push hl
@@ -1101,89 +1251,60 @@ XBASIC_RESTORE.add_item:
   ret
 
 XBASIC_RESTORE.found:
-  ld bc, (TEMP)            ; resource items position
-  ld hl, (DATPTR)          ; resource items start address
+  ld bc, (TEMP)                 ; resource items to skip
+  ld hl, (DATPTR)               ; resource items start address
   ld a, (TEMP2)
   cp 3
   jr nz, XBASIC_RESTORE.2.init
 
 XBASIC_RESTORE.3:
   add hl, bc
-  add hl, bc               ; hl = hl + bc*2
-  ld (DATPTR), hl          ; DATA current pointer
+  add hl, bc                    ; hl = hl + bc*2
+  ld a, h
+  cp 0xC0
+  call c, XBASIC_RESTORE.3.next_sgm
+  ld (DATPTR), hl               ; DATA current pointer
 
 XBASIC_RESTORE.end:
-    call select_rom_on_page_0
+    call resource.close
   ei
   ret
 
-XBASIC_READ_MR:
-  ld hl, (DATPTR)  ; DATA current pointer
-  ld a, (DORES)    ; DATA current segment
-XBASIC_READ_MR.start:
-  call MR_GET_DATA
-  ld a, (hl)
-  cp 0xFF
-  jr nz, XBASIC_READ_MR.move_to_next
-    inc hl
-    ld a, (hl)
-    dec hl
-    cp 0xFF
-    jr nz, XBASIC_READ_MR.move_to_next
-      ld a, (DORES)
-      inc a
-      inc a
-      ld (DORES), a
-      ld hl, 0x8000
-      ld (DATPTR), hl
-      jr XBASIC_READ_MR.start
-XBASIC_READ_MR.move_to_next:
+XBASIC_RESTORE.3.next_sgm:
   push hl
-    ld e, a
-    ld d, 0
-    ld hl, (DATPTR)  ; DATA current pointer
-    add hl, de
-    inc hl
-    ld (DATPTR), hl
-  pop hl
+    call XBASIC_RESTORE.next_sgm
+  pop de
+  ld l, e
   ret
 
-XBASIC_RESTORE_MR:
-  ld hl, (DATLIN)        ; DATA start pointer
-  ld (DATPTR), hl        ; DATA current pointer
-  ld a, (SUBFLG)    ; DATA start segment
-  ld (DORES), a     ; DATA current segment
-XBASIC_RESTORE_MR.verify:
-  ld a, d
-  or e
-  ret z
-  push de
-    ld hl, (DATPTR)  ; DATA current pointer
+XBASIC_READ_MR:
+  ld a, (SGMADR)
+  push af
     ld a, (DORES)    ; DATA current segment
-XBASIC_RESTORE_MR.start:
-    call MR_GET_BYTE
-    cp 0xFF
-    jr nz, XBASIC_RESTORE_MR.move_to_next
-      ld a, b
-      cp 0xFF
-      jr nz, XBASIC_RESTORE_MR.move_to_next
-        ld a, (DORES)
-        inc a
-        inc a
-        ld (DORES), a
-        ld hl, 0x8000
-        ld (DATPTR), hl
-        jr XBASIC_RESTORE_MR.start
-XBASIC_RESTORE_MR.move_to_next:
-    ld e, a
-    ld d, 0
+    call MR_CHANGE_SGM
     ld hl, (DATPTR)  ; DATA current pointer
-    add hl, de
-    inc hl
+    push hl
+      ld b, 0
+      ld c, (hl)
+      add hl, bc
+      ld a, h
+    pop hl
+    cp 0xC0
+    jr c, XBASIC_READ_MR.cont
+      call XBASIC_RESTORE.next_sgm
+XBASIC_READ_MR.cont:
+    ld c, (hl)
+    inc bc
+    ex de, hl
+      call GET_NEXT_TEMP_STRING_ADDRESS
+      ld (TMPSTRBUF), hl
+    ex de, hl
+    ldir
     ld (DATPTR), hl
-  pop de
-  dec de
-  jr XBASIC_RESTORE_MR.verify
+    ld hl, (TMPSTRBUF)
+  pop af
+  call MR_CHANGE_SGM
+  ret
 
 XBASIC_INPUT_2:
   call INLIN
@@ -1918,10 +2039,13 @@ cmd_turbo.msx2p:    ; msx2+ machine type
 ; DAC = data resource number
 cmd_restore:
   di
-    call select_rsc_on_page_0
-    ld bc, (DAC)
-    call resource.address    ; hl = resource start address
+    call resource.open
+    ld bc, (DAC)             ; bc = resource number
+    call resource.address    ; out hl = resource start address, a = resource segment, bc = resource size
     ld (DATLIN), hl          ; DATA start pointer
+    ld (SUBFLG), a           ; DATA segment start number
+    ld (DATPTR), hl          ; DATA current pointer
+    ld (DORES), a            ; DATA current segment
     ld bc, 0
   jp XBASIC_RESTORE.cont
 
@@ -3147,12 +3271,12 @@ cmd_screen_load.ram_on_page_3:
   di
     call select_rsc_on_page_0
 
-    ld bc, (DAC)             ; bc = resource number
-    call resource.address    ; hl = resource start address, bc = resource size
+      ld bc, (DAC)             ; bc = resource number
+      call resource.address    ; hl = resource start address, bc = resource size
 
-    ld de, (FONTADDR)
-    push de
-    ldir
+      ld de, (FONTADDR)
+      push de
+      ldir
 
     call select_rom_on_page_0
   ei
@@ -3164,12 +3288,12 @@ cmd_screen_load.ram_on_page_2:
     call select_ram_on_page_2
     call select_rsc_on_page_0
 
-    ld bc, (DAC)             ; bc = resource number
-    call resource.address    ; hl = resource start address, bc = resource size
+      ld bc, (DAC)             ; bc = resource number
+      call resource.address    ; hl = resource start address, bc = resource size
 
-    ld de, 0x8000
-    push de
-    ldir
+      ld de, 0x8000
+      push de
+      ldir
 
     call select_rom_on_page_0
   ei
@@ -3215,6 +3339,11 @@ select_ram_on_page_2:
   out (0xFE), a
   ret
 
+resource.open:
+  ld a, (RSCMAPSG)
+  or a
+  jr nz, select_rsc_on_megarom
+
 select_rsc_on_page_0:
   ld a, (SLTAD2)
   ld h,000h
@@ -3228,10 +3357,26 @@ select_rsc_on_page_0:
   out (0xFC), a
   ret
 
+select_rsc_on_megarom:
+  push af
+    ld a, (SGMADR)
+    ld (RSCMAPT1), a
+  pop af
+  jp MR_CHANGE_SGM
+
+resource.close:
+  ld a, (RSCMAPSG)
+  or a
+  jr nz, select_rom_on_megarom
+
 select_rom_on_page_0:
   ld a, (SLTAD0)
   ld h,000h
   jp SUB_ENASLT		; Select the BIOS ROM
+
+select_rom_on_megarom:
+  ld a, (RSCMAPT1)
+  jp MR_CHANGE_SGM
 
 select_ram_on_page_0:
   ld a, (RAMAD0)
@@ -3826,13 +3971,17 @@ pletter.getbitexx
 ; out: de = resource count
 ;      hl = start of resource map pointers
 resource.count:
-  ld de, (resource.data)
-  ld hl, resource.data+2
+  ld hl, (RSCMAPAD)
+  ld e, (hl)
+  inc hl
+  ld d, (hl)
+  inc hl
   ret
 
 ; in:  bc = resource number
 ; out: hl = resource address
 ;      bc = resource size
+;      a  = segment
 resource.address:
   call resource.count
 
@@ -3849,24 +3998,27 @@ resource.address:
 
 resource.address.next:
   ex de, hl
-  ld l, c
-  ld h, b
-  add hl, hl  ; x2
-  add hl, hl  ; x4
+    ld l, c
+    ld h, b
+    add hl, hl  ; x 2
+    add hl, hl  ; x 4
+    add hl, bc  ; x 5
   ex de, hl
 
   add hl, de
 
+  xor a       ; clear carry
   ld e, (hl)  ; get resource address
   inc hl
   ld d, (hl)
+  inc hl
+  ld a, (hl)  ; get segment number
   inc hl
   ld c, (hl)  ; get resource size
   inc hl
   ld b, (hl)
 
   ex de, hl
-  xor a
   ret
 
 ; in:  bc = resource number

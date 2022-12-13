@@ -227,7 +227,6 @@ void CompilerPT3::clear_symbols() {
 
     mark_count = 0;
     for_count = 0;
-    data_start = 0;
     pt3 = false;
     akm = false;
     font = false;
@@ -274,13 +273,12 @@ void CompilerPT3::clear_symbols() {
 
 void CompilerPT3::data_symbols() {
     Lexeme *lexeme;
-    int i, t = parser->datas.size();
 
-    data_start = symbols.size();
-
-    for(i = 0; i < t; i++) {
-        lexeme = parser->datas[i];
-        addSymbol(lexeme);
+    if(parser->has_data) {
+        lexeme = new Lexeme();
+        lexeme->name = "_DATA_";
+        lexeme->value = lexeme->name;
+        resourceList.push_back(lexeme);
     }
 
 }
@@ -300,16 +298,6 @@ int CompilerPT3::save_symbols() {
 
                 if(lexeme->isAbstract)
                     continue;
-
-                if(parser->has_data) {
-                    if(i == (unsigned int) data_start) {
-                        if(data_mark) {
-                            data_mark->symbol->address = code_pointer;
-                        } else {
-                            syntax_error("Internal error: DATA MARK");
-                        }
-                    }
-                }
 
                 if(lexeme->type == Lexeme::type_literal ) {
 
@@ -4176,18 +4164,8 @@ void CompilerPT3::cmd_start() {
     addCmd(0xCD, def_ENASLT);
 
     if(parser->has_data) {
-        data_mark = addMark();
-        if(megaROM) {
-            // special ld hl, 0x0000   ; DATA start pointer at his segment
-            addCmd(0xFF, 0x0000);
-            // ld c, l
-            addByte(0x4D);
-            // ld b, h
-            addByte(0x44);
-        } else {
-            // ld bc, 0x0000           ; DATA start pointer
-            addCmd(0x01, 0x0000);
-        }
+        // ld bc, 0x0000           ; DATA start pointer
+        addCmd(0x01, 0x0000);
     }
 
     // ld hl, HEAP START ADDRESS

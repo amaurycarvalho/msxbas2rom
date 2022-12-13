@@ -195,9 +195,11 @@ bool Compiler::build(Parser *parser) {
         }
 
         if(debug)
-            printf("Registering symbols..");
-
+            printf("Registering data resource...");
         data_symbols();
+
+        if(debug)
+            printf("Registering symbols..");
 
         if(debug)
             printf(".");
@@ -234,7 +236,6 @@ void Compiler::clear_symbols() {
 
     mark_count = 0;
     for_count = 0;
-    data_start = 0;
     pt3 = false;
     akm = false;
     font = false;
@@ -274,26 +275,12 @@ void Compiler::clear_symbols() {
 
 void Compiler::data_symbols() {
     Lexeme *lexeme;
-    int i, t = parser->datas.size();
 
-    if(megaROM) {
-
-        data_start = symbols.size();
-
-        for(i = 0; i < t; i++) {
-            lexeme = parser->datas[i];
-            addSymbol(lexeme);
-        }
-
-    } else {
-
-        if(parser->has_data) {
-            lexeme = new Lexeme();
-            lexeme->name = "_DATA_";
-            lexeme->value = lexeme->name;
-            resourceList.push_back(lexeme);
-        }
-
+    if(parser->has_data) {
+        lexeme = new Lexeme();
+        lexeme->name = "_DATA_";
+        lexeme->value = lexeme->name;
+        resourceList.push_back(lexeme);
     }
 
 }
@@ -313,16 +300,6 @@ int Compiler::save_symbols() {
 
                 if(lexeme->isAbstract)
                     continue;
-
-                if(megaROM && parser->has_data) {
-                    if(i == (unsigned int) data_start) {
-                        if(data_mark) {
-                            data_mark->symbol->address = code_pointer;
-                        } else {
-                            syntax_error("Internal error: DATA MARK");
-                        }
-                    }
-                }
 
                 if(lexeme->type == Lexeme::type_literal ) {
 
@@ -4650,21 +4627,6 @@ void Compiler::cmd_start() {
     // call ENASLT        ; enable xbasic page
     addCmd(0xCD, def_ENASLT);
 
-    if(parser->has_data) {
-        if(megaROM) {
-            data_mark = addMark();
-            // special ld hl, 0x0000   ; DATA start pointer at his segment
-            addCmd(0xFF, 0x0000);
-            // ld c, l
-            addByte(0x4D);
-            // ld b, h
-            addByte(0x44);
-        } else {
-            // ld bc, 0x0000           ; DATA start pointer
-            addCmd(0x01, 0x0000);
-        }
-    }
-
     // ld hl, HEAP START ADDRESS
     addFix(heap_mark);
     addCmd(0x21, 0x0000);
@@ -4672,7 +4634,6 @@ void Compiler::cmd_start() {
     // ld de, TEMPORARY STRING START ADDRESS
     addFix(temp_str_mark);
     addCmd(0x11, 0x0000);
-
 
     if(parser->has_font) {
         // ld ix, FONT BUFFER START ADDRESS
@@ -4688,15 +4649,6 @@ void Compiler::cmd_start() {
 
     // call XBASIC INIT                  ; hl=heap start address, de=temporary string start address, bc=data address, ix=font address, a=data segment
     addCmd(0xCD, def_XBASIC_INIT);
-
-    if(parser->has_data && !megaROM) {
-        // ld hl, data resource number
-        addCmd(0x21, parser->resourceCount);
-        // ld (DAC), hl
-        addCmd(0x22, def_DAC);
-        // call cmd_restore
-        addCmd(0xCD, def_cmd_restore);
-    }
 
     if(parser->has_traps) {
         if(megaROM) {
@@ -4717,6 +4669,15 @@ void Compiler::cmd_start() {
         // call MR_CHANGE_SGM
         addCmd(0xCD, def_MR_CHANGE_SGM);
 
+    }
+
+    if(parser->has_data) {
+        // ld hl, data resource number
+        addCmd(0x21, parser->resourceCount);
+        // ld (DAC), hl
+        addCmd(0x22, def_DAC);
+        // call cmd_restore
+        addCmd(0xCD, def_cmd_restore);  // MSXBAS2ROM resource RESTORE statement
     }
 
     if(parser->has_akm) {
@@ -11311,11 +11272,7 @@ void Compiler::cmd_read() {
             }
 
             // call read
-            if(megaROM) {
-                addCmd(0xCD, def_XBASIC_READ_MR);
-            } else {
-                addCmd(0xCD, def_XBASIC_READ);
-            }
+            addCmd(0xCD, def_XBASIC_READ);
 
             addCast(Lexeme::subtype_string, lexeme->subtype);
 
@@ -11372,78 +11329,29 @@ void Compiler::cmd_resume() {
 void Compiler::cmd_restore() {
     ActionNode *action;
     Lexeme *lexeme;
-    int i, t = current_action->actions.size(), tt;
+    int t = current_action->actions.size();
     int result_subtype;
-    bool found;
 
     if(t == 0) {
 
-        if(megaROM) {
-            // ld de, 0
-            addCmd(0x11, 0x0000);
-            // call xbasic_restore_mr
-            addCmd(0xCD, def_XBASIC_RESTORE_MR);
-        } else {
-            // ld hl, 0
-            addCmd(0x21, 0x0000);
-            // call xbasic_restore
-            addCmd(0xCD, def_XBASIC_RESTORE);
-        }
+        // ld hl, 0
+        addCmd(0x21, 0x0000);
+        // call xbasic_restore
+        addCmd(0xCD, def_XBASIC_RESTORE);       // standard BASIC RESTORE statement
 
     } else if(t == 1) {
 
         action = current_action->actions[0];
 
-        if(megaROM) {
+        lexeme = action->lexeme;
+        if(lexeme) {
+            result_subtype = evalExpression(action);
 
-            if(action->lexeme->type != Lexeme::type_literal) {
-                syntax_error("Invalid RESTORE parameter type");
-                return;
-            }
+            // cast
+            addCast(result_subtype, Lexeme::subtype_numeric);
 
-            // Trim leading zeros
-            while (action->lexeme->value.find("0") == 0 && action->lexeme->value.size() > 1) {
-                action->lexeme->value.erase(0, 1);
-            }
-
-            t = parser->datas.size();
-            tt = 0;
-            found = false;
-
-            for(i = 0; i < t; i++) {
-                lexeme = parser->datas[i];
-                if(lexeme->tag == action->lexeme->value) {
-                    found = true;
-                    break;
-                }
-                tt += lexeme->value.size() + 1;
-                if(lexeme->value.c_str()[0] == '"')
-                    tt -= 2;
-            }
-
-            if(!found) {
-                syntax_error("Line number not found for RESTORE (Is it after current line?)");
-                return;
-            }
-
-            // ld de, data count
-            addCmd(0x11, i);
             // call restore
-            addCmd(0xCD, def_XBASIC_RESTORE_MR);
-
-        } else {
-
-            lexeme = action->lexeme;
-            if(lexeme) {
-                result_subtype = evalExpression(action);
-
-                // cast
-                addCast(result_subtype, Lexeme::subtype_numeric);
-
-                // call restore
-                addCmd(0xCD, def_XBASIC_RESTORE);
-            }
-
+            addCmd(0xCD, def_XBASIC_RESTORE);   // standard BASIC RESTORE statement
         }
 
     } else {
@@ -11485,7 +11393,6 @@ void Compiler::cmd_irestore() {
             // ld (DATPTR), hl
             addCmd(0x22, def_DATPTR);
         }
-
 
     } else {
         syntax_error("IRESTORE with wrong number of parameters");
@@ -12703,24 +12610,20 @@ void Compiler::cmd_cmd() {
 
             } else if(lexeme->value == "RESTORE") {
 
-                if(megaROM) {
-                    syntax_error("CMD RESTORE not supported yet with MegaROM option");
+                if(action->actions.size() == 1) {
+
+                    sub_action1 = action->actions[0];
+                    result_subtype = evalExpression(sub_action1);
+                    addCast(result_subtype, Lexeme::subtype_numeric);
+
+                    // ld (DAC), hl
+                    addCmd(0x22, def_DAC);
+
+                    // call cmd_restore
+                    addCmd(0xCD, def_cmd_restore);  // MSXBAS2ROM resource RESTORE statement
+
                 } else {
-                    if(action->actions.size() == 1) {
-
-                        sub_action1 = action->actions[0];
-                        result_subtype = evalExpression(sub_action1);
-                        addCast(result_subtype, Lexeme::subtype_numeric);
-
-                        // ld (DAC), hl
-                        addCmd(0x22, def_DAC);
-
-                        // call cmd_restore
-                        addCmd(0xCD, def_cmd_restore);
-
-                    } else {
-                        syntax_error("CMD RESTORE syntax error");
-                    }
+                    syntax_error("CMD RESTORE syntax error");
                 }
 
             } else {

@@ -23,16 +23,18 @@ class Rom {
     string errorMessage;
     bool errorFound;
     int xbcAddr, pt3Addr;
-    int hdrAddr, rtnAddr, mapAddr, txtAddr, filAddr, basAddr;
+    int hdrAddr, rtnAddr, mapAddr, txtAddr, filAddr, basAddr, rscAddr;
     int mapInd, txtInd, filInd, basInd;
-    int hdrLen, rtnLen, mapLen, txtLen, filLen, pt3Len, basLen, rscLen;
+    int hdrLen, rtnLen, mapLen, txtLen, filLen, pt3Len, basLen;
+    int rscSgm, rscLen;
 
     unsigned char *data;  //[20 * 0x4000];
     bool writePage[20];
 
     vector<unsigned char*> lines;
 
-    void buildInit(vector<Lexeme*> *resourceList);
+    //void buildInit(vector<Lexeme*> *resourceList);
+    void buildInit();
     void buildHeader();
     void buildRoutines();
     void buildCompilerRoutines();
@@ -48,6 +50,7 @@ class Rom {
     void buildMapAndResourcesFileSPR(char *filename);
     void buildMapAndResourcesFileSCR(char *filename);
     void buildMapAndResourcesFileBIN(char *filename, char *fileext);
+    void addResourceToMap(int offset, int length);
     void buildXBASIC();
     void buildPT3TOOLS();
     void buildFontResources();

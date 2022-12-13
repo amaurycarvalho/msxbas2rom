@@ -15,7 +15,7 @@
 #define def_SPRTBL          (def_PLYBUF - (32*5))    // 32 sprites * (test, x0, x1, y0, y1)
 #define def_SPRSIZ          (def_SPRTBL - 1)
 
-#define def_RAM_INIT        0x0033
+#define def_RAM_INIT        0x0037
 #define def_RAM_BOTTOM      0xC000 + def_RAM_INIT
 #define def_RAM_TOP         (def_SPRSIZ - 1)
 #define def_RAM_SIZE        (def_RAM_TOP - def_RAM_BOTTOM)
@@ -37,116 +37,116 @@
 
 //-- start of header.symbols adjust
 
-#define def_castParamFloatInt            0x4B1F
+#define def_wrapper_routines_map_start   0x40C0
 
-#define def_cmd_clrkey	                 0x48FC
-#define def_cmd_clrscr	                 0x4908
-#define def_cmd_disscr	                 0x47D9
-#define def_cmd_draw	                 0x4607
-#define def_cmd_enascr	                 0x47DC
-#define def_cmd_keyclkoff	             0x47DF
-#define def_cmd_mute	                 0x45FE
-#define def_cmd_play	                 0x45CF
+#define def_castParamFloatInt            def_wrapper_routines_map_start
 
-#define def_cmd_plyload	                 0x4DAF
-#define def_cmd_plyloop	                 0x4E32
-#define def_cmd_plymute	                 0x4E2E
-#define def_cmd_plyplay	                 0x4E1C
-#define def_cmd_plyreplay	             0x4E0A
-#define def_cmd_plysong                  0x4DE4
-#define def_cmd_plysound	             0x4E46
+#define def_cmd_clrkey	                 (def_castParamFloatInt + 3)
+#define def_cmd_clrscr	                 (def_cmd_clrkey + 3)
+#define def_cmd_disscr	                 (def_cmd_clrscr + 3)
+#define def_cmd_draw	                 (def_cmd_disscr + 3)
+#define def_cmd_enascr	                 (def_cmd_draw + 3)
+#define def_cmd_keyclkoff	             (def_cmd_enascr + 3)
+#define def_cmd_mute	                 (def_cmd_keyclkoff + 3)
+#define def_cmd_play	                 (def_cmd_mute + 3)
 
-#define def_cmd_ramtoram	             0x47CB
-#define def_cmd_ramtovram             	 0x47AF
-#define def_cmd_restore                  0x4937
-#define def_cmd_runasm	                 0x4618
+#define def_cmd_plyload	                 (def_cmd_play + 3)
+#define def_cmd_plyloop	                 (def_cmd_plyload + 3)
+#define def_cmd_plymute	                 (def_cmd_plyloop + 3)
+#define def_cmd_plyplay	                 (def_cmd_plymute + 3)
+#define def_cmd_plyreplay	             (def_cmd_plyplay + 3)
+#define def_cmd_plysong                  (def_cmd_plyreplay + 3)
+#define def_cmd_plysound	             (def_cmd_plysong + 3)
 
-#define def_cmd_screen_copy              0x4E5E
-#define def_cmd_screen_load              0x4F1F
-#define def_cmd_screen_paste             0x4F0A
+#define def_cmd_ramtoram	             (def_cmd_plysound + 3)
+#define def_cmd_ramtovram             	 (def_cmd_ramtoram + 3)
+#define def_cmd_restore                  (def_cmd_ramtovram + 3)
+#define def_cmd_runasm	                 (def_cmd_restore + 3)
 
-#define def_cmd_setfnt	                 0x47E4
-#define def_cmd_turbo                    0x4913
-#define def_cmd_updfntclr                0x48F7
-#define def_cmd_vramtoram	             0x47BD
-#define def_cmd_wrtchr	                 0x46B5
-#define def_cmd_wrtclr	                 0x46C8
-#define def_cmd_wrtfnt	                 0x4673
-#define def_cmd_wrtscr	                 0x46D8
-#define def_cmd_wrtspr                   0x46E8
-#define def_cmd_wrtspratr	             0x47A5
-#define def_cmd_wrtsprclr	             0x479B
-#define def_cmd_wrtsprpat	             0x4791
-#define def_cmd_wrtvram	                 0x4621
+#define def_cmd_screen_copy              (def_cmd_runasm + 3)
+#define def_cmd_screen_load              (def_cmd_screen_copy + 3)
+#define def_cmd_screen_paste             (def_cmd_screen_load + 3)
 
-#define def_floatNEG                     0x4B16
-#define def_tileAddress                  0x4BC1
+#define def_cmd_setfnt	                 (def_cmd_screen_paste + 3)
+#define def_cmd_turbo                    (def_cmd_setfnt + 3)
+#define def_cmd_updfntclr                (def_cmd_turbo + 3)
+#define def_cmd_vramtoram	             (def_cmd_updfntclr + 3)
+#define def_cmd_wrtchr	                 (def_cmd_vramtoram + 3)
+#define def_cmd_wrtclr	                 (def_cmd_wrtchr + 3)
+#define def_cmd_wrtfnt	                 (def_cmd_wrtclr + 3)
+#define def_cmd_wrtscr	                 (def_cmd_wrtfnt + 3)
+#define def_cmd_wrtspr                   (def_cmd_wrtscr + 3)
+#define def_cmd_wrtspratr	             (def_cmd_wrtspr + 3)
+#define def_cmd_wrtsprclr	             (def_cmd_wrtspratr + 3)
+#define def_cmd_wrtsprpat	             (def_cmd_wrtsprclr + 3)
+#define def_cmd_wrtvram	                 (def_cmd_wrtsprpat + 3)
 
-#define def_intCompareAND                0x4AE2
-#define def_intCompareEQ                 0x4A91
-#define def_intCompareGE                 0x4ACC
-#define def_intCompareGT                 0x4ABF
-#define def_intCompareLE                 0x4AB1
-#define def_intCompareLT                 0x4AA3
-#define def_intCompareNE                 0x4A9A
-#define def_intCompareNOT                0x4ADB
-#define def_intCompareOR                 0x4AE9
-#define def_intCompareXOR                0x4AF0
-#define def_intNEG                       0x4B0F
-#define def_intSHL                       0x4B05
-#define def_intSHR                       0x4AF7
+#define def_floatNEG                     (def_cmd_wrtvram + 3)
+#define def_tileAddress                  (def_floatNEG + 3)
 
-#define def_player_initialize            0x4D2E
-#define def_player_unhook                0x4D60
+#define def_intCompareAND                (def_tileAddress + 3)
+#define def_intCompareEQ                 (def_intCompareAND + 3)
+#define def_intCompareGE                 (def_intCompareEQ + 3)
+#define def_intCompareGT                 (def_intCompareGE + 3)
+#define def_intCompareLE                 (def_intCompareGT + 3)
+#define def_intCompareLT                 (def_intCompareLE + 3)
+#define def_intCompareNE                 (def_intCompareLT + 3)
+#define def_intCompareNOT                (def_intCompareNE + 3)
+#define def_intCompareOR                 (def_intCompareNOT + 3)
+#define def_intCompareXOR                (def_intCompareOR + 3)
+#define def_intNEG                       (def_intCompareXOR + 3)
+#define def_intSHL                       (def_intNEG + 3)
+#define def_intSHR                       (def_intSHL + 3)
 
-#define def_set_tile_color               0x497D
-#define def_set_tile_pattern             0x494B
+#define def_player_initialize            (def_intSHR + 3)
+#define def_player_unhook                (def_player_initialize + 3)
 
-#define def_usr0	                     0x49AF
-#define def_usr1		                 0x49C4
-#define def_usr2		                 0x49D9
-#define def_usr2_play	                 0x49F8
-#define def_usr2_player_status           0x4A25
-#define def_usr3		                 0x4A58
-#define def_usr3_COLLISION_ALL           0x4A78
-#define def_usr3_COLLISION_COUPLE        0x4A7D
-#define def_usr3_COLLISION_ONE           0x4A82
+#define def_set_tile_color               (def_player_unhook + 3)
+#define def_set_tile_pattern             (def_set_tile_color + 3)
 
-#define def_GET_NEXT_TEMP_STRING_ADDRESS 0x4C84
+#define def_usr0	                     (def_set_tile_pattern + 3)
+#define def_usr1		                 (def_usr0 + 3)
+#define def_usr2		                 (def_usr1 + 3)
+#define def_usr2_play	                 (def_usr2 + 3)
+#define def_usr2_player_status           (def_usr2_play + 3)
+#define def_usr3		                 (def_usr2_player_status + 3)
+#define def_usr3_COLLISION_ALL           (def_usr3 + 3)
+#define def_usr3_COLLISION_COUPLE        (def_usr3_COLLISION_ALL + 3)
+#define def_usr3_COLLISION_ONE           (def_usr3_COLLISION_COUPLE + 3)
 
-#define def_MR_CALL                      0x4C22
-#define def_MR_CALL_TRAP                 0x4C67
-#define def_MR_CHANGE_SGM                0x4C17
-#define def_MR_GET_BYTE                  0x4C56
-#define def_MR_GET_DATA                  0x4C36
-#define def_MR_JUMP                      0x4C16
+#define def_GET_NEXT_TEMP_STRING_ADDRESS (def_usr3_COLLISION_ONE + 3)
 
-#define def_XBASIC_BASE                  0x438B
-#define def_XBASIC_BLOAD	             0x4C9C
-#define def_XBASIC_BLOAD_SPRITE          0x4CED
-#define def_XBASIC_CLS                   0x41AA
-#define def_XBASIC_COPY                  0x4244
-#define def_XBASIC_COPY_FROM             0x4288
-#define def_XBASIC_COPY_TO               0x42CF
-#define def_XBASIC_END                   0x4141
-#define def_XBASIC_INIT                  0x40C0
-#define def_XBASIC_INPUT_1               0x451A
-#define def_XBASIC_INPUT_2               0x4515
-#define def_XBASIC_IREAD                 0x4405
-#define def_XBASIC_LOCATE                0x41B5
-#define def_XBASIC_PLAY                  0x4342
-#define def_XBASIC_PRINT_STR             0x41DF
-#define def_XBASIC_PUT_SPRITE            0x421E
-#define def_XBASIC_READ                  0x43E6
-#define def_XBASIC_READ_MR               0x44A1
-#define def_XBASIC_RESTORE               0x441A
-#define def_XBASIC_RESTORE_MR            0x44D4
-#define def_XBASIC_SCREEN                0x419A
-#define def_XBASIC_SOUND                 0x43DB
-#define def_XBASIC_TAB                   0x43C3
-#define def_XBASIC_USING                 0x453A
-#define def_XBASIC_USING_DO              0x456E
-#define def_XBASIC_USR                   0x4226
+#define def_MR_CALL                      (def_GET_NEXT_TEMP_STRING_ADDRESS + 3)
+#define def_MR_CALL_TRAP                 (def_MR_CALL + 3)
+#define def_MR_CHANGE_SGM                (def_MR_CALL_TRAP + 3)
+#define def_MR_GET_BYTE                  (def_MR_CHANGE_SGM + 3)
+#define def_MR_GET_DATA                  (def_MR_GET_BYTE + 3)
+#define def_MR_JUMP                      (def_MR_GET_DATA + 3)
+
+#define def_XBASIC_BASE                  (def_MR_JUMP + 3)
+#define def_XBASIC_BLOAD	             (def_XBASIC_BASE + 3)
+#define def_XBASIC_BLOAD_SPRITE          (def_XBASIC_BLOAD + 3)
+#define def_XBASIC_CLS                   (def_XBASIC_BLOAD_SPRITE + 3)
+#define def_XBASIC_COPY                  (def_XBASIC_CLS + 3)
+#define def_XBASIC_COPY_FROM             (def_XBASIC_COPY + 3)
+#define def_XBASIC_COPY_TO               (def_XBASIC_COPY_FROM + 3)
+#define def_XBASIC_END                   (def_XBASIC_COPY_TO + 3)
+#define def_XBASIC_INIT                  (def_XBASIC_END + 3)
+#define def_XBASIC_INPUT_1               (def_XBASIC_INIT + 3)
+#define def_XBASIC_INPUT_2               (def_XBASIC_INPUT_1 + 3)
+#define def_XBASIC_IREAD                 (def_XBASIC_INPUT_2 + 3)
+#define def_XBASIC_LOCATE                (def_XBASIC_IREAD + 3)
+#define def_XBASIC_PLAY                  (def_XBASIC_LOCATE + 3)
+#define def_XBASIC_PRINT_STR             (def_XBASIC_PLAY + 3)
+#define def_XBASIC_PUT_SPRITE            (def_XBASIC_PRINT_STR + 3)
+#define def_XBASIC_READ                  (def_XBASIC_PUT_SPRITE + 3)
+#define def_XBASIC_RESTORE               (def_XBASIC_READ + 3)
+#define def_XBASIC_SCREEN                (def_XBASIC_RESTORE + 3)
+#define def_XBASIC_SOUND                 (def_XBASIC_SCREEN + 3)
+#define def_XBASIC_TAB                   (def_XBASIC_SOUND + 3)
+#define def_XBASIC_USING                 (def_XBASIC_TAB + 3)
+#define def_XBASIC_USING_DO              (def_XBASIC_USING + 3)
+#define def_XBASIC_USR                   (def_XBASIC_USING_DO + 3)
 
 //-- end of header.symbols adjust
 

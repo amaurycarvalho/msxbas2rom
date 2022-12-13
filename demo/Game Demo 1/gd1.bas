@@ -5,18 +5,18 @@
 ' How to compile:
 '   msxbas2rom -c gd1.bas
 ' Links:
-'   https://launchpad.net/msxbas2rom
+'   https://github.com/amaurycarvalho/msxbas2rom/
 '   https://www.julien-nevo.com/arkostracker/
 '   https://launchpad.net/nmsxtiles
 '   http://msx.jannone.org/tinysprite/tinysprite.html
 '====================================================
 
-FILE "gd1.akm"        ' Exported from Arkos Tracker 2
-FILE "gd1.akx"        ' Exported from Arkos Tracker 2
-FILE "gd1.chr.plet5"  ' Exported from nMSXTiles
-FILE "gd1.clr.plet5"  ' Exported from nMSXTiles
-FILE "gd1.spr"        ' Exported from TinySprite
-FILE "gd1_0_0.plet5"  ' Exported from nMSXTiles
+FILE "gd1.akm"        ' 0 - Music (exported from Arkos Tracker 2)
+FILE "gd1.akx"        ' 1 - Sound Effects (exported from Arkos Tracker 2)
+FILE "gd1.chr.plet5"  ' 2 - Tiles Patterns (exported from nMSXTiles)
+FILE "gd1.clr.plet5"  ' 3 - Tiles Colors (exported from nMSXTiles)
+FILE "gd1.spr"        ' 4 - Sprites (exported from TinySprite)
+FILE "gd1_0_0.plet5"  ' 5 - Background for Screen 2 (exported from nMSXTiles)
 
 10 SCREEN 2, 2, 0
 11 COLOR 15, 0, 0 
