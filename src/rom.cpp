@@ -519,7 +519,7 @@ void Rom::buildMapAndResources() {
 
 }
 
-void Rom::addResourceToMap(int offset, int length) {
+void Rom::addResourceToMap(int offset, int length, int filler) {
     int address = (xtd)? (offset % 0x4000) + rscAddr : offset;
     int segment = (xtd)? ((offset / 0x4000) - 1) * 2: 0;
 
@@ -530,29 +530,33 @@ void Rom::addResourceToMap(int offset, int length) {
     memcpy(&data[mapInd], &length, 2);
     mapInd += 2;
 
-    txtInd += length;
-    filLen += length;
+    txtInd += length + filler;
+    filLen += length + filler;
 }
 
 void Rom::buildMapAndResourcesText(Lexeme *lexeme) {
-    int size_read;
+    int size_read = 0, length;
     int next_segment = ((txtInd / 0x4000)+1)*0x4000;
+    int filler = 0;
 
-    size_read = lexeme->value.size();
+    length = lexeme->value.size();
 
-    if((txtInd + size_read + 1) >= next_segment)   // if string doesn't fit on current segment, skip to the next
+    if((txtInd + length + 1) >= next_segment) {  // if string doesn't fit on current segment, skip to the next
+        filler += (next_segment - txtInd);
         txtInd = next_segment;
-
-    if(size_read) {
-        memcpy(&data[txtInd], lexeme->value.c_str(), size_read);
     }
-    data[txtInd+size_read] = 0;
+
+    if(length) {
+        memcpy(&data[txtInd], lexeme->value.c_str(), length);
+        size_read += length;
+    }
+    data[txtInd+length] = 0;
     size_read ++;
 
-    addResourceToMap(txtInd, size_read);
+    addResourceToMap(txtInd, size_read, filler);
 
-    filLen -= size_read;
-    txtLen += size_read;
+    filLen -= (size_read + filler);
+    txtLen += (size_read + filler);
 }
 
 void Rom::buildMapAndResourcesData(Parser *parser) {
@@ -560,6 +564,7 @@ void Rom::buildMapAndResourcesData(Parser *parser) {
     int t = parser->datas.size();
     int map_size_forecast, map_start_segment, map_end_segment;
     int item_size_forecast, item_start_segment, item_end_segment;
+    int filler = 0;
     char *s;
     bool idata = false;
     Lexeme *lexeme;
@@ -605,11 +610,14 @@ void Rom::buildMapAndResourcesData(Parser *parser) {
 
     // write DATA/IDATA items to the rom
 
+    size_read = 0;
+
     map_size_forecast = (maps.size() * 3) + 3 + 256;
     map_start_segment = (txtInd / 0x4000);
     map_end_segment = (txtInd + map_size_forecast) / 0x4000;
     if(map_start_segment != map_end_segment) {                  // if DATA/IDATA map doesn't fit on current segment...
         txtInd = (map_start_segment + 1) * 0x4000;              // ...skip to the next one
+        filler += (txtInd - filInd);
         filInd = txtInd;
     }
 
@@ -617,7 +625,7 @@ void Rom::buildMapAndResourcesData(Parser *parser) {
         data[filInd++] = 3;                         // IDATA statement resource code
     else
         data[filInd++] = 0;                         // DATA statement resource code
-    size_read = 1;
+    size_read += 1;
 
     data[filInd++] = (maps.size() & 0xFF);          // WORD lines
     data[filInd++] = ((maps.size()>>8) & 0xFF);
@@ -651,8 +659,10 @@ void Rom::buildMapAndResourcesData(Parser *parser) {
             item_end_segment = (filInd + item_size_forecast) / 0x4000;
             if(item_start_segment != item_end_segment) {                  // if IDATA item doesn't fit on current segment...
                 item_end_segment = (item_start_segment + 1) * 0x4000;     // ...skip to the next one
-                while(filInd < item_end_segment)
+                while(filInd < item_end_segment) {
                     data[filInd++] = 0xFF;
+                    filler ++;
+                }
             }
 
             data[filInd++] = (k & 0xFF);
@@ -676,8 +686,10 @@ void Rom::buildMapAndResourcesData(Parser *parser) {
             item_end_segment = (filInd + item_size_forecast) / 0x4000;
             if(item_start_segment != item_end_segment) {                  // if DATA item doesn't fit on current segment...
                 item_end_segment = (item_start_segment + 1) * 0x4000;     // ...skip to the next one
-                while(filInd < item_end_segment)
+                while(filInd < item_end_segment) {
                     data[filInd++] = 0xFF;
+                    filler++;
+                }
             }
 
             data[filInd++] = (len & 0xFF);          // string length
@@ -691,7 +703,7 @@ void Rom::buildMapAndResourcesData(Parser *parser) {
         size_read += (len + 1);
     }
 
-    addResourceToMap(txtInd, size_read);
+    addResourceToMap(txtInd, size_read, filler);
 
 }
 
@@ -748,7 +760,7 @@ void Rom::buildMapAndResourcesFileTXT(char *filename) {
     FILE *file;
     char line[255];
     int len;
-    int size_read;
+    int size_read, filler = 0;
     int item_size_forecast, item_start_segment, item_end_segment;
 
     if ((file = fopen(filename, "r"))) {
@@ -773,8 +785,10 @@ void Rom::buildMapAndResourcesFileTXT(char *filename) {
             item_end_segment = (filInd + item_size_forecast) / 0x4000;
             if(item_start_segment != item_end_segment) {                  // if DATA item doesn't fit on current segment...
                 item_end_segment = (item_start_segment + 1) * 0x4000;     // ...skip to the next one
-                while(filInd < item_end_segment)
+                while(filInd < item_end_segment) {
                     data[filInd++] = 0xFF;
+                    filler++;
+                }
             }
 
             data[filInd++] = (len & 0xFF);
@@ -789,7 +803,7 @@ void Rom::buildMapAndResourcesFileTXT(char *filename) {
 
         fclose(file);
 
-        addResourceToMap(txtInd, size_read);
+        addResourceToMap(txtInd, size_read, filler);
 
     } else {
         errorMessage = "Resource file not found: " + string(filename);
@@ -802,7 +816,7 @@ void Rom::buildMapAndResourcesFileCSV(char *filename) {
     FILE *file;
     char line[255];
     int len;
-    int size_read;
+    int size_read, filler = 0;
     int state;
     char *s;
     int i, k;
@@ -879,16 +893,19 @@ void Rom::buildMapAndResourcesFileCSV(char *filename) {
 
         // write CSV items to the rom
 
+        size_read = 0;
+
         map_size_forecast = maps.size() + 3 + 256;
         map_start_segment = (txtInd / 0x4000);
         map_end_segment = (txtInd + map_size_forecast) / 0x4000;
         if(map_start_segment != map_end_segment) {                  // if CSV items map doesn't fit on current segment...
             txtInd = (map_start_segment + 1) * 0x4000;              // ...skip to the next one
+            filler += (txtInd - filInd);
             filInd = txtInd;
         }
 
         data[filInd++] = 1;                                         // CSV data resource
-        size_read = 1;
+        size_read += 1;
 
         data[filInd++] = (maps.size() & 0xFF);                      // WORD lines
         data[filInd++] = ((maps.size()>>8) & 0xFF);
@@ -927,8 +944,10 @@ void Rom::buildMapAndResourcesFileCSV(char *filename) {
             item_end_segment = (filInd + item_size_forecast) / 0x4000;
             if(item_start_segment != item_end_segment) {                  // if CSV item doesn't fit on current segment...
                 item_end_segment = (item_start_segment + 1) * 0x4000;     // ...skip to the next one
-                while(filInd < item_end_segment)
+                while(filInd < item_end_segment) {
                     data[filInd++] = 0xFF;
+                    filler++;
+                }
             }
 
             data[filInd++] = (len & 0xFF);
@@ -941,7 +960,7 @@ void Rom::buildMapAndResourcesFileCSV(char *filename) {
             size_read += (len + 1);
         }
 
-        addResourceToMap(txtInd, size_read);
+        addResourceToMap(txtInd, size_read, filler);
 
     } else {
         errorMessage = "Resource file not found: " + string(filename);
@@ -954,15 +973,29 @@ void Rom::buildMapAndResourcesFileCSV(char *filename) {
 void Rom::buildMapAndResourcesFileSCR(char *filename) {
     FileNode *file;
     int block_start;
-    int bytes, size_read;
+    int bytes, size_read, filler;
+    int item_size_forecast, item_start_segment, item_end_segment;
+    int map_size_forecast, map_start_segment, map_end_segment;
 
     file = new FileNode();
     file->name = filename;
     file->packed = true;
 
     size_read = 0;
+    filler = 0;
 
     if (file->open()) {
+
+        map_size_forecast = 0x102;
+        map_start_segment = (filInd / 0x4000);
+        map_end_segment = (filInd + map_size_forecast) / 0x4000;
+        if(map_start_segment != map_end_segment) {                  // if SCR items map doesn't fit on current segment...
+            map_end_segment = (map_start_segment + 1) * 0x4000;              // ...skip to the next one
+            while(filInd < map_end_segment) {
+                data[filInd++] = 0xFF;
+                filler ++;
+            }
+        }
 
         block_start = filInd;
         filInd += 2;
@@ -986,6 +1019,17 @@ void Rom::buildMapAndResourcesFileSCR(char *filename) {
                 return;
             }
 
+            item_size_forecast = bytes + 2;
+            item_start_segment = (filInd / 0x4000);
+            item_end_segment = (filInd + item_size_forecast) / 0x4000;
+            if(item_start_segment != item_end_segment) {                  // if SCR item doesn't fit on current segment...
+                item_end_segment = (item_start_segment + 1) * 0x4000;     // ...skip to the next one
+                while(filInd < item_end_segment) {
+                    data[filInd++] = 0xFF;
+                    filler ++;
+                }
+            }
+
             data[filInd] = bytes;
             filInd ++;
             memcpy(&data[filInd], file->buffer, bytes);
@@ -1001,7 +1045,7 @@ void Rom::buildMapAndResourcesFileSCR(char *filename) {
             data[block_start] = (file->blocks & 0xff);
             data[block_start+1] = (file->blocks >> 8) & 0xff;
 
-            addResourceToMap(block_start, size_read);
+            addResourceToMap(block_start, size_read, filler);
 
         } else {
             errorMessage = "Empty image file resource";
@@ -1021,19 +1065,22 @@ void Rom::buildMapAndResourcesFileSPR(char *filename) {
     unsigned char *buffer = (unsigned char *) malloc(0x4000);
     int size_read = file.ParseTinySpriteFile(filename, buffer, 0x4000);
     int next_segment = ((filInd / 0x4000)+1)*0x4000;
+    int filler = 0;
     Pletter pletter;
 
     if(size_read > 0) {
 
-        if((filInd + size_read) >= next_segment)  // skip data to the next segment if it doesn't fit in the current one
+        if((filInd + size_read) >= next_segment) { // skip data to the next segment if it doesn't fit in the current one
+            filler = next_segment - filInd;
             filInd = next_segment;
+        }
 
         compiler->has_tiny_sprite = true;
 
         // compress buffer to data[filInd]
         size_read = pletter.pack(buffer, size_read, (unsigned char *) &data[filInd]);
 
-        addResourceToMap(filInd, size_read);
+        addResourceToMap(filInd, size_read, filler);
 
         free(buffer);
 
@@ -1053,11 +1100,14 @@ void Rom::buildMapAndResourcesFileSPR(char *filename) {
 void Rom::buildMapAndResourcesFileBIN(char *filename, char *fileext) {
     int size_read = file.readFromFile(filename, &data[filInd], 0x4000);
     int next_segment = ((filInd / 0x4000)+1)*0x4000;
+    int filler = 0;
 
     if(size_read > 0) {
 
-        if((filInd + size_read) >= next_segment)  // skip data to the next segment if it doesn't fit in the current one
+        if((filInd + size_read) >= next_segment) {  // skip data to the next segment if it doesn't fit in the current one
+            filler = next_segment - filInd;
             filInd = next_segment;
+        }
 
         if(strcasecmp(fileext, ".AKM")==0) {
             file.fixAKM(&data[filInd], filInd, size_read);
@@ -1065,10 +1115,7 @@ void Rom::buildMapAndResourcesFileBIN(char *filename, char *fileext) {
             file.fixAKX(&data[filInd], filInd, size_read);
         }
 
-        addResourceToMap(filInd, size_read);
-
-        txtInd += size_read;
-        filLen += size_read;
+        addResourceToMap(filInd, size_read, filler);
 
     } else {
         errorMessage = "Resource file not found: " + string(filename);

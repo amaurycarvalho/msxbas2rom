@@ -50,7 +50,7 @@ class Rom {
     void buildMapAndResourcesFileSPR(char *filename);
     void buildMapAndResourcesFileSCR(char *filename);
     void buildMapAndResourcesFileBIN(char *filename, char *fileext);
-    void addResourceToMap(int offset, int length);
+    void addResourceToMap(int offset, int length, int filler);
     void buildXBASIC();
     void buildPT3TOOLS();
     void buildFontResources();

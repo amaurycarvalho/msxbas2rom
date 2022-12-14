@@ -1282,29 +1282,26 @@ XBASIC_READ_MR:
   push af
     ld a, (DORES)    ; DATA current segment
     call MR_CHANGE_SGM
+    call GET_NEXT_TEMP_STRING_ADDRESS
+    ex de, hl
     ld hl, (DATPTR)  ; DATA current pointer
-    push hl
-      ld b, 0
+    ld b, 0
+XBASIC_READ_MR.repeat:
+    push de
       ld c, (hl)
-      add hl, bc
+      inc bc
+      ldir
       ld a, h
-    pop hl
-    cp 0xC0
-    jr c, XBASIC_READ_MR.cont
-      call XBASIC_RESTORE.next_sgm
+      cp 0xC0
+      jr c, XBASIC_READ_MR.cont
+        call XBASIC_RESTORE.next_sgm
+        pop de
+        jr XBASIC_READ_MR.repeat
 XBASIC_READ_MR.cont:
-    ld c, (hl)
-    inc bc
-    ex de, hl
-      call GET_NEXT_TEMP_STRING_ADDRESS
-      ld (TMPSTRBUF), hl
-    ex de, hl
-    ldir
-    ld (DATPTR), hl
-    ld hl, (TMPSTRBUF)
+      ld (DATPTR), hl
+    pop hl
   pop af
-  call MR_CHANGE_SGM
-  ret
+  jp MR_CHANGE_SGM
 
 XBASIC_INPUT_2:
   call INLIN
@@ -3263,43 +3260,43 @@ cmd_screen.get_start:
 ; hl = resource number
 cmd_screen_load:
   ld (DAC), hl
+  di
+    push hl
+      call resource.open
+    pop bc                   ; bc = resource number
+    call resource.address    ; out hl = resource start address, a = resource segment, bc = resource size
+    or a
+    jr z, cmd_screen_load.normal_rom
+  ei
+  call MR_CHANGE_SGM
+  call cmd_screen_load.do
+  jp resource.close
+
+cmd_screen_load.normal_rom:
   ld a, (RAMAD2)           ; test RAM on page 2
   cp 0xFF
-  jr nz, cmd_screen_load.ram_on_page_2
-
-cmd_screen_load.ram_on_page_3:
-  di
-    call select_rsc_on_page_0
-
-      ld bc, (DAC)             ; bc = resource number
-      call resource.address    ; hl = resource start address, bc = resource size
-
-      ld de, (FONTADDR)
-      push de
-      ldir
-
-    call select_rom_on_page_0
-  ei
-  pop hl
-  jr cmd_screen_load.do
+  jr z, cmd_screen_load.ram_on_page_3
 
 cmd_screen_load.ram_on_page_2:
-  di
-    call select_ram_on_page_2
-    call select_rsc_on_page_0
-
-      ld bc, (DAC)             ; bc = resource number
-      call resource.address    ; hl = resource start address, bc = resource size
+      push hl
+      push bc
+        call select_ram_on_page_2
+      pop bc
+      pop hl
 
       ld de, 0x8000
+    call cmd_screen_load.ram_on_page_3.do
+  jp select_rom_on_page_2
+
+cmd_screen_load.ram_on_page_3:
+      ld de, (FONTADDR)
+cmd_screen_load.ram_on_page_3.do:
       push de
       ldir
 
-    call select_rom_on_page_0
+    call resource.close
   ei
   pop hl
-  call cmd_screen_load.do
-  jp select_rom_on_page_2
 
 cmd_screen_load.do:
   ld c, (hl)
@@ -3307,7 +3304,6 @@ cmd_screen_load.do:
   ld b, (hl)
   inc hl
   jp XBASIC_BLOAD     ; hl = block start, bc = block count
-
 
 ;---------------------------------------------------------------------------------------------------------
 ; MEMORY / SLOT / PAGE ROUTINES
