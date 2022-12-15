@@ -6154,7 +6154,7 @@ void Compiler::cmd_bload() {
     FileNode *file;
     string fileExt;
     bool isTinySprite;
-    int bytes;
+    int resource_number;
 
     if(t == 2) {
 
@@ -6170,141 +6170,40 @@ void Compiler::cmd_bload() {
 
                     if(lexeme->type == Lexeme::type_literal && lexeme->subtype == Lexeme::subtype_string) {
 
+                        // add to resource list
+
+                        resource_number = resourceList.size();
+                        lexeme->name = "FILE";
+                        resourceList.push_back(lexeme);
+
+                        // execute a resource screen load
+
+                        // ld hl, resource number
+                        addCmd(0x21, resource_number);
+
+                        // verify file type (screen or sprite)
+
                         file = new FileNode();
                         file->name = lexeme->value;
-                        file->name.resize(file->name.size()-1);
-                        file->name.erase(0, 1);
-                        file->packed = true;
                         fileExt = file->getFileExt();
-
                         isTinySprite = (strcasecmp(fileExt.c_str(), ".SPR")==0);
+                        delete file;
 
-                        if (file->open()) {
-
-                            fileList.push_back(file);
-
-                            if(isTinySprite) {
-                                unsigned char *spr_data = (unsigned char *) malloc(0x4000);
-                                int i=0, total_bytes;
-                                file->close();
-                                if(!spr_data) {
-                                    syntax_error("Tiny Sprite file processing memory allocation error");
-                                    return;
-                                }
-                                total_bytes = file->ParseTinySpriteFile((char *)file->name.c_str(), spr_data, 0x4000);
-                                if(total_bytes <= 0) {
-                                    syntax_error("Invalid Tiny Sprite file");
-                                    free(spr_data);
-                                    return;
-                                }
-
-                                file->length = total_bytes;
-                                while(total_bytes) {
-                                    if(total_bytes > 200) {
-                                        bytes = file->readAsLexeme(&spr_data[i], 200);
-                                        total_bytes -= 200;
-                                        i += 200;
-                                    } else {
-                                        bytes = file->readAsLexeme(&spr_data[i], total_bytes);
-                                        total_bytes = 0;
-                                    }
-                                    if(bytes == 0) {
-                                        syntax_error("Error packing Tiny Sprite file in BLOAD (empty block size)");
-                                        free(spr_data);
-                                        return;
-                                    }
-                                    if(bytes > 255) {
-                                        syntax_error("Error packing Tiny Sprite file in BLOAD (block size > 255 bytes)");
-                                        free(spr_data);
-                                        return;
-                                    }
-                                    addSymbol(file->current_lexeme);
-                                }
-                                free(spr_data);
-
-                                // call CLRSPR    ; clear sprites
-                                addCmd(0xCD, def_CLRSPR);
-                            } else {
-                                while(!file->eof()) {
-                                    bytes = file->readAsLexeme();
-                                    if(bytes == 0) {
-                                        file->close();
-                                        syntax_error("Error packing image file in BLOAD (empty block size)");
-                                        return;
-                                    }
-                                    if(bytes > 255) {
-                                        file->close();
-                                        syntax_error("Error packing image file in BLOAD (block size > 255 bytes)");
-                                        return;
-                                    }
-                                    addSymbol(file->current_lexeme);
-                                }
-                                file->close();
-                            }
-
-                            if(file->first_lexeme) {
-
-                                if( file->file_header[0] == 0xFE || isTinySprite ) {
-
-                                    if(megaROM) {
-                                        // special ld hl, first file block address
-                                        addFix(file->first_lexeme);
-                                        addCmd(0xFF, 0x0000);
-                                    } else {
-                                        // ld hl, first file block address
-                                        addFix(file->first_lexeme);
-                                        addCmd(0x21, 0x0000);
-                                    }
-
-                                } else {
-                                    syntax_error("Invalid screen file format in BLOAD");
-                                    return;
-                                }
-
-                            } else {
-                                if(isTinySprite) {
-                                    syntax_error("Empty Tiny Sprite file in BLOAD");
-                                } else {
-                                    syntax_error("Empty screen file in BLOAD");
-                                }
-                                return;
-                            }
-
-                            // ld bc, blocks count
-                            addCmd(0x01, file->blocks);
-
-                            if(isTinySprite) {
-                                if(megaROM) {
-                                    // exx
-                                    addByte(0xD9);
-                                    // ld hl, SUB_BLOAD_SPRITE
-                                    addCmd(0x21, def_XBASIC_BLOAD_SPRITE);
-                                    // call MR_CALL
-                                    addCmd(0xCD, def_MR_CALL);
-                                } else {
-                                    // call bload function
-                                    addCmd(0xCD, def_XBASIC_BLOAD_SPRITE);
-                                }
-                            } else {
-                                if(megaROM) {
-                                    // exx
-                                    addByte(0xD9);
-                                    // ld hl, SUB_LOAD
-                                    addCmd(0x21, def_XBASIC_BLOAD);
-                                    // call MR_CALL
-                                    addCmd(0xCD, def_MR_CALL);
-                                } else {
-                                    // call bload function
-                                    addCmd(0xCD, def_XBASIC_BLOAD);
-                                }
-                            }
-
+                        if(isTinySprite) {
+                            // ld (DAC), hl
+                            addCmd(0x22, def_DAC);
+                            // call CLRSPR    ; clear sprites
+                            //addCmd(0xCD, def_CLRSPR);
+                            // call cmd_wrtspr                    ; tiny sprite loader
+                            addCmd(0xCD, def_cmd_wrtspr);
                         } else {
-                            syntax_error("BLOAD file not found");
+                            // call screen_load
+                            addCmd(0xCD, def_cmd_screen_load);
+
                         }
 
                     } else {
-                        syntax_error("BLOAD file name is missing to load into ROM");
+                        syntax_error("BLOAD 1st parameter must be a string constant");
                     }
 
                 } else {

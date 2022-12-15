@@ -514,8 +514,6 @@ wrapper_routines_map_start:
   jp MR_JUMP
 
   jp XBASIC_BASE
-  jp XBASIC_BLOAD
-  jp XBASIC_BLOAD_SPRITE
   jp XBASIC_CLS
   jp XBASIC_COPY
   jp XBASIC_COPY_FROM
@@ -1641,22 +1639,28 @@ cmd_wrtscr:
 ; write a Tiny Sprite resource to vram sprite pattern and color table
 ; CMD WRTSPR <resource number>
 cmd_wrtspr:
-  ld a, (RAMAD2)           ; test RAM on page 2
-  cp 0xFF
-  jp nz, cmd_wrtspr.ram_on_page_2
+  ld a, (RSCMAPSG)           ; test megarom
+  or a
+  jr nz, cmd_wrtspr.ram_on_page_3
+
+    ld a, (RAMAD2)           ; test RAM on page 2
+    cp 0xFF
+    jp nz, cmd_wrtspr.ram_on_page_2
 
 cmd_wrtspr.ram_on_page_3:
   di
-    call select_rsc_on_page_0
+    call resource.open
 
     ld bc, (DAC)             ; bc = resource number
     call resource.address    ; hl = resource start address
+    or a
+    call nz, MR_CHANGE_SGM
 
     ld de, (FONTADDR)
     call resource.ram.unpack
 
     push bc
-    call select_rom_on_page_0
+    call resource.close
   ei
   pop bc
 
@@ -1738,16 +1742,18 @@ cmd_wrtspr.do.pattern:
 cmd_wrtspr.ram_on_page_2:
   di
     call select_ram_on_page_2
-    call select_rsc_on_page_0
+    call resource.open
 
     ld bc, (DAC)             ; bc = resource number
     call resource.address    ; hl = resource start address
+    or a
+    call nz, MR_CHANGE_SGM
 
     ld de, 0x8000
     call resource.ram.unpack
 
     push bc
-      call select_rom_on_page_0
+      call resource.close
     pop bc
 
     ld hl, 0x8000
@@ -2733,132 +2739,81 @@ XBASIC_BLOAD:
   push bc
   push hl
 
-  inc hl
-  ld de, BUF
-
-  call resource.ram.unpack ; in hl = packed data, de = ram destination; out bc = size, hl=destination
-
-  inc hl
-  ld e, (hl)
-  inc hl
-  ld d, (hl)
-
-  inc hl
-  inc hl
-  inc hl
-  inc hl
-  inc hl
-
-  dec bc
-  dec bc
-  dec bc
-  dec bc
-  dec bc
-  dec bc
-  dec bc
-
-XBASIC_BLOAD.loop:
-  push de
-  push bc
-    call LDIRVM    ; hl = ram data address, de = vram data address, bc = length
-  pop bc
-  pop hl
-  add hl, bc
-  ex de, hl
-
-  pop hl
-  pop bc
-  dec bc
-  ld a, c
-  or b
-  ret z
-
-  push bc
-
-  ld c, (hl)
-  ld b, 0
-  add hl, bc
-  inc hl
-
-  push hl
-    ld c, (hl)
-    add hl, bc
-    ld a, h
-  pop hl
-  cp 0xC0
-  jr c, XBASIC_BLOAD.cont
-    ld a, (SGMADR)
-    inc a
-    inc a
-    ld hl, 0x8000
-    call MR_CHANGE_SGM
-
-XBASIC_BLOAD.cont:
-  push hl
-  push de
-
-  inc hl
-  ld de, BUF
-
-  call resource.ram.unpack ; in hl = packed data, de = ram destination; out bc = size, hl=destination
-
-  pop de
-
-  jr XBASIC_BLOAD.loop
-
-
-; BLOAD STATEMENT for Tiny Sprite file (.SPR)
-; parameters: hl = block start, bc = block count
-XBASIC_BLOAD_SPRITE:
-  ld a, (hl)
-  and a
-  ret z
-
-  ld de, (FONTADDR)
-  ld (DAC), de
-
-XBASIC_BLOAD_SPRITE.loop:
-  push bc
-  push hl
-
     inc hl
-    ld de, (DAC)
+    ld de, BUF
+
     call resource.ram.unpack ; in hl = packed data, de = ram destination; out bc = size, hl=destination
 
+    inc hl
+    ld e, (hl)
+    inc hl
+    ld d, (hl)
+
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+
+    dec bc
+    dec bc
+    dec bc
+    dec bc
+    dec bc
+    dec bc
+    dec bc
+
+XBASIC_BLOAD.loop:
+    push de
+    push bc
+      call LDIRVM    ; hl = ram data address, de = vram data address, bc = length
+    pop bc
+    pop hl
     add hl, bc
-    ld (DAC), hl
+    ex de, hl
 
   pop hl
   pop bc
-
   dec bc
-
   ld a, c
   or b
-  jr z, XBASIC_BLOAD_SPRITE.end
+  ret z
 
-  ld e, (hl)
-  ld d, 0
-  inc hl
-  add hl, de
+  push bc
 
-  push hl
-    ld e, (hl)
-    add hl, de
-    ld a, h
-  pop hl
-  cp 0xC0
-  jr c, XBASIC_BLOAD_SPRITE.loop
-    ld a, (SGMADR)
-    inc a
-    inc a
-    ld hl, 0x8000
-    call MR_CHANGE_SGM
-    jr XBASIC_BLOAD_SPRITE.loop
+    ld c, (hl)
+    ld b, 0
+    add hl, bc
+    inc hl
 
-XBASIC_BLOAD_SPRITE.end:
-  ld hl, (FONTADDR)
-  jp cmd_wrtspr.do
+    ld a, (hl)
+    cp 0xFF
+    jr nz, XBASIC_BLOAD.cont
+      push hl
+        ld c, a
+        add hl, bc
+        ld a, h
+      pop hl
+      cp 0xC0
+      jr c, XBASIC_BLOAD.cont
+        ld a, (SGMADR)
+        inc a
+        inc a
+        ld hl, 0x8000
+        call MR_CHANGE_SGM
+
+XBASIC_BLOAD.cont:
+    push hl
+    push de
+
+      inc hl
+      ld de, BUF
+
+      call resource.ram.unpack ; in hl = packed data, de = ram destination; out bc = size, hl=destination
+
+    pop de
+
+  jr XBASIC_BLOAD.loop
 
 ;---------------------------------------------------------------------------------------------------------
 ; ARKOS TRACKER 2 PLAYER
@@ -3259,18 +3214,9 @@ cmd_screen.get_start:
 
 ; hl = resource number
 cmd_screen_load:
-  ld (DAC), hl
-  di
-    push hl
-      call resource.open
-    pop bc                   ; bc = resource number
-    call resource.address    ; out hl = resource start address, a = resource segment, bc = resource size
-    or a
-    jr z, cmd_screen_load.normal_rom
-  ei
-  call MR_CHANGE_SGM
-  call cmd_screen_load.do
-  jp resource.close
+  ld a, (RSCMAPSG)
+  or a
+  jr nz, cmd_screen_load.megarom
 
 cmd_screen_load.normal_rom:
   ld a, (RAMAD2)           ; test RAM on page 2
@@ -3278,19 +3224,22 @@ cmd_screen_load.normal_rom:
   jr z, cmd_screen_load.ram_on_page_3
 
 cmd_screen_load.ram_on_page_2:
+  di
       push hl
-      push bc
         call select_ram_on_page_2
-      pop bc
       pop hl
 
+      call cmd_screen_load.init
       ld de, 0x8000
+
     call cmd_screen_load.ram_on_page_3.do
   jp select_rom_on_page_2
 
 cmd_screen_load.ram_on_page_3:
       ld de, (FONTADDR)
+      call cmd_screen_load.init
 cmd_screen_load.ram_on_page_3.do:
+
       push de
       ldir
 
@@ -3304,6 +3253,18 @@ cmd_screen_load.do:
   ld b, (hl)
   inc hl
   jp XBASIC_BLOAD     ; hl = block start, bc = block count
+
+cmd_screen_load.init:
+  push hl
+    call resource.open
+  pop bc                   ; bc = resource number
+  jp resource.address    ; out hl = resource start address, a = resource segment, bc = resource size
+
+cmd_screen_load.megarom:
+  call cmd_screen_load.init
+  call MR_CHANGE_SGM
+  call cmd_screen_load.do
+  jp resource.close
 
 ;---------------------------------------------------------------------------------------------------------
 ; MEMORY / SLOT / PAGE ROUTINES

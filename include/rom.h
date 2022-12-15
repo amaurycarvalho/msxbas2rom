@@ -11,7 +11,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define ROM_DATA_SIZE (20 * 0x4000)
+#define ROM_DATA_SIZE COMPILE_CODE_SIZE
 
 using namespace std;
 
@@ -28,8 +28,8 @@ class Rom {
     int hdrLen, rtnLen, mapLen, txtLen, filLen, pt3Len, basLen;
     int rscSgm, rscLen;
 
-    unsigned char *data;  //[20 * 0x4000];
-    bool writePage[20];
+    unsigned char *data;  // [ROM_DATA_SIZE];
+    bool writePage[COMPILE_MAX_PAGES];
 
     vector<unsigned char*> lines;
 
@@ -69,7 +69,7 @@ class Rom {
     void writeRom(char *filename);
 
   public:
-    int code_start;
+    int code_start, rom_size;
     double stdMemoryPerc, rscMemoryPerc;
     bool turbo, xtd, stripRemLines;
 

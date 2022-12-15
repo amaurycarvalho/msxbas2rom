@@ -124,9 +124,7 @@
 #define def_MR_JUMP                      (def_MR_GET_DATA + 3)
 
 #define def_XBASIC_BASE                  (def_MR_JUMP + 3)
-#define def_XBASIC_BLOAD	             (def_XBASIC_BASE + 3)
-#define def_XBASIC_BLOAD_SPRITE          (def_XBASIC_BLOAD + 3)
-#define def_XBASIC_CLS                   (def_XBASIC_BLOAD_SPRITE + 3)
+#define def_XBASIC_CLS                   (def_XBASIC_BASE + 3)
 #define def_XBASIC_COPY                  (def_XBASIC_CLS + 3)
 #define def_XBASIC_COPY_FROM             (def_XBASIC_COPY + 3)
 #define def_XBASIC_COPY_TO               (def_XBASIC_COPY_FROM + 3)

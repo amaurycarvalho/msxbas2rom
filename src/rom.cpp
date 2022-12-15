@@ -17,6 +17,7 @@ Rom::Rom() {
 
     data = (unsigned char *) malloc(ROM_DATA_SIZE);
     memset(data, 0x00, ROM_DATA_SIZE);
+    rom_size = 0x4000 * 2;          // default rom size
 
 }
 
@@ -127,9 +128,7 @@ bool Rom::build(Compiler *compiler, char *filename) {
     stdPageLen = hdrLen + rtnLen + basLen;
 
     if(xtd) {
-        if(compiler->segm_total == 0)
-            compiler->segm_total = 4;
-        maxPageLen = (compiler->segm_total * 8.0 * 1024);
+        maxPageLen = rom_size - 0x4000;
         stdMemoryPerc = (stdPageLen / (maxPageLen - rscLen))*100;
         rscMemoryPerc = (rscLen / (maxPageLen - stdPageLen))*100;
     } else {
@@ -228,7 +227,7 @@ void Rom::buildInit() {
     rscLen = 0;
     code_start = 0x8000;
 
-    for(i = 0; i < 20; i++)
+    for(i = 0; i < COMPILE_MAX_PAGES; i++)
         writePage[i] = false;
 
     writePage[1] = true;
@@ -402,7 +401,8 @@ void Rom::buildResources(vector<Lexeme*> *resourceList) {
 
 void Rom::buildMapAndResources() {
     int i, t;
-    int last_code_address, start_resource_address, resource_segment, max_resource_size;
+    int last_code_address, start_resource_address;
+    int resource_segment, max_resource_size;
     Lexeme *lexeme;
 
     // Resources location on ROM:
@@ -448,7 +448,8 @@ void Rom::buildMapAndResources() {
     if(xtd) {
         resource_segment = (last_code_address / 0x4000);
         start_resource_address = resource_segment * 0x4000;
-        max_resource_size = 0x20000 - start_resource_address;
+        rom_size = 0x20000;
+        max_resource_size = rom_size - start_resource_address;
         rscAddr = start_resource_address;   // resource start address
         rscSgm = resource_segment * 2;      // resource start segment (two konami segments of 8kb size each)
         start_resource_address += 0x4000;   // skip first page at temporary memory, because it will be discarded
@@ -458,6 +459,7 @@ void Rom::buildMapAndResources() {
         rscAddr = 0;
         rscSgm = 0;
         max_resource_size = 0x4000 - 0x0100;
+        rom_size = 0x4000 * 3;
     }
 
     mapAddr = start_resource_address + 0x0010;
@@ -510,9 +512,23 @@ void Rom::buildMapAndResources() {
     filLen = 0;
     txtLen = 0;
 
+    if(xtd) {
+        i = (start_resource_address - 0x4000 + rscLen + 0x0100);
+        rom_size = ((i / 0x20000)+1)*0x20000;
+        max_resource_size = rom_size - i + rscLen;
+        t = rom_size / 0x4000;
+        for(i = 1; i < t; i++) {
+            writePage[i] = true;
+        }
+
+    }
+
     if(rscLen > max_resource_size) {
         char s[255];
         sprintf(s, "Resources total size = %i byte(s)\nResources exceeded valid ROM page size limit (%i)\nDifference = %i byte(s)", rscLen, max_resource_size, rscLen - max_resource_size);
+        if(!xtd) {
+            sprintf(s, "%s\nTip: compile it in megarom format using -c -x parameters", s);
+        }
         errorMessage = s;
         errorFound = true;
     }
