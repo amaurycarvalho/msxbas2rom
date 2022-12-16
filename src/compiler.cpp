@@ -227,7 +227,7 @@ void Compiler::clear_symbols() {
     code_pointer = code_start;
 
     ram_size = 0;
-    ram_start = code_start + 0x4000 + def_RAM_INIT;
+    ram_start = code_start + 0x4000 + def_RAM_INTVARSIZ;
     ram_pointer = ram_start;
     ramMemoryPerc = 0;
 
@@ -12876,7 +12876,7 @@ void FileNode::fixAKM(unsigned char *data, int address, int length) {
 
 void FileNode::fixAKX(unsigned char *data, int address, int length) {
     int t = length;
-    int i = 0, current, start = 0x0100;
+    int i = 0, current, start = 0;
     bool first = true;
 
     // loop the effects list
@@ -12886,6 +12886,8 @@ void FileNode::fixAKX(unsigned char *data, int address, int length) {
         current = data[i] | (data[i+1]<<8);
         if(current) {
             if(first) {
+                if(current < 0x8000) start = 0x0100;
+                else start = 0x8100;
                 t = current - start;
                 first = false;
             }

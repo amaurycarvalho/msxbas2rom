@@ -1115,7 +1115,7 @@ void Rom::buildMapAndResourcesFileSPR(char *filename) {
 
 void Rom::buildMapAndResourcesFileBIN(char *filename, char *fileext) {
     int size_read = file.readFromFile(filename, &data[filInd], 0x4000);
-    int next_segment = ((filInd / 0x4000)+1)*0x4000;
+    int next_segment = ((filInd / 0x4000)+1)*0x4000, address;
     int filler = 0;
 
     if(size_read > 0) {
@@ -1128,7 +1128,9 @@ void Rom::buildMapAndResourcesFileBIN(char *filename, char *fileext) {
         if(strcasecmp(fileext, ".AKM")==0) {
             file.fixAKM(&data[filInd], filInd, size_read);
         } else if(strcasecmp(fileext, ".AKX")==0) {
-            file.fixAKX(&data[filInd], filInd, size_read);
+            if(xtd) address = (filInd % 0x4000) + 0x8000;
+            else address = filInd;
+            file.fixAKX(&data[filInd], address, size_read);
         }
 
         addResourceToMap(filInd, size_read, filler);

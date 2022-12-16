@@ -266,36 +266,37 @@ XBASIC_DIVIDE_INTEGERS: equ 0x7643
 
 WRKARE:       equ 0xC010       ; homebrew rom internal workarea start in RAM (alternatives: SLTWRK or PARM2)
 
-SLTSTR:       equ WRKARE       ; 1 - startup slotid
-PLYSTS:       equ SLTSTR+1     ; 1 - player song status flag (0=idle, 1=play, 2=mute)
-PLYLOOP:      equ PLYSTS+1     ; 1 - player song loop status
-PLYCOUNT:     equ PLYLOOP+1    ; 1 - player frame count (for 50hz/60hz control)
-PLYADDR:      equ PLYCOUNT+1   ; 2 - player song start address
-PLYHKSAV:     equ PLYADDR+2    ; 5 - HTIMI hook saved
+SLTSTR:       equ WRKARE       ; 00 - 1 - startup slotid
+PLYSTS:       equ SLTSTR+1     ; 01 - 1 - player song status flag (0=idle, 1=play, 2=mute)
+PLYLOOP:      equ PLYSTS+1     ; 02 - 1 - player song loop status
+PLYCOUNT:     equ PLYLOOP+1    ; 03 - 1 - player frame count (for 50hz/60hz control)
+PLYADDR:      equ PLYCOUNT+1   ; 04 - 2 - player song start address
+PLYHKSAV:     equ PLYADDR+2    ; 06 - 5 - HTIMI hook saved
 
-SLTAD0:       equ PLYHKSAV+5   ; 1 - default slotid from page 0
-SLTAD1:       equ SLTAD0+1     ; 1 - default slotid from page 1
-SLTAD2:       equ SLTAD1+1     ; 1 - default slotid from page 2
-SLTAD3:       equ SLTAD2+1     ; 1 - default slotid from page 3
-MPRAD0:       equ SLTAD3+1     ; 1 - default segment of memory mapper from page 0
-MPRAD2:       equ MPRAD0+1     ; 1 - default segment of memory mapper from page 2
-MPRAD2N:      equ MPRAD2+1     ; 1 - new segment of memory mapper from page 2
-MAPPER:       equ MPRAD2N+1    ; 1 - mapper status (bit 0=mapper on/off, bit 1=running on RAM)
-SGMADR:       equ MAPPER+1     ; 1 - current MegaROM segment selected in &8000
-SOMODE:       equ SGMADR+1     ; 1 - screen output mode (0=text, 1=graphical, 2=tiled)
-HEAPSTR:      equ SOMODE+1     ; 2 - heap start address
-HEAPSIZ:      equ HEAPSTR+2    ; 2 - heap size
-TMPSTRIND:    equ HEAPSIZ+2    ; 1 - temporary string index
-TMPSTRADDR:   equ TMPSTRIND+1  ; 2 - temporary string start address
-TMPSTRBUF:    equ TMPSTRADDR+2 ; 2 - temporary string next pointer
-FONTOLDSLT:   equ TMPSTRBUF+2  ; 1 - old bios font slot
-FONTOLD:      equ FONTOLDSLT+1 ; 2 - old bios font address
-FONTADDR:     equ FONTOLD+2    ; 2 - new font space address
-RSCMAPAD:     equ FONTADDR+2   ; 2 - resource map address (copy on ram)
-RSCMAPSG:     equ RSCMAPAD+2   ; 1 - resource map segment number (copy on ram)
-RSCMAPT1:     equ RSCMAPSG+1   ; 1 - resource map temporary space for last segment number
+SLTAD0:       equ PLYHKSAV+5   ; 11 - 1 - default slotid from page 0
+SLTAD1:       equ SLTAD0+1     ; 12 - 1 - default slotid from page 1
+SLTAD2:       equ SLTAD1+1     ; 13 - 1 - default slotid from page 2
+SLTAD3:       equ SLTAD2+1     ; 14 - 1 - default slotid from page 3
+MPRAD0:       equ SLTAD3+1     ; 15 - 1 - default segment of memory mapper from page 0
+MPRAD2:       equ MPRAD0+1     ; 16 - 1 - default segment of memory mapper from page 2
+MPRAD2N:      equ MPRAD2+1     ; 17 - 1 - new segment of memory mapper from page 2
+MAPPER:       equ MPRAD2N+1    ; 18 - 1 - mapper status (bit 0=mapper on/off, bit 1=running on RAM)
+SGMADR:       equ MAPPER+1     ; 19 - 1 - current MegaROM segment selected in &8000
+SOMODE:       equ SGMADR+1     ; 20 - 1 - screen output mode (0=text, 1=graphical, 2=tiled)
+HEAPSTR:      equ SOMODE+1     ; 21 - 2 - heap start address
+HEAPSIZ:      equ HEAPSTR+2    ; 23 - 2 - heap size
+TMPSTRIND:    equ HEAPSIZ+2    ; 25 - 1 - temporary string index
+TMPSTRADDR:   equ TMPSTRIND+1  ; 26 - 2 - temporary string start address
+TMPSTRBUF:    equ TMPSTRADDR+2 ; 28 - 2 - temporary string next pointer
+FONTOLDSLT:   equ TMPSTRBUF+2  ; 30 - 1 - old bios font slot
+FONTOLD:      equ FONTOLDSLT+1 ; 31 - 2 - old bios font address
+FONTADDR:     equ FONTOLD+2    ; 33 - 2 - new font space address
+RSCMAPAD:     equ FONTADDR+2   ; 35 - 2 - resource map address (copy on ram)
+RSCMAPSG:     equ RSCMAPAD+2   ; 37 - 1 - resource map segment number (copy on ram)
+RSCMAPT1:     equ RSCMAPSG+1   ; 38 - 1 - resource map temporary space for last segment number
+PLYSGTM:      equ RSCMAPT1+1   ; 39 - 1 - player song segment (megarom)
 
-BASMEM:       equ RSCMAPT1+1   ; RAM starts after compiler internal variables
+BASMEM:       equ PLYSGTM+1    ; 40 - RAM starts after compiler internal variables
 
 PLYBUF:       equ 0xEF00
 SPRTBL:       equ PLYBUF - (32*5)      ; 32 sprites * (test, x0, x1, y0, y1)
@@ -1639,13 +1640,9 @@ cmd_wrtscr:
 ; write a Tiny Sprite resource to vram sprite pattern and color table
 ; CMD WRTSPR <resource number>
 cmd_wrtspr:
-  ld a, (RSCMAPSG)           ; test megarom
-  or a
-  jr nz, cmd_wrtspr.ram_on_page_3
-
-    ld a, (RAMAD2)           ; test RAM on page 2
-    cp 0xFF
-    jp nz, cmd_wrtspr.ram_on_page_2
+  ld a, (RAMAD2)             ; test RAM on page 2
+  cp 0xFF
+  jp nz, cmd_wrtspr.ram_on_page_2
 
 cmd_wrtspr.ram_on_page_3:
   di
@@ -1740,6 +1737,21 @@ cmd_wrtspr.do.pattern:
   ret
 
 cmd_wrtspr.ram_on_page_2:
+  ld a, (RSCMAPSG)           ; test megarom
+  or a
+  jr z, cmd_wrtspr.ram_on_page_2.no_mr
+    di
+      call resource.copy_to_ram_on_page_3
+      push hl
+      push bc
+        call select_ram_on_page_2
+      pop bc
+      pop hl
+      ld de, 0x8000
+      push de
+        call resource.ram.unpack
+        jr cmd_wrtspr.ram_on_page_2.end
+cmd_wrtspr.ram_on_page_2.no_mr:
   di
     call select_ram_on_page_2
     call resource.open
@@ -1750,13 +1762,13 @@ cmd_wrtspr.ram_on_page_2:
     call nz, MR_CHANGE_SGM
 
     ld de, 0x8000
-    call resource.ram.unpack
-
-    push bc
-      call resource.close
-    pop bc
-
-    ld hl, 0x8000
+    push de
+      call resource.ram.unpack
+      push bc
+        call resource.close
+      pop bc
+cmd_wrtspr.ram_on_page_2.end:
+    pop hl
     call cmd_wrtspr.do
 
     call select_rom_on_page_2
@@ -2893,9 +2905,12 @@ player.int.play.60hz:
       ld (PLYCOUNT), a
 
 player.int.play.50hz:
-    call select_rsc_on_page_0
-    call PLY_AKM_Play
-    call select_rom_on_page_0
+    call resource.open
+      ld a, (PLYSGTM)
+      or a
+      call nz, MR_CHANGE_SGM
+        call PLY_AKM_Play
+    call resource.close
     jr player.int.exit
 
 player.int.play.skip:
@@ -2904,9 +2919,12 @@ player.int.play.skip:
     jr player.int.exit
 
 player.int.mute:
-    call select_rsc_on_page_0
-    call PLY_AKM_Stop
-    call select_rom_on_page_0
+    call resource.open
+      ld a, (PLYSGTM)
+      or a
+      call nz, MR_CHANGE_SGM
+        call PLY_AKM_Stop
+    call resource.close
     xor a          ; idle
     ld (PLYSTS), a
     jr player.int.exit
@@ -2924,25 +2942,34 @@ cmd_plyload:
   halt
 
   di
-    call select_rsc_on_page_0
+    call resource.open
 
-    ld bc, (DAC)             ; bc = resource number
-    call resource.address    ; hl = resource start address
+    push af
+      ld bc, (DAC)             ; bc = resource number
+      call resource.address    ; hl = resource start address, a = segment, bc = size
+      ld (PLYSGTM), a
+      or a
+      call nz, MR_CHANGE_SGM
 
-    ld (PLYADDR), hl
-    xor a
-    call PLY_AKM_Init
+      ld (PLYADDR), hl
+      xor a
+      call PLY_AKM_Init
+    pop af
+    or a
+    call nz, MR_CHANGE_SGM
 
     ld bc, (ARG)             ; bc = resource number
-    call resource.address    ; hl = resource start address
+    call resource.address    ; hl = resource start address, a = segment, bc = size
+    or a
+    call nz, MR_CHANGE_SGM
 
     call PLY_AKM_InitSoundEffects
 
     ld a, (PLYLOOP)
-    and %00000001          ; clear all flags (except loop flag)
+    and %00000001            ; clear all flags (except loop flag)
     ld (PLYLOOP), a
 
-    call select_rom_on_page_0
+    call resource.close
   ei
 
   halt
@@ -2962,7 +2989,10 @@ cmd_plysong:
   halt
 
   di
-    call select_rsc_on_page_0
+    call resource.open
+    ld a, (PLYSGTM)
+    or a
+    call nz, MR_CHANGE_SGM
 
     ld hl, (PLYADDR)
     ld a, (DAC)
@@ -2972,7 +3002,7 @@ cmd_plysong:
     and %00000001          ; clear all flags (except loop flag)
     ld (PLYLOOP), a
 
-    call select_rom_on_page_0
+    call resource.close
   ei
 
   halt
@@ -3042,7 +3072,10 @@ cmd_plyloop:
 ; (ARG+2) = inverted volume
 cmd_plysound:
   di
-    call select_rsc_on_page_0
+    call resource.open
+    ld a, (PLYSGTM)
+    or a
+    call nz, MR_CHANGE_SGM
 
     ld a,  (DAC)
     ld bc, (ARG)
@@ -3050,7 +3083,7 @@ cmd_plysound:
     ld b, e
     call PLY_AKM_PlaySoundEffect
 
-    call select_rom_on_page_0
+    call resource.close
   ei
   ret
 
@@ -3270,6 +3303,67 @@ cmd_screen_load.megarom:
 ; MEMORY / SLOT / PAGE ROUTINES
 ;---------------------------------------------------------------------------------------------------------
 
+resource.open:
+  ld a, (RSCMAPSG)
+  or a
+  jr nz, select_rsc_on_megarom
+
+select_rsc_on_page_0:
+    ld a, (SLTAD2)
+    ld h,000h
+    call SUB_ENASLT		            ; Select the ROM on page 0000h-3FFFh
+
+    ld a, (MAPPER)
+    bit 0, a                        ; mapper on?
+    ret z                           ; return if no mapper
+
+      ld a, (MPRAD0)                ; original memory mapper segment for page 0 rom
+      out (0xFC), a
+  ret
+
+resource.close:
+  ld a, (RSCMAPSG)
+  or a
+  jr nz, select_rom_on_megarom
+
+select_rom_on_page_0:
+    ld a, (SLTAD0)
+    ld h,000h
+  jp SUB_ENASLT		                ; Select the BIOS ROM
+
+select_rom_on_megarom:
+  ld a, (RSCMAPT1)
+  jp MR_CHANGE_SGM
+
+select_rsc_on_megarom:
+  push af
+    ld a, (SGMADR)
+    ld (RSCMAPT1), a
+  pop af
+  jp MR_CHANGE_SGM
+
+resource.copy_to_ram_on_page_3:     ; copy from megarom to ram on page 3
+  push hl
+    call resource.open
+  pop bc                            ; bc = resource number
+  call resource.address             ; hl = resource start address, a = segment, bc = resource size
+  or a
+  call nz, MR_CHANGE_SGM
+
+  ld de, (FONTADDR)
+  push de
+  push bc
+    ldir
+    call resource.close
+  pop bc
+  pop hl
+  ret
+
+select_ram_on_page_0:
+  ld a, (RAMAD0)
+  ld h,000h
+  jp SUB_ENASLT		; Select RAM on page 0
+
 select_rom_on_page_2:
   ld a, (SLTAD2)
   ld h,080h
@@ -3295,50 +3389,6 @@ select_ram_on_page_2:
   ld a, (MPRAD2N)   ; new memory mapper segment for page 2 ram
   out (0xFE), a
   ret
-
-resource.open:
-  ld a, (RSCMAPSG)
-  or a
-  jr nz, select_rsc_on_megarom
-
-select_rsc_on_page_0:
-  ld a, (SLTAD2)
-  ld h,000h
-  call SUB_ENASLT		; Select the ROM on page 0000h-3FFFh
-
-  ld a, (MAPPER)
-  bit 0, a          ; mapper on?
-  ret z             ; return if no mapper
-
-  ld a, (MPRAD0)    ; original memory mapper segment for page 0 rom
-  out (0xFC), a
-  ret
-
-select_rsc_on_megarom:
-  push af
-    ld a, (SGMADR)
-    ld (RSCMAPT1), a
-  pop af
-  jp MR_CHANGE_SGM
-
-resource.close:
-  ld a, (RSCMAPSG)
-  or a
-  jr nz, select_rom_on_megarom
-
-select_rom_on_page_0:
-  ld a, (SLTAD0)
-  ld h,000h
-  jp SUB_ENASLT		; Select the BIOS ROM
-
-select_rom_on_megarom:
-  ld a, (RSCMAPT1)
-  jp MR_CHANGE_SGM
-
-select_ram_on_page_0:
-  ld a, (RAMAD0)
-  ld h,000h
-  jp SUB_ENASLT		; Select RAM on page 0
 
 ; h = memory page
 ; a <- slot ID formatted FxxxSSPP

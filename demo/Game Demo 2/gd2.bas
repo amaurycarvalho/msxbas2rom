@@ -22,18 +22,19 @@ FILE "SCREEN.S12"     ' 6 - Background for Screen 12 (exported from MSX Screen C
 '==== GAME INITIALIZATION
 10 DIM AX%(5), AY%(5), AS%(5), AIX%(5), AIY%(5)
 
-20 IF MSX() = 0 THEN SN% = 2 : SR% = 4 : SS% = 2 : GOTO 30
-21 IF MSX() = 1 THEN SN% = 8 : SR% = 5 : SS% = 3 : GOTO 30
-22 SN% = 12 : SR% = 6 : SS% = 3
+20 ON MSX() GOTO 22, 23, 23, 23
+21   SN% = 2 : SR% = 4 : SS% = 2 : GOTO 30      ' 0: MSX 1 => screen 2
+22   SN% = 8 : SR% = 5 : SS% = 3 : GOTO 30      ' 1: MSX 2 => screen 8
+23   SN% = 12 : SR% = 6 : SS% = 3               ' else: MSX 2+ or TR... => screen 12
 
 '==== SCREEN INITIALIZATION
 30 SCREEN SN%, 3, 0   ' Screen mode, sprite magnified, keyclick off
 31 CMD DISSCR         ' Disable screen
-'32 CMD PLYLOAD 0, 1   ' Load music and sound effect resource
+32 CMD PLYLOAD 0, 1   ' Load music and sound effect resource
 33 SCREEN LOAD SR%    ' Load screen resource
 34 SPRITE LOAD SS%    ' Load sprite resource
-'35 CMD PLYSONG 0      ' Load game song theme (Gustav Holst - The Planets - Mars)
-'36 CMD PLYPLAY        ' Play theme
+35 CMD PLYSONG 0      ' Load game song theme (Gustav Holst - The Planets - Mars)
+36 CMD PLYPLAY        ' Play theme
 37 CMD ENASCR         ' Enable screen
 
 '==== PLAYER AND ASTEROIDS START POSITION 
@@ -74,7 +75,7 @@ FILE "SCREEN.S12"     ' 6 - Background for Screen 12 (exported from MSX Screen C
 
 220 DX% = DX% + PX%
 221 DY% = DY% + PY%
-222 IF DX% < 8 OR DX% > 232 OR DY% < 24 OR DY% > 160 THEN RETURN
+222 IF DX% < 4 OR DX% > 220 OR DY% < 4 OR DY% > 156 THEN RETURN
 
 230 PX% = DX%
 231 PY% = DY%
@@ -87,8 +88,8 @@ FILE "SCREEN.S12"     ' 6 - Background for Screen 12 (exported from MSX Screen C
 
 '==== MOVE ASTEROIDS
 300 FOR I% = 0 TO 5
-301   AX%(I%) = AX%(I%) + AIX%(I%) : IF AX%(I%) < 10 OR AX%(I%) > 200 THEN AIX%(I%) = -AIX%(I%)
-302   AY%(I%) = AY%(I%) + AIY%(I%) : IF AY%(I%) < 10 OR AY%(I%) > 190 THEN AIY%(I%) = -AIY%(I%)
+301   AX%(I%) = AX%(I%) + AIX%(I%) : IF AX%(I%) < 4 OR AX%(I%) > 220 THEN AIX%(I%) = -AIX%(I%)
+302   AY%(I%) = AY%(I%) + AIY%(I%) : IF AY%(I%) < 4 OR AY%(I%) > 156 THEN AIY%(I%) = -AIY%(I%)
 303 NEXT
 
 '==== SHOW ASTEROIDS
@@ -102,15 +103,19 @@ FILE "SCREEN.S12"     ' 6 - Background for Screen 12 (exported from MSX Screen C
 
 '==== CHECK FOR TRIGGER
 500 IF PB% = 0 THEN RETURN
-501    RETURN
+501    GOTO 530
 
 '==== BULLET HIT AN ASTEROID
-510 'CMD PLYSOUND 2                        ' Play sound effect from instrument 2
+510 CMD PLYSOUND 2,1                      ' Play sound effect from instrument 2 on channel 1
 511 RETURN
 
 '==== PLAYER HIT AN ASTEROID
-520 'CMD PLYSOUND 3                        ' Play sound effect from instrument 3
+520 CMD PLYSOUND 1,1                      ' Play sound effect from instrument 1 on channel 1
 521 RETURN
+
+'==== PLAYER SHOOTS
+530 CMD PLYSOUND 3,1                      ' Play sound effect from instrument 3 on channel 1
+531 RETURN
 
 '==== GET PLAYER INPUT
 1000 PS% = STICK(0) OR STICK(1)

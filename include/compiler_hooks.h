@@ -15,8 +15,9 @@
 #define def_SPRTBL          (def_PLYBUF - (32*5))    // 32 sprites * (test, x0, x1, y0, y1)
 #define def_SPRSIZ          (def_SPRTBL - 1)
 
-#define def_RAM_INIT        0x0037
-#define def_RAM_BOTTOM      0xC000 + def_RAM_INIT
+#define def_RAM_INTVARSIZ   0x0040     // 40 bytes - compiler internal variables total size
+#define def_RAM_INIT        0xC010     // start of RAM
+#define def_RAM_BOTTOM      (def_RAM_INIT + def_RAM_INTVARSIZ)
 #define def_RAM_TOP         (def_SPRSIZ - 1)
 #define def_RAM_SIZE        (def_RAM_TOP - def_RAM_BOTTOM)
 #define def_RAM_BUFSIZ      0x0880     // 2176 bytes of font buffer in RAM
