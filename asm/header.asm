@@ -1516,52 +1516,36 @@ cmd_wrtvram:
 
 cmd_wrtvram.ram_on_page_3:
   di
-    call select_rsc_on_page_0
+    call resource.open
 
     ld bc, (DAC)             ; bc = resource number
     call resource.address    ; hl = resource start address
 
     ld de, (FONTADDR)
+    push de
     call resource.ram.unpack
 
     push bc
-    call select_rom_on_page_0
+    call resource.close
   ei
   pop bc
-
-  ld hl, (FONTADDR)
+  pop de
   ld de, (ARG)
   jp LDIRVM
 
 cmd_wrtvram.ram_on_page_2:
-  di
-    call select_ram_on_page_2
-    call select_rsc_on_page_0
-
-    ld bc, (DAC)             ; bc = resource number
-    call resource.address    ; hl = resource start address
-
-    ld de, 0x8000
-    call resource.ram.unpack
-
-    push bc
-      call select_rom_on_page_0
-    pop bc
-
-    ld hl, 0x8000
+  call resource.copy_to_ram_on_page_2
     ld de, (ARG)
     call LDIRVM
-
     call select_rom_on_page_2
   ei
   ret
-
 
 ; write font resource to vram tile pattern table or graphical mode
 ; CMD WRTFNT <resource number>
 cmd_wrtfnt:
   di
-    call select_rsc_on_page_0
+    call resource.open
 
     ld bc, (DAC)             ; bc = resource number
     call resource.address    ; hl = resource start address
@@ -1571,7 +1555,7 @@ cmd_wrtfnt:
 
     push hl
     push bc
-      call select_rom_on_page_0
+      call resource.close
     pop bc
     pop hl
   ei
@@ -1649,9 +1633,7 @@ cmd_wrtspr.ram_on_page_3:
     call resource.open
 
     ld bc, (DAC)             ; bc = resource number
-    call resource.address    ; hl = resource start address
-    or a
-    call nz, MR_CHANGE_SGM
+    call resource.address    ; hl = resource start address, a = segment, bc = size
 
     ld de, (FONTADDR)
     call resource.ram.unpack
@@ -1737,40 +1719,8 @@ cmd_wrtspr.do.pattern:
   ret
 
 cmd_wrtspr.ram_on_page_2:
-  ld a, (RSCMAPSG)           ; test megarom
-  or a
-  jr z, cmd_wrtspr.ram_on_page_2.no_mr
-    di
-      call resource.copy_to_ram_on_page_3
-      push hl
-      push bc
-        call select_ram_on_page_2
-      pop bc
-      pop hl
-      ld de, 0x8000
-      push de
-        call resource.ram.unpack
-        jr cmd_wrtspr.ram_on_page_2.end
-cmd_wrtspr.ram_on_page_2.no_mr:
-  di
-    call select_ram_on_page_2
-    call resource.open
-
-    ld bc, (DAC)             ; bc = resource number
-    call resource.address    ; hl = resource start address
-    or a
-    call nz, MR_CHANGE_SGM
-
-    ld de, 0x8000
-    push de
-      call resource.ram.unpack
-      push bc
-        call resource.close
-      pop bc
-cmd_wrtspr.ram_on_page_2.end:
-    pop hl
+  call resource.copy_to_ram_on_page_2
     call cmd_wrtspr.do
-
     call select_rom_on_page_2
   ei
   ret
@@ -2155,11 +2105,11 @@ set_tile_color.multi.do:
 usr0:
   di
     push hl
-      call select_rsc_on_page_0
+      call resource.open
     pop bc
-    call resource.address    ; hl = resource start address
+    call resource.address    ; hl = resource start address, a = segment, bc = size
     push hl
-      call select_rom_on_page_0
+      call resource.close
     pop bc
   ei
   jp c, usr_def
@@ -2171,11 +2121,11 @@ usr0:
 usr1:
   di
     push hl
-      call select_rsc_on_page_0
+      call resource.open
     pop bc
-    call resource.address    ; bc = resource size
+    call resource.address    ; hl = address, a = segment, bc = resource size
     push bc
-      call select_rom_on_page_0
+      call resource.close
     pop bc
   ei
   jp c, usr_def
@@ -2654,24 +2604,25 @@ MR_CHANGE_SGM:
   ld (Seg_P8000_SW), a
   inc a
   ld (Seg_PA000_SW), a
-  ret                     ; indirect jump
+  dec a
+  ret                       ; indirect jump
 
 MR_CALL:
-  ld bc, (SGMADR-1)       ; salve old segment number
+  ld bc, (SGMADR-1)         ; salve old segment number
   push bc
-  call MR_CHANGE_SGM
-  ld de, MR_CALL_RET      ; restore old segment code
-  push de
-  push hl                 ; called segment code
-  ex af, af'              ; restore old registers values (call parameters)
-  exx
-  ret                     ; indirect call
+    call MR_CHANGE_SGM
+    ld de, MR_CALL_RET      ; restore old segment code
+    push de
+    push hl                 ; called segment code
+    ex af, af'              ; restore old registers values (call parameters)
+    exx
+    ret                     ; indirect call
 MR_CALL_RET:
-  pop af                  ; restore old segment number
+  pop af                    ; restore old segment number
   jp MR_CHANGE_SGM
 
 MR_GET_DATA:
-  ld bc, (SGMADR-1)       ; salve old segment number
+  ld bc, (SGMADR-1)         ; salve old segment number
   push bc
     call MR_CHANGE_SGM
     ; copy string from hl to TEMPORARY STRING BUFFER
@@ -2683,21 +2634,21 @@ MR_GET_DATA:
       ld (TMPSTRBUF), hl
     ex de, hl
     ldir
-  pop af                  ; restore old segment number
+  pop af                    ; restore old segment number
   call MR_CHANGE_SGM
-  ex af, af'              ; restore old registers values (call parameters)
+  ex af, af'                ; restore old registers values (call parameters)
   exx
-  ld hl, (TMPSTRBUF)      ; data restored from segment number
+  ld hl, (TMPSTRBUF)        ; data restored from segment number
   ret
 
 MR_GET_BYTE:
-  ld bc, (SGMADR-1)       ; salve old segment number
+  ld bc, (SGMADR-1)         ; salve old segment number
   push bc
     call MR_CHANGE_SGM
     ld c, (hl)
     inc hl
     ld b, (hl)
-  pop af                  ; restore old segment number
+  pop af                    ; restore old segment number
   call MR_CHANGE_SGM
   ld a, c
   ret
@@ -2909,7 +2860,7 @@ player.int.play.50hz:
       ld a, (PLYSGTM)
       or a
       call nz, MR_CHANGE_SGM
-        call PLY_AKM_Play
+      call PLY_AKM_Play
     call resource.close
     jr player.int.exit
 
@@ -2923,7 +2874,7 @@ player.int.mute:
       ld a, (PLYSGTM)
       or a
       call nz, MR_CHANGE_SGM
-        call PLY_AKM_Stop
+      call PLY_AKM_Stop
     call resource.close
     xor a          ; idle
     ld (PLYSTS), a
@@ -2944,24 +2895,20 @@ cmd_plyload:
   di
     call resource.open
 
-    push af
-      ld bc, (DAC)             ; bc = resource number
-      call resource.address    ; hl = resource start address, a = segment, bc = size
-      ld (PLYSGTM), a
-      or a
-      call nz, MR_CHANGE_SGM
+    ld bc, (DAC)             ; bc = resource number
+    call resource.address    ; hl = resource start address, a = segment, bc = size
+    ld (PLYSGTM), a
 
-      ld (PLYADDR), hl
-      xor a
-      call PLY_AKM_Init
-    pop af
+    ld (PLYADDR), hl
+    xor a
+    call PLY_AKM_Init
+
+    ld a, (RSCMAPSG)
     or a
     call nz, MR_CHANGE_SGM
 
     ld bc, (ARG)             ; bc = resource number
     call resource.address    ; hl = resource start address, a = segment, bc = size
-    or a
-    call nz, MR_CHANGE_SGM
 
     call PLY_AKM_InitSoundEffects
 
@@ -2990,18 +2937,17 @@ cmd_plysong:
 
   di
     call resource.open
-    ld a, (PLYSGTM)
-    or a
-    call nz, MR_CHANGE_SGM
+      ld a, (PLYSGTM)
+      or a
+      call nz, MR_CHANGE_SGM
 
-    ld hl, (PLYADDR)
-    ld a, (DAC)
-    call PLY_AKM_Init
+      ld hl, (PLYADDR)
+      ld a, (DAC)
+      call PLY_AKM_Init
 
-    ld a, (PLYLOOP)
-    and %00000001          ; clear all flags (except loop flag)
-    ld (PLYLOOP), a
-
+      ld a, (PLYLOOP)
+      and %00000001          ; clear all flags (except loop flag)
+      ld (PLYLOOP), a
     call resource.close
   ei
 
@@ -3073,16 +3019,15 @@ cmd_plyloop:
 cmd_plysound:
   di
     call resource.open
-    ld a, (PLYSGTM)
-    or a
-    call nz, MR_CHANGE_SGM
+      ld a, (PLYSGTM)
+      or a
+      call nz, MR_CHANGE_SGM
 
-    ld a,  (DAC)
-    ld bc, (ARG)
-    ld de, (ARG+2)
-    ld b, e
-    call PLY_AKM_PlaySoundEffect
-
+      ld a,  (DAC)
+      ld bc, (ARG)
+      ld de, (ARG+2)
+      ld b, e
+      call PLY_AKM_PlaySoundEffect
     call resource.close
   ei
   ret
@@ -3291,11 +3236,10 @@ cmd_screen_load.init:
   push hl
     call resource.open
   pop bc                   ; bc = resource number
-  jp resource.address    ; out hl = resource start address, a = resource segment, bc = resource size
+  jp resource.address      ; out hl = resource start address, a = resource segment, bc = resource size
 
 cmd_screen_load.megarom:
   call cmd_screen_load.init
-  call MR_CHANGE_SGM
   call cmd_screen_load.do
   jp resource.close
 
@@ -3342,13 +3286,44 @@ select_rsc_on_megarom:
   pop af
   jp MR_CHANGE_SGM
 
+resource.copy_to_ram_on_page_2:
+  ld a, (RSCMAPSG)           ; test megarom
+  or a
+  jr z, resource.copy_to_ram_on_page_2.no_mr
+    di
+      call resource.copy_to_ram_on_page_3
+      push hl
+      push bc
+        call select_ram_on_page_2
+      pop bc
+      pop hl
+      ld de, 0x8000
+      push de
+        call resource.ram.unpack
+        jr resource.copy_to_ram_on_page_2.end
+resource.copy_to_ram_on_page_2.no_mr:
+  di
+    call select_ram_on_page_2
+    call resource.open
+
+    ld bc, (DAC)             ; bc = resource number
+    call resource.address    ; hl = resource start address, a = segment, bc = size
+
+    ld de, 0x8000
+    push de
+      call resource.ram.unpack
+      push bc
+        call resource.close
+      pop bc
+resource.copy_to_ram_on_page_2.end:
+    pop hl
+    ret
+
 resource.copy_to_ram_on_page_3:     ; copy from megarom to ram on page 3
   push hl
     call resource.open
   pop bc                            ; bc = resource number
   call resource.address             ; hl = resource start address, a = segment, bc = resource size
-  or a
-  call nz, MR_CHANGE_SGM
 
   ld de, (FONTADDR)
   push de
@@ -4025,6 +4000,9 @@ resource.address.next:
   inc hl
   ld b, (hl)
 
+  or a
+  call nz, MR_CHANGE_SGM
+
   ex de, hl
   ret
 
@@ -4033,16 +4011,16 @@ resource.address.next:
 resource.get_data:
   di
     push bc
-      call select_rsc_on_page_0
+      call resource.open
     pop bc
 
-    call resource.address    ; hl = resource start address
+    call resource.address    ; hl = resource start address, a = segment, bc = size
 
     ld de, BUF
     ld bc, 255
     ldir
 
-    call select_rom_on_page_0
+    call resource.close
   ei
   ld hl, BUF
   ret

@@ -44,8 +44,8 @@ FILE "SCREEN.S12"     ' 6 - Background for Screen 12 (exported from MSX Screen C
 43    GOSUB 1020 : AX%(I%) = R% MOD 192 + 32
 44    GOSUB 1020 : AY%(I%) = R% MOD 128 + 32
 45    AS%(I%) = 2
-46    GOSUB 1020 : R% = R% MOD 2 : IF R% = 0 THEN AIX%(I%) = 1 ELSE AIX%(I%) = -1 
-47    GOSUB 1020 : R% = R% MOD 2 : IF R% = 0 THEN AIY%(I%) = 1 ELSE AIY%(I%) = -1 
+46    GOSUB 1020 : R% = R% MOD 2 : IF R% = 0 THEN AIX%(I%) = 3 ELSE AIX%(I%) = -3 
+47    GOSUB 1020 : R% = R% MOD 2 : IF R% = 0 THEN AIY%(I%) = 3 ELSE AIY%(I%) = -3
 48 NEXT
 
 50 GOSUB 240   ' SHOW PLAYER
@@ -95,8 +95,9 @@ FILE "SCREEN.S12"     ' 6 - Background for Screen 12 (exported from MSX Screen C
 '==== SHOW ASTEROIDS
 310 FOR I% = 0 TO 5
 311    PUT SPRITE 3+I%, (AX%(I%), AY%(I%)), 14, 3
-312 NEXT
-313 RETURN
+312    IF COLLISION(3+I%) >= 0 THEN AIX%(I%) = -AIX%(I%)
+313 NEXT
+314 RETURN
 
 '==== MOVE BULLETS 
 400 RETURN
@@ -120,7 +121,7 @@ FILE "SCREEN.S12"     ' 6 - Background for Screen 12 (exported from MSX Screen C
 '==== GET PLAYER INPUT
 1000 PS% = STICK(0) OR STICK(1)
 1001 PB% = STRIG(0) OR STRIG(1)
-1002 RETURN
+1002 GOTO 1020
 
 '==== WAIT FOR TRIGGER RELEASE
 1010 PB% = STRIG(0) OR STRIG(1) 

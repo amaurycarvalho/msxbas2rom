@@ -1114,7 +1114,8 @@ void Rom::buildMapAndResourcesFileSPR(char *filename) {
 }
 
 void Rom::buildMapAndResourcesFileBIN(char *filename, char *fileext) {
-    int size_read = file.readFromFile(filename, &data[filInd], 0x4000);
+    unsigned char *buffer = (unsigned char *) malloc(0x4000);
+    int size_read = file.readFromFile(filename, buffer, 0x4000);
     int next_segment = ((filInd / 0x4000)+1)*0x4000, address;
     int filler = 0;
 
@@ -1125,19 +1126,27 @@ void Rom::buildMapAndResourcesFileBIN(char *filename, char *fileext) {
             filInd = next_segment;
         }
 
+        memcpy(&data[filInd], buffer, size_read);
+
+        if(xtd) address = (filInd % 0x4000) + 0x8000;
+        else address = filInd;
+
         if(strcasecmp(fileext, ".AKM")==0) {
-            file.fixAKM(&data[filInd], filInd, size_read);
+            file.fixAKM(&data[filInd], address, size_read);
         } else if(strcasecmp(fileext, ".AKX")==0) {
-            if(xtd) address = (filInd % 0x4000) + 0x8000;
-            else address = filInd;
             file.fixAKX(&data[filInd], address, size_read);
         }
 
         addResourceToMap(filInd, size_read, filler);
 
+        filInd += size_read;
+
+        free(buffer);
+
     } else {
         errorMessage = "Resource file not found: " + string(filename);
         errorFound = true;
+        free(buffer);
         return;
     }
 
