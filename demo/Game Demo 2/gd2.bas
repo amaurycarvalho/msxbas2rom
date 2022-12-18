@@ -107,15 +107,15 @@ FILE "SCREEN.S12"     ' 6 - Background for Screen 12 (exported from MSX Screen C
 501    GOTO 530
 
 '==== BULLET HIT AN ASTEROID
-510 CMD PLYSOUND 2,1                      ' Play sound effect from instrument 2 on channel 1
+510 CMD PLYSOUND 2,2                      ' Play sound effect from instrument 2 on channel 2
 511 RETURN
 
 '==== PLAYER HIT AN ASTEROID
-520 CMD PLYSOUND 1,1                      ' Play sound effect from instrument 1 on channel 1
+520 CMD PLYSOUND 1,2                      ' Play sound effect from instrument 1 on channel 2
 521 RETURN
 
 '==== PLAYER SHOOTS
-530 CMD PLYSOUND 3,1                      ' Play sound effect from instrument 3 on channel 1
+530 CMD PLYSOUND 3,2                      ' Play sound effect from instrument 3 on channel 2
 531 RETURN
 
 '==== GET PLAYER INPUT

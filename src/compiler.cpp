@@ -12872,6 +12872,129 @@ void FileNode::getFileExt(char *filename, char *buf) {
 }
 
 void FileNode::fixAKM(unsigned char *data, int address, int length) {
+    int t, i, current, previous, start;
+    int instrumentIndexTable, arpeggioIndexTable, pitchIndexTable;
+    int subsongIndexTable;
+    int noteBlockIndexTable, trackIndexTable;
+    bool first;
+
+    // adjust header
+
+    instrumentIndexTable = data[0] | (data[1]<<8);
+    arpeggioIndexTable = data[2] | (data[3]<<8);
+    pitchIndexTable = data[4] | (data[5]<<8);
+
+    start = instrumentIndexTable & 0xFF00;
+    instrumentIndexTable -= start;
+
+    if(arpeggioIndexTable) {
+        current = arpeggioIndexTable - start + address;
+        data[2] = current & 0xFF;
+        data[3] = (current >> 8) & 0xFF;
+    }
+
+    if(pitchIndexTable) {
+        current = pitchIndexTable - start + address;
+        data[4] = current & 0xFF;
+        data[5] = (current >> 8) & 0xFF;
+    }
+
+    // adjust subsongs table
+
+    first = true;
+
+    for(i = 6; i < instrumentIndexTable; i += 2) {
+        subsongIndexTable = data[i] | (data[i+1]<<8);
+        if(subsongIndexTable) {
+            subsongIndexTable -= start;
+
+            if(first) {
+                first = false;
+                previous = data[subsongIndexTable-2] | (data[subsongIndexTable-1]<<8);   // adjust the last instrument
+                if(previous) {                                                           // before first subsong
+                    previous -= start;
+                    previous += address;
+                    data[subsongIndexTable-2] = previous & 0xFF;
+                    data[subsongIndexTable-1] = (previous >> 8) & 0xFF;
+                }
+            }
+
+            noteBlockIndexTable = data[subsongIndexTable] | (data[subsongIndexTable+1]<<8);
+            if(noteBlockIndexTable) {
+                noteBlockIndexTable -= start;
+                noteBlockIndexTable += address;
+                data[subsongIndexTable] = noteBlockIndexTable & 0xFF;
+                data[subsongIndexTable+1] = (noteBlockIndexTable >> 8) & 0xFF;
+            }
+
+            trackIndexTable = data[subsongIndexTable+2] | (data[subsongIndexTable+3]<<8);
+            if(trackIndexTable) {
+                trackIndexTable -= start;
+
+                previous = data[trackIndexTable-2] | (data[trackIndexTable-1]<<8);   // adjust the subsong address
+                if(previous) {                                                       // before track list
+                    previous -= start;
+                    previous += address;
+                    data[trackIndexTable-2] = previous & 0xFF;
+                    data[trackIndexTable-1] = (previous >> 8) & 0xFF;
+                }
+
+                current = data[trackIndexTable] | (data[trackIndexTable+1]<<8);      // adjust the first track address
+                if(current) {
+                    current -= start;
+                    current += address;
+                    data[trackIndexTable] = current & 0xFF;
+                    data[trackIndexTable+1] = (current >> 8) & 0xFF;
+                }
+
+                trackIndexTable += address;
+                data[subsongIndexTable+2] = trackIndexTable & 0xFF;
+                data[subsongIndexTable+3] = (trackIndexTable >> 8) & 0xFF;
+            }
+
+            subsongIndexTable += address;
+            data[i] = subsongIndexTable & 0xFF;
+            data[i+1] = (subsongIndexTable >> 8) & 0xFF;
+        }
+    }
+
+    // adjust instruments table
+
+    t = data[instrumentIndexTable] | (data[instrumentIndexTable+1]<<8);
+    t -= start;
+    first = true;
+
+    for(i = instrumentIndexTable; i < t; i += 2) {
+        current = data[i] | (data[i+1]<<8);
+        if(current) {
+            current -= start;
+
+            if(first)
+                first = false;
+            else {
+                previous = data[current-2] | (data[current-1]<<8);   // adjust the previous instrument
+                if(previous) {
+                    previous -= start;
+                    previous += address;
+                    data[current-2] = previous & 0xFF;
+                    data[current-1] = (previous >> 8) & 0xFF;
+                }
+            }
+
+            current += address;
+            data[i] = current & 0xFF;
+            data[i+1] = (current >> 8) & 0xFF;
+        }
+    }
+
+    instrumentIndexTable += address;
+    data[0] = instrumentIndexTable  & 0xFF;
+    data[1] = (instrumentIndexTable >> 8) & 0xFF;
+
+    FileNode *file = new FileNode();
+    file->writeToFile((char *) "song.dat", data, length);
+    delete file;
+
 }
 
 void FileNode::fixAKX(unsigned char *data, int address, int length) {
@@ -12886,8 +13009,7 @@ void FileNode::fixAKX(unsigned char *data, int address, int length) {
         current = data[i] | (data[i+1]<<8);
         if(current) {
             if(first) {
-                if(current < 0x8000) start = 0x0100;
-                else start = 0x8100;
+                start = current & 0xFF00;
                 t = current - start;
                 first = false;
             }
@@ -12902,6 +13024,11 @@ void FileNode::fixAKX(unsigned char *data, int address, int length) {
 
     }
 
+    /*
+    FileNode *file = new FileNode();
+    file->writeToFile((char *) "effect.dat", data, length);
+    delete file;
+    */
 
 }
 
