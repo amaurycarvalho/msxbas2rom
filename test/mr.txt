@@ -1,5 +1,7 @@
 MEGAROM test
 
+dhex file1 file2
+
 --------------------
 
 test54.bas

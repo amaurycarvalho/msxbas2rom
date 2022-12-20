@@ -12872,11 +12872,11 @@ void FileNode::getFileExt(char *filename, char *buf) {
 }
 
 void FileNode::fixAKM(unsigned char *data, int address, int length) {
-    int t, i, current, previous, start;
+    int t, i, k, w, current, previous, start, tracks, linker;
     int instrumentIndexTable, arpeggioIndexTable, pitchIndexTable;
     int subsongIndexTable;
     int noteBlockIndexTable, trackIndexTable;
-    bool first;
+    bool first, track_annotation;
 
     // adjust header
 
@@ -12908,10 +12908,12 @@ void FileNode::fixAKM(unsigned char *data, int address, int length) {
         if(subsongIndexTable) {
             subsongIndexTable -= start;
 
+            //printf("===> subsong 0x%02X\n", subsongIndexTable);
+
             if(first) {
                 first = false;
-                previous = data[subsongIndexTable-2] | (data[subsongIndexTable-1]<<8);   // adjust the last instrument
-                if(previous) {                                                           // before first subsong
+                previous = data[subsongIndexTable-2] | (data[subsongIndexTable-1]<<8);  // adjust the last instrument
+                if(previous) {                                                          // before first subsong
                     previous -= start;
                     previous += address;
                     data[subsongIndexTable-2] = previous & 0xFF;
@@ -12931,20 +12933,72 @@ void FileNode::fixAKM(unsigned char *data, int address, int length) {
             if(trackIndexTable) {
                 trackIndexTable -= start;
 
-                previous = data[trackIndexTable-2] | (data[trackIndexTable-1]<<8);   // adjust the subsong address
-                if(previous) {                                                       // before track list
-                    previous -= start;
-                    previous += address;
-                    data[trackIndexTable-2] = previous & 0xFF;
-                    data[trackIndexTable-1] = (previous >> 8) & 0xFF;
+                // read subsong linker
+
+                tracks = 0x80;
+                track_annotation = false;
+
+                for(k = subsongIndexTable+13; k < trackIndexTable;) {                   // linker state machine
+                    linker = data[k++];                                                 // linker code
+
+                    if(linker & 1) {                                                    // if speed change/end song...
+                        k ++;                                                           // ...skip speed change/end song
+                    }
+
+                    if(linker == 1) {                                                   // if end of song...
+                        current = data[k] | (data[k+1]<<8);
+                        current -= start;
+                        current += address;
+                        data[k] = current & 0xFF;
+                        data[k+1] = (current >> 8) & 0xFF;
+                        k += 2;                                                         // ...skip loop address
+                        //printf("   end of song\n");
+                    } else {
+                        linker >>= 1;
+                        if(linker & 1) {                                                // if line count...
+                            k ++;                                                       // ...skip line count
+                        }
+                        for(w=0; w<3; w++) {
+                            linker >>= 1;
+                            if(linker & 1) {                                                // if transposition w...
+                                k ++;                                                       // ...skip transp w
+                            }
+                            linker >>= 1;
+                            if(linker & 1) {                                                // if channel w...
+                                current = data[k];                                          // ...check channel w
+                                k++;
+                                if(current & 0x80) {
+                                    if(current >= 0x80 && current <= 0x83) {
+                                        track_annotation = true;
+                                        if(current > tracks)
+                                            tracks = current;
+                                    }
+                                    //printf("   track c %i: 0x%02X\n", w, current);
+                                } else {
+                                    current = (current << 8) | data[k];
+                                    k ++;
+                                    //printf("   track c %i: 0x%04X\n", w, current);
+                                }
+                            }
+                        }
+                    }
                 }
 
-                current = data[trackIndexTable] | (data[trackIndexTable+1]<<8);      // adjust the first track address
-                if(current) {
-                    current -= start;
-                    current += address;
-                    data[trackIndexTable] = current & 0xFF;
-                    data[trackIndexTable+1] = (current >> 8) & 0xFF;
+                if(track_annotation) {
+                    tracks = ((tracks & 3) + 1) * 2;
+                    //printf("   tracks: %i\n", tracks / 2);
+
+                    t = trackIndexTable + tracks;
+
+                    for(k = trackIndexTable; k < t; k += 2) {
+                        current = data[k] | (data[k+1]<<8);         // adjust the track address
+                        if(current) {
+                            current -= start;
+                            current += address;
+                            data[k] = current & 0xFF;
+                            data[k+1] = (current >> 8) & 0xFF;
+                        }
+                    }
                 }
 
                 trackIndexTable += address;
@@ -12972,7 +13026,7 @@ void FileNode::fixAKM(unsigned char *data, int address, int length) {
             if(first)
                 first = false;
             else {
-                previous = data[current-2] | (data[current-1]<<8);   // adjust the previous instrument
+                previous = data[current-2] | (data[current-1]<<8);                  // adjust the previous instrument
                 if(previous) {
                     previous -= start;
                     previous += address;
@@ -12991,9 +13045,9 @@ void FileNode::fixAKM(unsigned char *data, int address, int length) {
     data[0] = instrumentIndexTable  & 0xFF;
     data[1] = (instrumentIndexTable >> 8) & 0xFF;
 
-    FileNode *file = new FileNode();
-    file->writeToFile((char *) "song.dat", data, length);
-    delete file;
+    //FileNode *file = new FileNode();
+    //file->writeToFile((char *) "song.dat", data, length);
+    //delete file;
 
 }
 
@@ -13024,11 +13078,9 @@ void FileNode::fixAKX(unsigned char *data, int address, int length) {
 
     }
 
-    /*
-    FileNode *file = new FileNode();
-    file->writeToFile((char *) "effect.dat", data, length);
-    delete file;
-    */
+    //FileNode *file = new FileNode();
+    //file->writeToFile((char *) "effect.dat", data, length);
+    //delete file;
 
 }
 

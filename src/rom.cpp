@@ -557,7 +557,7 @@ void Rom::buildMapAndResourcesText(Lexeme *lexeme) {
 
     length = lexeme->value.size();
 
-    if((txtInd + length + 1) >= next_segment) {  // if string doesn't fit on current segment, skip to the next
+    if((txtInd + length + 2) >= next_segment) {  // if string doesn't fit on current segment, skip to the next
         filler += (next_segment - txtInd);
         txtInd = next_segment;
     }
@@ -1085,8 +1085,7 @@ void Rom::buildMapAndResourcesFileSPR(char *filename) {
     Pletter pletter;
 
     if(size_read > 0) {
-
-        if((filInd + size_read) >= next_segment) { // skip data to the next segment if it doesn't fit in the current one
+        if((filInd + size_read + 0xF) >= next_segment) { // skip data to the next segment if it doesn't fit in the current one
             filler = next_segment - filInd;
             filInd = next_segment;
         }
@@ -1097,9 +1096,6 @@ void Rom::buildMapAndResourcesFileSPR(char *filename) {
         size_read = pletter.pack(buffer, size_read, (unsigned char *) &data[filInd]);
 
         addResourceToMap(filInd, size_read, filler);
-
-        free(buffer);
-
     } else {
         if(size_read < 0) {
             errorMessage = "Resource file not found: " + string(filename);
@@ -1107,10 +1103,9 @@ void Rom::buildMapAndResourcesFileSPR(char *filename) {
             errorMessage = "Invalid Tiny Sprite resource: " + string(filename);
         }
         errorFound = true;
-        free(buffer);
-        return;
     }
 
+    free(buffer);
 }
 
 void Rom::buildMapAndResourcesFileBIN(char *filename, char *fileext) {
@@ -1119,17 +1114,24 @@ void Rom::buildMapAndResourcesFileBIN(char *filename, char *fileext) {
     int next_segment = ((filInd / 0x4000)+1)*0x4000, address;
     int filler = 0;
 
-    if(size_read > 0) {
-
-        if((filInd + size_read) >= next_segment) {  // skip data to the next segment if it doesn't fit in the current one
+    if(size_read <= 0) {
+        errorMessage = "Resource file not found: " + string(filename);
+        errorFound = true;
+    } else if(size_read > 0x3D00) { // 15kb: arkos tracker AKM+AKX files (+map) must fit together on the first resource page
+        errorMessage = "Resource file size exceeds maximum limit (15kb): " + string(filename);
+        errorFound = true;
+    } else {
+        if((filInd + size_read + 0xF) >= next_segment) {  // skip data to the next segment if it doesn't fit in the current one
             filler = next_segment - filInd;
             filInd = next_segment;
         }
 
         memcpy(&data[filInd], buffer, size_read);
 
-        if(xtd) address = (filInd % 0x4000) + 0x8000;
-        else address = filInd;
+        if(xtd)
+            address = (filInd % 0x4000) + 0x8000;
+        else
+            address = filInd;
 
         if(strcasecmp(fileext, ".AKM")==0) {
             file.fixAKM(&data[filInd], address, size_read);
@@ -1140,16 +1142,9 @@ void Rom::buildMapAndResourcesFileBIN(char *filename, char *fileext) {
         addResourceToMap(filInd, size_read, filler);
 
         filInd += size_read;
-
-        free(buffer);
-
-    } else {
-        errorMessage = "Resource file not found: " + string(filename);
-        errorFound = true;
-        free(buffer);
-        return;
     }
 
+    free(buffer);
 }
 
 void Rom::buildPT3TOOLS() {
