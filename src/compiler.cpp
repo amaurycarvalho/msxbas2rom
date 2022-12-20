@@ -19,7 +19,7 @@ Compiler::Compiler() {
     code_pointer = code_start;
 
     ram_size = 0;
-    ram_start = code_start + 0x4020;
+    ram_start = def_RAM_BOTTOM - 0x8000;
     ram_pointer = ram_start;
     ramMemoryPerc = 0;
     segm_last = 0;
@@ -227,7 +227,7 @@ void Compiler::clear_symbols() {
     code_pointer = code_start;
 
     ram_size = 0;
-    ram_start = code_start + 0x4000 + def_RAM_INTVARSIZ;
+    ram_start = def_RAM_BOTTOM - 0x8000;   //code_start + 0x4000 + def_RAM_INTVARSIZ;
     ram_pointer = ram_start;
     ramMemoryPerc = 0;
 

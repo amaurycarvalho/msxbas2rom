@@ -8,19 +8,20 @@
 #define def_ARG2        (def_ARG + 2)
 #define def_VALTYP      0xF663
 #define def_PRMFLG      0xF7B4
+#define def_BASMEM      0xC038                          // <---- must adjust if any change in internal variables size
 
 //-- compiler workareas
 
 #define def_PLYBUF          0xEF00
-#define def_SPRTBL          (def_PLYBUF - (32*5))    // 32 sprites * (test, x0, x1, y0, y1)
+#define def_SPRTBL          (def_PLYBUF - (32*5))       // 32 sprites * (test, x0, x1, y0, y1)
 #define def_SPRSIZ          (def_SPRTBL - 1)
 
-#define def_RAM_INTVARSIZ   0x0040     // 40 bytes - compiler internal variables total size
-#define def_RAM_INIT        0xC010     // start of RAM
+#define def_RAM_INIT        0xC010                      // start of RAM
+#define def_RAM_INTVARSIZ   (def_BASMEM - def_RAM_INIT) // compiler internal variables buffer (BASMEM - INIT)
 #define def_RAM_BOTTOM      (def_RAM_INIT + def_RAM_INTVARSIZ)
 #define def_RAM_TOP         (def_SPRSIZ - 1)
 #define def_RAM_SIZE        (def_RAM_TOP - def_RAM_BOTTOM)
-#define def_RAM_BUFSIZ      0x0880     // 2176 bytes of font buffer in RAM
+#define def_RAM_BUFSIZ      0x0880                      // 2176 bytes of font buffer in RAM
 
 #define def_SLTSTR          0xC010     // 1
 #define def_SLTAD2          0xC01D     // 1
