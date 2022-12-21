@@ -3304,10 +3304,7 @@ resource.copy_to_ram_on_page_2:
 resource.copy_to_ram_on_page_2.no_mr:
   di
     call select_ram_on_page_2
-    call resource.open
-
-    ld bc, (DAC)             ; bc = resource number
-    call resource.address    ; hl = resource start address, a = segment, bc = size
+    call resource.copy_to_ram_on_page_2.get_addr
 
     ld de, 0x8000
     push de
@@ -3319,11 +3316,13 @@ resource.copy_to_ram_on_page_2.end:
     pop hl
     ret
 
+resource.copy_to_ram_on_page_2.get_addr:
+  call resource.open
+  ld bc, (DAC)                      ; bc = resource number
+  jp resource.address               ; hl = resource start address, a = segment, bc = resource size
+
 resource.copy_to_ram_on_page_3:     ; copy from megarom to ram on page 3
-  push hl
-    call resource.open
-  pop bc                            ; bc = resource number
-  call resource.address             ; hl = resource start address, a = segment, bc = resource size
+  call resource.copy_to_ram_on_page_2.get_addr
 
   ld de, (FONTADDR)
   push de
