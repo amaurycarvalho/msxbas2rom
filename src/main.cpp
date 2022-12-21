@@ -363,7 +363,7 @@ int main(int argc, char *argv[]) {
 
                 if(parmXtd) {
                     printf("Extended memory scheme mode activated (Konami with SCC mapper).\n");
-                    printf("MegaROM size = %ikb\n", rom.rom_size / 1024);
+                    printf("MegaROM size = %ikb (%.1f%% free)\n", rom.rom_size / 1024, 100.0 - rom.stdMemoryPerc - rom.rscMemoryPerc);
                     if(compiler.resourceList.size()) {
                         printf("Resources occupied %.1f%% of MegaROM space\n",  rom.rscMemoryPerc);
                     }

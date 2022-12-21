@@ -60,7 +60,8 @@ Version history
                        to double precision type (BCD);
 0.2.9.9 – (2022/08/xx) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
 
-0.2.9.8 – (2022/12/xx) MegaROM mode support for CMD and RESOURCES;
+0.2.9.8 – (2022/12/21) MegaROM mode support for CMD, RESOURCES and
+                       Arkos Tracker player;
 0.2.9.7 – (2022/07/20) COLOR NEW/RESTORE bug fix on MSX1;
 0.2.9.6 – (2022/07/15) Tokenized THEN/GOTO bug fix,
                        SET ADJUST/SCREEN/BEEP/TITLE/PROMPT support;

@@ -446,13 +446,13 @@ void Rom::buildMapAndResources() {
     last_code_address = (hdrAddr + hdrLen + rtnLen);
 
     if(xtd) {
-        resource_segment = (last_code_address / 0x4000);
+        resource_segment = (last_code_address / 0x4000) + 1;
         start_resource_address = resource_segment * 0x4000;
         rom_size = 0x20000;
         max_resource_size = rom_size - start_resource_address;
-        rscAddr = start_resource_address;   // resource start address
-        rscSgm = resource_segment * 2;      // resource start segment (two konami segments of 8kb size each)
-        start_resource_address += 0x4000;   // skip first page at temporary memory, because it will be discarded
+        rscAddr = start_resource_address - 0x4000;   // resource start address
+        rscSgm = resource_segment * 2;               // resource start segment (two konami segments of 8kb size each)
+        start_resource_address += 0x4000;            // skip first page at temporary memory, because it will be discarded
     } else {
         resource_segment = 0;
         start_resource_address = 0;
@@ -1413,7 +1413,7 @@ void Rom::buildHeaderAdjust() {
             resource_segment = 0xFF;                                  // music player enabled
         } else {
             if(xtd) {
-                resource_address = mapAddr - 0x4000;                  // resource map start address
+                resource_address = rscAddr + 0x0010;                  // resource map start address
                 resource_segment = rscSgm;                            // resource map segment (128kb rom)
             } else {
                 resource_address = mapAddr;                           // resource map start address

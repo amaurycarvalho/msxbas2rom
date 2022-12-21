@@ -16,6 +16,8 @@
 #define COMPILE_CODE_SIZE (COMPILE_MAX_PAGES * 0x4000)
 #define COMPILE_RAM_SIZE  (0xFFFF)
 
+extern unsigned char asm_header_bin[];
+
 class SymbolNode {
   public:
     Lexeme *lexeme;
@@ -105,6 +107,7 @@ class Compiler {
     void addWord(unsigned char byte1, unsigned char byte2);
     void addCmd(unsigned char byte, unsigned int word);
     void addCodeByte(unsigned char byte);
+    void addKernelCall(unsigned int word);
     void pushLastCode();
     void popLastCode();
 

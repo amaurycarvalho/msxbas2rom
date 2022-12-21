@@ -1,5 +1,6 @@
 # Version history
 
+- 0.2.9.8 – (2022/12/21) MegaROM mode support for CMD, RESOURCES and Arkos Tracker player;
 - 0.2.9.7 – (2022/07/20) COLOR NEW/RESTORE bug fix on MSX1;
 - 0.2.9.6 – (2022/07/15) Tokenized THEN/GOTO bug fix, SET ADJUST/SCREEN/BEEP/TITLE/PROMPT support;
 - 0.2.9.5 – (2022/05/23) SCREEN COPY/PASTE, SCREEN SCROLL, SCREEN LOAD (.SCn as resources), SPRITE LOAD (CMD WRTSPR alternative);

@@ -711,6 +711,21 @@ void Compiler::addCmd(unsigned char byte, unsigned int word) {
     addCodeByte( (word >> 8) & 0xff );
 }
 
+// optimized kernel functions calls
+// skipping the jump map
+void Compiler::addKernelCall(unsigned int address) {
+    int result = address, i;
+
+    if(address >= 0x4000 && address < 0x8000) {
+        i = address - 0x4000;
+        if(asm_header_bin[i] == 0xC3) {     // jp
+            result = asm_header_bin[i+1] | (asm_header_bin[i+2]<<8);
+        }
+    }
+
+    addCmd(0xCD, result);
+}
+
 SymbolNode* Compiler::getSymbol(Lexeme *lexeme) {
     unsigned int i, t = symbols.size();
     bool found = false;
@@ -1753,7 +1768,8 @@ int Compiler::evalOperator(ActionNode *action) {
                 if( result == Lexeme::subtype_numeric ) {
 
                     // call intCompareNOT
-                    addCmd(0xCD, def_intCompareNOT);
+                    //addCmd(0xCD, def_intCompareNOT);
+                    addKernelCall(def_intCompareNOT);
 
                 } else
                     result = Lexeme::subtype_unknown;
@@ -1763,12 +1779,14 @@ int Compiler::evalOperator(ActionNode *action) {
                 if( result == Lexeme::subtype_numeric ) {
 
                     // call intNEG
-                    addCmd(0xCD, def_intNEG);
+                    //addCmd(0xCD, def_intNEG);
+                    addKernelCall(def_intNEG);
 
                 } else if( result == Lexeme::subtype_single_decimal || result == Lexeme::subtype_double_decimal ) {
 
                     // call floatNeg
-                    addCmd(0xCD, def_floatNEG);
+                    //addCmd(0xCD, def_floatNEG);
+                    addKernelCall(def_floatNEG);
 
                 } else
                     result = Lexeme::subtype_unknown;
@@ -1795,7 +1813,8 @@ int Compiler::evalOperator(ActionNode *action) {
                     addByteOptimized(0xD1);
 
                     // call intCompareAND
-                    addCmd(0xCD, def_intCompareAND);
+                    //addCmd(0xCD, def_intCompareAND);
+                    addKernelCall(def_intCompareAND);
 
                 } else
                     result = Lexeme::subtype_unknown;
@@ -1808,7 +1827,8 @@ int Compiler::evalOperator(ActionNode *action) {
                     addByteOptimized(0xD1);
 
                     // call intCompareOR
-                    addCmd(0xCD, def_intCompareOR);
+                    //addCmd(0xCD, def_intCompareOR);
+                    addKernelCall(def_intCompareOR);
 
                 } else
                     result = Lexeme::subtype_unknown;
@@ -1821,7 +1841,8 @@ int Compiler::evalOperator(ActionNode *action) {
                     addByteOptimized(0xD1);
 
                     // call intCompareXOR
-                    addCmd(0xCD, def_intCompareXOR);
+                    //addCmd(0xCD, def_intCompareXOR);
+                    addKernelCall(def_intCompareXOR);
 
                 } else
                     result = Lexeme::subtype_unknown;
@@ -1892,7 +1913,8 @@ int Compiler::evalOperator(ActionNode *action) {
                     addByteOptimized(0xD1);
 
                     // call intCompareEQ
-                    addCmd(0xCD, def_intCompareEQ);
+                    //addCmd(0xCD, def_intCompareEQ);
+                    addKernelCall(def_intCompareEQ);
 
                 } else if( result == Lexeme::subtype_single_decimal || result == Lexeme::subtype_double_decimal ) {
 
@@ -1931,7 +1953,8 @@ int Compiler::evalOperator(ActionNode *action) {
                     addByteOptimized(0xD1);
 
                     // call intCompareNE
-                    addCmd(0xCD, def_intCompareNE);
+                    //addCmd(0xCD, def_intCompareNE);
+                    addKernelCall(def_intCompareNE);
 
                 } else if( result == Lexeme::subtype_single_decimal || result == Lexeme::subtype_double_decimal ) {
 
@@ -1970,7 +1993,8 @@ int Compiler::evalOperator(ActionNode *action) {
                     addByteOptimized(0xD1);
 
                     // call intCompareLT
-                    addCmd(0xCD, def_intCompareLT);
+                    //addCmd(0xCD, def_intCompareLT);
+                    addKernelCall(def_intCompareLT);
 
                 } else if( result == Lexeme::subtype_single_decimal || result == Lexeme::subtype_double_decimal ) {
 
@@ -2009,7 +2033,8 @@ int Compiler::evalOperator(ActionNode *action) {
                     addByteOptimized(0xD1);
 
                     // call intCompareLE
-                    addCmd(0xCD, def_intCompareLE);
+                    //addCmd(0xCD, def_intCompareLE);
+                    addKernelCall(def_intCompareLE);
 
                 } else if( result == Lexeme::subtype_single_decimal || result == Lexeme::subtype_double_decimal ) {
 
@@ -2048,7 +2073,8 @@ int Compiler::evalOperator(ActionNode *action) {
                     addByteOptimized(0xD1);
 
                     // call intCompareGT
-                    addCmd(0xCD, def_intCompareGT);
+                    //addCmd(0xCD, def_intCompareGT);
+                    addKernelCall(def_intCompareGT);
 
                 } else if( result == Lexeme::subtype_single_decimal || result == Lexeme::subtype_double_decimal ) {
 
@@ -2087,7 +2113,8 @@ int Compiler::evalOperator(ActionNode *action) {
                     addByteOptimized(0xD1);
 
                     // call intCompareGE
-                    addCmd(0xCD, def_intCompareGE);
+                    //addCmd(0xCD, def_intCompareGE);
+                    addKernelCall(def_intCompareGE);
 
                 } else if( result == Lexeme::subtype_single_decimal || result == Lexeme::subtype_double_decimal ) {
 
@@ -2484,7 +2511,8 @@ int Compiler::evalOperator(ActionNode *action) {
                     addByteOptimized(0xD1);
 
                     // call intSHR
-                    addCmd(0xCD, def_intSHR);
+                    //addCmd(0xCD, def_intSHR);
+                    addKernelCall(def_intSHR);
 
                 } else
                     result = Lexeme::subtype_unknown;
@@ -2497,7 +2525,8 @@ int Compiler::evalOperator(ActionNode *action) {
                     addByteOptimized(0xD1);
 
                     // call intSHL
-                    addCmd(0xCD, def_intSHL);
+                    //addCmd(0xCD, def_intSHL);
+                    addKernelCall(def_intSHL);
 
                 } else
                     result = Lexeme::subtype_unknown;
@@ -7062,7 +7091,8 @@ void Compiler::cmd_for() {
                 // ;var > to? goto end for
 
                 // call intCompareGT
-                addCmd(0xCD, def_intCompareGT);
+                //addCmd(0xCD, def_intCompareGT);
+                addKernelCall(def_intCompareGT);
 
                 // jp nz, end_for
                 forNext->for_end_mark = addMark();
