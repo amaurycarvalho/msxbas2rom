@@ -6222,7 +6222,7 @@ void Compiler::cmd_bload() {
                             // ld (DAC), hl
                             addCmd(0x22, def_DAC);
                             // call CLRSPR    ; clear sprites
-                            //addCmd(0xCD, def_CLRSPR);
+                            addCmd(0xCD, def_CLRSPR);
                             // call cmd_wrtspr                    ; tiny sprite loader
                             addCmd(0xCD, def_cmd_wrtspr);
                         } else {
@@ -10401,6 +10401,8 @@ void Compiler::cmd_sprite_load() {
 
             // ld (DAC), hl
             addCmd(0x22, def_DAC);
+            // call CLRSPR    ; clear sprites
+            addCmd(0xCD, def_CLRSPR);
             // call cmd_wrtspr                    ; tiny sprite loader
             addCmd(0xCD, def_cmd_wrtspr);
 
@@ -12046,6 +12048,8 @@ void Compiler::cmd_cmd() {
 
                     // ld (DAC), hl
                     addCmd(0x22, def_DAC);
+                    // call CLRSPR    ; clear sprites
+                    addCmd(0xCD, def_CLRSPR);
                     // call cmd_wrtspr                    ; tiny sprite loader
                     addCmd(0xCD, def_cmd_wrtspr);
 
