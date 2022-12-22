@@ -18,7 +18,7 @@ RDSLT:        equ 0x000C   ; Read a byte in a Slot
 RSLREG:       equ 0x0138   ; Read primary Slot REGister
 WRSLT:        equ 0x0014   ; Write a byte in a Slot
 WSLREG:       equ 0x013B   ; Write primary Slot REGister
-ENASLT:       equ 0x0024   ; enable slot (a=slot indicator, hl=address to enable)
+ENASLT:       equ 0x0024   ; enable slot (a=slot indicator, hl=address to enable) - interruptions enabled after call
 RDHDR:        equ 0x7E1A   ; read header data
 XFER:         equ 0xF36E   ; LDIR of RAM page 1 from/to RAM page 3 (BC=512 bytes, HL=source address, DE=dest address)
 IOALLOC:      equ 0x7E6B   ; IO allocation (CLEAR stmt)
@@ -644,7 +644,7 @@ XBASIC_END.1:
   ld (OLDLIN), hl
   ld a, (EXPTBL)
   ld h, 0x40
-  jp ENASLT         ; enable basic page
+  jp ENASLT                ; enable basic page
 
 ; a = screen mode
 XBASIC_SCREEN:
@@ -1512,53 +1512,26 @@ cmd_runasm:
 cmd_wrtvram:
   ld a, (RAMAD2)           ; test RAM on page 2
   cp 0xFF
-  jp nz, cmd_wrtvram.ram_on_page_2
+  jr nz, cmd_wrtvram.ram_on_page_2
 
 cmd_wrtvram.ram_on_page_3:
-  di
-    call resource.open
-
-    ld bc, (DAC)             ; bc = resource number
-    call resource.address    ; hl = resource start address
-
-    ld de, (FONTADDR)
-    push de
-    call resource.ram.unpack
-
-    push bc
-    call resource.close
-  ei
-  pop bc
-  pop de
-  ld de, (ARG)
-  jp LDIRVM
+    call resource.copy_to_ram_on_page_3     ; out: hl = resource data, bc = size
+    ld de, (ARG)
+    jp LDIRVM
 
 cmd_wrtvram.ram_on_page_2:
-  call resource.copy_to_ram_on_page_2
+  di
+    call resource.copy_to_ram_on_page_2
     ld de, (ARG)
-    call LDIRVM
+    call SUB_LDIRVM
     call select_rom_on_page_2
-  ei
+  ei                                        ; its important because ENASLT above (select_rom_on_page_2) has interruptions disabled
   ret
 
 ; write font resource to vram tile pattern table or graphical mode
 ; CMD WRTFNT <resource number>
 cmd_wrtfnt:
-  di
-    call resource.open
-
-    ld bc, (DAC)             ; bc = resource number
-    call resource.address    ; hl = resource start address
-
-    ld de, (FONTADDR)
-    call resource.ram.unpack
-
-    push hl
-    push bc
-      call resource.close
-    pop bc
-    pop hl
-  ei
+  call resource.copy_to_ram_on_page_3   ; out: hl = resource data, bc = size
 
   inc hl
   inc hl
@@ -1624,26 +1597,7 @@ cmd_wrtscr:
 ; write a Tiny Sprite resource to vram sprite pattern and color table
 ; CMD WRTSPR <resource number>
 cmd_wrtspr:
-  ld a, (RAMAD2)             ; test RAM on page 2
-  cp 0xFF
-  jp nz, cmd_wrtspr.ram_on_page_2
-
-cmd_wrtspr.ram_on_page_3:
-  di
-    call resource.open
-
-    ld bc, (DAC)             ; bc = resource number
-    call resource.address    ; hl = resource start address, a = segment, bc = size
-
-    ld de, (FONTADDR)
-    call resource.ram.unpack
-
-    push bc
-    call resource.close
-  ei
-  pop bc
-
-  ld hl, (FONTADDR)
+  call resource.copy_to_ram_on_page_3   ; out: hl = resource data, bc = size
 
 cmd_wrtspr.do:
   ld a, (hl)
@@ -1716,13 +1670,6 @@ cmd_wrtspr.do.pattern:
   pop hl
   pop bc
   add hl, bc
-  ret
-
-cmd_wrtspr.ram_on_page_2:
-  call resource.copy_to_ram_on_page_2
-    call cmd_wrtspr.do
-    call select_rom_on_page_2
-  ei
   ret
 
 ; write resource to vram sprite pattern table
@@ -2004,9 +1951,7 @@ cmd_turbo.msx2p:    ; msx2+ machine type
 ; DAC = data resource number
 cmd_restore:
   di
-    call resource.open
-    ld bc, (DAC)             ; bc = resource number
-    call resource.address    ; out hl = resource start address, a = resource segment, bc = resource size
+    call resource.open_and_get_address  ; out: hl = resource data, a = resource segment, bc = resource size
     ld (DATLIN), hl          ; DATA start pointer
     ld (SUBFLG), a           ; DATA segment start number
     ld (DATPTR), hl          ; DATA current pointer
@@ -2729,7 +2674,7 @@ XBASIC_BLOAD:
 XBASIC_BLOAD.loop:
     push de
     push bc
-      call LDIRVM    ; hl = ram data address, de = vram data address, bc = length
+      call LDIRVM    ; hl = ram data address, de = vram data address, bc = length (interruptions enabled)
     pop bc
     pop hl
     add hl, bc
@@ -2893,10 +2838,8 @@ cmd_plyload:
   halt
 
   di
-    call resource.open
+    call resource.open_and_get_address  ; out: hl = resource data, a = resource segment, bc = resource size
 
-    ld bc, (DAC)             ; bc = resource number
-    call resource.address    ; hl = resource start address, a = segment, bc = size
     ld (PLYSGTM), a
 
     ld (PLYADDR), hl
@@ -3202,7 +3145,7 @@ cmd_screen_load.normal_rom:
   jr z, cmd_screen_load.ram_on_page_3
 
 cmd_screen_load.ram_on_page_2:
-  di
+    di
       push hl
         call select_ram_on_page_2
       pop hl
@@ -3210,8 +3153,10 @@ cmd_screen_load.ram_on_page_2:
       call cmd_screen_load.init
       ld de, 0x8000
 
-    call cmd_screen_load.ram_on_page_3.do
-  jp select_rom_on_page_2
+      call cmd_screen_load.ram_on_page_3.do
+      call select_rom_on_page_2
+    ei                                ; its important because ENASLT above (select_rom_on_page_2) has interruptions disabled
+    ret
 
 cmd_screen_load.ram_on_page_3:
       ld de, (FONTADDR)
@@ -3230,7 +3175,7 @@ cmd_screen_load.do:
   inc hl
   ld b, (hl)
   inc hl
-  jp XBASIC_BLOAD     ; hl = block start, bc = block count
+  jp XBASIC_BLOAD          ; hl = block start, bc = block count
 
 cmd_screen_load.init:
   push hl
@@ -3255,7 +3200,7 @@ resource.open:
 select_rsc_on_page_0:
     ld a, (SLTAD2)
     ld h,000h
-    call SUB_ENASLT		            ; Select the ROM on page 0000h-3FFFh
+    call SUB_ENASLT		            ; Select the ROM on page 0000h-3FFFh (with interruptions disabled)
 
     ld a, (MAPPER)
     bit 0, a                        ; mapper on?
@@ -3273,7 +3218,7 @@ resource.close:
 select_rom_on_page_0:
     ld a, (SLTAD0)
     ld h,000h
-  jp SUB_ENASLT		                ; Select the BIOS ROM
+  jp SUB_ENASLT		                ; Select the BIOS ROM (with interruptions disabled)
 
 select_rom_on_megarom:
   ld a, (RSCMAPT1)
@@ -3286,62 +3231,61 @@ select_rsc_on_megarom:
   pop af
   jp MR_CHANGE_SGM
 
-resource.copy_to_ram_on_page_2:
-  ld a, (RSCMAPSG)           ; test megarom
+resource.open_and_get_address:
+  call resource.open
+  ld bc, (DAC)                            ; bc = resource number
+  jp resource.address                     ; hl = resource start address, a = segment, bc = resource size
+
+resource.copy_to_ram_on_page_2:           ; needs di/ei
+  ld a, (RSCMAPSG)                        ; test megarom
   or a
   jr z, resource.copy_to_ram_on_page_2.no_mr
-    di
-      call resource.copy_to_ram_on_page_3
-      push hl
-      push bc
-        call select_ram_on_page_2
-      pop bc
-      pop hl
-      ld de, 0x8000
-      push de
-        call resource.ram.unpack
-        jr resource.copy_to_ram_on_page_2.end
-resource.copy_to_ram_on_page_2.no_mr:
-  di
-    call select_ram_on_page_2
-    call resource.copy_to_ram_on_page_2.get_addr
-
-    ld de, 0x8000
+resource.copy_to_ram_on_page_2.mr:
+    ; 1: copy resource from megarom to ram on page 3
+    call resource.open_and_get_address    ; out: hl = resource data, a = resource segment, bc = resource size
+    ld de, (FONTADDR)
     push de
-      call resource.ram.unpack
-      push bc
-        call resource.close
-      pop bc
-resource.copy_to_ram_on_page_2.end:
+    push bc
+      ldir
+      call resource.close
+    ; 2: unpack from page 3 to 2
+      call select_ram_on_page_2
+    pop bc
     pop hl
-    ret
+    ld de, 0x8000
+    jp resource.ram.unpack
 
-resource.copy_to_ram_on_page_2.get_addr:
-  call resource.open
-  ld bc, (DAC)                      ; bc = resource number
-  jp resource.address               ; hl = resource start address, a = segment, bc = resource size
-
-resource.copy_to_ram_on_page_3:     ; copy from megarom to ram on page 3
-  call resource.copy_to_ram_on_page_2.get_addr
-
-  ld de, (FONTADDR)
-  push de
+resource.copy_to_ram_on_page_2.no_mr:
+  call select_ram_on_page_2
+  call resource.open_and_get_address            ; out: hl = resource data, a = resource segment, bc = resource size
+resource.copy_to_ram_on_page_2.end:
+  ld de, 0x8000
+resource.copy_to_ram.unpack_and_close:
+  call resource.ram.unpack
+  push hl
   push bc
-    ldir
     call resource.close
   pop bc
   pop hl
   ret
 
+resource.copy_to_ram_on_page_3:
+  di
+    call resource.open_and_get_address          ; out: hl = resource data, a = resource segment, bc = resource size
+    ld de, (FONTADDR)
+    call resource.copy_to_ram.unpack_and_close  ; out: hl = resource data, bc = resource size
+  ei
+  ret
+
 select_ram_on_page_0:
   ld a, (RAMAD0)
   ld h,000h
-  jp SUB_ENASLT		; Select RAM on page 0
+  jp SUB_ENASLT		; Select RAM on page 0 (with interruptions disabled)
 
 select_rom_on_page_2:
   ld a, (SLTAD2)
   ld h,080h
-  call ENASLT	    ; Select the ROM on page 8000h-BFFFh
+  call ENASLT	    ; Select the ROM on page 8000h-BFFFh (and disable interruptions)
 
   ld a, (MAPPER)
   bit 0, a          ; mapper on?
@@ -3616,7 +3560,7 @@ verify.slots.test.program.on_page_2:
     ret
 
 ;---------------------------------------------------------------------------------------------------------
-; ENASLT alternative for use of ram on page 0
+; ENASLT alternative for use of ram on page 0 (with interruptions disabled)
 ;---------------------------------------------------------------------------------------------------------
 
 D.FFFF:  EQU     0FFFFH  ; secundairy slotregister
