@@ -458,7 +458,7 @@ void Rom::buildMapAndResources() {
         start_resource_address = 0;
         rscAddr = 0;
         rscSgm = 0;
-        max_resource_size = 0x4000;// - 0x0100;
+        max_resource_size = 0x4000 - 0x0100;
         rom_size = 0x4000 * 3;
     }
 

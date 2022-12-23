@@ -6210,6 +6210,9 @@ void Compiler::cmd_bload() {
                         // ld hl, resource number
                         addCmd(0x21, resource_number);
 
+                        // ld (DAC), hl
+                        addCmd(0x22, def_DAC);
+
                         // verify file type (screen or sprite)
 
                         file = new FileNode();
@@ -6219,8 +6222,6 @@ void Compiler::cmd_bload() {
                         delete file;
 
                         if(isTinySprite) {
-                            // ld (DAC), hl
-                            addCmd(0x22, def_DAC);
                             // call CLRSPR    ; clear sprites
                             addCmd(0xCD, def_CLRSPR);
                             // call cmd_wrtspr                    ; tiny sprite loader
@@ -7576,6 +7577,9 @@ void Compiler::cmd_screen_load() {
             action = current_action->actions[i];
             result_subtype = evalExpression(action);
             addCast(result_subtype, Lexeme::subtype_numeric);
+
+            // ld (DAC), hl
+            addCmd(0x22, def_DAC);
 
             // call screen_load
             addCmd(0xCD, def_cmd_screen_load);

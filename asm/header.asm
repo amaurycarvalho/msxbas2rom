@@ -2633,95 +2633,105 @@ GET_NEXT_TEMP_STRING_ADDRESS.1:
     ret
 
 ; BLOAD STATEMENT
-; parameters: hl = block start, bc = block count
+; parameters:
+;   DAC   = first block start
+;   DAC+2 = segment
+;   ARG   = block count
 ; SCn file format:
 ;   db #fe 	;ID byte
 ;   dw {VRAM begin address}
 ;   dw {VRAM end address}
 ;   dw {not used when loading to VRAM}
 XBASIC_BLOAD:
-  ld a, (hl)
-  and a
-  ret z
-
-  push bc
-  push hl
-
-    inc hl
-    ld de, BUF
-
-    call resource.ram.unpack ; in hl = packed data, de = ram destination; out bc = size, hl=destination
-
-    inc hl
-    ld e, (hl)
-    inc hl
-    ld d, (hl)
-
-    inc hl
-    inc hl
-    inc hl
-    inc hl
-    inc hl
-
-    dec bc
-    dec bc
-    dec bc
-    dec bc
-    dec bc
-    dec bc
-    dec bc
-
-XBASIC_BLOAD.loop:
-    push de
-    push bc
-      call LDIRVM    ; hl = ram data address, de = vram data address, bc = length (interruptions enabled)
-    pop bc
-    pop hl
-    add hl, bc
-    ex de, hl
-
-  pop hl
-  pop bc
-  dec bc
+  call XBASIC_BLOAD.get_next_block
   ld a, c
   or b
   ret z
 
+  inc hl
+  ld e, (hl)
+  inc hl
+  ld d, (hl)
+
+  inc hl
+  inc hl
+  inc hl
+  inc hl
+  inc hl
+
+  dec bc
+  dec bc
+  dec bc
+  dec bc
+  dec bc
+  dec bc
+  dec bc
+
+XBASIC_BLOAD.loop:
+  push de
   push bc
-
-    ld c, (hl)
-    ld b, 0
-    add hl, bc
-    inc hl
-
-    ld a, (hl)
-    cp 0xFF
-    jr nz, XBASIC_BLOAD.cont
-      push hl
-        ld c, a
-        add hl, bc
-        ld a, h
-      pop hl
-      cp 0xC0
-      jr c, XBASIC_BLOAD.cont
-        ld a, (SGMADR)
-        inc a
-        inc a
-        ld hl, 0x8000
-        call MR_CHANGE_SGM
-
-XBASIC_BLOAD.cont:
-    push hl
-    push de
-
-      inc hl
-      ld de, BUF
-
-      call resource.ram.unpack ; in hl = packed data, de = ram destination; out bc = size, hl=destination
-
-    pop de
+    call LDIRVM    ; hl = ram data address, de = vram data address, bc = length (interruptions enabled)
+  pop bc
+  pop hl
+  add hl, bc
+  push hl
+    call XBASIC_BLOAD.get_next_block
+  pop de
+  ld a, c
+  or b
+  ret z
 
   jr XBASIC_BLOAD.loop
+
+XBASIC_BLOAD.get_next_block:
+  ld bc, 0x0000
+  ld (ARG+2), bc                  ; bytes read
+
+  ld bc, (ARG)                    ; block count
+  ld a, c
+  or b
+  ret z
+
+  dec bc
+  ld (ARG), bc
+
+  di
+    call resource.open
+      ld hl, (DAC)                ; current block address
+      ld a, (DAC+2)               ; current segment
+XBASIC_BLOAD.get_next_block.loop:
+      or a
+      call nz, MR_CHANGE_SGM
+
+      ld a, (hl)
+      or a
+      jr z, XBASIC_BLOAD.get_next_block.end
+        inc hl
+        ld e, a
+        ld d, 0
+        ex de, hl
+          add hl, de
+          ld a, h
+        ex de, hl
+        cp 0xC0
+        jr c, XBASIC_BLOAD.get_next_block.cont
+          ld a, (DAC+2)           ; current segment
+          inc a
+          inc a
+          ld (DAC+2), a           ; current segment
+          ld hl, 0x8000
+          jr XBASIC_BLOAD.get_next_block.loop
+XBASIC_BLOAD.get_next_block.cont:
+        ld (DAC), de
+        ld de, BUF
+        call resource.ram.unpack  ; in hl = packed data, de = ram destination; out bc = size, hl=destination
+        ld (ARG+2), bc            ; bytes read
+XBASIC_BLOAD.get_next_block.end:
+    call resource.close
+  ei
+  ld hl, BUF
+  ld bc, (ARG+2)                  ; bytes read
+  ret
 
 ;---------------------------------------------------------------------------------------------------------
 ; ARKOS TRACKER 2 PLAYER
@@ -3135,58 +3145,18 @@ cmd_screen.get_start:
 
 ; hl = resource number
 cmd_screen_load:
-  ld a, (RSCMAPSG)
-  or a
-  jr nz, cmd_screen_load.megarom
-
-cmd_screen_load.normal_rom:
-  ld a, (RAMAD2)           ; test RAM on page 2
-  cp 0xFF
-  jr z, cmd_screen_load.ram_on_page_3
-
-cmd_screen_load.ram_on_page_2:
-    di
-      push hl
-        call select_ram_on_page_2
-      pop hl
-
-      call cmd_screen_load.init
-      ld de, 0x8000
-
-      call cmd_screen_load.ram_on_page_3.do
-      call select_rom_on_page_2
-    ei                                ; its important because ENASLT above (select_rom_on_page_2) has interruptions disabled
-    ret
-
-cmd_screen_load.ram_on_page_3:
-      ld de, (FONTADDR)
-      call cmd_screen_load.init
-cmd_screen_load.ram_on_page_3.do:
-
-      push de
-      ldir
-
+  di
+    call resource.open_and_get_address
+      ld c, (hl)
+      inc hl
+      ld b, (hl)
+      inc hl
+      ld (DAC), hl            ; first block address
+      ld (DAC+2), a           ; segment (megarom)
+      ld (ARG), bc            ; block count
     call resource.close
   ei
-  pop hl
-
-cmd_screen_load.do:
-  ld c, (hl)
-  inc hl
-  ld b, (hl)
-  inc hl
-  jp XBASIC_BLOAD          ; hl = block start, bc = block count
-
-cmd_screen_load.init:
-  push hl
-    call resource.open
-  pop bc                   ; bc = resource number
-  jp resource.address      ; out hl = resource start address, a = resource segment, bc = resource size
-
-cmd_screen_load.megarom:
-  call cmd_screen_load.init
-  call cmd_screen_load.do
-  jp resource.close
+  jp XBASIC_BLOAD
 
 ;---------------------------------------------------------------------------------------------------------
 ; MEMORY / SLOT / PAGE ROUTINES
