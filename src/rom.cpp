@@ -516,7 +516,7 @@ void Rom::buildMapAndResources() {
         i = (start_resource_address - 0x4000 + rscLen + 0x0100);
         rom_size = ((i / 0x20000)+1)*0x20000;
         max_resource_size = rom_size - i + rscLen;
-        t = rom_size / 0x4000;
+        t = rom_size / 0x4000 + 1;
         for(i = 1; i < t; i++) {
             writePage[i] = true;
         }
