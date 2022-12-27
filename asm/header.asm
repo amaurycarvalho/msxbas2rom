@@ -1096,7 +1096,7 @@ XBASIC_IREAD:
       ld d, (hl)
       inc hl
       ld (DATPTR), hl
-    push de
+      push de
     call resource.close
   ei
   pop hl
@@ -1261,7 +1261,7 @@ XBASIC_RESTORE.3:
   add hl, bc                    ; hl = hl + bc*2
   ld a, h
   cp 0xC0
-  call c, XBASIC_RESTORE.3.next_sgm
+  call nc, XBASIC_RESTORE.3.next_sgm
   ld (DATPTR), hl               ; DATA current pointer
 
 XBASIC_RESTORE.end:
