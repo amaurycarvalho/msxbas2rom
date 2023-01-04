@@ -96,6 +96,10 @@ bool Lexeme::isSeparator(string pvalue) {
     return (type == Lexeme::type_separator && value == pvalue);
 }
 
+bool Lexeme::isOperator(string pvalue) {
+    return (type == Lexeme::type_operator && value == pvalue);
+}
+
 bool Lexeme::isLiteralNumeric() {
     return (type == Lexeme::type_literal && subtype == Lexeme::subtype_numeric);
 }

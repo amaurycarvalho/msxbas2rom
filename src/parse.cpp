@@ -81,7 +81,7 @@ bool Parser::eval_line(LexerLine *lexerLine) {
 
         lexeme = coalesceSymbols(lexeme);
 
-        if(lexeme->type == Lexeme::type_literal && lexeme->subtype == Lexeme::subtype_numeric) {
+        if(lexeme->isLiteralNumeric()) {
 
             tag = new TagNode();        // register line number tag
             tag->name = lexeme->value;
@@ -92,11 +92,11 @@ bool Parser::eval_line(LexerLine *lexerLine) {
 
                 lexeme = coalesceSymbols(lexeme);
 
-                if(lexeme->type == Lexeme::type_keyword && lexeme->value == "IF") {
+                if(lexeme->isKeyword("IF")) {
                     if_count ++;
                 }
 
-                if(lexeme->type == Lexeme::type_separator && lexeme->value == ":" && if_count == 0) {
+                if(lexeme->isSeparator(":") && if_count == 0) {
                     actionRoot = 0;
                     if(phrase.getLexemeCount())
                         if(!eval_phrase(&phrase))
@@ -104,7 +104,7 @@ bool Parser::eval_line(LexerLine *lexerLine) {
                     phrase.clearLexemes();
                     continue;
 
-                } else if(lexeme->type == Lexeme::type_operator && lexeme->value == "'") {
+                } else if(lexeme->isOperator("'")) {
                     break;
 
                 } else {
@@ -179,9 +179,9 @@ bool Parser::eval_phrase(LexerLine *phrase) {
             return eval_assignment(phrase);
         } else if(lexeme->type == Lexeme::type_keyword) {
             return eval_statement(phrase);
-        } else if(lexeme->type == Lexeme::type_operator && lexeme->value == "'") {
+        } else if(lexeme->isOperator("'")) {
             return eval_statement(phrase);
-        } else if(lexeme->type == Lexeme::type_operator && lexeme->value == "_") {
+        } else if(lexeme->isOperator("_")) {
             return eval_statement(phrase);
         }
     }
@@ -412,7 +412,7 @@ bool Parser::eval_assignment(LexerLine *assignment) {
 
             if(actionRoot) {
                 lexLet = actionRoot->lexeme;
-                if(lexLet->type == Lexeme::type_keyword && lexLet->value == "LET") {
+                if(lexLet->isKeyword("LET")) {
                     add_let_action = false;
                 }
             }
@@ -427,7 +427,7 @@ bool Parser::eval_assignment(LexerLine *assignment) {
             parm.addLexeme(lexeme);
             while( (next_lexeme = assignment->getNextLexeme()) ) {
                 next_lexeme = coalesceSymbols(next_lexeme);
-                if(next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "=")
+                if(next_lexeme->isOperator("="))
                     break;
 
                 parm.addLexeme(next_lexeme);
@@ -439,7 +439,7 @@ bool Parser::eval_assignment(LexerLine *assignment) {
 
             if(next_lexeme) {
 
-                if(next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "=") {
+                if(next_lexeme->isOperator("=")) {
 
                     parm.clearLexemes();
                     while( (next_lexeme = assignment->getNextLexeme()) ) {
@@ -530,7 +530,7 @@ bool Parser::eval_expression_push(LexerLine *parm) {
         if(lexeme->type == Lexeme::type_keyword && lexeme->subtype == Lexeme::subtype_function && lexeme->value == "USR") {
             check_lexeme = parm->getNextLexeme();
             if(check_lexeme) {
-                if(check_lexeme->type == Lexeme::type_literal && check_lexeme->subtype == Lexeme::subtype_numeric) {
+                if(check_lexeme->isLiteralNumeric()) {
                     lexeme->value += check_lexeme->value;
                     lexeme->name = lexeme->value;
                 } else
@@ -844,9 +844,9 @@ bool Parser::eval_cmd_generic(LexerLine *statement) {
 
         next_lexeme = coalesceSymbols(next_lexeme);
 
-        if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+        if(next_lexeme->isSeparator("(")) {
             sepcount ++;
-        } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")" && sepcount > 0) {
+        } else if(next_lexeme->isSeparator(")") && sepcount > 0) {
             sepcount --;
         } else if(next_lexeme->type == Lexeme::type_separator &&
                   (next_lexeme->value == "," || next_lexeme->value == ";") && sepcount == 0) {
@@ -863,7 +863,7 @@ bool Parser::eval_cmd_generic(LexerLine *statement) {
             }
 
             continue;
-        } else if(next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "'") {
+        } else if(next_lexeme->isOperator("'")) {
             break;
         }
 
@@ -941,7 +941,7 @@ bool Parser::eval_cmd_data(LexerLine *statement, Lexeme::LexemeSubType subtype) 
             lastWasSeparator = true;
             continue;
 
-        } else if(next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "'") {
+        } else if(next_lexeme->isOperator("'")) {
             break;
 
         } else {
@@ -1027,17 +1027,17 @@ bool Parser::eval_cmd_print(LexerLine *statement) {
 
         switch(state) {
             case 0: {
-                    if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "#" && sepcount == 0) {
+                    if(next_lexeme->isSeparator("#") && sepcount == 0) {
                         state = 1;
                         pushActionFromLexeme(next_lexeme);
                         continue;
-                    } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "USING") {
+                    } else if(next_lexeme->isKeyword("USING")) {
                         print_using = true;
                         state = 3;
                         continue;
-                    } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    } else if(next_lexeme->isSeparator("(")) {
                         sepcount ++;
-                    } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")" && sepcount > 0) {
+                    } else if(next_lexeme->isSeparator(")") && sepcount > 0) {
                         sepcount --;
                     } else if(next_lexeme->type == Lexeme::type_separator &&
                               (next_lexeme->value == "," || next_lexeme->value == ";") && sepcount == 0) {
@@ -1075,7 +1075,7 @@ bool Parser::eval_cmd_print(LexerLine *statement) {
                 break;
 
             case 2: {
-                    if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ",") {
+                    if(next_lexeme->isSeparator(",")) {
                         state = 0;
                         continue;
                     }
@@ -1148,11 +1148,11 @@ bool Parser::eval_cmd_color(LexerLine *statement) {
     Lexeme *next_lexeme = statement->getNextLexeme();
 
     if(next_lexeme) {
-        if(next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "=") {
+        if(next_lexeme->isOperator("=")) {
             return eval_cmd_color_rgb(statement);
-        } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "SPRITE") {
+        } else if(next_lexeme->isKeyword("SPRITE")) {
             return eval_cmd_color_sprite(statement);
-        } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "SPRITE$") {
+        } else if(next_lexeme->isKeyword("SPRITE$")) {
             return eval_cmd_color_sprite(statement);
         } else {
             next_lexeme = statement->getPreviousLexeme();
@@ -1174,7 +1174,7 @@ bool Parser::eval_cmd_color_rgb(LexerLine *statement) {
 
         switch(state) {
             case 0: {
-                    if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    if(next_lexeme->isSeparator("(")) {
 
                         lex_rgb = new Lexeme(Lexeme::type_keyword, Lexeme::subtype_any, "RGB");
                         pushActionFromLexeme(lex_rgb);
@@ -1183,8 +1183,7 @@ bool Parser::eval_cmd_color_rgb(LexerLine *statement) {
                         sepCount++;
                         continue;
 
-                    } else if(next_lexeme->type == Lexeme::type_keyword &&
-                              (next_lexeme->value == "NEW" || next_lexeme->value == "RESTORE")) {
+                    } else if(next_lexeme->isKeyword("NEW") || next_lexeme->isKeyword("RESTORE")) {
 
                         pushActionFromLexeme(next_lexeme);
                         return true;
@@ -1196,13 +1195,13 @@ bool Parser::eval_cmd_color_rgb(LexerLine *statement) {
                 break;
 
             case 1: {
-                    if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    if(next_lexeme->isSeparator("(")) {
                         sepCount ++;
-                    } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+                    } else if(next_lexeme->isSeparator(")")) {
                         sepCount --;
                     }
 
-                    if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")" && sepCount == 0) {
+                    if(next_lexeme->isSeparator(")") && sepCount == 0) {
 
                         parm.setLexemeBOF();
                         if(!eval_expression(&parm)) {
@@ -1214,7 +1213,7 @@ bool Parser::eval_cmd_color_rgb(LexerLine *statement) {
 
                         return true;
 
-                    } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ",") {
+                    } else if(next_lexeme->isSeparator(",")) {
 
                         parm.setLexemeBOF();
                         if(!eval_expression(&parm)) {
@@ -1250,7 +1249,7 @@ bool Parser::eval_cmd_color_sprite(LexerLine *statement) {
     while( (next_lexeme = statement->getNextLexeme()) ) {
 
         if(state == 0) {
-            if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+            if(next_lexeme->isSeparator("(")) {
                 state ++;
                 sepCount ++;
                 continue;
@@ -1258,13 +1257,13 @@ bool Parser::eval_cmd_color_sprite(LexerLine *statement) {
                 return false;
 
         } else if(state == 1) {
-            if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+            if(next_lexeme->isSeparator("(")) {
                 sepCount ++;
-            } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+            } else if(next_lexeme->isSeparator(")")) {
                 sepCount --;
             }
 
-            if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")" && sepCount == 0) {
+            if(next_lexeme->isSeparator(")") && sepCount == 0) {
 
                 parm.setLexemeBOF();
                 if(!eval_expression(&parm)) {
@@ -1280,7 +1279,7 @@ bool Parser::eval_cmd_color_sprite(LexerLine *statement) {
 
 
         } else if(state == 2) {
-            if(next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "=") {
+            if(next_lexeme->isOperator("=")) {
                 state ++;
                 continue;
             } else
@@ -1339,7 +1338,7 @@ bool Parser::eval_cmd_def(LexerLine *statement, int vartype) {
 
         next_lexeme = coalesceSymbols(next_lexeme);
 
-        if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ",") {
+        if(next_lexeme->isSeparator(",")) {
 
             if(state) {
                 if(c[0] >= 0 && c[1] >= 0)
@@ -1354,7 +1353,7 @@ bool Parser::eval_cmd_def(LexerLine *statement, int vartype) {
             c[0] = -1;
             c[1] = -1;
 
-        } else if(next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "-") {
+        } else if(next_lexeme->isOperator("-")) {
             state = 1;
 
         } else if(next_lexeme->type == Lexeme::type_identifier) {
@@ -1404,11 +1403,11 @@ bool Parser::eval_cmd_def_usr(LexerLine *statement) {
 
         switch(state) {
             case 0: {
-                    if(next_lexeme->type == Lexeme::type_literal && next_lexeme->subtype == Lexeme::subtype_numeric) {
+                    if(next_lexeme->isLiteralNumeric()) {
                         state = 1;
                         pushActionFromLexeme(next_lexeme);
                         continue;
-                    } else if(next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "=") {
+                    } else if(next_lexeme->isOperator("=")) {
                         state = 2;
                         pushActionFromLexeme(lex_zero);
                     } else {
@@ -1419,7 +1418,7 @@ bool Parser::eval_cmd_def_usr(LexerLine *statement) {
                 break;
 
             case 1: {
-                    if(next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "=") {
+                    if(next_lexeme->isOperator("=")) {
                         state = 2;
                     } else {
                         error_message = "DEF USR assignment is missing";
@@ -1494,7 +1493,7 @@ bool Parser::eval_cmd_put_sprite(LexerLine *statement) {
 
         switch(state) {
             case 0 : {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," ) {
+                    if( next_lexeme->isSeparator(",") ) {
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
                             if(!eval_expression(&parm)) {
@@ -1511,11 +1510,11 @@ bool Parser::eval_cmd_put_sprite(LexerLine *statement) {
                 break;
 
             case 1 : {
-                    if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STEP") {
+                    if(next_lexeme->isKeyword("STEP")) {
                         action = new ActionNode(next_lexeme);
                         pushActionRoot(action);
                         continue;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    } else if( next_lexeme->isSeparator("(")) {
                         state = 2;
                         if(actionRoot) {
                             if(actionRoot->lexeme) {
@@ -1525,7 +1524,7 @@ bool Parser::eval_cmd_put_sprite(LexerLine *statement) {
                             }
                         }
                         continue;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," ) {
+                    } else if( next_lexeme->isSeparator(",") ) {
                         state = 3;
                         pushActionRoot(act_coord);
                         pushActionFromLexeme(lex_null);
@@ -1541,9 +1540,9 @@ bool Parser::eval_cmd_put_sprite(LexerLine *statement) {
                 break;
 
             case 2 : {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    if( next_lexeme->isSeparator("(")) {
                         sepCount ++;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+                    } else if( next_lexeme->isSeparator(")")) {
                         if(sepCount) {
                             sepCount --;
                         } else {
@@ -1571,7 +1570,7 @@ bool Parser::eval_cmd_put_sprite(LexerLine *statement) {
                             }
                             continue;
                         }
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0) {
+                    } else if( next_lexeme->isSeparator(",") && sepCount == 0) {
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
                             if(!eval_expression(&parm)) {
@@ -1588,12 +1587,12 @@ bool Parser::eval_cmd_put_sprite(LexerLine *statement) {
                 break;
 
             case 3 : {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    if( next_lexeme->isSeparator("(") ) {
                         sepCount ++;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+                    } else if( next_lexeme->isSeparator(")")) {
                         if(sepCount)
                             sepCount --;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0) {
+                    } else if( next_lexeme->isSeparator(",") && sepCount == 0) {
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
                             if(!eval_expression(&parm)) {
@@ -1645,7 +1644,7 @@ bool Parser::eval_cmd_put_tile(LexerLine *statement) {
 
         switch(state) {
             case 0 : {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," ) {
+                    if( next_lexeme->isSeparator(",") ) {
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
                             if(!eval_expression(&parm)) {
@@ -1662,11 +1661,11 @@ bool Parser::eval_cmd_put_tile(LexerLine *statement) {
                 break;
 
             case 1 : {
-                    if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STEP") {
+                    if(next_lexeme->isKeyword("STEP")) {
                         action = new ActionNode(next_lexeme);
                         pushActionRoot(action);
                         continue;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    } else if(next_lexeme->isSeparator("(")) {
                         state = 2;
                         if(actionRoot) {
                             if(actionRoot->lexeme) {
@@ -1676,7 +1675,7 @@ bool Parser::eval_cmd_put_tile(LexerLine *statement) {
                             }
                         }
                         continue;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," ) {
+                    } else if( next_lexeme->isSeparator(",") ) {
                         state = 3;
                         pushActionRoot(act_coord);
                         pushActionFromLexeme(lex_null);
@@ -1692,9 +1691,9 @@ bool Parser::eval_cmd_put_tile(LexerLine *statement) {
                 break;
 
             case 2 : {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    if( next_lexeme->isSeparator("(") ) {
                         sepCount ++;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+                    } else if( next_lexeme->isSeparator(")") ) {
                         if(sepCount) {
                             sepCount --;
                         } else {
@@ -1722,7 +1721,7 @@ bool Parser::eval_cmd_put_tile(LexerLine *statement) {
                             }
                             continue;
                         }
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0) {
+                    } else if( next_lexeme->isSeparator(",") && sepCount == 0) {
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
                             if(!eval_expression(&parm)) {
@@ -1739,12 +1738,12 @@ bool Parser::eval_cmd_put_tile(LexerLine *statement) {
                 break;
 
             case 3 : {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    if( next_lexeme->isSeparator("(") ) {
                         sepCount ++;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+                    } else if( next_lexeme->isSeparator(")") ) {
                         if(sepCount)
                             sepCount --;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0) {
+                    } else if( next_lexeme->isSeparator(",") && sepCount == 0) {
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
                             if(!eval_expression(&parm)) {
@@ -1840,16 +1839,16 @@ bool Parser::eval_cmd_key(LexerLine *statement) {
 
             }
 
-        } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+        } else if(next_lexeme->isSeparator("(")) {
 
             sepCount ++;
 
-        } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+        } else if(next_lexeme->isSeparator(")")) {
 
             if(sepCount)
                 sepCount --;
 
-        } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0) {
+        } else if(next_lexeme->isSeparator(",") && sepCount == 0) {
 
             if(parm.getLexemeCount()) {
                 parm.setLexemeBOF();
@@ -1903,16 +1902,16 @@ bool Parser::eval_cmd_strig(LexerLine *statement) {
 
             }
 
-        } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+        } else if(next_lexeme->isSeparator("(")) {
 
             sepCount ++;
 
-        } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+        } else if(next_lexeme->isSeparator(")")) {
 
             if(sepCount)
                 sepCount --;
 
-        } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0) {
+        } else if(next_lexeme->isSeparator(",") && sepCount == 0) {
 
             if(parm.getLexemeCount()) {
                 parm.setLexemeBOF();
@@ -2340,7 +2339,7 @@ bool Parser::eval_cmd_for(LexerLine *statement) {
         switch(state) {
             case 0 : {
 
-                    if( next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "TO" ) {
+                    if( next_lexeme->isKeyword("TO") ) {
 
                         parm.setLexemeBOF();
                         if(!eval_assignment(&parm)) {
@@ -2367,7 +2366,7 @@ bool Parser::eval_cmd_for(LexerLine *statement) {
 
             case 1 : {
 
-                    if( next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STEP" ) {
+                    if( next_lexeme->isKeyword("STEP") ) {
 
                         if(last_lexeme->value != "TO") {
                             error_message = "STEP without a TO clausule";
@@ -2439,12 +2438,12 @@ bool Parser::eval_cmd_next(LexerLine *statement) {
 
     while( (next_lexeme = statement->getNextLexeme()) ) {
 
-        if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+        if( next_lexeme->isSeparator("(")) {
             sepCount ++;
-        } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+        } else if( next_lexeme->isSeparator(")")) {
             if(sepCount)
                 sepCount --;
-        } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0) {
+        } else if( next_lexeme->isSeparator(",") && sepCount == 0) {
             popActionRoot();
             action = new ActionNode(current_lexeme);
             pushActionRoot(action);
@@ -2502,7 +2501,7 @@ bool Parser::eval_cmd_open(LexerLine *statement) {
             case 1: {
                     s = (char*) next_lexeme->value.c_str();
 
-                    if( next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "FOR") {
+                    if( next_lexeme->isKeyword("FOR")) {
                         state = 2;
                         continue;
                     } else if(next_lexeme->value == "AS") {
@@ -2570,7 +2569,7 @@ bool Parser::eval_cmd_open(LexerLine *statement) {
                 break;
 
             case 4: {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "#")
+                    if( next_lexeme->isSeparator("#"))
                         continue;
 
                     if( next_lexeme->type == Lexeme::type_identifier || next_lexeme->type == Lexeme::type_literal) {
@@ -2585,7 +2584,7 @@ bool Parser::eval_cmd_open(LexerLine *statement) {
                 break;
 
             case 5: {
-                    if( next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "LEN") {
+                    if( next_lexeme->isKeyword("LEN")) {
                         state = 6;
                         continue;
                     } else {
@@ -2596,7 +2595,7 @@ bool Parser::eval_cmd_open(LexerLine *statement) {
                 break;
 
             case 6: {
-                    if( next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "=")
+                    if( next_lexeme->isOperator("="))
                         continue;
 
                     if( next_lexeme->type == Lexeme::type_identifier || next_lexeme->type == Lexeme::type_literal) {
@@ -2626,7 +2625,7 @@ bool Parser::eval_cmd_close(LexerLine *statement) {
         switch(state) {
             case 0: {
 
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "#") {
+                    if( next_lexeme->isSeparator("#")) {
                         state = 1;
                     } else {
                         error_message = "# is missing in CLOSE statement";
@@ -2637,7 +2636,7 @@ bool Parser::eval_cmd_close(LexerLine *statement) {
                 break;
 
             case 1: {
-                    if( next_lexeme->type == Lexeme::type_literal && next_lexeme->subtype == Lexeme::subtype_numeric) {
+                    if( next_lexeme->isLiteralNumeric() ) {
                         pushActionFromLexeme(next_lexeme);
                     } else {
                         error_message = "Invalid parameter in CLOSE statement";
@@ -2648,7 +2647,7 @@ bool Parser::eval_cmd_close(LexerLine *statement) {
                 break;
 
             case 2: {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ",") {
+                    if( next_lexeme->isSeparator(",") ) {
                         state = 0;
                     } else {
                         error_message = "Comma is missing in CLOSE statement";
@@ -2680,7 +2679,7 @@ bool Parser::eval_cmd_maxfiles(LexerLine *statement) {
 
         switch(state) {
             case 0: {
-                    if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "FILES") {
+                    if(next_lexeme->isKeyword("FILES")) {
                         state = 1;
                         continue;
                     } else {
@@ -2691,7 +2690,7 @@ bool Parser::eval_cmd_maxfiles(LexerLine *statement) {
                 break;
 
             case 1: {
-                    if(next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "=") {
+                    if(next_lexeme->isOperator("=")) {
                         state = 2;
                     } else {
                         error_message = "MAXFILES assignment is missing";
@@ -2734,11 +2733,11 @@ bool Parser::eval_cmd_pset(LexerLine *statement) {
         next_lexeme = coalesceSymbols(next_lexeme);
 
         if( state == 0 ) {
-            if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STEP") {
+            if(next_lexeme->isKeyword("STEP")) {
                 action = new ActionNode(next_lexeme);
                 pushActionRoot(action);
                 continue;
-            } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+            } else if( next_lexeme->isSeparator("(")) {
                 state ++;
                 parmCount++;
                 if(actionRoot->lexeme->value != "STEP") {
@@ -2752,9 +2751,9 @@ bool Parser::eval_cmd_pset(LexerLine *statement) {
                 return false;
             }
         } else if(state == 1) {
-            if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+            if( next_lexeme->isSeparator("(") ) {
                 sepCount ++;
-            } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+            } else if( next_lexeme->isSeparator(")") ) {
                 if(sepCount) {
                     sepCount --;
                 } else {
@@ -2762,7 +2761,7 @@ bool Parser::eval_cmd_pset(LexerLine *statement) {
                     parmCount ++;
                     continue;
                 }
-            } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0) {
+            } else if( next_lexeme->isSeparator(",") && sepCount == 0) {
                 if(parm.getLexemeCount()) {
                     parm.setLexemeBOF();
                     if(!eval_expression(&parm)) {
@@ -2842,11 +2841,11 @@ bool Parser::eval_cmd_line(LexerLine *statement) {
 
         switch(state) {
             case 0 : {
-                    if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "INPUT") {
+                    if(next_lexeme->isKeyword("INPUT")) {
                         has_input = true;
                         pushActionFromLexeme(next_lexeme);
                         return eval_cmd_line_input(statement);
-                    } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STEP") {
+                    } else if(next_lexeme->isKeyword("STEP")) {
                         if(startAsParm2) {
                             action = new ActionNode("TO_STEP");
                             pushActionRoot(action);
@@ -2855,7 +2854,7 @@ bool Parser::eval_cmd_line(LexerLine *statement) {
                             pushActionRoot(action);
                         }
                         continue;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    } else if( next_lexeme->isSeparator("(")) {
                         parmCount ++;
                         if(startAsParm2)
                             state = 3;
@@ -2869,7 +2868,7 @@ bool Parser::eval_cmd_line(LexerLine *statement) {
                             pushActionRoot(action);
                         }
                         continue;
-                    } else if( next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "-" ) {
+                    } else if( next_lexeme->isOperator("-") ) {
                         startAsParm2 = true;
                         parmCount ++;
                         continue;
@@ -2882,9 +2881,9 @@ bool Parser::eval_cmd_line(LexerLine *statement) {
                 break;
 
             case 1 : {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(" ) {
+                    if( next_lexeme->isSeparator("(") ) {
                         sepCount ++;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")" ) {
+                    } else if( next_lexeme->isSeparator(")") ) {
                         if(sepCount)
                             sepCount --;
                         else {
@@ -2899,7 +2898,7 @@ bool Parser::eval_cmd_line(LexerLine *statement) {
                             sepTime = true;
                             continue;
                         }
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0 ) {
+                    } else if( next_lexeme->isSeparator(",") && sepCount == 0 ) {
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
                             if(!eval_expression(&parm)) {
@@ -2908,7 +2907,7 @@ bool Parser::eval_cmd_line(LexerLine *statement) {
                             parm.clearLexemes();
                         }
                         continue;
-                    } else if( next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "-" && sepTime) {
+                    } else if( next_lexeme->isOperator("-") && sepTime) {
                         state ++;
                         continue;
                     }
@@ -2917,11 +2916,11 @@ bool Parser::eval_cmd_line(LexerLine *statement) {
                 break;
 
             case 2: {
-                    if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STEP") {
+                    if(next_lexeme->isKeyword("STEP")) {
                         action = new ActionNode("TO_STEP");
                         pushActionRoot(action);
                         continue;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    } else if( next_lexeme->isSeparator("(") ) {
                         state ++;
                         if(actionRoot->lexeme->value != "TO_STEP") {
                             action = new ActionNode("TO_COORD");
@@ -2935,16 +2934,16 @@ bool Parser::eval_cmd_line(LexerLine *statement) {
                 break;
 
             case 3: {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(" ) {
+                    if( next_lexeme->isSeparator("(") ) {
                         sepCount ++;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")" ) {
+                    } else if( next_lexeme->isSeparator(")") ) {
                         if(sepCount)
                             sepCount --;
                         else {
                             mustPopAction = true;
                             continue;
                         }
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0 ) {
+                    } else if( next_lexeme->isSeparator(",") && sepCount == 0 ) {
 
                         parmCount ++;
 
@@ -3062,11 +3061,11 @@ bool Parser::eval_cmd_circle(LexerLine *statement) {
         next_lexeme = coalesceSymbols(next_lexeme);
 
         if( state == 0 ) {
-            if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STEP") {
+            if(next_lexeme->isKeyword("STEP")) {
                 action = new ActionNode(next_lexeme);
                 pushActionRoot(action);
                 continue;
-            } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+            } else if( next_lexeme->isSeparator("(") ) {
                 state ++;
                 parmCount++;
                 if(actionRoot->lexeme->value != "STEP") {
@@ -3080,9 +3079,9 @@ bool Parser::eval_cmd_circle(LexerLine *statement) {
                 return false;
             }
         } else if(state == 1) {
-            if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+            if( next_lexeme->isSeparator("(") ) {
                 sepCount ++;
-            } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+            } else if( next_lexeme->isSeparator(")") ) {
                 if(sepCount) {
                     sepCount --;
                 } else {
@@ -3090,7 +3089,7 @@ bool Parser::eval_cmd_circle(LexerLine *statement) {
                     parmCount ++;
                     continue;
                 }
-            } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0) {
+            } else if( next_lexeme->isSeparator(",") && sepCount == 0) {
                 if(parm.getLexemeCount()) {
                     parm.setLexemeBOF();
                     if(!eval_expression(&parm)) {
@@ -3142,11 +3141,11 @@ bool Parser::eval_cmd_paint(LexerLine *statement) {
         next_lexeme = coalesceSymbols(next_lexeme);
 
         if( state == 0 ) {
-            if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STEP") {
+            if(next_lexeme->isKeyword("STEP")) {
                 action = new ActionNode(next_lexeme);
                 pushActionRoot(action);
                 continue;
-            } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+            } else if(next_lexeme->isSeparator("(")) {
                 state ++;
                 parmCount++;
                 if(actionRoot->lexeme->value != "STEP") {
@@ -3160,9 +3159,9 @@ bool Parser::eval_cmd_paint(LexerLine *statement) {
                 return false;
             }
         } else if(state == 1) {
-            if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+            if(next_lexeme->isSeparator("(")) {
                 sepCount ++;
-            } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+            } else if(next_lexeme->isSeparator(")")) {
                 if(sepCount) {
                     sepCount --;
                 } else {
@@ -3170,7 +3169,7 @@ bool Parser::eval_cmd_paint(LexerLine *statement) {
                     parmCount ++;
                     continue;
                 }
-            } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0) {
+            } else if(next_lexeme->isSeparator(",") && sepCount == 0) {
                 if(parm.getLexemeCount()) {
                     parm.setLexemeBOF();
                     if(!eval_expression(&parm)) {
@@ -3223,11 +3222,11 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
 
         switch(state) {
             case 0 : {
-                    if( next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "SCREEN") {
+                    if( next_lexeme->isKeyword("SCREEN") ) {
                         pushActionFromLexeme(next_lexeme);
                         return eval_cmd_generic(statement);
                     }
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    if( next_lexeme->isSeparator("(") ) {
                         parmCount ++;
                         state = 1;
 
@@ -3245,9 +3244,9 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
                 break;
 
             case 1 : {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(" ) {
+                    if( next_lexeme->isSeparator("(") ) {
                         sepCount ++;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")" ) {
+                    } else if( next_lexeme->isSeparator(")") ) {
                         if(sepCount)
                             sepCount --;
                         else {
@@ -3265,7 +3264,7 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
                             state = 10;
                             continue;
                         }
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0 ) {
+                    } else if( next_lexeme->isSeparator(",") && sepCount == 0 ) {
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
                             if(!eval_expression(&parm)) {
@@ -3283,11 +3282,11 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
                 break;
 
             case 2: {
-                    if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STEP") {
+                    if(next_lexeme->isKeyword("STEP")) {
                         action = new ActionNode("TO_STEP");
                         pushActionRoot(action);
                         continue;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    } else if( next_lexeme->isSeparator("(")) {
                         parmCount ++;
                         state = 3;
                         if(actionRoot->lexeme->value != "TO_STEP") {
@@ -3302,9 +3301,9 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
                 break;
 
             case 3: {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(" ) {
+                    if( next_lexeme->isSeparator("(") ) {
                         sepCount ++;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")" ) {
+                    } else if( next_lexeme->isSeparator(")") ) {
                         if(sepCount)
                             sepCount --;
                         else {
@@ -3327,7 +3326,7 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
                             continue;
 
                         }
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0 ) {
+                    } else if( next_lexeme->isSeparator(",") && sepCount == 0 ) {
 
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
@@ -3348,7 +3347,7 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
                 break;
 
             case 4: {
-                    if( next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "TO" ) {
+                    if( next_lexeme->isKeyword("TO") ) {
 
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
@@ -3366,7 +3365,7 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
 
                         continue;
 
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," ) {
+                    } else if( next_lexeme->isSeparator(",") ) {
 
                         continue;
 
@@ -3377,7 +3376,7 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
 
             case 5: {
                     parmCount++;
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(" ) {
+                    if( next_lexeme->isSeparator("(") ) {
                         state = 6;
 
                         action = new ActionNode("TO_DEST");
@@ -3393,9 +3392,9 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
                 break;
 
             case 6: {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(" ) {
+                    if( next_lexeme->isSeparator("(") ) {
                         sepCount ++;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")" ) {
+                    } else if( next_lexeme->isSeparator(")") ) {
                         if(sepCount)
                             sepCount --;
                         else {
@@ -3417,7 +3416,7 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
                             continue;
 
                         }
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0 ) {
+                    } else if( next_lexeme->isSeparator(",") && sepCount == 0 ) {
 
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
@@ -3438,7 +3437,7 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
                 break;
 
             case 7: {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," ) {
+                    if( next_lexeme->isSeparator(",") ) {
 
                         state = 8;
 
@@ -3450,7 +3449,7 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
                 break;
 
             case 8: {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," ) {
+                    if( next_lexeme->isSeparator(",") ) {
 
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
@@ -3473,7 +3472,7 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
                 break;
 
             case 9: {
-                    if( next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "TO" ) {
+                    if( next_lexeme->isKeyword("TO") ) {
 
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
@@ -3495,7 +3494,7 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
 
                         continue;
 
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," ) {
+                    } else if( next_lexeme->isSeparator(",") ) {
 
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
@@ -3516,7 +3515,7 @@ bool Parser::eval_cmd_copy(LexerLine *statement) {
                 break;
 
             case 10: {
-                    if( next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "-") {
+                    if( next_lexeme->isOperator("-") ) {
                         state = 2;
                         continue;
                     } else {
@@ -3630,7 +3629,7 @@ bool Parser::eval_cmd_set_adjust(LexerLine *statement) {
         next_lexeme = coalesceSymbols(next_lexeme);
 
         if( state == 0 ) {
-            if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+            if( next_lexeme->isSeparator("(") ) {
                 state ++;
                 parmCount++;
                 continue;
@@ -3640,9 +3639,9 @@ bool Parser::eval_cmd_set_adjust(LexerLine *statement) {
                 return false;
             }
         } else if(state == 1) {
-            if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+            if( next_lexeme->isSeparator("(") ) {
                 sepCount ++;
-            } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+            } else if( next_lexeme->isSeparator(")") ) {
                 if(sepCount) {
                     sepCount --;
                 } else {
@@ -3650,7 +3649,7 @@ bool Parser::eval_cmd_set_adjust(LexerLine *statement) {
                     parmCount ++;
                     continue;
                 }
-            } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0) {
+            } else if( next_lexeme->isSeparator(",") && sepCount == 0) {
                 if(parm.getLexemeCount()) {
                     parm.setLexemeBOF();
                     if(!eval_expression(&parm)) {
@@ -3736,7 +3735,7 @@ bool Parser::eval_cmd_set_tile_colpat(LexerLine *statement) {
 
         switch(state) {
             case 0 : {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    if( next_lexeme->isSeparator("(") ) {
                         state = 2;
                         sepCount = 0;
                         act_coord = new ActionNode("ARRAY");
@@ -3749,7 +3748,7 @@ bool Parser::eval_cmd_set_tile_colpat(LexerLine *statement) {
                 }
 
             case 1 : {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," ) {
+                    if( next_lexeme->isSeparator(",") ) {
                         state = 0;
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
@@ -3770,16 +3769,16 @@ bool Parser::eval_cmd_set_tile_colpat(LexerLine *statement) {
                 break;
 
             case 2 : {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    if( next_lexeme->isSeparator("(") ) {
                         sepCount ++;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+                    } else if( next_lexeme->isSeparator(")") ) {
                         if(sepCount) {
                             sepCount --;
                         } else {
                             state = 1;
                             continue;
                         }
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0) {
+                    } else if( next_lexeme->isSeparator(",") && sepCount == 0) {
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
                             if(!eval_expression(&parm)) {
@@ -3864,7 +3863,7 @@ bool Parser::eval_cmd_set_sprite_colpattra(LexerLine *statement) {
 
         switch(state) {
             case 0 : {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    if( next_lexeme->isSeparator("(") ) {
                         state = 2;
                         sepCount = 0;
                         act_coord = new ActionNode("ARRAY");
@@ -3877,7 +3876,7 @@ bool Parser::eval_cmd_set_sprite_colpattra(LexerLine *statement) {
                 }
 
             case 1 : {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," ) {
+                    if( next_lexeme->isSeparator(",") ) {
                         state = 0;
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
@@ -3898,16 +3897,16 @@ bool Parser::eval_cmd_set_sprite_colpattra(LexerLine *statement) {
                 break;
 
             case 2 : {
-                    if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+                    if( next_lexeme->isSeparator("(") ) {
                         sepCount ++;
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
+                    } else if( next_lexeme->isSeparator(")") ) {
                         if(sepCount) {
                             sepCount --;
                         } else {
                             state = 1;
                             continue;
                         }
-                    } else if( next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "," && sepCount == 0) {
+                    } else if( next_lexeme->isSeparator(",") && sepCount == 0) {
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
                             if(!eval_expression(&parm)) {
@@ -3991,7 +3990,7 @@ bool Parser::eval_cmd_screen_copy(LexerLine *statement) {
 
         switch(state) {
             case 0 : {
-                    if( next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "TO") {
+                    if( next_lexeme->isKeyword("TO") ) {
                         state = 1;
                         continue;
                     } else {
@@ -4001,7 +4000,7 @@ bool Parser::eval_cmd_screen_copy(LexerLine *statement) {
                 break;
 
             case 1 : {
-                    if( next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "SCROLL" ) {
+                    if( next_lexeme->isKeyword("SCROLL") ) {
                         if(parm.getLexemeCount()) {
                             parm.setLexemeBOF();
                             if(!eval_expression(&parm)) {
@@ -4047,7 +4046,7 @@ bool Parser::eval_cmd_screen_paste(LexerLine *statement) {
 
     if( (next_lexeme = statement->getNextLexeme()) ) {
 
-        if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "FROM") {
+        if(next_lexeme->isKeyword("FROM")) {
             result = eval_cmd_generic(statement);
         }
 
@@ -4083,21 +4082,21 @@ bool Parser::eval_cmd_on(LexerLine *statement) {
 
         next_lexeme = coalesceSymbols(next_lexeme);
 
-        if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "ERROR") {
+        if (next_lexeme->isKeyword("ERROR")) {
             return eval_cmd_on_error(statement);
-        } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "INTERVAL") {
+        } else if(next_lexeme->isKeyword("INTERVAL")) {
             has_traps = true;
             return eval_cmd_on_interval(statement);
-        } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "KEY") {
+        } else if(next_lexeme->isKeyword("KEY")) {
             has_traps = true;
             return eval_cmd_on_key(statement);
-        } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "SPRITE") {
+        } else if(next_lexeme->isKeyword("SPRITE")) {
             has_traps = true;
             return eval_cmd_on_sprite(statement);
-        } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STOP") {
+        } else if(next_lexeme->isKeyword("STOP")) {
             has_traps = true;
             return eval_cmd_on_stop(statement);
-        } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STRIG") {
+        } else if(next_lexeme->isKeyword("STRIG")) {
             has_traps = true;
             return eval_cmd_on_strig(statement);
         } else {
@@ -4127,8 +4126,7 @@ bool Parser::eval_cmd_on_goto_gosub(LexerLine *statement) {
         switch(state) {
 
             case 0 : {
-                    if(next_lexeme->type == Lexeme::type_keyword &&
-                            (next_lexeme->value == "GOSUB" || next_lexeme->value == "GOTO")) {
+                    if(next_lexeme->isKeyword("GOSUB") || next_lexeme->isKeyword("GOTO")) {
 
                         if(! parm.getLexemeCount())
                             return false;
@@ -4168,7 +4166,7 @@ bool Parser::eval_cmd_on_goto_gosub(LexerLine *statement) {
 
                         continue;
 
-                    } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ",") {
+                    } else if(next_lexeme->isSeparator(",")) {
 
                         if(!next_is_sep) {
                             pushActionFromLexeme(lex_null);
@@ -4225,12 +4223,12 @@ bool Parser::eval_cmd_on_interval(LexerLine *statement) {
 
                     if(first) {
                         first = false;
-                        if(next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "=" ) {
+                        if(next_lexeme->isOperator("=")) {
                             continue;
                         }
                     }
 
-                    if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "GOSUB") {
+                    if(next_lexeme->isKeyword("GOSUB")) {
 
                         if(! parm.getLexemeCount())
                             return false;
@@ -4310,7 +4308,7 @@ bool Parser::eval_cmd_on_key(LexerLine *statement) {
         switch(state) {
 
             case 0 : {
-                    if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "GOSUB") {
+                    if(next_lexeme->isKeyword("GOSUB")) {
 
                         action = new ActionNode(next_lexeme);
                         pushActionRoot(action);
@@ -4338,7 +4336,7 @@ bool Parser::eval_cmd_on_key(LexerLine *statement) {
 
                         continue;
 
-                    } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ",") {
+                    } else if(next_lexeme->isSeparator(",")) {
 
                         if(!next_is_sep) {
                             pushActionFromLexeme(lex_null);
@@ -4387,7 +4385,7 @@ bool Parser::eval_cmd_on_sprite(LexerLine *statement) {
         switch(state) {
 
             case 0 : {
-                    if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "GOSUB") {
+                    if(next_lexeme->isKeyword("GOSUB")) {
 
                         action = new ActionNode(next_lexeme);
                         pushActionRoot(action);
@@ -4415,7 +4413,7 @@ bool Parser::eval_cmd_on_sprite(LexerLine *statement) {
 
                         continue;
 
-                    } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ",") {
+                    } else if(next_lexeme->isSeparator(",")) {
 
                         if(!next_is_sep) {
                             pushActionFromLexeme(lex_null);
@@ -4464,7 +4462,7 @@ bool Parser::eval_cmd_on_stop(LexerLine *statement) {
         switch(state) {
 
             case 0 : {
-                    if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "GOSUB") {
+                    if(next_lexeme->isKeyword("GOSUB")) {
 
                         action = new ActionNode(next_lexeme);
                         pushActionRoot(action);
@@ -4492,7 +4490,7 @@ bool Parser::eval_cmd_on_stop(LexerLine *statement) {
 
                         continue;
 
-                    } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ",") {
+                    } else if(next_lexeme->isSeparator(",")) {
 
                         if(!next_is_sep) {
                             pushActionFromLexeme(lex_null);
@@ -4541,7 +4539,7 @@ bool Parser::eval_cmd_on_strig(LexerLine *statement) {
         switch(state) {
 
             case 0 : {
-                    if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "GOSUB") {
+                    if(next_lexeme->isKeyword("GOSUB")) {
 
                         action = new ActionNode(next_lexeme);
                         pushActionRoot(action);
@@ -4569,7 +4567,7 @@ bool Parser::eval_cmd_on_strig(LexerLine *statement) {
 
                         continue;
 
-                    } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ",") {
+                    } else if(next_lexeme->isSeparator(",")) {
 
                         if(!next_is_sep) {
                             pushActionFromLexeme(lex_null);

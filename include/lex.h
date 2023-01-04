@@ -53,6 +53,7 @@ class Lexeme {
     bool isKeyword();
     bool isKeyword(string pvalue);
     bool isSeparator(string pvalue);
+    bool isOperator(string pvalue);
     bool isLiteralNumeric();
 	bool isBooleanOperator();
 	bool isFunction();
