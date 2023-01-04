@@ -88,6 +88,18 @@ char * Lexeme::getSubTypeName() {
     return LexemeSubTypeName[subtype];
 }
 
+bool Lexeme::isKeyword(string pvalue) {
+    return (type == Lexeme::type_keyword && value == pvalue);
+}
+
+bool Lexeme::isSeparator(string pvalue) {
+    return (type == Lexeme::type_separator && value == pvalue);
+}
+
+bool Lexeme::isLiteralNumeric() {
+    return (type == Lexeme::type_literal && subtype == Lexeme::subtype_numeric);
+}
+
 bool Lexeme::isKeyword() {
     // https://www.msx.org/wiki/Category:MSX-BASIC_Instructions
     return ( value == "CLS" || value == "PRINT" || value == "END" || value == "GOTO"

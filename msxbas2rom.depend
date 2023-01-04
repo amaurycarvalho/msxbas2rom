@@ -118,7 +118,7 @@
 
 1608056014 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/pt3.h
 
-1671807150 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/compiler.cpp
+1672770011 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/compiler.cpp
 	"compiler.h"
 	"compiler_hooks.h"
 
@@ -128,12 +128,12 @@
 	"parse.h"
 	"pletter.h"
 
-1657736593 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/lex.cpp
+1672857472 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/lex.cpp
 	<stdio.h>
 	<string.h>
 	"lex.h"
 
-1650633618 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/lex.h
+1672857472 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/lex.h
 	<string>
 	<vector>
 	<stack>
@@ -168,11 +168,11 @@
 	"compiler.h"
 	"compiler_pt3.h"
 
-1672165668 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/routines.h
+1672858769 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/routines.h
 
 1598036919 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/turbo.h
 
-1672165668 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/pt3.h
+1672858769 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/pt3.h
 
 1671633921 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/main.cpp
 	<stdio.h>
@@ -192,18 +192,18 @@
 	"compiler.h"
 	"compiler_pt3.h"
 
-1670687405 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/parse.cpp
+1672857832 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/parse.cpp
 	"parse.h"
 
-1670686906 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/parse.h
+1672857605 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/parse.h
 	<string>
 	<vector>
 	<stack>
 	"lex.h"
 
-1672165668 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/header.h
+1672858769 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/header.h
 
-1672165668 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/start.h
+1672858769 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/start.h
 
 1643559364 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/pletter.cpp
 	"pletter.h"
@@ -222,5 +222,5 @@
 
 1623679929 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/compiler_pt3_hooks.h
 
-1672165668 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/header_pt3.h
+1672858769 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/header_pt3.h
 

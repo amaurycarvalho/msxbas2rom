@@ -51,6 +51,9 @@ class Lexeme {
     char * getSubTypeName();
 
     bool isKeyword();
+    bool isKeyword(string pvalue);
+    bool isSeparator(string pvalue);
+    bool isLiteralNumeric();
 	bool isBooleanOperator();
 	bool isFunction();
 
@@ -70,6 +73,14 @@ class LexerLine {
     int lexemeIndex;
     vector<Lexeme*> lexemes;
     stack<int> lexemeStack;
+
+	bool isNumeric(char c);
+	bool isDecimal(char c);
+	bool isHexDecimal(char c);
+	bool isSeparator(char c);
+	bool isOperator(char c);
+	bool isIdentifier(char c, bool start);
+	bool isComment(char c);
 
   public:
     string line;
@@ -91,14 +102,6 @@ class LexerLine {
     void pushLexeme();
     void popLexeme();
     void popLexemeDiscarting();
-
-	bool isNumeric(char c);
-	bool isDecimal(char c);
-	bool isHexDecimal(char c);
-	bool isSeparator(char c);
-	bool isOperator(char c);
-	bool isIdentifier(char c, bool start);
-	bool isComment(char c);
 
     LexerLine();
 };

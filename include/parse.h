@@ -11,17 +11,21 @@ using namespace std;
 class ActionNode {
   private:
     int indent;
+    void create(Lexeme *plexeme);
   public:
     int subtype;
     Lexeme* lexeme;
     vector<ActionNode*> actions;
     void print();
     ActionNode();
+    ActionNode(Lexeme *plexeme);
+    ActionNode(string name);
 };
 
 class TagNode {
   public:
     string name;
+    string value;
     vector<ActionNode*> actions;
     void print();
 };
@@ -53,7 +57,7 @@ class Parser {
     bool eval_cmd_color(LexerLine *statement);
     bool eval_cmd_color_rgb(LexerLine *statement);
     bool eval_cmd_color_sprite(LexerLine *statement);
-    bool eval_cmd_if(LexerLine *statement);
+    bool eval_cmd_if(LexerLine *statement, int level);
     bool eval_cmd_for(LexerLine *statement);
     bool eval_cmd_next(LexerLine *statement);
     bool eval_cmd_pset(LexerLine *statement);

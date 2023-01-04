@@ -818,6 +818,7 @@ SymbolNode* Compiler::addSymbol(string line) {
     if(!found) {
         tag = new TagNode();
         tag->name = line;
+        tag->value = current_tag->name;
         symbol = addSymbol(tag);
     }
 
@@ -12744,7 +12745,7 @@ void Compiler::syntax_error(string msg) {
     compiled = false;
     error_message = msg;
     if(current_tag)
-        error_message += " (line=" + current_tag->name + ")";
+        error_message += " (line=" + current_tag->value + ")";
 }
 
 //-------------------------------------------------------------------------------------------
