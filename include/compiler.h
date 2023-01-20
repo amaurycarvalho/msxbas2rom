@@ -204,6 +204,7 @@ class Compiler {
     void cmd_set_prompt();
     void cmd_set_tile();
     void cmd_set_sprite();
+    void cmd_set_font();
     void cmd_on();
     void cmd_on_error();
     void cmd_on_interval();

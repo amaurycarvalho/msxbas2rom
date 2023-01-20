@@ -9064,6 +9064,9 @@ void Compiler::cmd_set() {
             } else if(next_lexeme->value == "SPRITE") {
                 cmd_set_sprite();
                 return;
+            } else if(next_lexeme->value == "FONT") {
+                cmd_set_font();
+                return;
             }
         }
 
@@ -9881,6 +9884,62 @@ void Compiler::cmd_set_tile() {
 
     } else {
         syntax_error("Missing parameters on SET TILE statement");
+    }
+
+}
+
+void Compiler::cmd_set_font() {
+    ActionNode *action = current_action->actions[0], *sub_action1, *sub_action2;
+    unsigned int t;
+    int result_subtype;
+
+    t = action->actions.size();
+    if(t) {
+
+        font = true;
+
+        if(t == 1) {
+
+            sub_action1 = action->actions[0];
+            result_subtype = evalExpression(sub_action1);
+            addCast(result_subtype, Lexeme::subtype_numeric);
+
+            // ld (DAC), hl
+            addCmd(0x22, def_DAC);
+
+            // ld a, 0xff                ; it means all screen banks
+            addWord(0x3E, 0xFF);
+            // ld (ARG), a
+            addCmd(0x32, def_ARG);
+
+            // call cmd_setfnt
+            addCmd(0xCD, def_cmd_setfnt);
+
+        } else if(t == 2) {
+
+            sub_action1 = action->actions[0];
+            result_subtype = evalExpression(sub_action1);
+            addCast(result_subtype, Lexeme::subtype_numeric);
+
+            // ld (DAC), hl
+            addCmd(0x22, def_DAC);
+
+            sub_action2 = action->actions[1];
+            result_subtype = evalExpression(sub_action2);
+            addCast(result_subtype, Lexeme::subtype_numeric);
+
+            // ld (ARG), hl             ; screen font bank number
+            addCmd(0x22, def_ARG);
+
+            // call cmd_setfnt
+            addCmd(0xCD, def_cmd_setfnt);
+
+        } else {
+            syntax_error("Wrong number of parameters on SET FONT");
+        }
+
+    } else {
+        syntax_error("SET FONT syntax error");
     }
 
 }

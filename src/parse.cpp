@@ -3595,7 +3595,8 @@ bool Parser::eval_cmd_set(LexerLine *statement) {
                     next_lexeme->value == "SCROLL" ||
                     next_lexeme->value == "TIME" ||
                     next_lexeme->value == "TITLE" ||
-                    next_lexeme->value == "VIDEO"  ) {
+                    next_lexeme->value == "VIDEO" ||
+                    next_lexeme->value == "FONT" ) {
                 result = eval_cmd_generic(statement);
             } else if(next_lexeme->value == "ADJUST") {
                 result = eval_cmd_set_adjust(statement);
