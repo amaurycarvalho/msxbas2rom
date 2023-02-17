@@ -593,7 +593,7 @@ bool Lexer::load(char *filename) {
                 sprintf(line, "Tokenized MSX BASIC source code file detected\nSave it as a plain text to use it with MSXBAS2ROM:\nSAVE \"%s\",A", filename);
                 errorMessage = line;
                 return false;
-            } else if(header[0] != 0x0C && header[0] != 0x0A) {     // CR LF
+            } else if(header[0] != 0x0D && header[0] != 0x0A && header[0] != 0x0C) {     // CR LF FF
                 errorMessage = "This is not a MSX BASIC source code file.";
                 return false;
             }

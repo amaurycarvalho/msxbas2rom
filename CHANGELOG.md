@@ -1,5 +1,6 @@
 # Version history
 
+- 0.3.0.0 – (2023/02/17) TURBO function bug fix, interger math optimizations;
 - 0.2.9.9 – (2023/01/20) SET FONT new command;
 - 0.2.9.8 – (2022/12/21) MegaROM mode support for CMD, RESOURCES and Arkos Tracker player;
 - 0.2.9.7 – (2022/07/20) COLOR NEW/RESTORE bug fix on MSX1;

@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.2.9.9"
+#define app_version "0.3.0.0"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -54,12 +54,13 @@ https://github.com/amaurycarvalho/msxbas2rom )";
 const char * info_history = R"(
 Version history
 
-0.3.3.0 – (2022/xx/xx) RUN support to call sub-programs;
-0.3.2.0 – (2022/xx/xx) Disk file support;
-0.3.1.0 – (2022/xx/xx) COPY screen data in tiled mode, Better support
+0.3.3.0 – (2023/xx/xx) RUN support to call sub-programs;
+0.3.2.0 – (2023/xx/xx) Disk file support;
+0.3.1.0 – (2023/xx/xx) COPY screen data in tiled mode, Better support
                        to double precision type (BCD);
-0.3.0.0 – (2022/08/xx) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
+0.3.0.1 – (2023/xx/xx) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
 
+0.3.0.0 – (2023/02/17) TURBO function bug fix, interger math optimizations;
 0.2.9.9 – (2023/01/20) SET FONT new command;
 0.2.9.8 – (2022/12/21) MegaROM mode support for CMD, RESOURCES and
                        Arkos Tracker player;
