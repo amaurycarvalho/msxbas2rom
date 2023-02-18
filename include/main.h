@@ -60,7 +60,7 @@ Version history
                        to double precision type (BCD);
 0.3.0.1 – (2023/xx/xx) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
 
-0.3.0.0 – (2023/02/17) TURBO function bug fix, interger math optimizations;
+0.3.0.0 – (2023/02/17) TURBO function bug fix, integer math optimizations;
 0.2.9.9 – (2023/01/20) SET FONT new command;
 0.2.9.8 – (2022/12/21) MegaROM mode support for CMD, RESOURCES and
                        Arkos Tracker player;
