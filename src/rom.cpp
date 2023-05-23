@@ -524,10 +524,10 @@ void Rom::buildMapAndResources() {
     }
 
     if(rscLen > max_resource_size) {
-        char s[255];
+        char s[400];
         sprintf(s, "Resources total size = %i byte(s)\nResources exceeded valid ROM page size limit (%i)\nDifference = %i byte(s)", rscLen, max_resource_size, rscLen - max_resource_size);
         if(!xtd) {
-            sprintf(s, "%s\nTip: compile it in megarom format using -c -x parameters", s);
+            strcat(s, "\nTip: compile it in megarom format using -c -x parameters");
         }
         errorMessage = s;
         errorFound = true;

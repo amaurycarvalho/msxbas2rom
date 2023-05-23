@@ -829,9 +829,10 @@ XBASIC_COPY_FROM:
 
 XBASIC_COPY_FROM.TILED:         ; dx=x, dy=y, hl=src address
   push hl
-    ld a, (DY)
-    ld l, a
+    ld hl, (DY)
+    inc hl
     ld a, (DX)
+    inc a
     ld h, a
     call gfxTileAddress
     ex de, hl
@@ -884,6 +885,7 @@ XBASIC_COPY_TO.1:
     call intNeg
 XBASIC_COPY_TO.2:
   ld (NY), hl
+  ld hl, (MV_DPTR)
 
   ld a, (RAMAD3)
   and 0xF0                      ; keep just expansion
@@ -903,31 +905,36 @@ XBASIC_COPY_TO.2:
   jp SUB_EXTROM               ; XBASIC original COPY TO
 
 XBASIC_COPY_TO.TILED:           ; sx=x, sy=y, hl=dest address, nx=width, ny=height
-  ld hl, (SY)
-  ld a, (SX)
-  ld h, a
-  call gfxTileAddress
-  ld de, (MV_DPTR)
+  push hl
+    ld hl, (SY)
+    inc hl
+    ld a, (SX)
+    inc a
+    ld h, a
+    call gfxTileAddress
+  pop de
   ld bc, (NX)
+  inc bc
   ld a, c
   ld (de), a
   inc de
   ld a, (NY)
+  inc a
   ld (de), a
   inc de
 XBASIC_COPY_TO.TILED.loop:
   push af
   push hl
   push bc
-  push de
-    call LDIRMV
-  pop hl
-  ld a, (LINLEN)
-  ld c, a
-  ld b, 0
-  add hl, bc
-  inc hl
-  ex de, hl
+    push de
+      call LDIRMV
+    pop hl
+    ld a, (LINLEN)
+    ld c, a
+    ld b, 0
+    add hl, bc
+    inc hl
+    ex de, hl
   pop bc
   pop hl
   add hl, bc
