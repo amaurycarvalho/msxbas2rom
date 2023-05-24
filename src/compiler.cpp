@@ -19,7 +19,8 @@ Compiler::Compiler() {
     code_pointer = code_start;
 
     ram_size = 0;
-    ram_start = def_RAM_BOTTOM - 0x8000;
+    ram_page = 0x8000;
+    ram_start = def_RAM_BOTTOM - ram_page;
     ram_pointer = ram_start;
     ramMemoryPerc = 0;
     segm_last = 0;
@@ -6119,6 +6120,7 @@ void Compiler::cmd_line() {
 
 void Compiler::cmd_copy() {
     ActionNode *action, *sub_action;
+    Lexeme *lexeme;
     unsigned int i, t = current_action->actions.size();
     int result_subtype, state;
     bool has_x0_coord=false, has_x1_coord=false, has_x2_coord=false;
@@ -6314,18 +6316,29 @@ void Compiler::cmd_copy() {
                             }
 
                         } else {
+
+                            // copy from RAM address to vram
                             has_address_from = true;
 
-                            result_subtype = evalExpression(action);
+                            if( (lexeme = action->lexeme) ) {
+                                if(lexeme->type == Lexeme::type_identifier && lexeme->isArray) {
+                                    // ld hl, variable
+                                    addFix( lexeme );
+                                    addLdHL(0x0000);
+                                    result_subtype = Lexeme::subtype_numeric;
+                                } else {
+                                    result_subtype = evalExpression(action);
+                                }
+                            } else {
+                                result_subtype = evalExpression(action);
+                            }
 
-                            if(result_subtype != Lexeme::subtype_numeric &&
-                                    result_subtype != Lexeme::subtype_single_decimal &&
-                                    result_subtype != Lexeme::subtype_double_decimal) {
+                            if( result_subtype == Lexeme::subtype_null ||
+                                    result_subtype == Lexeme::subtype_single_decimal ||
+                                    result_subtype == Lexeme::subtype_double_decimal ) {
                                 syntax_error("Invalid address in COPY");
                                 return;
                             }
-
-                            addCast(result_subtype, Lexeme::subtype_numeric);
 
                             // push hl
                             addPushHL();
@@ -6398,14 +6411,28 @@ void Compiler::cmd_copy() {
 
                         } else {
 
+                            // copy from VRAM to RAM address
                             has_address_to = true;
 
-                            result_subtype = evalExpression(action);
+                            if( (lexeme = action->lexeme) ) {
+                                if(lexeme->type == Lexeme::type_identifier && lexeme->isArray) {
+                                    // ld hl, variable
+                                    addFix( lexeme );
+                                    addLdHL(0x0000);
+                                    result_subtype = Lexeme::subtype_numeric;
+                                } else {
+                                    result_subtype = evalExpression(action);
+                                }
+                            } else {
+                                result_subtype = evalExpression(action);
+                            }
 
-                            if(result_subtype == Lexeme::subtype_null)
-                                continue;
-
-                            addCast(result_subtype, Lexeme::subtype_numeric);
+                            if( result_subtype == Lexeme::subtype_null ||
+                                    result_subtype == Lexeme::subtype_single_decimal ||
+                                    result_subtype == Lexeme::subtype_double_decimal ) {
+                                syntax_error("Invalid address in COPY");
+                                return;
+                            }
 
                             state = 99;   // exit loop
 

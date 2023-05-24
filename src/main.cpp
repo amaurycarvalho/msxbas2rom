@@ -508,6 +508,7 @@ bool FileExists(char *filename) {
     return false;
 }
 
+// write symbols file to use with OpenMSX
 bool SaveSymbolFile(Compiler *compiler, int code_start) {
     FILE *file;
     CodeNode *codeItem;
@@ -519,6 +520,8 @@ bool SaveSymbolFile(Compiler *compiler, int code_start) {
         strcpy(s, "LOADER EQU 04010H\n");
         fwrite(s, 1, strlen(s), file);
 
+        // lines symbols
+
         t = compiler->codeList.size();
 
         for(i = 0; i < t; i++) {
@@ -529,12 +532,14 @@ bool SaveSymbolFile(Compiler *compiler, int code_start) {
             }
         }
 
+        // variables symbols
+
         t = compiler->dataList.size();
 
         for(i = 0; i < t; i++) {
             codeItem = compiler->dataList[i];
             if(codeItem->debug) {
-                sprintf(s, "%s EQU 0%XH\n", codeItem->name.c_str(), codeItem->start+code_start);
+                sprintf(s, "%s EQU 0%XH\n", codeItem->name.c_str(), codeItem->start + compiler->ram_page);
                 fwrite(s, 1, strlen(s), file);
             }
         }

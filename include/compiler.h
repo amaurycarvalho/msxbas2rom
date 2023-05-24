@@ -392,7 +392,7 @@ class Compiler {
     vector<CodeNode*> codeList;
     vector<CodeNode*> dataList;
 
-    int code_start, ram_start;
+    int code_start, ram_start, ram_page;
     int code_size, ram_size;
     int segm_last, segm_total;
     string error_message;

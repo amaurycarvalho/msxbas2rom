@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.0.1"
+#define app_version "0.3.0.2"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -59,6 +59,7 @@ Version history
 0.3.1.0 – (2023/xx/xx) Better support to double precision type (BCD);
 0.3.0.2 – (2023/xx/xx) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
 
+0.3.0.2 – (2023/05/24) COPY stmt and SYMBOLs file (var address) bug fix;
 0.3.0.1 – (2023/05/23) COPY screen data in tiled mode bug fix;
 0.3.0.0 – (2023/02/17) TURBO function bug fix, integer math optimizations;
 0.2.9.9 – (2023/01/20) SET FONT new command;
