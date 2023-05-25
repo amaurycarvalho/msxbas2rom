@@ -6475,6 +6475,7 @@ void Compiler::cmd_copy() {
 
                         // ld a, l
                         addLdAL();
+                        addPushAF();
 
                         has_operator = true;
 
@@ -6494,7 +6495,11 @@ void Compiler::cmd_copy() {
             if(!has_operator) {
                 // xor a
                 addXorA();
+            } else {
+                addPopAF();
             }
+            // ld b, a
+            addLdBA();
             // ld (LOGOP), a
             addLdiiA(def_LOGOP);
 
@@ -6606,6 +6611,8 @@ void Compiler::cmd_copy() {
             if(!has_operator) {
                 // ld b, 0
                 addLdB(0x00);
+            } else {
+                addPopBC();
             }
 
             if(has_dest_page) {

@@ -109,6 +109,13 @@ CLPRIM:       equ 0xF38C
 ; BIOS AND BASIC WORK AREA
 ; ------------------------------------------------------------------------------------------------------
 
+BASKUN_COPY:                equ I6EC8  ; BASIC KUN original COPY (DE=X0, HL=Y0, IX=X1, IY=Y1, B=OPERATION, FCB7=XD, FCB9=YD, FC18=PS, FC19=PD)
+BASKUN_VDP_WAIT:            equ C708A  ; BASIC KUN vdp wait
+
+; ------------------------------------------------------------------------------------------------------
+; BIOS AND BASIC WORK AREA
+; ------------------------------------------------------------------------------------------------------
+
 USRTAB:       equ 0xF39A   ; 20
 VALTYP:       equ 0xF663   ; 1
 VALDAT:       equ 0xF7F8   ; 2
@@ -773,7 +780,7 @@ XBASIC_USR.ret:
   ld hl, (DAC+2)       ; return data
   ret
 
-; de=x0, hl=y0, ix=x1, iy=y1, 0xFC18=srcpg, GRPACX=x2, GRPACY=y2, 0xFC19=destpg, b=operator
+; de=x0, hl=y0, ix=x1, iy=y1, 0xFC18=srcpg, GRPACX=x2, GRPACY=y2, 0xFC19=destpg, b=operator, FAFC=mode (screen limits)
 XBASIC_COPY:
   ld a, (SOMODE)
   cp 1
@@ -783,7 +790,7 @@ XBASIC_COPY:
   or a
   ret z                    ; only for MSX2
 
-  jp 0x6EC8                ; XBASIC original COPY
+  jp BASKUN_COPY           ; BASIC KUN original COPY (DE=X0, HL=Y0, IX=X1, IY=Y1, B=operator, FCB7=XD, FCB9=YD, FC18=PS, FC19=PD)
 
 XBASIC_COPY.TILED:
   ld (SX), de
@@ -3691,6 +3698,23 @@ VDP_GetVersion:
     inc a                ; return 1 for V9938
     ret
 
+; VDP wait
+;VDP_wait:
+;    ld a, 2
+;    call VDP_wait.1
+;    and 1
+;    jr nz, VDP_wait
+;    xor a
+;VDP_wait.1:
+;    di
+;      out (0x99), a
+;      ld a, 0x8F
+;      out (0x99), a
+;      in a, (0x99)
+;    ei
+;    ret
+
+
 ;
 ; Test if the VDP is a TMS9918A.
 ;
@@ -5059,7 +5083,7 @@ J6EBE:	OUT	(C),H
 	RET
 
 ;	  Subroutine copy
-;	     Inputs  ________________________
+;	     Inputs  DE=X0, HL=Y0, IX=X1, IY=Y1, B=operator, FCB7=XD, FCB9=YD, FC18=PS, FC19=PD, FAFC=mode (screen limits)
 ;	     Outputs ________________________
 
 I6EC8:	CALL	C7441			; force X and Y coordinate within screen limits, when limits enabled (DE,HL)

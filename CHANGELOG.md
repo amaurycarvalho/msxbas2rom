@@ -1,5 +1,6 @@
 # Version history
 
+- 0.3.0.3 – (2023/05/25) COPY stmt operator parameter bug fix;
 - 0.3.0.2 – (2023/05/24) COPY stmt and SYMBOLs file (var address) bug fix;
 - 0.3.0.1 – (2023/05/23) COPY screen data in tiled mode bug fix;
 - 0.3.0.0 – (2023/02/17) TURBO function bug fix, integer math optimizations;
