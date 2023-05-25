@@ -97,6 +97,7 @@ KILBUF:       equ 0x0156
 POSIT:        equ 0x00C6 ; locate (h=y, l=x, home position=1,1)
 SCALXY:       equ 0x010E ; bc=x, de=y
 MAPXYC:       equ 0x0111 ; bc=x, de=y
+PNTINI:       equ 0x0129 ; paint initialize - A = border color
 
 PUFOUT:       equ 0x3426 ; DAC to formatted text
 FRCSNG:       equ 0x2FB2 ; DAC to single
@@ -257,6 +258,7 @@ ENDPRG: equ 0xF40F
 
 VERSION:      equ 0x002D       ; BIOS VERSION - 0 = MSX1, 1 = MSX2, 2 = MSX2+, 3 = MSXturboR
 NTSC:         equ 0x002B       ; bit 7 on = PAL, off = NTSC
+BASVER:       equ 0x002C       ; BASIC VERSION: >=10 = international, 00=japanese (keyboard 0=japanese, 1=international, 2=french, 3=UK, 4=DIN)
 
 ; ------------------------------------------------------------------------------------------------------
 ; HOMEBREW SUPPORT FUNCTIONS
@@ -4435,31 +4437,35 @@ I4E28:	LD	E,3
 	LD	IX,M406F
 	JP	CALBAS			; BASIC error
 
-PAINT_FIX.1:
-    LD	(BRDATR),A
-    ld a, (SCRMOD)
-    cp 2                  ; screen 2?
-    jr z, PAINT_FIX.1.1
-    cp 4                  ; screen 4?
-    ret nz
-PAINT_FIX.1.1:
-      ld a, b
-      ld (BRDATR), a      ; border color = paint color
-      ret
+;PAINT_FIX.1:              ; same as PNTINI on bios
+;    LD	(BRDATR),A
+;    ld a, (SCRMOD)
+;    cp 2                  ; screen 2?
+;    jr z, PAINT_FIX.1.1
+;    cp 4                  ; screen 4?
+;    ret nz
+;PAINT_FIX.1.1:
+;      ld a, b
+;      ld (BRDATR), a      ; border color = paint color
+;      ret
 
 PAINT_FIX.2:
     push af
       ld a, (VERSION)
       cp 3                ; MSX Turbo R?
       jr c, PAINT_FIX.2.1
-         inc ix
-         inc ix
-         inc ix
-         inc ix
-         inc ix
+         ld a, (BASVER)
+         and 0xF0
+         or a
+         jr z, PAINT_FIX.2.1    ; jump if japanese TurboR
+           inc ix
+           inc ix
+           inc ix
+           inc ix
+           inc ix
 PAINT_FIX.2.1:
     pop af
-	jp	SUB_EXTROM			; PAINT handler (subrom)
+	;jp	SUB_EXTROM			; PAINT handler (subrom) ===> see it below
 
 ; EXTROM alternative with interruption enabled
 
@@ -6154,7 +6160,7 @@ J74A8:	LD	C,E
 ;	     Inputs  ________________________
 ;	     Outputs ________________________
 
-C74BC:	CALL PAINT_FIX.1
+C74BC:	CALL PNTINI   ;CALL PAINT_FIX.1
 	LD	A,B
 	LD	(ATRBYT),A
 	LD	C,E
