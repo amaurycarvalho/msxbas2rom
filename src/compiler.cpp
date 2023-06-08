@@ -883,6 +883,10 @@ void Compiler::addOrC() {
     addByte(0xB1);
 }
 
+void Compiler::addOrE() {
+    addByte(0xB3);
+}
+
 void Compiler::addCpL() {
     addByte(0xBD);
 }
@@ -979,6 +983,10 @@ void Compiler::addRLA() {
     addByte(0x17);
 }
 
+void Compiler::addSRAH() {
+    addWord(0xCB, 0x2C);
+}
+
 void Compiler::addSRLH() {
     addWord(0xCB, 0x3C);
 }
@@ -1017,6 +1025,10 @@ void Compiler::addLdAB() {
 
 void Compiler::addLdAC() {
     addByte(0x79);
+}
+
+void Compiler::addLdAH() {
+    addByte(0x7C);
 }
 
 void Compiler::addLdAL() {
@@ -2871,107 +2883,234 @@ int Compiler::evalOperator(ActionNode *action) {
                                 break;
 
                             case 2 : {
-                                    // srl h | rr l
                                     code_pointer -= 3;
                                     code_size -= 3;
-                                    addSRLH();
+                                    // sra h | rr l
+                                    addSRAH();
                                     addRRL();
+                                    // JRNC $+6   ; jump if there's no rest of division by 2
+                                    addJrNC(0x06);
+                                    //   LD A, H
+                                    addLdAH();
+                                    //   AND 0x80  ; sign bit
+                                    addAnd(0x80);
+                                    //   JRZ $+1
+                                    addJrZ(0x01);
+                                    //     INC HL
+                                    addIncHL();
                                 }
                                 break;
 
                             case 4 : {
-                                    // srl h | rr l
-                                    // srl h | rr l
                                     code_pointer -= 3;
                                     code_size -= 3;
-                                    addSRLH();
+                                    // LD A, L
+                                    addLdAL();
+                                    // sra h | rr l (2 times)
+                                    addSRAH();
                                     addRRL();
-                                    addSRLH();
+                                    addSRAH();
                                     addRRL();
+                                    // and 0x03
+                                    addAnd(0x03);
+                                    // JRZ $+6   ; jump if there's no rest of division by 4
+                                    addJrZ(0x06);
+                                    //   LD A, H
+                                    addLdAH();
+                                    //   AND 0x80  ; sign bit
+                                    addAnd(0x80);
+                                    //   JRZ $+1
+                                    addJrZ(0x01);
+                                    //     INC HL
+                                    addIncHL();
                                 }
                                 break;
 
                             case 8 : {
-                                    // LD A, L | SRL H | RRA | SRL H | RRA | SRL H | RRA | LD L, A
+                                    // OLD: LD A, L | SRA H | RRA | SRL H | RRA | SRL H | RRA | LD L, A
                                     code_pointer -= 3;
                                     code_size -= 3;
+                                    // LD A, L
                                     addLdAL();
-                                    addSRLH();
-                                    addRRA();
-                                    addSRLH();
-                                    addRRA();
-                                    addSRLH();
-                                    addRRA();
-                                    addLdLA();
+                                    // sra h | rr l (3 times)
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    // and 0x07
+                                    addAnd(0x07);
+                                    // JRZ $+6   ; jump if there's no rest of division by 8
+                                    addJrZ(0x06);
+                                    //   LD A, H
+                                    addLdAH();
+                                    //   AND 0x80  ; sign bit
+                                    addAnd(0x80);
+                                    //   JRZ $+1
+                                    addJrZ(0x01);
+                                    //     INC HL
+                                    addIncHL();
                                 }
                                 break;
 
                             case 16 : {
-                                    // XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | ADD HL, HL | RLA | ADD HL, HL | RLA | LD L, H | LD H, A
+                                    // old: XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | ADD HL, HL | RLA | ADD HL, HL | RLA | LD L, H | LD H, A
                                     code_pointer -= 3;
                                     code_size -= 3;
-                                    addXorA();
-                                    addAddHLHL();
-                                    addRLA();
-                                    addAddHLHL();
-                                    addRLA();
-                                    addAddHLHL();
-                                    addRLA();
-                                    addAddHLHL();
-                                    addRLA();
-                                    addLdLH();
-                                    addLdHA();
+                                    // LD A, L
+                                    addLdAL();
+                                    // sra h | rr l (4 times)
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    // and 0x0F
+                                    addAnd(0x0F);
+                                    // JRZ $+6   ; jump if there's no rest of division by 16
+                                    addJrZ(0x06);
+                                    //   LD A, H
+                                    addLdAH();
+                                    //   AND 0x80  ; sign bit
+                                    addAnd(0x80);
+                                    //   JRZ $+1
+                                    addJrZ(0x01);
+                                    //     INC HL
+                                    addIncHL();
                                 }
                                 break;
 
                             case 32 : {
-                                    // XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | ADD HL, HL | RLA | LD L, H | LD H, A
+                                    // old: XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | ADD HL, HL | RLA | LD L, H | LD H, A
                                     code_pointer -= 3;
                                     code_size -= 3;
-                                    addXorA();
-                                    addAddHLHL();
-                                    addRLA();
-                                    addAddHLHL();
-                                    addRLA();
-                                    addAddHLHL();
-                                    addRLA();
-                                    addLdLH();
-                                    addLdHA();
+                                    // LD A, L
+                                    addLdAL();
+                                    // sra h | rr l (5 times)
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    // and 0x1F
+                                    addAnd(0x1F);
+                                    // JRZ $+6   ; jump if there's no rest of division by 32
+                                    addJrZ(0x06);
+                                    //   LD A, H
+                                    addLdAH();
+                                    //   AND 0x80  ; sign bit
+                                    addAnd(0x80);
+                                    //   JRZ $+1
+                                    addJrZ(0x01);
+                                    //     INC HL
+                                    addIncHL();
                                 }
                                 break;
 
                             case 64 : {
-                                    // XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | LD L, H | LD H, A
+                                    // old: XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | LD L, H | LD H, A
                                     code_pointer -= 3;
                                     code_size -= 3;
-                                    addXorA();
-                                    addAddHLHL();
-                                    addRLA();
-                                    addAddHLHL();
-                                    addRLA();
-                                    addLdLH();
-                                    addLdHA();
+                                    // LD A, L
+                                    addLdAL();
+                                    // sra h | rr l (6 times)
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    // and 0x3F
+                                    addAnd(0x3F);
+                                    // JRZ $+6   ; jump if there's no rest of division by 64
+                                    addJrZ(0x06);
+                                    //   LD A, H
+                                    addLdAH();
+                                    //   AND 0x80  ; sign bit
+                                    addAnd(0x80);
+                                    //   JRZ $+1
+                                    addJrZ(0x01);
+                                    //     INC HL
+                                    addIncHL();
                                 }
                                 break;
 
                             case 128 : {
-                                    // XOR A | ADD HL, HL | RLA | LD L, H | LD H, A
+                                    // old: XOR A | ADD HL, HL | RLA | LD L, H | LD H, A
                                     code_pointer -= 3;
                                     code_size -= 3;
-                                    addXorA();
-                                    addAddHLHL();
-                                    addRLA();
-                                    addLdLH();
-                                    addLdHA();
+                                    // LD A, L
+                                    addLdAL();
+                                    // sra h | rr l (7 times)
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    addSRAH();
+                                    addRRL();
+                                    // and 0x7F
+                                    addAnd(0x7F);
+                                    // JRZ $+6   ; jump if there's no rest of division by 64
+                                    addJrZ(0x06);
+                                    //   LD A, H
+                                    addLdAH();
+                                    //   AND 0x80  ; sign bit
+                                    addAnd(0x80);
+                                    //   JRZ $+1
+                                    addJrZ(0x01);
+                                    //     INC HL
+                                    addIncHL();
                                 }
                                 break;
 
                             case 256 : {
-                                    //  LD L, H | LD H, 0
                                     code_pointer -= 3;
                                     code_size -= 3;
+                                    // LD E, L
+                                    addLdEL();
+                                    // LD L, H
                                     addLdLH();
+                                    // LD H, 0x00
                                     addLdH(0x00);
+                                    // LD A, L
+                                    addLdAL();
+                                    // AND 0x80    ; sign bit
+                                    addAnd(0x80);
+                                    // JRZ $+7
+                                    addJrZ(0x07);
+                                    //   LD H, 0xFF
+                                    addLdH(0xFF);
+                                    //   XOR A
+                                    addXorA();
+                                    //   OR E
+                                    addOrE();
+                                    //   JRZ $+1
+                                    addJrZ(0x01);
+                                    //     INC HL
+                                    addIncHL();
                                 }
                                 break;
 

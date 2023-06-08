@@ -2,34 +2,49 @@
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
 	<ActiveTarget name="Debug" />
+	<File name="asm/header.symbols.asm" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="13292" topLine="695" />
+		</Cursor>
+	</File>
+	<File name="src/compiler.cpp" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="84091" topLine="2906" />
+		</Cursor>
+	</File>
+	<File name="include/parse.h" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="696" topLine="28" />
+		</Cursor>
+	</File>
+	<File name="include/compiler_hooks.h" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5480" topLine="99" />
+		</Cursor>
+	</File>
+	<File name="src/compiler_pt3.cpp" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="58427" topLine="1889" />
+		</Cursor>
+	</File>
 	<File name="include/pt3.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="9143" topLine="105" />
 		</Cursor>
 	</File>
-	<File name="include/compiler.h" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include/pletter.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="7400" topLine="304" />
+			<Cursor1 position="47" topLine="2" />
 		</Cursor>
 	</File>
-	<File name="asm/header.asm" open="1" top="1" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src/main.cpp" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="105496" topLine="4451" />
+			<Cursor1 position="17393" topLine="530" />
 		</Cursor>
 	</File>
-	<File name="asm/pt3.asm" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="asm/start.asm" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="17962" topLine="105" />
-		</Cursor>
-	</File>
-	<File name="include/start.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="185" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="include/header.h" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="0" />
+			<Cursor1 position="901" topLine="44" />
 		</Cursor>
 	</File>
 	<File name="src/tokenizer.cpp" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -42,64 +57,19 @@
 			<Cursor1 position="820" topLine="5" />
 		</Cursor>
 	</File>
-	<File name="include/compiler_hooks.h" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="asm/pt3.asm" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="5480" topLine="99" />
+			<Cursor1 position="17962" topLine="105" />
 		</Cursor>
 	</File>
-	<File name="src/main.cpp" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include/start.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="17393" topLine="530" />
+			<Cursor1 position="185" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="src/parse.cpp" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include/compiler.h" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="15035" topLine="469" />
-		</Cursor>
-	</File>
-	<File name="include/parse.h" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="696" topLine="28" />
-		</Cursor>
-	</File>
-	<File name="src/compiler_pt3.cpp" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="58427" topLine="1889" />
-		</Cursor>
-	</File>
-	<File name="include/lex.h" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1181" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="src/compiler.cpp" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="285016" topLine="8885" />
-		</Cursor>
-	</File>
-	<File name="include/pletter.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="47" topLine="2" />
-		</Cursor>
-	</File>
-	<File name="src/rom.cpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="41630" topLine="1429" />
-		</Cursor>
-	</File>
-	<File name="asm/start.asm" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="901" topLine="44" />
-		</Cursor>
-	</File>
-	<File name="include/rom.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1989" topLine="18" />
-		</Cursor>
-	</File>
-	<File name="src/lex.cpp" open="0" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="25096" topLine="582" />
+			<Cursor1 position="3087" topLine="137" />
 		</Cursor>
 	</File>
 	<File name="asm/routines.asm" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -107,14 +77,44 @@
 			<Cursor1 position="37116" topLine="1519" />
 		</Cursor>
 	</File>
-	<File name="asm/header.symbols.asm" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="13292" topLine="695" />
-		</Cursor>
-	</File>
 	<File name="include/compiler_pt3_hooks.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="320" topLine="3" />
+		</Cursor>
+	</File>
+	<File name="asm/header.asm" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="105496" topLine="4451" />
+		</Cursor>
+	</File>
+	<File name="src/parse.cpp" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="15035" topLine="469" />
+		</Cursor>
+	</File>
+	<File name="include/lex.h" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1181" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="include/main.h" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1959" topLine="54" />
+		</Cursor>
+	</File>
+	<File name="src/rom.cpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="41630" topLine="1429" />
+		</Cursor>
+	</File>
+	<File name="src/lex.cpp" open="0" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="25096" topLine="582" />
+		</Cursor>
+	</File>
+	<File name="include/header.h" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="src/pletter.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -122,14 +122,14 @@
 			<Cursor1 position="6639" topLine="271" />
 		</Cursor>
 	</File>
-	<File name="include/main.h" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="183" topLine="6" />
-		</Cursor>
-	</File>
 	<File name="include/compiler_pt3.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="423" topLine="6" />
+		</Cursor>
+	</File>
+	<File name="include/rom.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1989" topLine="18" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

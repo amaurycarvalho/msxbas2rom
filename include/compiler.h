@@ -139,6 +139,7 @@ class Compiler {
     void addOrL();
     void addOrB();
     void addOrC();
+    void addOrE();
     void addCpL();
     void addCpB();
     void addCp(unsigned char n);
@@ -161,6 +162,7 @@ class Compiler {
     void addSbcHLBC();
     void addRRCA();
     void addRLA();
+    void addSRAH();
     void addSRLH();
     void addRRL();
     void addRRA();
@@ -173,6 +175,7 @@ class Compiler {
     void addLdA(unsigned char n);
     void addLdAB();
     void addLdAC();
+    void addLdAH();
     void addLdAL();
     void addLdAE();
     void addLdAD();
