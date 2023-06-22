@@ -26,7 +26,7 @@ class Rom {
     int hdrAddr, rtnAddr, mapAddr, txtAddr, filAddr, basAddr, rscAddr;
     int mapInd, txtInd, filInd, basInd;
     int hdrLen, rtnLen, mapLen, txtLen, filLen, pt3Len, basLen;
-    int rscSgm, rscLen;
+    int rscSgm, rscLen, codeSgm;
 
     unsigned char *data;  // [ROM_DATA_SIZE];
     bool writePage[COMPILE_MAX_PAGES];

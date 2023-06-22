@@ -225,6 +225,8 @@ void Rom::buildInit() {
     pt3Len = 0;
     basLen = 0;
     rscLen = 0;
+    rscSgm = 0;
+    codeSgm = 0;
     code_start = 0x8000;
 
     for(i = 0; i < COMPILE_MAX_PAGES; i++)
@@ -401,7 +403,7 @@ void Rom::buildResources(vector<Lexeme*> *resourceList) {
 
 void Rom::buildMapAndResources() {
     int i, t;
-    int last_code_address, start_resource_address;
+    int start_resource_address;
     int resource_segment, max_resource_size;
     Lexeme *lexeme;
 
@@ -410,7 +412,8 @@ void Rom::buildMapAndResources() {
     //    128kb MEGAROM - starts on the next segment after the code
     // Resources are structured in map and data sections
     //    map section starts at position 0x0010 of first segment
-    //       struct resource { WORD offset_on_page, BYTE segment, WORD resource_size } [resource count]
+    //       WORD resource_count
+    //       struct resource { WORD offset_on_page, BYTE segment, WORD resource_size } [resource_count]
     //       so, a max of 48 resources is allowed (=5 * 48 + 16 = 256 bytes)
     //    data section starts at position 0x0100 of first segment
     //       TEXT:
@@ -443,14 +446,12 @@ void Rom::buildMapAndResources() {
     //                         ^== each block starts with its compressed data length (1 byte)
     //                             followed by the compressed data itself
 
-    last_code_address = (hdrAddr + hdrLen + rtnLen);
-
     if(xtd) {
-        resource_segment = (last_code_address / 0x4000) + 1;
+        resource_segment = codeSgm;
         start_resource_address = resource_segment * 0x4000;
         rom_size = 0x20000;
         max_resource_size = rom_size - start_resource_address;
-        rscAddr = start_resource_address - 0x4000;   // resource start address
+        rscAddr = 0x8000;                            // resource start address
         rscSgm = resource_segment * 2;               // resource start segment (two konami segments of 8kb size each)
         start_resource_address += 0x4000;            // skip first page at temporary memory, because it will be discarded
     } else {
@@ -1159,7 +1160,7 @@ void Rom::buildPT3TOOLS() {
 }
 
 void Rom::buildCompiledCode() {
-    int i, t;
+    int i, t, codeLen;
 
     basAddr = hdrAddr + hdrLen + rtnLen + mapLen + txtLen;
     basAddr += filLen + pt3Len;
@@ -1182,7 +1183,9 @@ void Rom::buildCompiledCode() {
     buildAssemblyLine();
 
     // insert assembly code
-    basLen += compiler->write(&data[basInd], code_start);
+    codeLen = compiler->write(&data[basInd], code_start);
+    basLen += codeLen;
+    codeSgm = (code_start + codeLen) / 0x4000;
 
     t = compiler->segm_total;
     if(t) {

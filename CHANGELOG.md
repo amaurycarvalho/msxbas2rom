@@ -1,5 +1,7 @@
 # Version history
 
+- 0.3.0.6 – (2023/06/22) MegaROM resource allocation bug fix;
+- 0.3.0.5 – (2023/06/07) Integer division optimization bug fix;
 - 0.3.0.4 – (2023/05/25) PAINT stmt on WebMSX USA TurboR bug fix;
 - 0.3.0.3 – (2023/05/25) COPY stmt operator parameter bug fix;
 - 0.3.0.2 – (2023/05/24) COPY stmt and SYMBOLs file (var address) bug fix;

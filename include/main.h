@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.0.5"
+#define app_version "0.3.0.6"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -54,11 +54,12 @@ https://github.com/amaurycarvalho/msxbas2rom )";
 const char * info_history = R"(
 Version history
 
-0.3.3.0 – (2023/xx/xx) RUN support to call sub-programs;
-0.3.2.0 – (2023/xx/xx) Disk file support;
-0.3.1.0 – (2023/xx/xx) Better support to double precision type (BCD);
-0.3.0.4 – (2023/xx/xx) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
+0.3.4.0 – (2023/xx/xx) RUN support to call sub-programs;
+0.3.3.0 – (2023/xx/xx) Disk file support;
+0.3.2.0 – (2023/xx/xx) Better support to double precision type (BCD);
+0.3.1.0 – (2023/xx/xx) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
 
+0.3.0.6 – (2023/06/22) MegaROM resource allocation bug fix;
 0.3.0.5 – (2023/06/07) Integer division optimization bug fix;
 0.3.0.4 – (2023/05/25) PAINT stmt on WebMSX USA TurboR bug fix;
 0.3.0.3 – (2023/05/25) COPY stmt operator parameter bug fix;

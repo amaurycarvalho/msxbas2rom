@@ -6953,9 +6953,9 @@ void Compiler::cmd_bload() {
     ActionNode *action;
     unsigned int t = current_action->actions.size();
     FileNode *file;
-    string fileExt;
     bool isTinySprite;
     int resource_number;
+    char filename[255], fileext[20];
 
     if(t == 2) {
 
@@ -6988,14 +6988,12 @@ void Compiler::cmd_bload() {
                         // verify file type (screen or sprite)
 
                         file = new FileNode();
-                        file->name = lexeme->value;
-                        fileExt = file->getFileExt();
-                        isTinySprite = (strcasecmp(fileExt.c_str(), ".SPR")==0);
+                        file->stripQuotes(lexeme->value, filename);
+                        file->getFileExt(filename, fileext);
+                        isTinySprite = (strcasecmp(fileext, ".SPR")==0);
                         delete file;
 
                         if(isTinySprite) {
-                            // call CLRSPR    ; clear sprites
-                            addCall(def_CLRSPR);
                             // call cmd_wrtspr                    ; tiny sprite loader
                             addCall(def_cmd_wrtspr);
                         } else {
@@ -11211,8 +11209,6 @@ void Compiler::cmd_sprite_load() {
 
             // ld (DAC), hl
             addLdiiHL(def_DAC);
-            // call CLRSPR    ; clear sprites
-            addCall(def_CLRSPR);
             // call cmd_wrtspr                    ; tiny sprite loader
             addCall(def_cmd_wrtspr);
 
@@ -12855,8 +12851,6 @@ void Compiler::cmd_cmd() {
 
                     // ld (DAC), hl
                     addLdiiHL(def_DAC);
-                    // call CLRSPR    ; clear sprites
-                    addCall(def_CLRSPR);
                     // call cmd_wrtspr                    ; tiny sprite loader
                     addCall(def_cmd_wrtspr);
 

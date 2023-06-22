@@ -1613,6 +1613,9 @@ cmd_wrtscr:
 ; write a Tiny Sprite resource to vram sprite pattern and color table
 ; CMD WRTSPR <resource number>
 cmd_wrtspr:
+  push hl
+    call SUB_CLRSPR
+  pop hl
   call resource.copy_to_ram_on_page_3   ; out: hl = resource data, bc = size
 
 cmd_wrtspr.do:
