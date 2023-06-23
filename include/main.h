@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.0.7"
+#define app_version "0.3.0.8"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -25,7 +25,7 @@ bool SaveSymbolFile(Compiler *compiler, int code_start);
 bool SaveSymbolFile(CompilerPT3 *compiler, int code_start);
 
 const char * info_splash = R"(MSXBAS2ROM - MSX BASIC TO ROM COMPILER
-Created by Amaury Carvalho (2020-2022)
+Created by Amaury Carvalho (2020-2023)
 Version:)";
 
 const char * info_support = R"(
@@ -59,6 +59,7 @@ Version history
 0.3.2.0 – (2023/xx/xx) Better support to double precision type (BCD);
 0.3.1.0 – (2023/xx/xx) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
 
+0.3.0.8 – (2023/06/24) BASE function bug fix;
 0.3.0.7 – (2023/06/23) DATA last element parameter bug fix;
 0.3.0.6 – (2023/06/22) MegaROM resource allocation bug fix;
 0.3.0.5 – (2023/06/07) Integer division optimization bug fix;

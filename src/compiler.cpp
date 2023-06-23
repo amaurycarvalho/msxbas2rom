@@ -4098,7 +4098,7 @@ int Compiler::evalFunction(ActionNode *action) {
 
                             // call base function
                             addCall(def_XBASIC_BASE);
-                            addCall(def_XBASIC_ABS_INT);  // abs()
+                            //addCall(def_XBASIC_ABS_INT);  // abs()
 
                         } else
                             result[0] = Lexeme::subtype_unknown;

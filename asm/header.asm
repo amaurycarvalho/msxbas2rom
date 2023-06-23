@@ -1024,42 +1024,48 @@ XBASIC_GET_BUFFER:
 
 XBASIC_BASE:
   ld a, l
-  cp 0x14
-  jr c, XBASIC_BASE.1      ; a < 20? goto label 1
+  cp 0x14                       ; parameter >= 20?
+  jr nc, XBASIC_BASE.GE_20
+XBASIC_BASE.LE_20:
+    cp 0x02
+    jr nz, XBASIC_BASE.GET_NAME_TABLE
+      ld a, (LINLEN)
+      cp 0x29
+      jr c, XBASIC_BASE.GET_NAME_TABLE
+        ld hl, 0x1000
+        ret
+XBASIC_BASE.GET_NAME_TABLE:
+    ex de, hl
+      ld hl, TXTNAM
+      add hl, de
+      add hl, de
+      ld e, (hl)
+      inc hl
+      ld d, (hl)
+    ex de, hl
+    ret
+XBASIC_BASE.GE_20:
     sub 0x19
-    jr nc, XBASIC_BASE.3    ; a >= 0x19? goto label 3
+    jr nc, XBASIC_BASE.GET_TABLE_2
+XBASIC_BASE.GET_TABLE_1:
       add a, 0x0F
-      ld e,a
+      ld l, a
       cp 0x0D
-      jr nz, XBASIC_BASE.1  ; a <> 0x0D? goto label 1
+      jr nz, XBASIC_BASE.LE_20
         ld hl,0x1E00
         ret
-XBASIC_BASE.3:
-    ld d, 0x00    ; label 3
+XBASIC_BASE.GET_TABLE_2:
+    ld d, 0x00
     ld e, a
-    ld hl, 0x22E0
-    add hl,de
+    ld hl, XBASIC_BASE.DATA_TABLE
+    add hl, de
     ld h, (hl)
     ld l, d
     ret
-XBASIC_BASE.1:
-    cp 0x02         ; label 1
-    jr nz, XBASIC_BASE.2     ; a <> 2? goto label 2
-      ld a, (LINLEN)
-      cp 0x41
-      jr c, XBASIC_BASE.2     ; a < 41? goto label 2
-        ld hl, 0x1000
-        ret
-XBASIC_BASE.2:
-    ex de, hl       ; label 2
-    ld hl, TXTNAM
-    add hl, de
-    add hl, de
-    ld e, (hl)
-    inc hl
-    ld d, (hl)
-    ex de, hl
-    ret
+XBASIC_BASE.DATA_TABLE:
+  db 0x00, 0x00, 0x00, 0x76, 0x78, 0x00, 0x00, 0x00
+  db 0x76, 0x78, 0x00, 0x00, 0x00, 0xFA, 0xF0, 0x00
+  db 0x00, 0x00, 0xFA, 0xF0
 
 XBASIC_TAB:
   ld de, (TTYPOS)
