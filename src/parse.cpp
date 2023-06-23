@@ -952,6 +952,11 @@ bool Parser::eval_cmd_data(LexerLine *statement, Lexeme::LexemeSubType subtype) 
 
     }
 
+    if(lastWasSeparator) {
+        pushActionFromLexeme(lex_null);
+        datas.push_back(lex_null);
+    }
+
     if(stext.size()) {
         i = datas.size() + 1;
         next_lexeme = new Lexeme(Lexeme::type_literal, subtype, "_DATA_"+to_string(i), stext);

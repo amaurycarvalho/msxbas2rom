@@ -1,5 +1,6 @@
 # Version history
 
+- 0.3.0.7 – (2023/06/23) DATA last element parameter bug fix;
 - 0.3.0.6 – (2023/06/22) MegaROM resource allocation bug fix;
 - 0.3.0.5 – (2023/06/07) Integer division optimization bug fix;
 - 0.3.0.4 – (2023/05/25) PAINT stmt on WebMSX USA TurboR bug fix;

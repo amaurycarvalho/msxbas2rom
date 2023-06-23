@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.0.6"
+#define app_version "0.3.0.7"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -59,6 +59,7 @@ Version history
 0.3.2.0 – (2023/xx/xx) Better support to double precision type (BCD);
 0.3.1.0 – (2023/xx/xx) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
 
+0.3.0.7 – (2023/06/23) DATA last element parameter bug fix;
 0.3.0.6 – (2023/06/22) MegaROM resource allocation bug fix;
 0.3.0.5 – (2023/06/07) Integer division optimization bug fix;
 0.3.0.4 – (2023/05/25) PAINT stmt on WebMSX USA TurboR bug fix;
