@@ -1871,38 +1871,41 @@ cmd_setfnt.get_address.exit:
 cmd_setfnt.default_colors:
   ld (ARG), a
   ld a, (SCRMOD)
-  cp 2
-  ret nz
-    push hl
-    push de
-    push bc
-      ld bc, (GRPATR)
-      ld (ATRBAS), bc
-      ld bc, (GRPNAM)
-      ld (NAMBAS), bc
-      ld bc, (GRPCGP)
-      ld (CGPBAS), bc
-      ld a, 32  ;31
-      ld (LINLEN), a
-      ld a, 24
-      ld (CRTCNT), a
-      ld hl, (GRPCOL)
-      ld de, 32*8
-      add hl, de
-      ld a, (ARG)      ; bank number in vram (0xFF = all)
-      cp 0xFF
-      jr nz, cmd_setfnt.default_colors.end
-        xor a
-        call cmd_setfnt.default_colors.0
-        ld a, 1
-        call cmd_setfnt.default_colors.0
-        ld a, 2
-cmd_setfnt.default_colors.end:
+  cp 4
+  jr z, cmd_setfnt.default_colors.cont
+    cp 2
+    ret nz
+cmd_setfnt.default_colors.cont:
+  push hl
+  push de
+  push bc
+    ld bc, (GRPATR)
+    ld (ATRBAS), bc
+    ld bc, (GRPNAM)
+    ld (NAMBAS), bc
+    ld bc, (GRPCGP)
+    ld (CGPBAS), bc
+    ld a, 32  ;31
+    ld (LINLEN), a
+    ld a, 24
+    ld (CRTCNT), a
+    ld hl, (GRPCOL)
+    ld de, 32*8
+    add hl, de
+    ld a, (ARG)      ; bank number in vram (0xFF = all)
+    cp 0xFF
+    jr nz, cmd_setfnt.default_colors.end
+      xor a
       call cmd_setfnt.default_colors.0
-    pop bc
-    pop de
-    pop hl
-    ret
+      ld a, 1
+      call cmd_setfnt.default_colors.0
+      ld a, 2
+cmd_setfnt.default_colors.end:
+    call cmd_setfnt.default_colors.0
+  pop bc
+  pop de
+  pop hl
+  ret
 
 cmd_setfnt.default_colors.0:
     push hl
