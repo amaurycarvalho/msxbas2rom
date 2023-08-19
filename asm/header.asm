@@ -2071,20 +2071,87 @@ set_tile_color.multi.do:
   pop af
   ret
 
-; de = tile number
+; de = sprite number
 ; hl = direction (0=horizontal, 1=vertical, 2=both)
 set_sprite_transpose:
+  ld (TEMP2), de
   ld a, l
   or a
   jr z, set_sprite_transpose.horiz
   dec a
   call nz, set_sprite_transpose.horiz
+
 set_sprite_transpose.vert:
-  ret
-set_sprite_transpose.horiz:
+  ld a, (TEMP2)
+  call set_sprite_transpose.copy
+  ld hl, STRBUF
+  ld de, STRBUF+32+15
+  call set_sprite_transpose.vert.1
+  ld de, STRBUF+32+31
+  call set_sprite_transpose.vert.1
+  ld hl, STRBUF+32
+  jr set_sprite_transpose.paste
+set_sprite_transpose.vert.1:
+  ld b, 16
+set_sprite_transpose.vert.2:
+  ld a, (hl)
+  ld (de), a
+  inc hl
+  dec de
+  djnz set_sprite_transpose.vert.2
   ret
 
+set_sprite_transpose.horiz:
+  ld a, (TEMP2)
+  call set_sprite_transpose.copy
+  ld hl, STRBUF
+  ld de, STRBUF+32
+  ld b, 32
+set_sprite_transpose.horiz.1:
+  ld a, (hl)
+  call binaryReverseA
+  ld (hl), a
+  ld (de), a
+  inc hl
+  inc de
+  djnz set_sprite_transpose.horiz.1
+  ld hl, STRBUF+16
+
+set_sprite_transpose.paste:
+  ld de, (TEMP)
+  ld bc, 32
+  jp LDIRVM    ; hl = ram data address, de = vram data address, bc = length (interruptions enabled)
+
+set_sprite_transpose.copy:
+  call gfxCALPAT
+  ld (TEMP), hl
+  ld de, STRBUF
+  ld bc, 32
+  jp LDIRMV      ; de = ram data address, hl = vram data address, bc = length
+
+; reverse bits in A
+; 8 bytes / 206 cycles
+; http://www.retroprogramming.com/2014/01/fast-z80-bit-reversal.html
+binaryReverseA:
+  push bc
+    ld b,8
+    ld c,a
+binaryReverseA.loop:
+    rl c
+    rra
+    djnz binaryReverseA.loop
+  pop bc
+  ret
+
+; hl = sprite number
+; de = line number
+; c = pattern data
 set_sprite_pattern:
+  ret
+
+; hl = sprite number
+; de = line number (15=all)
+; c = color data (FC,BC)
 set_sprite_color:
   ret
 
