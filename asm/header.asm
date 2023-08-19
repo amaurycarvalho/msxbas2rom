@@ -503,6 +503,9 @@ wrapper_routines_map_start:
 
   jp set_tile_color
   jp set_tile_pattern
+  jp set_sprite_transpose
+  jp set_sprite_color
+  jp set_sprite_pattern
 
   jp usr0
   jp usr1
@@ -2066,6 +2069,23 @@ set_tile_color.multi.do:
   pop de
   pop hl
   pop af
+  ret
+
+; de = tile number
+; hl = direction (0=horizontal, 1=vertical, 2=both)
+set_sprite_transpose:
+  ld a, l
+  or a
+  jr z, set_sprite_transpose.horiz
+  dec a
+  call nz, set_sprite_transpose.horiz
+set_sprite_transpose.vert:
+  ret
+set_sprite_transpose.horiz:
+  ret
+
+set_sprite_pattern:
+set_sprite_color:
   ret
 
 ; ------------------------------------------------------------------------------------------------------

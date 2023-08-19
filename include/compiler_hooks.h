@@ -105,8 +105,11 @@
 
 #define def_set_tile_color               (def_player_unhook + 3)
 #define def_set_tile_pattern             (def_set_tile_color + 3)
+#define def_set_sprite_transpose         (def_set_tile_pattern + 3)
+#define def_set_sprite_color             (def_set_sprite_transpose + 3)
+#define def_set_sprite_pattern           (def_set_sprite_color + 3)
 
-#define def_usr0	                     (def_set_tile_pattern + 3)
+#define def_usr0	                     (def_set_sprite_pattern + 3)
 #define def_usr1		                 (def_usr0 + 3)
 #define def_usr2		                 (def_usr1 + 3)
 #define def_usr2_play	                 (def_usr2 + 3)

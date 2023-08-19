@@ -2835,7 +2835,8 @@ bool Parser::eval_cmd_line(LexerLine *statement) {
     ActionNode *action;
     LexerLine parm;
     int state = 0, sepCount = 0, parmCount = 0;
-    bool startAsParm2 = false, mustPopAction = false, sepTime = false, isKeyword=false;
+    bool startAsParm2 = false, mustPopAction = false;
+    bool sepTime = false, isKeyword=false;
     string parmValue;
 
     parm.clearLexemes();
@@ -2892,6 +2893,11 @@ bool Parser::eval_cmd_line(LexerLine *statement) {
                         if(sepCount)
                             sepCount --;
                         else {
+                            if(sepTime) {
+                                error_message = "Invalid parentheses syntax in LINE statement.";
+                                eval_expr_error = true;
+                                return false;
+                            }
                             if(parm.getLexemeCount()) {
                                 parm.setLexemeBOF();
                                 if(!eval_expression(&parm)) {
@@ -2927,9 +2933,15 @@ bool Parser::eval_cmd_line(LexerLine *statement) {
                         continue;
                     } else if( next_lexeme->isSeparator("(") ) {
                         state ++;
-                        if(actionRoot->lexeme->value != "TO_STEP") {
-                            action = new ActionNode("TO_COORD");
-                            pushActionRoot(action);
+                        if(actionRoot) {
+                            if(actionRoot->lexeme->value != "TO_STEP") {
+                                action = new ActionNode("TO_COORD");
+                                pushActionRoot(action);
+                            }
+                        } else {
+                            error_message = "Invalid parentheses syntax in LINE statement.";
+                            eval_expr_error = true;
+                            return false;
                         }
                         continue;
 
@@ -2945,6 +2957,11 @@ bool Parser::eval_cmd_line(LexerLine *statement) {
                         if(sepCount)
                             sepCount --;
                         else {
+                            if(parmCount != 2 || mustPopAction) {
+                                error_message = "Invalid parentheses syntax in LINE statement.";
+                                eval_expr_error = true;
+                                return false;
+                            }
                             mustPopAction = true;
                             continue;
                         }
@@ -2993,6 +3010,10 @@ bool Parser::eval_cmd_line(LexerLine *statement) {
 
                         continue;
 
+                    } else if(mustPopAction) {
+                        error_message = "Invalid syntax in LINE statement.";
+                        eval_expr_error = true;
+                        return false;
                     }
 
                 }

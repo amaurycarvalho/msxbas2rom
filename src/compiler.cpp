@@ -10706,7 +10706,29 @@ void Compiler::cmd_set_sprite() {
 
         if(lexeme->value == "TRANSPOSE") {
 
+            if(t == 2) {
 
+                // sprite number
+                sub_action = action->actions[0];
+                // ld hl, parameter value    ; parameter
+                result_subtype = evalExpression(sub_action);
+                addCast(result_subtype, Lexeme::subtype_numeric);
+                // push hl
+                addPushHL();
+
+                // direction
+                sub_action = action->actions[1];
+                // ld hl, parameter value    ; parameter
+                result_subtype = evalExpression(sub_action);
+                addCast(result_subtype, Lexeme::subtype_numeric);
+                // pop de
+                addPopDE();
+
+                addCall(def_set_sprite_transpose);
+
+            } else {
+                syntax_error("Wrong parameters count on SET SPRITE TRANSPOSE statement");
+            }
 
         } else if(lexeme->value == "PATTERN") {
 
@@ -10767,7 +10789,7 @@ void Compiler::cmd_set_sprite() {
                             addLdHLii(def_ARG);
 
                             // call set_tile_pattern ; hl = tile number, de = line number, b = bank number (3=all), c = pattern data
-                            addCall(def_set_tile_pattern);
+                            addCall(def_set_sprite_pattern);
 
                         }
 
@@ -10878,7 +10900,7 @@ void Compiler::cmd_set_sprite() {
                             addLdHLii(def_ARG);
 
                             // call set_tile_color ; hl = tile number, de = line number (15=all), b = bank number (3=all), c = color data (FC,BC)
-                            addCall(def_set_tile_color);
+                            addCall(def_set_sprite_color);
 
                         }
 

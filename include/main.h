@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.0.8"
+#define app_version "0.3.1.0"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -57,8 +57,9 @@ Version history
 0.3.4.0 – (2023/xx/xx) RUN support to call sub-programs;
 0.3.3.0 – (2023/xx/xx) Disk file support;
 0.3.2.0 – (2023/xx/xx) Better support to double precision type (BCD);
-0.3.1.0 – (2023/xx/xx) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
 
+0.3.1.0 – (2023/08/20) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
+0.3.0.9 – (2023/07/03) LINE parameters parse bug fix;
 0.3.0.8 – (2023/06/24) BASE function bug fix;
 0.3.0.7 – (2023/06/23) DATA last element parameter bug fix;
 0.3.0.6 – (2023/06/22) MegaROM resource allocation bug fix;

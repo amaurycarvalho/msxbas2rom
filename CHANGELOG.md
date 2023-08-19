@@ -1,5 +1,7 @@
 # Version history
 
+- 0.3.1.0 – (2023/08/20) SET SPRITE COLOR/PATTERN/TRANSPOSE new command;
+- 0.3.0.9 – (2023/07/03) LINE parameters parse bug fix;
 - 0.3.0.8 – (2023/06/24) BASE function bug fix;
 - 0.3.0.7 – (2023/06/23) DATA last element parameter bug fix;
 - 0.3.0.6 – (2023/06/22) MegaROM resource allocation bug fix;
