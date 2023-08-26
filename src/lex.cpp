@@ -124,8 +124,9 @@ bool Lexeme::isKeyword() {
              || value == "BASE" || value == "CIRCLE" || value == "COPY" || value == "SCREEN"
              || value == "CSRLIN" || value == "DRAW" || value == "LINE" || value == "LOCATE"
              || value == "LPOS" || value == "PAINT" || value == "POINT" || value == "POS"
-             || value == "PRESET" || value == "PSET" || value == "DRAW" || value == "PEEK"
-             || value == "POKE" || value == "VPEEK" || value == "VPOKE" || value == "INP"
+             || value == "PRESET" || value == "PSET" || value == "DRAW" || value == "INP"
+             || value == "PEEK" || value == "POKE" || value == "VPEEK" || value == "VPOKE"
+             || value == "IPEEK" || value == "IPOKE"
              || value == "BASE" || value == "VDP" || value == "DEFINT" || value == "DEFDBL"
              || value == "DEFSNG" || value == "DEFSTR" || value == "DEF" || value == "FN"
              || value == "OUT" || value == "WAIT" || value == "INPUT$"
@@ -160,7 +161,7 @@ bool Lexeme::isKeyword() {
              || value == "?" || value == "_" || value == "CLRSCR" || value == "KEYCLKOFF"
              || value == "CLRKEY" || value == "COLLISION" || value == "MUTE"
              || value == "PSG" || value == "NTSC" || value == "IDATA" || value == "IREAD" || value == "IRESTORE"
-             || value == "MAKER" || value == "UPDFNTCLR" || value == "PATTERN" || value == "TRANSPOSE"
+             || value == "MAKER" || value == "UPDFNTCLR" || value == "PATTERN" || value == "FLIP"
              || value == "FROM" || value == "PASTE" || value == "ADJUST" || value == "TITLE" || value == "PROMPT"
            );
 }
@@ -180,6 +181,7 @@ bool Lexeme::isFunction() {
              || value == "CSRLIN" || value == "LPOS" || value == "POINT" || value == "POS"
              || value == "PEEK" || value == "LEN" || value == "FRE" || value == "HEAP"
              || value == "VPEEK" || value == "INP" || value == "BASE" || value == "VARPTR"
+             || value == "IPEEK"
              || value == "INKEY" || value == "INPUT$" || value == "INKEY$"
              || value == "STRIG" || value == "PAD" || value == "PDL" || value == "STICK"
              || value == "ABS" || value == "CDBL" || value == "VDP" || value == "SNG"

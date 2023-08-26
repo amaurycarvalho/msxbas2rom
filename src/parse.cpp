@@ -240,6 +240,7 @@ bool Parser::eval_statement(LexerLine *statement) {
                   lexeme->value == "IREAD" ||
                   lexeme->value == "IRESTORE" ||
                   lexeme->value == "POKE" ||
+                  lexeme->value == "IPOKE" ||
                   lexeme->value == "VPOKE" ||
                   lexeme->value == "OUT" ||
                   lexeme->value == "SWAP" ||
@@ -3862,7 +3863,7 @@ bool Parser::eval_cmd_set_sprite(LexerLine *statement) {
 
             if (next_lexeme->value == "COLOR" ||
                     next_lexeme->value == "PATTERN" ||
-                    next_lexeme->value == "TRANSPOSE") {
+                    next_lexeme->value == "FLIP") {
                 result = eval_cmd_set_sprite_colpattra(statement);
             }
 

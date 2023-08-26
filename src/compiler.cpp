@@ -2036,6 +2036,8 @@ bool Compiler::evalAction(ActionNode *action) {
                 cmd_poke();
             } else if(lexeme->name == "VPOKE") {
                 cmd_vpoke();
+            } else if(lexeme->name == "IPOKE") {
+                cmd_ipoke();
             } else if(lexeme->name == "PLAY") {
                 cmd_play();
             } else if(lexeme->name == "DRAW") {
@@ -3864,6 +3866,28 @@ int Compiler::evalFunction(ActionNode *action) {
                             addLdLiHL();
                             // ld h, 0
                             addLdH(0x00);
+
+                        } else
+                            result[0] = Lexeme::subtype_unknown;
+
+                    } else if(lexeme->value == "IPEEK") {
+
+                        if( result[0] == Lexeme::subtype_single_decimal || result[0] == Lexeme::subtype_double_decimal ) {
+                            // cast
+                            addCast( result[0], Lexeme::subtype_numeric );
+                            result[0] = Lexeme::subtype_numeric;
+                        }
+
+                        if( result[0] == Lexeme::subtype_numeric ) {
+
+                            // ld e,(hl)
+                            addLdEiHL();
+                            // inc HL
+                            addIncHL();
+                            // ld d, (hl)
+                            addLdDiHL();
+                            // ex de, hl
+                            addExDEHL();
 
                         } else
                             result[0] = Lexeme::subtype_unknown;
@@ -10704,7 +10728,7 @@ void Compiler::cmd_set_sprite() {
         lexeme = action->lexeme;
         t = action->actions.size();
 
-        if(lexeme->value == "TRANSPOSE") {
+        if(lexeme->value == "FLIP") {
 
             if(t == 2) {
 
@@ -10724,10 +10748,10 @@ void Compiler::cmd_set_sprite() {
                 // pop de
                 addPopDE();
 
-                addCall(def_set_sprite_transpose);
+                addCall(def_set_sprite_flip);
 
             } else {
-                syntax_error("Wrong parameters count on SET SPRITE TRANSPOSE statement");
+                syntax_error("Wrong parameters count on SET SPRITE FLIP statement");
             }
 
         } else if(lexeme->value == "PATTERN") {
@@ -12233,6 +12257,50 @@ void Compiler::cmd_poke() {
 
     } else {
         syntax_error("Invalid POKE parameters");
+    }
+
+}
+
+void Compiler::cmd_ipoke() {
+    Lexeme *lexeme;
+    ActionNode *action;
+    unsigned int i, t = current_action->actions.size();
+    int result_subtype;
+
+    if(t == 2) {
+
+        for( i = 0; i < t; i++) {
+            action = current_action->actions[i];
+            lexeme = action->lexeme;
+            if(lexeme) {
+
+                result_subtype = evalExpression(action);
+
+                // cast
+                addCast(result_subtype, Lexeme::subtype_numeric);
+
+                if(i == 0) {
+                    // push hl
+                    addPushHL();
+                } else {
+                    // ex de, hl
+                    addExDEHL();
+                    // pop hl
+                    addPopHL();
+                    // ld (hl), e
+                    addLdiHLE();
+                    // inc hl
+                    addIncHL();
+                    // ld (hl), d
+                    addLdiHLD();
+                }
+
+            }
+
+        }
+
+    } else {
+        syntax_error("Invalid IPOKE parameters");
     }
 
 }

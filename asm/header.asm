@@ -503,7 +503,7 @@ wrapper_routines_map_start:
 
   jp set_tile_color
   jp set_tile_pattern
-  jp set_sprite_transpose
+  jp set_sprite_flip
   jp set_sprite_color
   jp set_sprite_pattern
 
@@ -2073,56 +2073,56 @@ set_tile_color.multi.do:
 
 ; de = sprite number
 ; hl = direction (0=horizontal, 1=vertical, 2=both)
-set_sprite_transpose:
+set_sprite_flip:
   ld (TEMP2), de
   ld a, l
   or a
-  jr z, set_sprite_transpose.horiz
+  jr z, set_sprite_flip.horiz
   dec a
-  call nz, set_sprite_transpose.horiz
+  call nz, set_sprite_flip.horiz
 
-set_sprite_transpose.vert:
+set_sprite_flip.vert:
   ld a, (TEMP2)
-  call set_sprite_transpose.copy
+  call set_sprite_flip.copy
   ld hl, STRBUF
   ld de, STRBUF+32+15
-  call set_sprite_transpose.vert.1
+  call set_sprite_flip.vert.1
   ld de, STRBUF+32+31
-  call set_sprite_transpose.vert.1
+  call set_sprite_flip.vert.1
   ld hl, STRBUF+32
-  jr set_sprite_transpose.paste
-set_sprite_transpose.vert.1:
+  jr set_sprite_flip.paste
+set_sprite_flip.vert.1:
   ld b, 16
-set_sprite_transpose.vert.2:
+set_sprite_flip.vert.2:
   ld a, (hl)
   ld (de), a
   inc hl
   dec de
-  djnz set_sprite_transpose.vert.2
+  djnz set_sprite_flip.vert.2
   ret
 
-set_sprite_transpose.horiz:
+set_sprite_flip.horiz:
   ld a, (TEMP2)
-  call set_sprite_transpose.copy
+  call set_sprite_flip.copy
   ld hl, STRBUF
   ld de, STRBUF+32
   ld b, 32
-set_sprite_transpose.horiz.1:
+set_sprite_flip.horiz.1:
   ld a, (hl)
   call binaryReverseA
   ld (hl), a
   ld (de), a
   inc hl
   inc de
-  djnz set_sprite_transpose.horiz.1
+  djnz set_sprite_flip.horiz.1
   ld hl, STRBUF+16
 
-set_sprite_transpose.paste:
+set_sprite_flip.paste:
   ld de, (TEMP)
   ld bc, 32
   jp LDIRVM    ; hl = ram data address, de = vram data address, bc = length (interruptions enabled)
 
-set_sprite_transpose.copy:
+set_sprite_flip.copy:
   call gfxCALPAT
   ld (TEMP), hl
   ld de, STRBUF

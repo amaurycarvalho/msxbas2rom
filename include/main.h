@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.1.0"
+#define app_version "0.3.1.1"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -57,9 +57,12 @@ Version history
 0.3.4.0 – (2023/xx/xx) RUN support to call sub-programs;
 0.3.3.0 – (2023/xx/xx) Disk file support;
 0.3.2.0 – (2023/xx/xx) Better support to double precision type (BCD);
-0.3.1.1 – (2023/xx/xx) SET SPRITE COLOR/PATTERN new command;
+0.3.1.4 – (2023/xx/xx) SET TILE FLIP/ROTATE new command;
+0.3.1.3 – (2023/xx/xx) SET SPRITE COLOR/PATTERN new command;
+0.3.1.2 – (2023/xx/xx) SET SPRITE ROTATE new command;
 
-0.3.1.0 – (2023/08/19) SET SPRITE TRANSPOSE new command;
+0.3.1.1 – (2023/08/26) IPEEK()/IPOKE new commands;
+0.3.1.0 – (2023/08/19) SET SPRITE FLIP new command;
 0.3.0.9 – (2023/07/03) LINE parameters parse bug fix;
 0.3.0.8 – (2023/06/24) BASE function bug fix;
 0.3.0.7 – (2023/06/23) DATA last element parameter bug fix;
@@ -329,6 +332,7 @@ COMPILING CODE
      - COLLISION(<n1>,<n2>) return n2 if sprite n1 collided with n2, else
        return -1;
      - INKEY() is an alternative to INKEY$, but returning an integer instead;
+     - IPEEK()/IPOKE is similar to PEEK()/POKE, but applied for integer data;
      - DATA statements allocate space in resources page and will be compiled to
        a 48kb ROM;
      - PRINT USING support only numerical formatting symbols (#+-.*$,^0) and
@@ -491,8 +495,8 @@ EXTENDED COMMANDS
   Set sprite pattern for a quadrant
     SET SPRITE PATTERN <n>, <q:0-3>, (<l0>,...,<l7>)
 
-  Transpose a sprite pattern
-    SET SPRITE TRANSPOSE <n>, <dir: 0=horizontal, 1=vertical, 2=both>
+  Flip a sprite pattern
+    SET SPRITE FLIP <n>, <dir: 0=horizontal, 1=vertical, 2=both>
 
   Copy screen to array (only for modes 1, 2 and 4)
     SCREEN COPY TO <array> [SCROLL <direction>]

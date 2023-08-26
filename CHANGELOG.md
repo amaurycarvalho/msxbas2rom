@@ -1,6 +1,7 @@
 # Version history
 
-- 0.3.1.0 – (2023/08/19) SET SPRITE TRANSPOSE new command;
+- 0.3.1.1 – (2023/08/26) IPEEK()/IPOKE new commands;
+- 0.3.1.0 – (2023/08/19) SET SPRITE FLIP new command;
 - 0.3.0.9 – (2023/07/03) LINE parameters parse bug fix;
 - 0.3.0.8 – (2023/06/24) BASE function bug fix;
 - 0.3.0.7 – (2023/06/23) DATA last element parameter bug fix;

@@ -324,6 +324,7 @@ class Compiler {
     void cmd_resume();
     void cmd_out();
     void cmd_poke();
+    void cmd_ipoke();
     void cmd_vpoke();
     void cmd_put();
     void cmd_put_sprite();
