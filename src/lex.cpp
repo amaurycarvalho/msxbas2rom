@@ -161,7 +161,8 @@ bool Lexeme::isKeyword() {
              || value == "?" || value == "_" || value == "CLRSCR" || value == "KEYCLKOFF"
              || value == "CLRKEY" || value == "COLLISION" || value == "MUTE"
              || value == "PSG" || value == "NTSC" || value == "IDATA" || value == "IREAD" || value == "IRESTORE"
-             || value == "MAKER" || value == "UPDFNTCLR" || value == "PATTERN" || value == "FLIP"
+             || value == "MAKER" || value == "UPDFNTCLR"
+             || value == "PATTERN" || value == "FLIP" || value == "ROTATE"
              || value == "FROM" || value == "PASTE" || value == "ADJUST" || value == "TITLE" || value == "PROMPT"
            );
 }

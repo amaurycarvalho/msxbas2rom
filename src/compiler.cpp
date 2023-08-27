@@ -10416,6 +10416,58 @@ void Compiler::cmd_set_tile() {
             // ld (SOMODE), a
             addLdiiA(def_SOMODE);
 
+        } else if(lexeme->value == "FLIP") {
+
+            if(t == 2) {
+
+                // tile number
+                sub_action = action->actions[0];
+                // ld hl, parameter value    ; parameter
+                result_subtype = evalExpression(sub_action);
+                addCast(result_subtype, Lexeme::subtype_numeric);
+                // push hl
+                addPushHL();
+
+                // direction
+                sub_action = action->actions[1];
+                // ld hl, parameter value    ; parameter
+                result_subtype = evalExpression(sub_action);
+                addCast(result_subtype, Lexeme::subtype_numeric);
+                // pop de
+                addPopDE();
+
+                addCall(def_set_tile_flip);
+
+            } else {
+                syntax_error("Wrong parameters count on SET TILE FLIP statement");
+            }
+
+        } else if(lexeme->value == "ROTATE") {
+
+            if(t == 2) {
+
+                // tile number
+                sub_action = action->actions[0];
+                // ld hl, parameter value    ; parameter
+                result_subtype = evalExpression(sub_action);
+                addCast(result_subtype, Lexeme::subtype_numeric);
+                // push hl
+                addPushHL();
+
+                // direction
+                sub_action = action->actions[1];
+                // ld hl, parameter value    ; parameter
+                result_subtype = evalExpression(sub_action);
+                addCast(result_subtype, Lexeme::subtype_numeric);
+                // pop de
+                addPopDE();
+
+                addCall(def_set_tile_rotate);
+
+            } else {
+                syntax_error("Wrong parameters count on SET TILE ROTATE statement");
+            }
+
         } else if(lexeme->value == "PATTERN") {
 
             if(t >= 2 && t <= 3) {
@@ -10752,6 +10804,32 @@ void Compiler::cmd_set_sprite() {
 
             } else {
                 syntax_error("Wrong parameters count on SET SPRITE FLIP statement");
+            }
+
+        } else if(lexeme->value == "ROTATE") {
+
+            if(t == 2) {
+
+                // sprite number
+                sub_action = action->actions[0];
+                // ld hl, parameter value    ; parameter
+                result_subtype = evalExpression(sub_action);
+                addCast(result_subtype, Lexeme::subtype_numeric);
+                // push hl
+                addPushHL();
+
+                // direction
+                sub_action = action->actions[1];
+                // ld hl, parameter value    ; parameter
+                result_subtype = evalExpression(sub_action);
+                addCast(result_subtype, Lexeme::subtype_numeric);
+                // pop de
+                addPopDE();
+
+                addCall(def_set_sprite_rotate);
+
+            } else {
+                syntax_error("Wrong parameters count on SET SPRITE ROTATE statement");
             }
 
         } else if(lexeme->value == "PATTERN") {

@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.1.1"
+#define app_version "0.3.1.2"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -59,8 +59,8 @@ Version history
 0.3.2.0 – (2023/xx/xx) Better support to double precision type (BCD);
 0.3.1.4 – (2023/xx/xx) SET TILE FLIP/ROTATE new command;
 0.3.1.3 – (2023/xx/xx) SET SPRITE COLOR/PATTERN new command;
-0.3.1.2 – (2023/xx/xx) SET SPRITE ROTATE new command;
 
+0.3.1.2 – (2023/08/27) SET SPRITE ROTATE new command;
 0.3.1.1 – (2023/08/26) IPEEK()/IPOKE new commands;
 0.3.1.0 – (2023/08/19) SET SPRITE FLIP new command;
 0.3.0.9 – (2023/07/03) LINE parameters parse bug fix;
@@ -497,6 +497,9 @@ EXTENDED COMMANDS
 
   Flip a sprite pattern
     SET SPRITE FLIP <n>, <dir: 0=horizontal, 1=vertical, 2=both>
+
+  Rotate a sprite pattern
+    SET SPRITE ROTATE <n>, <dir: 0=left, 1=right, 2=180 degrees>
 
   Copy screen to array (only for modes 1, 2 and 4)
     SCREEN COPY TO <array> [SCROLL <direction>]

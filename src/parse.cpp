@@ -3733,7 +3733,9 @@ bool Parser::eval_cmd_set_tile(LexerLine *statement) {
         if (next_lexeme->type == Lexeme::type_keyword) {
 
             if (next_lexeme->value == "COLOR" ||
-                    next_lexeme->value == "PATTERN") {
+                    next_lexeme->value == "PATTERN" ||
+                    next_lexeme->value == "FLIP" ||
+                    next_lexeme->value == "ROTATE") {
                 result = eval_cmd_set_tile_colpat(statement);
             } else if(next_lexeme->value == "ON" || next_lexeme->value == "OFF") {
                 result = true;
@@ -3863,7 +3865,8 @@ bool Parser::eval_cmd_set_sprite(LexerLine *statement) {
 
             if (next_lexeme->value == "COLOR" ||
                     next_lexeme->value == "PATTERN" ||
-                    next_lexeme->value == "FLIP") {
+                    next_lexeme->value == "FLIP" ||
+                    next_lexeme->value == "ROTATE") {
                 result = eval_cmd_set_sprite_colpattra(statement);
             }
 

@@ -103,10 +103,13 @@
 #define def_player_initialize            (def_intSHR + 3)
 #define def_player_unhook                (def_player_initialize + 3)
 
-#define def_set_tile_color               (def_player_unhook + 3)
+#define def_set_tile_flip                (def_player_unhook + 3)
+#define def_set_tile_rotate              (def_set_tile_flip + 3)
+#define def_set_tile_color               (def_set_tile_rotate + 3)
 #define def_set_tile_pattern             (def_set_tile_color + 3)
-#define def_set_sprite_flip         (def_set_tile_pattern + 3)
-#define def_set_sprite_color             (def_set_sprite_flip + 3)
+#define def_set_sprite_flip              (def_set_tile_pattern + 3)
+#define def_set_sprite_rotate            (def_set_sprite_flip + 3)
+#define def_set_sprite_color             (def_set_sprite_rotate + 3)
 #define def_set_sprite_pattern           (def_set_sprite_color + 3)
 
 #define def_usr0	                     (def_set_sprite_pattern + 3)

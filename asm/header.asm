@@ -501,9 +501,12 @@ wrapper_routines_map_start:
   jp player.initialize
   jp player.unhook
 
+  jp set_tile_flip
+  jp set_tile_rotate
   jp set_tile_color
   jp set_tile_pattern
   jp set_sprite_flip
+  jp set_sprite_rotate
   jp set_sprite_color
   jp set_sprite_pattern
 
@@ -1990,6 +1993,16 @@ cmd_restore:
     ld bc, 0
   jp XBASIC_RESTORE.cont
 
+; de = tile number
+; hl = direction (0=horizontal, 1=vertical, 2=both)
+set_tile_flip:
+  ret
+
+; de = tile number
+; hl = direction (0=left, 1=right, 2=180 degrees)
+set_tile_rotate:
+  ret
+
 ; hl = tile number
 ; de = line number
 ; b = bank number (3=all)
@@ -2083,14 +2096,14 @@ set_sprite_flip:
 
 set_sprite_flip.vert:
   ld a, (TEMP2)
-  call set_sprite_flip.copy
+  call set_sprite.copy
   ld hl, STRBUF
   ld de, STRBUF+32+15
   call set_sprite_flip.vert.1
   ld de, STRBUF+32+31
   call set_sprite_flip.vert.1
   ld hl, STRBUF+32
-  jr set_sprite_flip.paste
+  jr set_sprite.paste
 set_sprite_flip.vert.1:
   ld b, 16
 set_sprite_flip.vert.2:
@@ -2103,7 +2116,7 @@ set_sprite_flip.vert.2:
 
 set_sprite_flip.horiz:
   ld a, (TEMP2)
-  call set_sprite_flip.copy
+  call set_sprite.copy
   ld hl, STRBUF
   ld de, STRBUF+32
   ld b, 32
@@ -2117,12 +2130,12 @@ set_sprite_flip.horiz.1:
   djnz set_sprite_flip.horiz.1
   ld hl, STRBUF+16
 
-set_sprite_flip.paste:
+set_sprite.paste:
   ld de, (TEMP)
   ld bc, 32
   jp LDIRVM    ; hl = ram data address, de = vram data address, bc = length (interruptions enabled)
 
-set_sprite_flip.copy:
+set_sprite.copy:
   call gfxCALPAT
   ld (TEMP), hl
   ld de, STRBUF
@@ -2141,6 +2154,100 @@ binaryReverseA.loop:
     rra
     djnz binaryReverseA.loop
   pop bc
+  ret
+
+; de = sprite number
+; hl = direction (0=left, 1=right, 2=180 degrees)
+set_sprite_rotate:
+  ld a, l
+  cp 2
+  jp z, set_sprite_flip
+  push af
+    ld a, e
+    call set_sprite.copy
+  pop af
+  or a
+  jr z, set_sprite_rotate.left
+
+set_sprite_rotate.right:
+  ld hl, STRBUF
+  ld de, STRBUF+32+16
+  call blockRotateR
+  ld hl, STRBUF+8
+  ld de, STRBUF+32
+  call blockRotateR
+  ld hl, STRBUF+16
+  ld de, STRBUF+32+24
+  call blockRotateR
+  ld hl, STRBUF+24
+  ld de, STRBUF+32+8
+  call blockRotateR
+  jr set_sprite_rotate.left.end
+
+set_sprite_rotate.left:
+  ld hl, STRBUF
+  ld de, STRBUF+32+8
+  call blockRotateL
+  ld hl, STRBUF+8
+  ld de, STRBUF+32+24
+  call blockRotateL
+  ld hl, STRBUF+16
+  ld de, STRBUF+32
+  call blockRotateL
+  ld hl, STRBUF+24
+  ld de, STRBUF+32+16
+  call blockRotateL
+set_sprite_rotate.left.end:
+  ld hl, STRBUF+32
+  jp set_sprite.paste
+
+; binary rotate 8 bytes from HL to DE
+; HL = source
+; DE = destination
+blockRotateL:
+  ld b,8
+blockRotateL.1:
+    call blockRotateL.2
+    ld (de), a
+    inc de
+  djnz blockRotateL.1
+  ret
+blockRotateL.2:
+  push hl
+  push bc
+    ld b, 8
+blockRotateL.loop:
+    ld c, (hl)
+    rr c
+    rla
+    ld (hl), c
+    inc hl
+    djnz blockRotateL.loop
+  pop bc
+  pop hl
+  ret
+
+blockRotateR:
+  ld b,8
+blockRotateR.1:
+    call blockRotateR.2
+    ld (de), a
+    inc de
+  djnz blockRotateR.1
+  ret
+blockRotateR.2:
+  push hl
+  push bc
+    ld b, 8
+blockRotateR.loop:
+    ld c, (hl)
+    rl c
+    rra
+    ld (hl), c
+    inc hl
+    djnz blockRotateR.loop
+  pop bc
+  pop hl
   ret
 
 ; hl = sprite number
