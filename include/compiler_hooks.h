@@ -62,7 +62,8 @@
 
 #define def_cmd_ramtoram	             (def_cmd_plysound + 3)
 #define def_cmd_ramtovram             	 (def_cmd_ramtoram + 3)
-#define def_cmd_restore                  (def_cmd_ramtovram + 3)
+#define def_cmd_rsctoram	             (def_cmd_ramtovram + 3)
+#define def_cmd_restore                  (def_cmd_rsctoram + 3)
 #define def_cmd_runasm	                 (def_cmd_restore + 3)
 
 #define def_cmd_screen_copy              (def_cmd_runasm + 3)

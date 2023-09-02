@@ -57,9 +57,10 @@ Version history
 0.3.4.0 – (2023/xx/xx) RUN support to call sub-programs;
 0.3.3.0 – (2023/xx/xx) Disk file support;
 0.3.2.0 – (2023/xx/xx) Better support to double precision type (BCD);
-0.3.1.4 – (2023/xx/xx) SET TILE FLIP/ROTATE new command;
-0.3.1.3 – (2023/xx/xx) SET SPRITE COLOR/PATTERN new command;
+0.3.1.5 – (2023/xx/xx) SET TILE FLIP/ROTATE new command;
+0.3.1.4 – (2023/xx/xx) SET SPRITE COLOR/PATTERN new command;
 
+0.3.1.3 – (2023/09/02) CMD RSCTORAM new command;
 0.3.1.2 – (2023/08/27) SET SPRITE ROTATE new command;
 0.3.1.1 – (2023/08/26) IPEEK()/IPOKE new commands;
 0.3.1.0 – (2023/08/19) SET SPRITE FLIP new command;
@@ -431,6 +432,9 @@ EXTENDED COMMANDS
 
   Write RAM to RAM address
     CMD RAMTORAM <RAM source address>, <RAM dest address>, <size>
+
+  Write RESOURCE to RAM address
+    CMD RSCTORAM <resource>, <dest address> [, <pletter? 0=no, 1=yes>]
 
   Inhibits the screen display
     CMD DISSCR

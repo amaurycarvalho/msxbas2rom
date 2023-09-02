@@ -153,7 +153,7 @@ bool Lexeme::isKeyword() {
              || value == "INCLUDE" || value == "TURBO" || value == "TEXT" || value == "CMD" || value == "FILE"
              || value == "RUNASM" || value == "RUNBAS" || value == "WRTVRAM" || value == "WRTCHR"
              || value == "WRTCLR" || value == "WRTSCR" || value == "WRTSPRPAT" || value == "WRTSPRCLR"
-             || value == "WRTSPRATR" || value == "RAMTOVRAM" || value == "VRAMTORAM" || value == "RAMTORAM"
+             || value == "WRTSPRATR" || value == "RAMTOVRAM" || value == "VRAMTORAM" || value == "RAMTORAM" || value == "RSCTORAM"
              || value == "PT3LOAD" || value == "PT3PLAY" || value == "PT3MUTE" || value == "PT3LOOP" || value == "PT3REPLAY"
              || value == "PLYLOAD" || value == "PLYSONG" || value == "PLYPLAY" || value == "PLYMUTE" || value == "PLYLOOP"
              || value == "PLYREPLAY" || value == "PLYSOUND" || value == "PLYSTATUS"

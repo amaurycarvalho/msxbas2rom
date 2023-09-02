@@ -13463,6 +13463,51 @@ void Compiler::cmd_cmd() {
                     syntax_error("CMD RAMTORAM syntax error");
                 }
 
+            } else if(lexeme->value == "RSCTORAM") {
+
+                if(action->actions.size() == 2 || action->actions.size() == 3) {
+
+                    sub_action1 = action->actions[0];  // resource number
+                    result_subtype = evalExpression(sub_action1);
+                    addCast(result_subtype, Lexeme::subtype_numeric);
+
+                    // push hl
+                    addPushHL();
+
+                    sub_action2 = action->actions[1];  // ram dest address
+                    result_subtype = evalExpression(sub_action2);
+                    addCast(result_subtype, Lexeme::subtype_numeric);
+
+                    if(action->actions.size() == 2) {
+                        // ex de, hl
+                        addExDEHL();
+                        // xor a   ; no pletter
+                        addXorA();
+                    } else {
+                        // push hl
+                        addPushHL();
+
+                        sub_action3 = action->actions[2];   // pletter? 0=no, 1=yes
+                        result_subtype = evalExpression(sub_action3);
+                        addCast(result_subtype, Lexeme::subtype_numeric);
+
+                        // ld a, l
+                        addLdAL();
+
+                        // pop de
+                        addPopDE();
+                    }
+
+                    // pop hl
+                    addPopHL();
+
+                    // call cmd_rsctoram
+                    addCall(def_cmd_rsctoram);
+
+                } else {
+                    syntax_error("CMD RSCTORAM syntax error");
+                }
+
             } else if(lexeme->value == "CLRKEY") {
 
                 // call cmd_clrkey

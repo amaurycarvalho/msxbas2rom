@@ -460,6 +460,7 @@ wrapper_routines_map_start:
 
   jp cmd_ramtoram
   jp cmd_ramtovram
+  jp cmd_rsctoram
   jp cmd_restore
   jp cmd_runasm
 
@@ -1750,6 +1751,30 @@ cmd_ramtoram:
   ld de, (ARG)
   ld bc, (ARG+2)
   ldir      ; hl = source ram address, de = dest ram address, bc = length
+  ret
+
+; copy resource to ram address
+; CMD RSCTORAM <resource number>, <ram dest address>, <pletter: 0=no, 1=yes>
+; hl = resource
+; de = ram address
+; a = pletter
+cmd_rsctoram:
+  di
+    push de
+    push af
+      ld (DAC), hl
+      call resource.open_and_get_address          ; out: hl = resource data, a = resource segment, bc = resource size
+    pop af
+    pop de
+    or a
+    jr nz, cmd_rsctoram.unpack
+      ldir
+      jr cmd_rsctoram.end
+cmd_rsctoram.unpack:
+    call resource.ram.unpack
+cmd_rsctoram.end:
+    call resource.close
+  ei
   ret
 
 ; disable screen
