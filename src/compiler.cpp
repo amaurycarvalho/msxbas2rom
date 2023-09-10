@@ -2784,9 +2784,17 @@ int Compiler::evalOperator(ActionNode *action) {
                     // math optimization when second parameter is a integer constant
                     s = last_code[0];
                     i = s[1] | (s[2]<<8);
-                    if(s[0] == 0x21 && i <= 256) {  // ld hl, n
-                        code_pointer -= 4;
-                        code_size -= 4;
+                    if(action->actions[0]->lexeme->type == Lexeme::type_literal && i <= 256) {
+                    //if(s[0] == 0x21 && i <= 256) {  // ld hl, n
+                        if(action->actions[1]->lexeme->type == Lexeme::type_literal) {
+                            code_pointer -= 3;
+                            code_size -= 3;
+                            s = &code[code_pointer - 3];
+                            if(s[0] == 0x11) s[0] = 0x21;  // change "ld de,n" to "ld hl,n"
+                        } else {
+                            code_pointer -= 4;
+                            code_size -= 4;
+                        }
 
                         switch(i) {
                             case 0 : {

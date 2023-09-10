@@ -1,5 +1,6 @@
 # Version history
 
+- 0.3.1.4 – (2023/09/10) Multipling constant integers bug fix;
 - 0.3.1.3 – (2023/09/02) CMD RSCTORAM new command;
 - 0.3.1.2 – (2023/08/27) SET SPRITE ROTATE new command;
 - 0.3.1.1 – (2023/08/26) IPEEK()/IPOKE new commands;
