@@ -60,7 +60,7 @@ Version history
 0.0.0.0 – (2023/xx/xx) SET TILE FLIP/ROTATE new command;
 0.0.0.0 – (2023/xx/xx) SET SPRITE COLOR/PATTERN new command;
 
-0.3.1.6 – (2023/09/24) Mouse support on MSX1 via PAD function;
+0.3.1.6 – (2023/10/16) Mouse support on MSX1 via PAD function;
 0.3.1.5 – (2023/09/24) Integer multiply in MegaROM bug fix;
 0.3.1.4 – (2023/09/10) Multipling constant integers bug fix;
 0.3.1.3 – (2023/09/02) CMD RSCTORAM new command;
