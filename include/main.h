@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.1.5"
+#define app_version "0.3.1.6"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -54,12 +54,13 @@ https://github.com/amaurycarvalho/msxbas2rom )";
 const char * info_history = R"(
 Version history
 
-0.3.4.0 – (2023/xx/xx) RUN support to call sub-programs;
-0.3.3.0 – (2023/xx/xx) Disk file support;
-0.3.2.0 – (2023/xx/xx) Better support to double precision type (BCD);
-0.3.1.7 – (2023/xx/xx) SET TILE FLIP/ROTATE new command;
-0.3.1.6 – (2023/xx/xx) SET SPRITE COLOR/PATTERN new command;
+0.0.0.0 – (2023/xx/xx) RUN support to call sub-programs;
+0.0.0.0 – (2023/xx/xx) Disk file support;
+0.0.0.0 – (2023/xx/xx) Better support to double precision type (BCD);
+0.0.0.0 – (2023/xx/xx) SET TILE FLIP/ROTATE new command;
+0.0.0.0 – (2023/xx/xx) SET SPRITE COLOR/PATTERN new command;
 
+0.3.1.6 – (2023/09/24) Mouse support on MSX1 via PAD function;
 0.3.1.5 – (2023/09/24) Integer multiply in MegaROM bug fix;
 0.3.1.4 – (2023/09/10) Multipling constant integers bug fix;
 0.3.1.3 – (2023/09/02) CMD RSCTORAM new command;

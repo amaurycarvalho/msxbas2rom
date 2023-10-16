@@ -51,8 +51,9 @@
 #define def_cmd_keyclkoff	             (def_cmd_enascr + 3)
 #define def_cmd_mute	                 (def_cmd_keyclkoff + 3)
 #define def_cmd_play	                 (def_cmd_mute + 3)
+#define def_cmd_pad  	                 (def_cmd_play + 3)
 
-#define def_cmd_plyload	                 (def_cmd_play + 3)
+#define def_cmd_plyload	                 (def_cmd_pad + 3)
 #define def_cmd_plyloop	                 (def_cmd_plyload + 3)
 #define def_cmd_plymute	                 (def_cmd_plyloop + 3)
 #define def_cmd_plyplay	                 (def_cmd_plymute + 3)

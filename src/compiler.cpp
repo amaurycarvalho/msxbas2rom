@@ -4090,14 +4090,8 @@ int Compiler::evalFunction(ActionNode *action) {
 
                         if( result[0] == Lexeme::subtype_numeric ) {
 
-                            // ld a, l
-                            addLdAL();
-                            // call 0x00DB      ; GTPAD
-                            addCall(0x00DB);
-                            // ld h, 0
-                            addLdH(0x00);
-                            // ld l, a
-                            addLdLA();
+                            // call cmd_pad
+                            addCall(def_cmd_pad);
 
                         } else
                             result[0] = Lexeme::subtype_unknown;
