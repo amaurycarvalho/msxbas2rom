@@ -64,8 +64,8 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Set up MinGW (64 bits)
-      uses: egor-tensin/setup-mingw@v2.2.0
-#      uses: Honeybunch/setup-mingw@v3
+#      uses: egor-tensin/setup-mingw@v2.2.0
+      uses: Honeybunch/setup-mingw@v3
       with:
         platform: x64
     - name: Checkout
