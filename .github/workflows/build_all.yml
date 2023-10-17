@@ -46,6 +46,7 @@ jobs:
       uses: Honeybunch/setup-mingw@v3
       with:
         platform: x86
+        version: v12.2.0.3042023
     - name: Refresh environment
       run: |
           refreshenv
@@ -68,6 +69,7 @@ jobs:
       uses: Honeybunch/setup-mingw@v3
       with:
         platform: x64
+        version: v12.2.0.3042023
     - name: Checkout
       uses: actions/checkout@v2
     - name: Make -> clean release (64bits)
