@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.1.7"
+#define app_version "0.3.1.8"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -62,6 +62,7 @@ https://github.com/amaurycarvalho/msxbas2rom )";
 const char * info_history = R"(
 Version history
 
+0.3.1.8 – (2023/10/29) WIDTH statement optimization;
 0.3.1.7 – (2023/10/28) VDP function optimization (cadari bit);
 0.3.1.6 – (2023/10/16) Mouse support on MSX1 via PAD function;
 0.3.1.5 – (2023/09/24) Integer multiply in MegaROM bug fix;

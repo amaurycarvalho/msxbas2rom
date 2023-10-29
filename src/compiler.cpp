@@ -8099,7 +8099,7 @@ void Compiler::cmd_screen() {
                 // display mode
                 case 0: {
 
-                        // call XBASIC_SCREEN ; xbasic SCREEN change mode (in: a = screen mode)
+                        // call XBASIC_SCREEN ; xbasic SCREEN change mode (in: a, l = screen mode)
                         addCall(def_XBASIC_SCREEN);
                     }
                     break;
@@ -8385,50 +8385,8 @@ void Compiler::cmd_width() {
 
         addCast(result_subtype, Lexeme::subtype_numeric);
 
-        // ld a, (SCRMOD)          ; SCRMOD (current screen mode), OLDSCR (last text screen mode)
-        addLdAii(def_SCRMOD);
-        // cp 2
-        addCp(0x02);
-        // jr nc, $+FIM            ; skip if not text mode
-        addJrNC(0x22);       // 34 bytes
-
-        // and a                   ; test if zero
-        addAndA();
-        // ld a, l                 ; copy parameter to A
-        addLdAL();
-        // jr z, $+6               ; if zero then its 40 columns, goto LINL40
-        addJrZ(0x05);
-        //   ld (0xF3AF), a        ; LINL32
-        addLdiiA(0xF3AF);
-        //   jr $+4                ; goto LINLEN
-        addJr(0x03);
-        //     ld (0xF3AE), a      ; LINL40
-        addLdiiA(0xF3AE);
-        // ld (0xF3B0), a          ; LINLEN
-        addLdiiA(0xF3B0);
-        // sub 0x0E
-        addSub(0x0E);
-        // add a, 0x1C
-        addAdd(0x1C);
-        // cpl
-        addCPL();
-        // inc a
-        addIncA();
-        // add a, l
-        addAddL();
-        // ld (0xF3B2), a          ; CLMLST
-        addLdiiA(0xF3B2);
-        // ld a, 0x0C              ; new page (clear the screen)
-        //addLdAn(0x0C);
-        // rst 0x18                ; OUTDO - output to screen
-        //addByte(0xDF);
-
-        // ld a, (SCRMOD)          ; SCRMOD (current screen mode), OLDSCR (last text screen mode)
-        addLdAii(def_SCRMOD);
-        // call 0x7367    ; xbasic SCREEN mode (in: a = screen mode)
-        addCall(def_XBASIC_SCREEN);
-        // call cls
-        addCall(def_XBASIC_CLS);
+        // call XBASIC WIDTH   ; xbasic WIDTH (in: l = size)
+        addCall(def_XBASIC_WIDTH);
 
     } else {
         syntax_error("WIDTH syntax error");

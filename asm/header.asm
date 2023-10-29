@@ -115,6 +115,7 @@ BASKUN_VDP_WAIT:            equ C708A  ; BASIC KUN vdp wait
 
 ; ------------------------------------------------------------------------------------------------------
 ; BIOS AND BASIC WORK AREA
+; https://www.msx.org/wiki/System_variables_and_work_area
 ; ------------------------------------------------------------------------------------------------------
 
 USRTAB:       equ 0xF39A   ; 20
@@ -182,8 +183,11 @@ NAMBAS:       equ 0xF922  ; pattern name table - basic
 CGPBAS:       equ 0xF924  ; pattern generator table - basic
 PATBAS:       equ 0xF926  ; sprite pattern table
 ATRBAS:       equ 0xF928  ; sprite attribute table
-LINLEN:       equ 0xF3B0  ; line text length (default=39)
 CRTCNT:       equ 0xF3B1  ; line text count (default=24)
+LINLEN:       equ 0xF3B0  ; line text length (default=39)
+LINL40:       equ 0xF3AE  ; Screen width per line in SCREEN 0 (Default 39)
+LINL32:       equ 0xF3AF  ; Screen width per line in SCREEN 1 (Default 29)
+CLMLST:       equ 0xF3B2  ; X-location in the case that items are divided by commas in PRINT (LINLEN-(LINLEN MOD 14)-14)
 
 GRPNAM:       equ 0xF3C7  ; pattern name table
 GRPCOL:       equ 0xF3C9  ; colour table
@@ -553,6 +557,7 @@ wrapper_routines_map_start:
   jp XBASIC_READ
   jp XBASIC_RESTORE
   jp XBASIC_SCREEN
+  jp XBASIC_WIDTH
   jp XBASIC_SOUND
   jp XBASIC_TAB
   jp XBASIC_USING
@@ -667,6 +672,31 @@ XBASIC_END.1:
   ld a, (EXPTBL)
   ld h, 0x40
   jp ENASLT                ; enable basic page
+
+; l = width size
+XBASIC_WIDTH:
+  ld a, (SCRMOD)          ; SCRMOD (current screen mode), OLDSCR (last text screen mode)
+  cp 2
+  ret nc
+  ex de, hl
+  ld hl, LINL40
+  add a, l                ; screen 0 = LINL40 (F3AE), screen 1 = LINL32 (F3AF)
+  ld l, a
+  ld a, e                 ; copy parameter to A
+  ld (hl), a
+  ld (LINLEN), a          ; LINLEN
+  sub 0x0E
+  add a, 0x1C
+  cpl
+  inc a
+  add a, e
+  ld (CLMLST), a
+  ; ld a, 0x0C             ; new page (clear the screen)
+  ; rst 0x18               ; OUTDO - output to screen
+  ld a, (SCRMOD)          ; SCRMOD (current screen mode), OLDSCR (last text screen mode)
+  ld l, a
+  call XBASIC_SCREEN      ; xbasic SCREEN mode (in: a, l = screen mode)
+  jp XBASIC_CLS
 
 ; a, l = screen mode
 XBASIC_SCREEN:
