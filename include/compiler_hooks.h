@@ -123,8 +123,9 @@
 #define def_usr3_COLLISION_ALL           (def_usr3 + 3)
 #define def_usr3_COLLISION_COUPLE        (def_usr3_COLLISION_ALL + 3)
 #define def_usr3_COLLISION_ONE           (def_usr3_COLLISION_COUPLE + 3)
+#define def_vdp_set                      (def_usr3_COLLISION_ONE + 3)
 
-#define def_GET_NEXT_TEMP_STRING_ADDRESS (def_usr3_COLLISION_ONE + 3)
+#define def_GET_NEXT_TEMP_STRING_ADDRESS (def_vdp_set + 3)
 
 #define def_MR_CALL                      (def_GET_NEXT_TEMP_STRING_ADDRESS + 3)
 #define def_MR_CALL_TRAP                 (def_MR_CALL + 3)

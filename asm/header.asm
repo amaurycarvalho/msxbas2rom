@@ -525,6 +525,7 @@ wrapper_routines_map_start:
   jp usr3.COLLISION_ALL
   jp usr3.COLLISION_COUPLE
   jp usr3.COLLISION_ONE
+  jp gfxVDP.set
 
   jp GET_NEXT_TEMP_STRING_ADDRESS
 
@@ -667,18 +668,29 @@ XBASIC_END.1:
   ld h, 0x40
   jp ENASLT                ; enable basic page
 
-; a = screen mode
+; a, l = screen mode
 XBASIC_SCREEN:
-  ld c, 0
+  cp 4
+  jr c, XBASIC_SCREEN.TEXT_OR_GRAPH     ; skip if screen mode <= 3 (its safe for msx1)
+    ld a, (VERSION)
+    or a
+    jr nz, XBASIC_SCREEN.TEXT_OR_GRAPH  ; skip if not MSX1 (screen mode its safe for msx2 and above)
+       ld l, 2                          ; else, force screen mode 2
+XBASIC_SCREEN.TEXT_OR_GRAPH:
+  ld a, l
   cp 2
-  jr c, XBASIC_SCREEN.DO   ; text mode (0), else graphical mode (1)
-     inc c
+  rla                                   ; put carry on bit 0
+  cpl
+  and 1
+  ld (SOMODE), a                        ; text mode (0), else graphical mode (1)
 XBASIC_SCREEN.DO:
-  push af
-    ld a, c
-    ld (SOMODE), a
-  pop af
-  jp C7369
+  ld a, l
+  call C7369                            ; customized CHGMOD
+  ld a, (VERSION)
+  or a
+  ret z                                 ; return if msx1
+  ld ix, S.INIPLT                       ; initialize the pallete on msx2
+  jp SUB_EXTROM
 
 XBASIC_CLS:
   ld a, (SOMODE)
@@ -2783,6 +2795,22 @@ gfxCALCOL:
   pop de
   pop af
   ret
+
+; hl = register
+; bc = parameter
+gfxVDP.set:
+  ld b, c
+  ld a, l
+  cp 0x08
+  adc a, 0xff       ; dec a if register >= 8 (so, a = a + (-1) + carry)
+  ld c, a
+  jp WRTVDP
+
+  ;ld a, (VERSION)
+  ;or a
+  ;jp z, WRTVDP      ; b = data, c = register
+  ;ld ix, NWRVDP
+  ;jp SUB_EXTROM
 
 ;---------------------------------------------------------------------------------------------------------
 ; MEGAROM SUPPORT CODE

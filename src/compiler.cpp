@@ -943,6 +943,10 @@ void Compiler::addAddA() {
     addByte(0x87);
 }
 
+void Compiler::addAdcA(unsigned char n) {
+    addWord(0xCE, n);
+}
+
 void Compiler::addAddHLHL() {
     addByte(0x29);
 }
@@ -3589,6 +3593,7 @@ int Compiler::evalFunction(ActionNode *action) {
 
                     } else if(lexeme->value == "VDP") {
 
+                        // VDP() without parameters returns VDP version
                         // ld a, 4
                         addLdA(4);
                         // CALL USR2
@@ -7368,10 +7373,8 @@ void Compiler::cmd_let() {
         // cast
         addCast(result_subtype, Lexeme::subtype_numeric);
 
-        // ld a, l
-        addLdAL();
-        // push af
-        addPushAF();
+        // push hl          ; data
+        addPushHL();
 
         t = lex_action->actions.size();
 
@@ -7391,19 +7394,11 @@ void Compiler::cmd_let() {
         addCast( result[0], Lexeme::subtype_numeric );
         result[0] = Lexeme::subtype_numeric;
 
-        // pop bc
+        // pop bc           ; data
         addPopBC();
-        // ld a, l
-        addLdAL();
-        // cp 0x08
-        addCp(0x08);
-        // adc a, 0xff
-        addWord(0xCE, 0xFF);
-        // ld c, a
-        addLdCA();
 
-        // call 0x0047     ; VDP assignment (in: b=data, c=port)
-        addCall(0x0047);
+        // call VDP.set     ; VDP assignment (in: bc=data, hl=register)
+        addCall(def_vdp_set);
 
     } else if (lexeme->value == "SPRITE$") {
 
@@ -8104,22 +8099,7 @@ void Compiler::cmd_screen() {
                 // display mode
                 case 0: {
 
-                        // cp 4
-                        addCp(0x04);
-                        // jr c, $+10                  ; skip if screen mode <= 3 (its safe for msx1)
-                        addJrC(0x09);
-                        //   ld a, (BIOS VERSION)
-                        addLdAii(def_VERSION);
-                        //   and a
-                        addAndA();
-                        //   jr nz, $+3                ; skip if not MSX1 (screen mode its safe for msx2 and above)
-                        addJrNZ(0x02);
-                        //     ld l, 2                 ; else, force screen mode 2
-                        addLdL(0x02);
-                        //   ld a, l
-                        addLdAL();
-
-                        // call 0x7367    ; xbasic SCREEN mode (in: a = screen mode)
+                        // call XBASIC_SCREEN ; xbasic SCREEN change mode (in: a = screen mode)
                         addCall(def_XBASIC_SCREEN);
                     }
                     break;

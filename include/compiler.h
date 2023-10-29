@@ -157,6 +157,7 @@ class Compiler {
     void addAddHLHL();
     void addAddHLBC();
     void addAddHLDE();
+    void addAdcA(unsigned char n);
     void addSub(unsigned char n);
     void addSbcHLDE();
     void addSbcHLBC();
