@@ -1,3 +1,6 @@
+' Cadari Bit example 2
+' Compile: msxbas2rom -c -x cadbit2.bas
+
 FILE "EYE1.S12"     ' 0
 FILE "EYE2.S12"     ' 1
 

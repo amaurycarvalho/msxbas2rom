@@ -1,3 +1,6 @@
+' Cadari Bit example 1
+' Compile: msxbas2rom -c cadbit.bas
+
 10 SCREEN 5 
 20 COLOR 0,0 : VDP(1)=100
 30 COLOR 15 : VDP(14)=28
