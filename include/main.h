@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.1.8"
+#define app_version "0.3.1.9"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -62,8 +62,9 @@ https://github.com/amaurycarvalho/msxbas2rom )";
 const char * info_history = R"(
 Version history
 
+0.3.1.9 – (2023/11/02) CMD PAGE new command (Cadari bit);
 0.3.1.8 – (2023/10/29) WIDTH statement optimization;
-0.3.1.7 – (2023/10/28) VDP function optimization (cadari bit);
+0.3.1.7 – (2023/10/28) VDP function optimization (Cadari bit);
 0.3.1.6 – (2023/10/16) Mouse support on MSX1 via PAD function;
 0.3.1.5 – (2023/09/24) Integer multiply in MegaROM bug fix;
 0.3.1.4 – (2023/09/10) Multipling constant integers bug fix;
@@ -484,6 +485,10 @@ EXTENDED COMMANDS
     --- Each line on TXT files will be treated like an unique string;
     --- Each line on CSV files will be treated like a DATA content;
     - Use IRESTORE <byte number> and IREAD to read binary resources.
+
+  Enable/disable a page alternating effect on screen mode 5 and above
+  via VDP registers 1 (Cadari Bit) and 14
+    CMD PAGE <mode: 0=default, 1=swap, 2=wave>, <speed: 0=stop, 1=slow, 2=fast>
 
   Put a tile character into screen position (for tiled mode, screens 0-2)
     PUT TILE <n>, (<x>,<y>)

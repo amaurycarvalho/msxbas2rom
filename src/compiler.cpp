@@ -13519,6 +13519,45 @@ void Compiler::cmd_cmd() {
                     syntax_error("CMD RESTORE syntax error");
                 }
 
+            } else if(lexeme->value == "PAGE") {
+
+                if(action->actions.size() == 1) {
+
+                    sub_action1 = action->actions[0];
+                    result_subtype = evalExpression(sub_action1);
+                    addCast(result_subtype, Lexeme::subtype_numeric);
+
+                    // ld de, 1                 ; speed = slow
+                    addLdDE(1);
+
+                    // call cmd_page (hl = page mode, de = speed)
+                    addCall(def_cmd_page);
+
+                } else if(action->actions.size() == 2) {
+
+                    sub_action1 = action->actions[1];
+                    result_subtype = evalExpression(sub_action1);
+                    addCast(result_subtype, Lexeme::subtype_numeric);
+
+                    // push hl
+                    addPushHL();
+
+                    sub_action2 = action->actions[0];
+                    result_subtype = evalExpression(sub_action2);
+                    addCast(result_subtype, Lexeme::subtype_numeric);
+
+                    // pop de
+                    addPopDE();
+
+                    // call cmd_page (hl = page mode, de = speed)
+                    //      page mode: 0=default, 1=swap, 2=wave
+                    //      page speed: 0=stop, 1=slow, 2=fast
+                    addCall(def_cmd_page);
+
+                } else {
+                    syntax_error("CMD PAGE syntax error");
+                }
+
             } else {
                 syntax_error("CMD statement invalid");
                 return;

@@ -490,6 +490,7 @@ wrapper_routines_map_start:
   jp cmd_wrtsprclr
   jp cmd_wrtsprpat
   jp cmd_wrtvram
+  jp cmd_page
 
   jp floatNeg
   jp gfxTileAddress
@@ -2333,6 +2334,39 @@ set_sprite_pattern:
 ; c = color data (FC,BC)
 set_sprite_color:
   ret
+
+; hl = mode: 0=default, 1=swap, 2=wave
+; de = speed: 0=stop, 1=slow, 2=fast
+cmd_page:
+  ld a, (SCRMOD)
+  cp 5
+  ret c                 ; return if screen mode < 5
+  ld bc, cmd_page.data.mode
+  add hl, bc
+  ld l, (hl)
+  ex de, hl             ; e = mode
+  ld bc, cmd_page.data.speed
+  add hl, bc
+  ld l, (hl)            ; l = speed
+cmd_page.mode:
+  ld a, e
+  or a
+  jr z, cmd_page.speed
+  ld c, 1               ; vdp(1)
+  ld b, e               ; mode = swap, wave
+  call WRTVDP           ; b = data, c = register
+cmd_page.speed:
+  ld c, 13              ; vdp(14)
+  ld b, l               ; speed = slow, fast
+  call WRTVDP           ; b = data, c = register
+cmd_page.end:
+  ld a, 1
+  ld (ACPAGE), a
+  jp C70CC              ; XBASIC_SET_PAGE (a=display page)
+cmd_page.data.mode:
+  db 0, 96, 100         ; vdp(1) = mode: swap, wave
+cmd_page.data.speed:
+  db 0, 28, 17          ; vdp(14) = speed: slow, fast
 
 ; ------------------------------------------------------------------------------------------------------
 ; USR() IMPLEMENTATION

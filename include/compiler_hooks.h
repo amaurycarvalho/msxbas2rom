@@ -84,8 +84,9 @@
 #define def_cmd_wrtsprclr	             (def_cmd_wrtspratr + 3)
 #define def_cmd_wrtsprpat	             (def_cmd_wrtsprclr + 3)
 #define def_cmd_wrtvram	                 (def_cmd_wrtsprpat + 3)
+#define def_cmd_page	                 (def_cmd_wrtvram + 3)
 
-#define def_floatNEG                     (def_cmd_wrtvram + 3)
+#define def_floatNEG                     (def_cmd_page + 3)
 #define def_tileAddress                  (def_floatNEG + 3)
 
 #define def_intCompareAND                (def_tileAddress + 3)
