@@ -2,7 +2,7 @@
 ' Compile: msxbas2rom -c cadbit.bas
 
 10 SCREEN 5 
-20 COLOR 0,0 : VDP(1)=100
+20 COLOR 0,0 : VDP(1)=PEEK(&hF3E0) OR 4 
 30 COLOR 15 : VDP(14)=28
 40 SETPAGE 0,0
 41 CLS : CIRCLE(120,106),50

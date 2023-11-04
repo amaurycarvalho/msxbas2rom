@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.1.9"
+#define app_version "0.3.2.0"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -62,6 +62,7 @@ https://github.com/amaurycarvalho/msxbas2rom )";
 const char * info_history = R"(
 Version history
 
+0.3.2.0 – (2023/11/04) CMD PAGE fix (Cadari bit);
 0.3.1.9 – (2023/11/02) CMD PAGE new command (Cadari bit);
 0.3.1.8 – (2023/10/29) WIDTH statement optimization;
 0.3.1.7 – (2023/10/28) VDP function optimization (Cadari bit);

@@ -2341,30 +2341,33 @@ cmd_page:
   ld a, (SCRMOD)
   cp 5
   ret c                 ; return if screen mode < 5
-  ld bc, cmd_page.data.mode
-  add hl, bc
-  ld l, (hl)
-  ex de, hl             ; e = mode
-  ld bc, cmd_page.data.speed
-  add hl, bc
-  ld l, (hl)            ; l = speed
 cmd_page.mode:
-  ld a, e
+  ld a, l
   or a
   jr z, cmd_page.speed
+    dec a
+    ld a, (RG1SAV)
+    jr nz, cmd_page.mode.2
+cmd_page.mode.1:        ; pages 0 and 1 swapping
+  and 251               ; reset b2 from r1
+  jr cmd_page.mode.do
+cmd_page.mode.2:        ; pages 0 and 1 waving
+  or 4                  ; set b2 from r1
+cmd_page.mode.do:
   ld c, 1               ; vdp(1)
-  ld b, e               ; mode = swap, wave
+  ld b, a               ; mode = swap, wave
   call WRTVDP           ; b = data, c = register
 cmd_page.speed:
+  ex de, hl
+  ld bc, cmd_page.data.speed
+  add hl, bc
+  ld b, (hl)            ; b = speed (stop, slow, fast)
   ld c, 13              ; vdp(14)
-  ld b, l               ; speed = slow, fast
   call WRTVDP           ; b = data, c = register
 cmd_page.end:
   ld a, 1
   ld (ACPAGE), a
   jp C70CC              ; XBASIC_SET_PAGE (a=display page)
-cmd_page.data.mode:
-  db 0, 96, 100         ; vdp(1) = mode: swap, wave
 cmd_page.data.speed:
   db 0, 28, 17          ; vdp(14) = speed: slow, fast
 
