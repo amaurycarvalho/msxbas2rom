@@ -2346,16 +2346,14 @@ cmd_page.mode:
   or a
   jr z, cmd_page.speed
     dec a
-    ld a, (RG1SAV)
-    jr nz, cmd_page.mode.2
-cmd_page.mode.1:        ; pages 0 and 1 swapping
-  and 251               ; reset b2 from r1
-  jr cmd_page.mode.do
-cmd_page.mode.2:        ; pages 0 and 1 waving
-  or 4                  ; set b2 from r1
-cmd_page.mode.do:
+    jr z, cmd_page.mode.do
+      ld h, 4
+cmd_page.mode.do:       ; pages 0 and 1 swapping
+  ld a, (RG1SAV)
+  and 251               ; reset b2 from r1, if mode = swapping
+  or h                  ; set b2 from r1, if mode = waving
   ld c, 1               ; vdp(1)
-  ld b, a               ; mode = swap, wave
+  ld b, a               ; change mode to swapping or waving
   call WRTVDP           ; b = data, c = register
 cmd_page.speed:
   ex de, hl
