@@ -488,8 +488,9 @@ EXTENDED COMMANDS
     - Use IRESTORE <byte number> and IREAD to read binary resources.
 
   Enable/disable a page alternating effect on screen mode 5 and above
-  via VDP registers 1 (Cadari Bit) and 14
-    CMD PAGE <mode: 0=default, 1=swap, 2=wave>, <speed: 0=stop, 1=slow, 2=fast>
+  via VDP R#1 (Cadari Bit) and R#13. Pass 0 to stop the effect.
+    CMD PAGE <mode: 0=swap, 1=wave>, <delay #1: 0-15, 0=stop>
+                         [, <delay #2: 0-15, default=same as delay #1>]
 
   Put a tile character into screen position (for tiled mode, screens 0-2)
     PUT TILE <n>, (<x>,<y>)

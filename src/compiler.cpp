@@ -1183,6 +1183,10 @@ void Compiler::addLdBC(int n) {
     addCmd(0x01, n);
 }
 
+void Compiler::addLdDE() {
+    addByte(0x53);
+}
+
 void Compiler::addLdDE(int n) {
     addCmd(0x11, n);
 }
@@ -13527,13 +13531,44 @@ void Compiler::cmd_cmd() {
                     result_subtype = evalExpression(sub_action1);
                     addCast(result_subtype, Lexeme::subtype_numeric);
 
-                    // ld de, 1                 ; speed = slow
-                    addLdDE(1);
+                    // ld de, 0                 ; delay = stop
+                    addLdDE(0);
 
-                    // call cmd_page (hl = page mode, de = speed)
-                    addCall(def_cmd_page);
+                    // push de
+                    addPushDE();
+
+                    // pop bc
+                    addPopBC();
 
                 } else if(action->actions.size() == 2) {
+
+                    sub_action1 = action->actions[1];
+                    result_subtype = evalExpression(sub_action1);
+                    addCast(result_subtype, Lexeme::subtype_numeric);
+
+                    // push hl
+                    addPushHL();
+                    // push hl
+                    addPushHL();
+
+                    sub_action2 = action->actions[0];
+                    result_subtype = evalExpression(sub_action2);
+                    addCast(result_subtype, Lexeme::subtype_numeric);
+
+                    // pop de
+                    addPopDE();
+
+                    // pop bc
+                    addPopBC();
+
+                } else if(action->actions.size() == 3) {
+
+                    sub_action1 = action->actions[2];
+                    result_subtype = evalExpression(sub_action1);
+                    addCast(result_subtype, Lexeme::subtype_numeric);
+
+                    // push hl
+                    addPushHL();
 
                     sub_action1 = action->actions[1];
                     result_subtype = evalExpression(sub_action1);
@@ -13549,14 +13584,16 @@ void Compiler::cmd_cmd() {
                     // pop de
                     addPopDE();
 
-                    // call cmd_page (hl = page mode, de = speed)
-                    //      page mode: 0=default, 1=swap, 2=wave
-                    //      page speed: 0=stop, 1=slow, 2=fast
-                    addCall(def_cmd_page);
+                    // pop bc
+                    addPopBC();
 
                 } else {
                     syntax_error("CMD PAGE syntax error");
                 }
+
+                // call cmd_page (l = mode, e = delay #1, c = delay #2)
+                addCall(def_cmd_page);
+
 
             } else {
                 syntax_error("CMD statement invalid");

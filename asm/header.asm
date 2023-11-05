@@ -2335,39 +2335,37 @@ set_sprite_pattern:
 set_sprite_color:
   ret
 
-; hl = mode: 0=default, 1=swap, 2=wave
-; de = speed: 0=stop, 1=slow, 2=fast
+; l = mode: 0=swap, 1=wave
+; e = delay #0
+; c = delay #1
 cmd_page:
   ld a, (SCRMOD)
   cp 5
   ret c                 ; return if screen mode < 5
+  ld d, c
 cmd_page.mode:
-  ld a, l
-  or a
-  jr z, cmd_page.speed
-    dec a
-    jr z, cmd_page.mode.do
-      ld h, 4
-cmd_page.mode.do:       ; pages 0 and 1 swapping
   ld a, (RG1SAV)
   and 251               ; reset b2 from r1, if mode = swapping
-  or h                  ; set b2 from r1, if mode = waving
-  ld c, 1               ; vdp(1)
+  sla l
+  sla l
+  or l                  ; set b2 from r1, if mode = waving
   ld b, a               ; change mode to swapping or waving
+  ld c, 1               ; vdp(1)
   call WRTVDP           ; b = data, c = register
-cmd_page.speed:
-  ex de, hl
-  ld bc, cmd_page.data.speed
-  add hl, bc
-  ld b, (hl)            ; b = speed (stop, slow, fast)
+cmd_page.delay:
+  ld a, d
+  sla a
+  sla a
+  sla a
+  sla a
+  or e
+  ld b, a               ; b = delay #1 (low nibble) and #2 (high nibble)
   ld c, 13              ; vdp(14)
   call WRTVDP           ; b = data, c = register
 cmd_page.end:
   ld a, 1
   ld (ACPAGE), a
   jp C70CC              ; XBASIC_SET_PAGE (a=display page)
-cmd_page.data.speed:
-  db 0, 28, 17          ; vdp(14) = speed: slow, fast
 
 ; ------------------------------------------------------------------------------------------------------
 ; USR() IMPLEMENTATION

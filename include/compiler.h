@@ -214,6 +214,7 @@ class Compiler {
     void addLdHL(int n);
     void addLdHLmegarom();
     void addLdBC(int n);
+    void addLdDE();
     void addLdDE(int n);
     void addLdIX(int n);
     void addLdAii(int i);
