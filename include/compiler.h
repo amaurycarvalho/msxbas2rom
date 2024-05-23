@@ -12,7 +12,7 @@
   int _strcasecmp(const char * str1, const char * str2);
 #endif
 
-#define COMPILE_MAX_PAGES (16*4)
+#define COMPILE_MAX_PAGES (16 * 4)
 #define COMPILE_CODE_SIZE (COMPILE_MAX_PAGES * 0x4000)
 #define COMPILE_RAM_SIZE  (0xFFFF)
 

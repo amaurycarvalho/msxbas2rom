@@ -7,7 +7,7 @@ Create a ROM file from your old MSX BASIC code!
 
 Use command below to transform your Basic program from plain text code into a tokenized form on a ROM file.
 
-	  msxbas2rom test.bas
+	  msxbas2rom -p test.bas
 
 You can also compile it into a ROM binary form using the command below:
 

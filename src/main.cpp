@@ -38,6 +38,8 @@ int main(int argc, char *argv[]) {
 
     // parsing parameters
 
+    parmCompile = true;     // default = compile mode
+
     for(i = 1; i < argc; i++) {
         if( argv[i][0] == '/' || argv[i][0] == '-' ) {
             switch( argv[i][1] ) {
@@ -65,6 +67,10 @@ int main(int argc, char *argv[]) {
                 case 'c':
                 case 'C':
                     parmCompile = true;
+                    break;
+                case 'p':
+                case 'P':
+                    parmCompile = false;
                     break;
                 case 's':
                 case 'S':

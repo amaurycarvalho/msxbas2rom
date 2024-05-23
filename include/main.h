@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.2.0"
+#define app_version "0.3.2.1"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -25,7 +25,7 @@ bool SaveSymbolFile(Compiler *compiler, int code_start);
 bool SaveSymbolFile(CompilerPT3 *compiler, int code_start);
 
 const char * info_splash = R"(MSXBAS2ROM - MSX BASIC TO ROM COMPILER
-Created by Amaury Carvalho (2020-2023)
+Created by Amaury Carvalho (2020-2024)
 Version:)";
 
 const char * info_support = R"(
@@ -35,17 +35,18 @@ https://www.patreon.com/msxbas2rom)";
 const char * info_usage = R"(
 Usage: msxbas2rom [options] <filename.bas>
 Options:
+       -h or -? = help
        -q  = quiet (no verbose)
        -d  = debug mode (show details)
-       -t  = turbo mode (or use CALL TURBO instructions)
-       -c  = compile mode
+       -c  = compile mode (default)
        -x  = extended memory scheme mode (MegaROM, compile mode)
        -s  = generate symbols for OpenMSX debugger (compile mode)
-       -h or -? = help
+       -p  = tokenized p-code mode (deprecated)
+       -t  = turbo mode (or use CALL TURBO instructions, deprecated)
        --doc = display documentation
        --ver = display version history
-       --nsr = no strip remark lines (tokenized/turbo mode)
        --lin = register line numbers (compile mode)
+       --nsr = no strip remark lines (tokenized/turbo mode, deprecated)
 Output: <filename.rom>
 
 See more information at:
@@ -62,6 +63,7 @@ https://github.com/amaurycarvalho/msxbas2rom )";
 const char * info_history = R"(
 Version history
 
+0.3.2.1 – (2024/05/23) MegaROM > 256kb bug fix and -c as default;
 0.3.2.0 – (2023/11/04) CMD PAGE fix (Cadari bit);
 0.3.1.9 – (2023/11/02) CMD PAGE new command (Cadari bit);
 0.3.1.8 – (2023/10/29) WIDTH statement optimization;

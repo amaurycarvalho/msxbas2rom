@@ -1449,7 +1449,7 @@ void Rom::writeRom(char *filename) {
 
     t = 0x4000;
 
-    for(i = 0, k = 0; i < 20; i++, k+=t) {
+    for(i = 0, k = 0; i < COMPILE_MAX_PAGES; i++, k+=t) {
         if(writePage[i])
             file.write(&data[k], t);
     }
