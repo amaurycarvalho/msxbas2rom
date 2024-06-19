@@ -1,5 +1,6 @@
 # Version history
 
+- 0.3.2.2 – (2024/06/19) MegaROM size estimate bug fix;
 - 0.3.2.1 – (2024/05/23) MegaROM > 256kb bug fix and -c as default;
 - 0.3.2.0 – (2023/11/04) CMD PAGE fix (Cadari bit)
 - 0.3.1.9 – (2023/11/02) CMD PAGE new command (Cadari bit);

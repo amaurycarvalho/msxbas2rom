@@ -61,6 +61,12 @@ bool Rom::build(Tokenizer *tokenizer, char *filename) {
 
     buildHeaderAdjust();
 
+    // save ROM file
+
+    if(!errorFound) {
+        writeRom(filename);
+    }
+
     // calculate and check sizes
 
     stdPageLen = hdrLen + rtnLen + mapLen + txtLen + filLen + pt3Len + basLen;
@@ -75,12 +81,6 @@ bool Rom::build(Tokenizer *tokenizer, char *filename) {
         } else {
             stdMemoryPerc = (stdPageLen / maxPageLen)*100;
         }
-    }
-
-    // save ROM file
-
-    if(!errorFound) {
-        writeRom(filename);
     }
 
     return !errorFound;
@@ -123,14 +123,18 @@ bool Rom::build(Compiler *compiler, char *filename) {
 
     buildHeaderAdjust();
 
+    // save ROM file
+
+    writeRom(filename);
+
     // calculate and check sizes
 
     stdPageLen = hdrLen + rtnLen + basLen;
 
     if(xtd) {
-        maxPageLen = rom_size - 0x4000;
-        stdMemoryPerc = (stdPageLen / (maxPageLen - rscLen))*100;
-        rscMemoryPerc = (rscLen / (maxPageLen - stdPageLen))*100;
+        maxPageLen = rom_size - 0x4000;     // first page = kernel
+        stdMemoryPerc = (stdPageLen / maxPageLen)*100;
+        rscMemoryPerc = (rscLen / maxPageLen)*100;
     } else {
         maxPageLen = 0x4000;
         if(stdPageLen > maxPageLen) {
@@ -141,10 +145,6 @@ bool Rom::build(Compiler *compiler, char *filename) {
         }
         rscMemoryPerc = (rscLen / (maxPageLen - 0x100) )*100;
     }
-
-    // save ROM file
-
-    writeRom(filename);
 
     return !errorFound;
 }
@@ -186,14 +186,19 @@ bool Rom::build(CompilerPT3 *compiler, char *filename) {
 
     buildHeaderAdjust();
 
+    // save ROM file
+
+    writeRom(filename);
+
     // calculate and check sizes
 
     stdPageLen = hdrLen + rtnLen + mapLen + txtLen + filLen + pt3Len + basLen;
 
     if(xtd) {
+        maxPageLen = rom_size - 0x4000;
         if(compiler->segm_total == 0)
             compiler->segm_total = 4;
-        stdMemoryPerc = (stdPageLen / (compiler->segm_total * 8.0 * 1024))*100;
+        stdMemoryPerc = (stdPageLen / maxPageLen)*100;
     } else {
         if(stdPageLen > maxPageLen) {
             errorMessage = "Basic code+resources exceeded valid ROM page size limit (16kb)";
@@ -202,10 +207,6 @@ bool Rom::build(CompilerPT3 *compiler, char *filename) {
             stdMemoryPerc = (stdPageLen / maxPageLen)*100;
         }
     }
-
-    // save ROM file
-
-    writeRom(filename);
 
     return !errorFound;
 }
@@ -1448,10 +1449,13 @@ void Rom::writeRom(char *filename) {
     }
 
     t = 0x4000;
+    rom_size = 0;
 
     for(i = 0, k = 0; i < COMPILE_MAX_PAGES; i++, k+=t) {
-        if(writePage[i])
+        if(writePage[i]) {
             file.write(&data[k], t);
+            rom_size += t;
+        }
     }
 
     file.close();
