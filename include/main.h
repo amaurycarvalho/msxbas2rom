@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.2.2"
+#define app_version "0.3.2.3"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -63,6 +63,7 @@ https://github.com/amaurycarvalho/msxbas2rom )";
 const char * info_history = R"(
 Version history
 
+0.3.2.3 – (2024/09/04) Custom SET DATE/TIME, GET DATE/TIME stmts;
 0.3.2.2 – (2024/06/19) MegaROM size estimate bug fix;
 0.3.2.1 – (2024/05/23) MegaROM > 256kb bug fix and -c as default;
 0.3.2.0 – (2023/11/04) CMD PAGE fix (Cadari bit);
@@ -250,7 +251,8 @@ COMPILING CODE
      SET SCROLL, SET PAGE, COPY, PUT TILE,
      SET TILE COLOR, SET TILE PATTERN,
      OPEN, CLOSE, MAXFILES, DEF USR, BLOAD,
-     PRINT USING, SET VIDEO, COPY SCREEN
+     PRINT USING, SET VIDEO, COPY SCREEN,
+     SET DATE, SET TIME, GET DATE, GET TIME
 
      [RUN]
 
@@ -353,6 +355,7 @@ COMPILING CODE
        include more # in the format string until the correct value is
        displayed. Use 0 char symbol to fill the value with left zeros;
      - USING$(format$, number) works just like PRINT USING statement;
+     - SET/GET DATE and SET/GET TIME adopts a custom syntax;
      - F1..F10 function keys return ASCII codes 246 to 255 respectively;
      - Spaces on your line code, REMs and blank lines not affect compiled code
        size, but if your include it on your program it can help the compilation
@@ -371,12 +374,10 @@ COMPILING CODE
      AUTO, BLOAD, BSAVE, CALL, CLOAD,
      CONT, CSAVE, DEF FN, DELETE, EOF, ERASE,
      ERL, ERR, ERROR, FILES, FN, FPOS, FIELD,
-     GET, GET DATE, GET TIME, IPL, LIST, LLIST,
+     GET, IPL, LIST, LLIST,
      LOAD, LOC, LSET, LPRINT, MERGE, RSET,
      MOTOR, NEW, PUT, PUT KANJI, RENUM, RUN, SAVE,
-     SET ADJUST, SET BEEP, SET DATE, SET PASSWORD,
-     SET PROMPT, SET SCREEN, SET TIME,
-     SET TITLE, TROFF, TRON,
+     SET PASSWORD, TROFF, TRON,
      RESUME, ON ERROR GOTO, CLEAR
 
 RESOURCES DIRECTIVES
@@ -545,6 +546,12 @@ EXTENDED COMMANDS
       1 = Compile Zanac Style
       2 = Konami Gradius Style 1
       3 = Konami Gradius Style 2
+
+  SET/GET DATE/TIME custom syntax
+     SET DATE iYear, iMonth, iDay
+     SET TIME iHour, iMinute, iSecond
+     GET DATE iYear, iMonth, iDay, iWeek
+     GET TIME iHour, iMinute, iSecond
 
 EXTENDED FUNCTIONS
 

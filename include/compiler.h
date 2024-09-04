@@ -168,6 +168,7 @@ class Compiler {
     void addRRL();
     void addRRA();
     void addCPL();
+    void addLDI();
     void addLDIR();
     void addDecA();
     void addDecE();
@@ -204,6 +205,9 @@ class Compiler {
     void addLdEL();
     void addLdCA();
     void addLdCB();
+    void addLdCE();
+    void addLdCD();
+    void addLdCH();
     void addLdCL();
     void addLdCiHL();
     void addLdDA();
@@ -343,6 +347,11 @@ class Compiler {
     void cmd_set_tile();
     void cmd_set_sprite();
     void cmd_set_font();
+    void cmd_set_date();
+    void cmd_set_time();
+    void cmd_get();
+    void cmd_get_date();
+    void cmd_get_time();
     void cmd_on();
     void cmd_on_error();
     void cmd_on_interval();

@@ -56,6 +56,7 @@ HREAD:        equ 0xFF07   ; ready prompt hook
 HSTKE:        equ 0xFEDA   ; stack hook (for after msx initialization)
 HCHPU:        equ 0xFDA4   ; char put hook
 HKEYI:        equ 0xFD9A
+HPHYD:        equ 0xFFA7   ; physical disk input-output hook
 
 WRTVDP:       equ 0x0047
 RDVRM:        equ 0x004A
@@ -105,6 +106,14 @@ FRCDBL:       equ 0x303A ; DAC to double
 FRCINT:       equ 0x2F8A ; DAC to integer
 DECNRM:       equ 0x26FA ; normalize DAC
 CLPRIM:       equ 0xF38C
+
+ROMBDOS:      equ 0xF37D
+REDCLK:	      equ 0x01F5 ; Reading a register of the internal clock (RTC)
+                         ; Entry:  C = block number (bits 5-4) and register (bits 3-0) to read.
+                         ; Output: A = 4 least significant bits content of the register read.
+WRTCLK:       equ 0x01F9 ; Writing in a register of the internal clock (RTC).
+                         ; Entry:  C = block number (bits 5-4) and register (bits 3-0).
+                         ;         A = data to write. (4 least significant bits)
 
 ; ------------------------------------------------------------------------------------------------------
 ; BIOS AND BASIC WORK AREA
@@ -276,6 +285,7 @@ XBASIC_SUBTRACT_FLOATS: equ 0x76D3
 XBASIC_CAST_INTEGER_TO_FLOAT: equ 0x78DF
 XBASIC_MULTIPLY_INTEGERS: equ 0x7631
 XBASIC_DIVIDE_INTEGERS: equ 0x7643
+XBASIC_CAST_INTEGER_TO_STRING: equ 0x7BD1
 
 ; ------------------------------------------------------------------------------------------------------
 ; HOMEBREW WORK AREA
@@ -531,6 +541,11 @@ wrapper_routines_map_start:
   jp usr3.COLLISION_COUPLE
   jp usr3.COLLISION_ONE
   jp gfxVDP.set
+
+  jp cmd_get_date
+  jp cmd_get_time
+  jp cmd_set_date
+  jp cmd_set_time
 
   jp GET_NEXT_TEMP_STRING_ADDRESS
 
@@ -2549,6 +2564,196 @@ usr_def.exit:
   ld h, b
   ld (DAC+2), hl
   ret
+
+; https://www.msx.org/wiki/Real_Time_Clock_Programming
+; GET DATE
+; Results:    HL = Year 1980...2079
+;             D = Month (1=Jan...12=Dec)
+;             E = Day (1...31)
+;             A = Day of week (0=Sun...6=Sat)
+cmd_get_date:
+  ld a,(VERSION)
+  or a                  ; MSX2 or above?
+  jr z, cmd_get_date.msx1
+    ld c,12             ; year (tens)
+    call SUB_REDCLK
+    call cmd_clock_mult10
+    ld c,11             ; year (units)
+    call SUB_REDCLK
+    ld bc,1980
+    add a, c
+    ld c, a
+    add hl, bc
+    push hl
+      ld c, 10          ; month (tens)
+      call SUB_REDCLK
+      call cmd_clock_mult10
+      ld c, 9           ; month (units)
+      call SUB_REDCLK
+      add a, l
+      ld d, a
+      ld c, 8           ; day (tens)
+      call SUB_REDCLK
+      call cmd_clock_mult10
+      ld c, 7           ; day (units)
+      call SUB_REDCLK
+      add a, l
+      ld e, a
+    pop hl
+    ld c, 6             ; week
+    jp SUB_REDCLK
+cmd_get_date.msx1:
+  xor a
+  ld h, a
+  ld l, a
+  ld e, a
+  ld d, a
+  ret
+
+; GET TIME
+; Results:    H = Hours
+;             L = Minutes
+;             A = Seconds
+cmd_get_time:
+  ld a,(VERSION)
+  or a                  ; MSX2 or above?
+  jr z, cmd_get_date.msx1
+    ld c, 5             ; hour (tens)
+    call SUB_REDCLK
+    call cmd_clock_mult10
+    ld c, 4             ; hour (units)
+    call SUB_REDCLK
+    add a, l
+    ld h, a
+    push hl
+      ld h, a
+      ld c, 3           ; minutes (tens)
+      call SUB_REDCLK
+      call cmd_clock_mult10
+      ld c, 2           ; minutes (units)
+      call SUB_REDCLK
+      add a, l
+    pop hl
+    ld l, a
+    push hl
+      ld c, 1           ; seconds (tens)
+      call SUB_REDCLK
+      call cmd_clock_mult10
+      ld c, 0           ; seconds (units)
+      call SUB_REDCLK
+      add a, l
+    pop hl
+    ret
+
+; SET DATE (2BH)
+; Parameters: C = 2BH (_SDATE)
+; Input:      HL = Year 1980...2079
+;             D = Month (1=Jan...12=Dec)
+;             E = Day (1...31)
+cmd_set_date:
+  ld a,(VERSION)
+  or a                  ; MSX2 or above?
+  ret z
+  push de
+    xor a
+    ld bc,1980
+    sbc hl, bc
+    call cmd_clock_div10
+    ld a, l
+    ld c,12             ; year (tens)
+    call SUB_WRTCLK
+    ld a, e
+    ld c,11             ; year (units)
+    call SUB_WRTCLK
+  pop de
+  push de
+    ld h, 0
+    ld l, d
+    call cmd_clock_div10
+    ld a, l
+    ld c, 10            ; month (tens)
+    call SUB_WRTCLK
+    ld a, e
+    ld c, 9             ; month (units)
+    call SUB_WRTCLK
+  pop de
+  ld h, 0
+  ld l, e
+  call cmd_clock_div10
+  ld a, l
+  ld c, 8               ; day (tens)
+  call SUB_WRTCLK
+  ld a, e
+  ld c, 7               ; day (units)
+  jp SUB_WRTCLK
+
+; SET TIME (2DH)
+; Parameters: C = 2DH (_STIME)
+; Input:      H = Hours
+;             L = Minutes
+;             A = Seconds
+cmd_set_time:
+  ld e, a
+  ld a,(VERSION)
+  or a                  ; MSX2 or above?
+  ret z
+  push de
+    push hl
+      ld l, h
+      ld h, 0
+      call cmd_clock_div10
+      ld a, l
+      ld c, 5           ; hour (tens)
+      call SUB_WRTCLK
+      ld a, e
+      ld c, 4           ; hour (units)
+      call SUB_WRTCLK
+    pop hl
+    ld h, 0
+    call cmd_clock_div10
+    ld a, l
+    ld c, 3             ; minutes (tens)
+    call SUB_WRTCLK
+    ld a, e
+    ld c, 2             ; minutes (units)
+    call SUB_WRTCLK
+  pop hl
+  ld h, 0
+  call cmd_clock_div10
+  ld a, l
+  ld c, 1               ; seconds (tens)
+  call SUB_WRTCLK
+  ld a, e
+  ld c, 0               ; seconds (units)
+  jp SUB_WRTCLK
+
+; multiply A by 10
+cmd_clock_mult10:
+  ld hl, 0
+  ld bc, 10
+  or a
+cmd_clock_mult10.loop:
+  ret z
+  add hl, bc
+  dec a
+  jr cmd_clock_mult10.loop
+
+; divide HL by 10 (remainder = DE)
+cmd_clock_div10:
+  ld de, 10
+  jp XBASIC_DIVIDE_INTEGERS
+
+; Entry:	C = block number (bits 5-4) and register (bits 3-0) to read.
+; Output:	A = 4 least significant bits content of the register read.
+SUB_REDCLK:
+  ld ix,REDCLK
+  jp EXTROM
+
+; Entry:	C = block number (bits 5-4) and register (bits 3-0).
+;           A = data to write. (4 least significant bits)
+SUB_WRTCLK:
+  ld ix,WRTCLK
+  jp EXTROM
 
 ;---------------------------------------------------------------------------------------------------------
 ; LOGICAL / MATH INTEGER ROUTINES
@@ -6680,7 +6885,7 @@ J7502:	INC	HL
 ;	     Inputs  ________________________
 ;	     Outputs ________________________
 
-C7508:	CALL	C7BD1			; integer to text
+C7508:	CALL	XBASIC_CAST_INTEGER_TO_STRING			; integer to text
 	JR	J7510
 
 ;	  Subroutine print float
@@ -7997,9 +8202,10 @@ J7BB0:	POP	AF
 	INC	IX			; update pointer to next float in serie
 	JR	J7BB0			; next
 
+;     XBASIC_CAST_INTEGER_TO_STRING
 ;	  Subroutine integer to text
-;	     Inputs  ________________________
-;	     Outputs ________________________
+;	     Inputs  HL (integer)
+;	     Outputs HL (string pointer)
 
 C7BD1:	LD	IX,FBUFFR+1
 	BIT	7,H			; postive integer ?

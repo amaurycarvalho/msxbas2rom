@@ -1007,6 +1007,10 @@ void Compiler::addCPL() {
     addByte(0x2F);
 }
 
+void Compiler::addLDI() {
+    addWord(0xED, 0xA0);
+}
+
 void Compiler::addLDIR() {
     addWord(0xED, 0xB0);
 }
@@ -1135,8 +1139,20 @@ void Compiler::addLdCB() {
     addByte(0x48);
 }
 
+void Compiler::addLdCD() {
+    addByte(0x4A);
+}
+
+void Compiler::addLdCE() {
+    addByte(0x4B);
+}
+
+void Compiler::addLdCH() {
+    addByte(0x4C);
+}
+
 void Compiler::addLdCL() {
-    addByte(0x4d);
+    addByte(0x4D);
 }
 
 void Compiler::addLdCiHL() {
@@ -2104,6 +2120,8 @@ bool Compiler::evalAction(ActionNode *action) {
                 cmd_irestore();
             } else if(lexeme->name == "RESUME") {
                 cmd_resume();
+            } else if(lexeme->name == "GET") {
+                cmd_get();
             } else if(lexeme->name == "SET") {
                 cmd_set();
             } else if(lexeme->name == "ON") {
@@ -9808,7 +9826,7 @@ void Compiler::cmd_set() {
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "BEEP") {
             cmd_set_beep();
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "DATE") {
-            syntax_error("Not supported yet");
+            cmd_set_date();
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "PAGE") {
             cmd_set_page();
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "PASSWORD") {
@@ -9820,7 +9838,7 @@ void Compiler::cmd_set() {
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "SCROLL") {
             cmd_set_scroll();
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "TIME") {
-            syntax_error("Not supported yet");
+            cmd_set_time();
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "TITLE") {
             cmd_set_title();
         } else if(next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "VIDEO") {
@@ -11021,6 +11039,231 @@ void Compiler::cmd_set_sprite() {
 
     } else {
         syntax_error("Missing parameters on SET SPRITE statement");
+    }
+
+}
+
+void Compiler::cmd_set_date() {
+    Lexeme *lexeme;
+    ActionNode *action = current_action->actions[0], *sub_action;
+    unsigned int i, t = action->actions.size();
+    int result_subtype;
+
+    if(t == 3) {
+
+        for(i = 0; i < t; i++) {
+
+            sub_action = action->actions[i];
+            lexeme = sub_action->lexeme;
+            if(lexeme) {
+
+                result_subtype = evalExpression(sub_action);
+                addCast(result_subtype, Lexeme::subtype_numeric);
+
+                switch(i) {
+                case 0: {
+                    addPushHL();
+                } break;
+                case 1: {
+                    addLdDL();
+                    addPushDE();
+                } break;
+                case 2: {
+                    addPopDE();
+                    addLdEL();
+                    addPopHL();
+                } break;
+
+                }
+
+            }
+
+        }
+
+        addCall(def_set_date);
+
+    } else {
+        syntax_error("Wrong SET DATE parameters count.\nTry: SET DATE iYear, iMonth, iDay");
+    }
+
+}
+
+void Compiler::cmd_set_time() {
+    Lexeme *lexeme;
+    ActionNode *action = current_action->actions[0], *sub_action;
+    unsigned int i, t = action->actions.size();
+    int result_subtype;
+
+    if(t == 3) {
+
+        for(i = 0; i < t; i++) {
+
+            sub_action = action->actions[i];
+            lexeme = sub_action->lexeme;
+            if(lexeme) {
+
+                result_subtype = evalExpression(sub_action);
+                addCast(result_subtype, Lexeme::subtype_numeric);
+
+                switch(i) {
+                case 0: {
+                    addLdHL();
+                    addPushHL();
+                } break;
+                case 1: {
+                    addPopDE();
+                    addLdEL();
+                    addPushDE();
+                } break;
+                case 2: {
+                    addLdAL();
+                    addPopHL();
+                } break;
+
+                }
+
+            }
+
+        }
+
+        addCall(def_set_time);
+
+    } else {
+        syntax_error("Wrong SET TIME parameters count.\nTry: SET TIME iHour, iMinute, iSecond");
+    }
+
+}
+
+
+void Compiler::cmd_get() {
+    ActionNode *action;
+    Lexeme *next_lexeme;
+    unsigned int t = current_action->actions.size();
+
+    if(t == 1) {
+
+        action = current_action->actions[0];
+        next_lexeme = action->lexeme;
+
+        if(next_lexeme->type == Lexeme::type_keyword) {
+            if(next_lexeme->value == "DATE") {
+                cmd_get_date();
+            } else if(next_lexeme->value == "TIME") {
+                cmd_get_time();
+            } else {
+                syntax_error("Invalid GET statement");
+            }
+        } else {
+            syntax_error("Invalid GET statement");
+        }
+
+    } else {
+        syntax_error("Wrong GET parameters count");
+    }
+
+}
+
+void Compiler::cmd_get_date() {
+    Lexeme *lexeme;
+    ActionNode *action = current_action->actions[0], *sub_action;
+    unsigned int i, t = action->actions.size();
+
+    if(t == 4) {
+
+        addCall(def_get_date);
+        addLdB(0);
+        addLdCA();
+        addPushBC();    // week
+        addLdCE();
+        addPushBC();    // day
+        addLdCD();
+        addPushBC();    // month
+        addPushHL();    // year
+
+        for(i = 0; i < t; i++) {
+
+            sub_action = action->actions[i];
+            lexeme = sub_action->lexeme;
+            if(lexeme) {
+
+                if(lexeme->type == Lexeme::type_identifier) {
+
+                    if(lexeme->subtype == Lexeme::subtype_numeric) {
+
+                        addVarAddress(sub_action);
+                        addPopDE();
+                        addLdiHLE();
+                        addIncHL();
+                        addLdiHLD();
+
+                    } else {
+                        syntax_error("Invalid GET DATE parameter type.\nTry: GET DATE iYear, iMonth, iDay, iWeek");
+                        return;
+                    }
+
+                } else {
+                    syntax_error("Invalid GET DATE parameter: it must be an integer variable.");
+                    return;
+                }
+
+            }
+
+        }
+
+    } else {
+        syntax_error("Wrong GET DATE parameters count.\nTry: GET DATE iYear, iMonth, iDay, iWeek");
+    }
+
+}
+
+void Compiler::cmd_get_time() {
+    Lexeme *lexeme;
+    ActionNode *action = current_action->actions[0], *sub_action;
+    unsigned int i, t = action->actions.size();
+
+    if(t == 3) {
+
+        addCall(def_get_time);
+        addLdB(0);
+        addLdCA();
+        addPushBC();    // seconds
+        addLdCL();
+        addPushBC();    // minutes
+        addLdCH();
+        addPushBC();    // hours
+
+        for(i = 0; i < t; i++) {
+
+            sub_action = action->actions[i];
+            lexeme = sub_action->lexeme;
+            if(lexeme) {
+
+                if(lexeme->type == Lexeme::type_identifier) {
+
+                    if(lexeme->subtype == Lexeme::subtype_numeric) {
+
+                        addVarAddress(sub_action);
+                        addPopDE();
+                        addLdiHLE();
+                        addIncHL();
+                        addLdiHLD();
+
+                    } else {
+                        syntax_error("Invalid GET TIME parameter type.\nTry: GET TIME iHour, iMinute, iSecond");
+                        return;
+                    }
+
+                } else {
+                    syntax_error("Invalid GET TIME parameter: it must be an integer variable.");
+                    return;
+                }
+
+            }
+
+        }
+
+    } else {
+        syntax_error("Wrong GET TIME parameters count.\nTry: GET TIME iHour, iMinute, iSecond");
     }
 
 }

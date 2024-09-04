@@ -280,6 +280,8 @@ bool Parser::eval_statement(LexerLine *statement) {
             result = eval_cmd_time(statement);
         } else if(lexeme->value == "SET") {
             result = eval_cmd_set(statement);
+        } else if(lexeme->value == "GET") {
+            result = eval_cmd_get(statement);
         } else if(lexeme->value == "ON") {
             result = eval_cmd_on(statement);
         } else if(lexeme->value == "INTERVAL") {
@@ -3975,6 +3977,35 @@ bool Parser::eval_cmd_set_sprite_colpattra(LexerLine *statement) {
     }
 
     return true;
+}
+
+bool Parser::eval_cmd_get(LexerLine *statement) {
+    Lexeme *next_lexeme;
+    ActionNode *action;
+    bool result = false;
+
+    if( (next_lexeme = statement->getNextLexeme()) ) {
+
+        next_lexeme = coalesceSymbols(next_lexeme);
+
+        next_lexeme = statement->getCurrentLexeme();
+        action = new ActionNode(next_lexeme);
+        pushActionRoot(action);
+
+        if (next_lexeme->type == Lexeme::type_keyword) {
+
+            if (    next_lexeme->value == "DATE" ||
+                    next_lexeme->value == "TIME" ) {
+                result = eval_cmd_generic(statement);
+            }
+
+        }
+
+        popActionRoot();
+
+    }
+
+    return result;
 }
 
 bool Parser::eval_cmd_screen(LexerLine *statement) {
