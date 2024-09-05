@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.2.3"
+#define app_version "0.3.2.4"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -63,6 +63,7 @@ https://github.com/amaurycarvalho/msxbas2rom )";
 const char * info_history = R"(
 Version history
 
+0.3.2.4 – (2024/09/05) GET DATE date_format parameter;
 0.3.2.3 – (2024/09/04) Custom SET DATE/TIME, GET DATE/TIME stmts;
 0.3.2.2 – (2024/06/19) MegaROM size estimate bug fix;
 0.3.2.1 – (2024/05/23) MegaROM > 256kb bug fix and -c as default;
@@ -550,8 +551,15 @@ EXTENDED COMMANDS
   SET/GET DATE/TIME custom syntax
      SET DATE iYear, iMonth, iDay
      SET TIME iHour, iMinute, iSecond
-     GET DATE iYear, iMonth, iDay, iWeek
+     GET DATE iYear, iMonth, iDay [, iWeek [, iDateFormat]]
      GET TIME iHour, iMinute, iSecond
+
+     Code Date Format
+     0    YY/MM/DD
+     1    MM/DD/YY
+     2    DD/MM/YY
+
+     Week day: 0=Sunday
 
 EXTENDED FUNCTIONS
 

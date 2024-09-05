@@ -11168,12 +11168,21 @@ void Compiler::cmd_get_date() {
     ActionNode *action = current_action->actions[0], *sub_action;
     unsigned int i, t = action->actions.size();
 
-    if(t == 4) {
+    if(t >= 3 && t <= 5) {
 
         addCall(def_get_date);
         addLdB(0);
-        addLdCA();
-        addPushBC();    // week
+        if(t > 4) {
+            addExAF();
+            addLdAii(0x002B);
+            addLdCA();
+            addPushBC();    // date format
+            addExAF();
+        }
+        if(t > 3) {
+            addLdCA();
+            addPushBC();    // week
+        }
         addLdCE();
         addPushBC();    // day
         addLdCD();
@@ -11197,7 +11206,7 @@ void Compiler::cmd_get_date() {
                         addLdiHLD();
 
                     } else {
-                        syntax_error("Invalid GET DATE parameter type.\nTry: GET DATE iYear, iMonth, iDay, iWeek");
+                        syntax_error("Invalid GET DATE parameter type.\nTry: GET DATE iYear, iMonth, iDay, iWeek, iDateFmt");
                         return;
                     }
 
@@ -11211,7 +11220,7 @@ void Compiler::cmd_get_date() {
         }
 
     } else {
-        syntax_error("Wrong GET DATE parameters count.\nTry: GET DATE iYear, iMonth, iDay, iWeek");
+        syntax_error("Wrong GET DATE parameters count.\nTry: GET DATE iYear, iMonth, iDay, iWeek, iDateFmt");
     }
 
 }

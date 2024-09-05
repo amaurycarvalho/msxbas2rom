@@ -1,5 +1,6 @@
 # Version history
 
+- 0.3.2.4 – (2024/09/05) GET DATE date_format parameter;
 - 0.3.2.3 – (2024/09/04) Custom SET DATE/TIME, GET DATE/TIME stmts;
 - 0.3.2.2 – (2024/06/19) MegaROM size estimate bug fix;
 - 0.3.2.1 – (2024/05/23) MegaROM > 256kb bug fix and -c as default;

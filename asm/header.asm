@@ -2591,13 +2591,14 @@ cmd_get_date:
       ld c, 9           ; month (units)
       call SUB_REDCLK
       add a, l
-      ld d, a
-      ld c, 8           ; day (tens)
-      call SUB_REDCLK
-      call cmd_clock_mult10
-      ld c, 7           ; day (units)
-      call SUB_REDCLK
-      add a, l
+      push af
+        ld c, 8           ; day (tens)
+        call SUB_REDCLK
+        call cmd_clock_mult10
+        ld c, 7           ; day (units)
+        call SUB_REDCLK
+        add a, l
+      pop de
       ld e, a
     pop hl
     ld c, 6             ; week
@@ -2645,8 +2646,7 @@ cmd_get_time:
     pop hl
     ret
 
-; SET DATE (2BH)
-; Parameters: C = 2BH (_SDATE)
+; SET DATE
 ; Input:      HL = Year 1980...2079
 ;             D = Month (1=Jan...12=Dec)
 ;             E = Day (1...31)
@@ -2654,6 +2654,7 @@ cmd_set_date:
   ld a,(VERSION)
   or a                  ; MSX2 or above?
   ret z
+  call cmd_clock_disable
   push de
     xor a
     ld bc,1980
@@ -2685,10 +2686,10 @@ cmd_set_date:
   call SUB_WRTCLK
   ld a, e
   ld c, 7               ; day (units)
-  jp SUB_WRTCLK
+  call SUB_WRTCLK
+  jp cmd_clock_enable
 
-; SET TIME (2DH)
-; Parameters: C = 2DH (_STIME)
+; SET TIME
 ; Input:      H = Hours
 ;             L = Minutes
 ;             A = Seconds
@@ -2697,6 +2698,7 @@ cmd_set_time:
   ld a,(VERSION)
   or a                  ; MSX2 or above?
   ret z
+  call cmd_clock_disable
   push de
     push hl
       ld l, h
@@ -2725,23 +2727,30 @@ cmd_set_time:
   call SUB_WRTCLK
   ld a, e
   ld c, 0               ; seconds (units)
-  jp SUB_WRTCLK
+  call SUB_WRTCLK
+  jp cmd_clock_enable
 
-; multiply A by 10
+; multiply A by 10 (result = HL)
 cmd_clock_mult10:
-  ld hl, 0
-  ld bc, 10
-  or a
-cmd_clock_mult10.loop:
-  ret z
-  add hl, bc
-  dec a
-  jr cmd_clock_mult10.loop
+  ld de, 10
+  ld h, d
+  ld l, a
+  jp XBASIC_MULTIPLY_INTEGERS
 
-; divide HL by 10 (remainder = DE)
+; divide HL by 10 (result = HL, remainder = DE)
 cmd_clock_div10:
   ld de, 10
   jp XBASIC_DIVIDE_INTEGERS
+
+cmd_clock_disable:
+  xor a
+  ld c,13               ; disable Real Time Clock
+  jr SUB_WRTCLK
+
+cmd_clock_enable:
+  ld a, 8
+  ld c,13               ; enable Real Time Clock
+  jr SUB_WRTCLK
 
 ; Entry:	C = block number (bits 5-4) and register (bits 3-0) to read.
 ; Output:	A = 4 least significant bits content of the register read.
