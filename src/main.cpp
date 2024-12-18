@@ -18,7 +18,7 @@
 #include <iostream>
 #include <ctype.h>
 #ifndef MacOS
-  #include <malloc.h>
+#include <malloc.h>
 #endif
 #include <math.h>
 
@@ -147,9 +147,17 @@ int main(int argc, char *argv[]) {
 
     s = strrchr(outputFilename, '.');
     if(s) {
-        strcpy(s, ".rom");
+        if(parmXtd) {
+            strcpy(s, "[KonamiSCC].rom");
+        } else {
+            strcpy(s, ".rom");
+        }
     } else {
-        strcat(outputFilename, ".rom");
+        if(parmXtd) {
+            strcat(outputFilename, "[KonamiSCC].rom");
+        } else {
+            strcat(outputFilename, ".rom");
+        }
     }
 
     s = strrchr(symbolFilename, '.');

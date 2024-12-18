@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.2.4"
+#define app_version "0.3.2.5"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -63,6 +63,7 @@ https://github.com/amaurycarvalho/msxbas2rom )";
 const char * info_history = R"(
 Version history
 
+0.3.2.5 – (2024/12/18) KonamiSCC filename sufix added to MegaROM;
 0.3.2.4 – (2024/09/05) GET DATE date_format parameter;
 0.3.2.3 – (2024/09/04) Custom SET DATE/TIME, GET DATE/TIME stmts;
 0.3.2.2 – (2024/06/19) MegaROM size estimate bug fix;
