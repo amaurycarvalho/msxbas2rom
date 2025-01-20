@@ -2879,7 +2879,6 @@ bool Parser::eval_cmd_line(LexerLine *statement) {
                         continue;
                     } else if( next_lexeme->isOperator("-") ) {
                         startAsParm2 = true;
-                        parmCount ++;
                         continue;
                     } else {
                         error_message = "LINE without a valid complement.";
