@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.2.5"
+#define app_version "0.3.2.6"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -63,6 +63,7 @@ https://github.com/amaurycarvalho/msxbas2rom )";
 const char * info_history = R"(
 Version history
 
+0.3.2.6 – (2025/01/20) LINE bug fix and SCREEN ON/OFF stmt;
 0.3.2.5 – (2024/12/18) KonamiSCC filename sufix added to MegaROM;
 0.3.2.4 – (2024/09/05) GET DATE date_format parameter;
 0.3.2.3 – (2024/09/04) Custom SET DATE/TIME, GET DATE/TIME stmts;
@@ -452,9 +453,13 @@ EXTENDED COMMANDS
     CMD RSCTORAM <resource>, <dest address> [, <pletter? 0=no, 1=yes>]
 
   Inhibits the screen display
+    SCREEN OFF
+        or
     CMD DISSCR
 
   Display the screen
+    SCREEN ON
+        or
     CMD ENASCR
 
   Turn off keyboard clicks (for xbasic use)

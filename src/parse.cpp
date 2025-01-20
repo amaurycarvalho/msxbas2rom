@@ -4022,6 +4022,10 @@ bool Parser::eval_cmd_screen(LexerLine *statement) {
                 return eval_cmd_screen_scroll(statement);
             } else if(next_lexeme->value == "LOAD") {
                 return eval_cmd_screen_load(statement);
+            } else if(next_lexeme->value == "ON") {
+                return eval_cmd_screen_on(statement);
+            } else if(next_lexeme->value == "OFF") {
+                return eval_cmd_screen_off(statement);
             }
 
         }
@@ -4134,6 +4138,17 @@ bool Parser::eval_cmd_screen_load(LexerLine *statement) {
     result = eval_cmd_generic(statement);
     popActionRoot();
     return result;
+}
+
+bool Parser::eval_cmd_screen_on(LexerLine *statement) {
+    Lexeme *next_lexeme = statement->getCurrentLexeme();
+    pushActionFromLexeme(next_lexeme);
+    popActionRoot();
+    return true;
+}
+
+bool Parser::eval_cmd_screen_off(LexerLine *statement) {
+    return eval_cmd_screen_on(statement);
 }
 
 bool Parser::eval_cmd_on(LexerLine *statement) {

@@ -313,6 +313,8 @@ class Compiler {
     void cmd_screen_paste();
     void cmd_screen_scroll();
     void cmd_screen_load();
+    void cmd_screen_on();
+    void cmd_screen_off();
     void cmd_color();
     void cmd_width();
     void cmd_pset(bool forecolor);

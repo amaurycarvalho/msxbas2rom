@@ -8100,6 +8100,14 @@ void Compiler::cmd_screen() {
             current_action = action;
             cmd_screen_load();
             return;
+        } else if(lexeme->value == "ON") {
+            current_action = action;
+            cmd_screen_on();
+            return;
+        } else if(lexeme->value == "OFF") {
+            current_action = action;
+            cmd_screen_off();
+            return;
         }
 
         for(i = 0; i < t; i++) {
@@ -8392,6 +8400,20 @@ void Compiler::cmd_screen_load() {
     } else {
         syntax_error("SCREEN LOAD with empty parameters");
     }
+
+}
+
+void Compiler::cmd_screen_on() {
+
+    // call cmd_enascr
+    addCall(def_cmd_enascr);
+
+}
+
+void Compiler::cmd_screen_off() {
+
+    // call cmd_disscr
+    addCall(def_cmd_disscr);
 
 }
 
@@ -11061,18 +11083,21 @@ void Compiler::cmd_set_date() {
                 addCast(result_subtype, Lexeme::subtype_numeric);
 
                 switch(i) {
-                case 0: {
-                    addPushHL();
-                } break;
-                case 1: {
-                    addLdDL();
-                    addPushDE();
-                } break;
-                case 2: {
-                    addPopDE();
-                    addLdEL();
-                    addPopHL();
-                } break;
+                    case 0: {
+                            addPushHL();
+                        }
+                        break;
+                    case 1: {
+                            addLdDL();
+                            addPushDE();
+                        }
+                        break;
+                    case 2: {
+                            addPopDE();
+                            addLdEL();
+                            addPopHL();
+                        }
+                        break;
 
                 }
 
@@ -11106,19 +11131,22 @@ void Compiler::cmd_set_time() {
                 addCast(result_subtype, Lexeme::subtype_numeric);
 
                 switch(i) {
-                case 0: {
-                    addLdHL();
-                    addPushHL();
-                } break;
-                case 1: {
-                    addPopDE();
-                    addLdEL();
-                    addPushDE();
-                } break;
-                case 2: {
-                    addLdAL();
-                    addPopHL();
-                } break;
+                    case 0: {
+                            addLdHL();
+                            addPushHL();
+                        }
+                        break;
+                    case 1: {
+                            addPopDE();
+                            addLdEL();
+                            addPushDE();
+                        }
+                        break;
+                    case 2: {
+                            addLdAL();
+                            addPopHL();
+                        }
+                        break;
 
                 }
 
