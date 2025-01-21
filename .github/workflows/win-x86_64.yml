@@ -9,18 +9,12 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2.0.0
-    - name: Make (clean, release)
-      run: make clean release
-    - name: Do test
+    - name: Unit testing
       run: |
-        cp -av bin/Release/* test/check/simple
-        cd test/check/simple
-        chmod +x msxbas2rom
-        array="$(ls *.bas)"
-        for i in ${array[*]}; do
-          echo $i
-          ./msxbas2rom -c -q $i
-        done
+        cd test/unit
+        make all
+        chmod +x test
+        ./test
                    
   test-windows:
     runs-on: windows-latest
@@ -33,9 +27,9 @@ jobs:
       uses: actions/checkout@v2
     - name: Make -> clean release (64bits)
       run: make PARMS=-m64 clean release
-    - name: Do test
+    - name: Integration test
       run: |
-        cp bin\Release\*.exe test\check\simple
+        cp bin\Release\*.exe test\deprecated\check\simple
         cd test\check\simple
         $files = Get-ChildItem -Path .\*.bas -Name
         foreach ($f in $files) {
