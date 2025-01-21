@@ -1,3 +1,15 @@
+//---------------------------------------------------------------------------
+// MSXBAS2ROM unit testing
+//---------------------------------------------------------------------------
+// By Amaury Carvalho (2025)
+// doctest reference:
+//   https://github.com/doctest/doctest/blob/master/doc/markdown/tutorial.md
+// compiling:
+//   make all
+// testing:
+//   ./test
+//---------------------------------------------------------------------------
+
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest/doctest.h"
 #include "lex.h"
