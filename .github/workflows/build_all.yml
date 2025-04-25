@@ -76,7 +76,7 @@ jobs:
     - name: Make -> clean release (64bits)
       run: make PARMS=-m64 clean release
     - name: Upload artifact (64bits)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@latest
       with:
         name: msxbas2rom-windows-x64-bin
         path: bin/Release/msxbas2rom.exe
