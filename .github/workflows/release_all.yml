@@ -22,7 +22,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2.0.0
     - name: Download all artifacts
-      uses: actions/download-artifact@latest
+      uses: actions/download-artifact@v4
     - name: Packing linux artifact (x64) - tar.gz
       run: |
           tar cvzf  msxbas2rom-${{ steps.get_tag.outputs.VERSION }}-linux-x64-bin.tar.gz msxbas2rom-linux-x64-bin/*

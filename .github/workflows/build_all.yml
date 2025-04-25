@@ -19,7 +19,7 @@ jobs:
     - name: Make (clean, release)
       run: make clean release
     - name: Upload artifact
-      uses: actions/upload-artifact@latest
+      uses: actions/upload-artifact@v4
       with:
         name: msxbas2rom-linux-x64-bin
         path: bin/Release/msxbas2rom
@@ -34,7 +34,7 @@ jobs:
     - name: Make -> clean release
       run: make clean release
     - name: Upload artifact
-      uses: actions/upload-artifact@latest
+      uses: actions/upload-artifact@v4
       with:
         name: msxbas2rom-mac-x86_64-bin
         path: bin/Release/msxbas2rom*
@@ -57,7 +57,7 @@ jobs:
     - name: Make -> clean release (32bits)
       run: make PARMS=-m32 clean release
     - name: Upload artifact (32bits)
-      uses: actions/upload-artifact@latest
+      uses: actions/upload-artifact@v4
       with:
         name: msxbas2rom-windows-x32-bin
         path: bin/Release/msxbas2rom.exe
@@ -76,7 +76,7 @@ jobs:
     - name: Make -> clean release (64bits)
       run: make PARMS=-m64 clean release
     - name: Upload artifact (64bits)
-      uses: actions/upload-artifact@latest
+      uses: actions/upload-artifact@v4
       with:
         name: msxbas2rom-windows-x64-bin
         path: bin/Release/msxbas2rom.exe
