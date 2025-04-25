@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.2.6"
+#define app_version "0.3.2.7"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -54,6 +54,8 @@ https://github.com/amaurycarvalho/msxbas2rom )";
 
 /*
 0.0.0.0 – (2023/xx/xx) RUN support to call sub-programs;
+0.0.0.0 – (2023/xx/xx) FM/SCC music support (furnace? Trillo Tracker?);
+0.0.0.0 – (2023/xx/xx) AKG music file support (Arkos Tracker);
 0.0.0.0 – (2023/xx/xx) Disk file support;
 0.0.0.0 – (2023/xx/xx) Better support to double precision type (BCD);
 0.0.0.0 – (2023/xx/xx) SET TILE FLIP/ROTATE new command;
@@ -63,6 +65,7 @@ https://github.com/amaurycarvalho/msxbas2rom )";
 const char * info_history = R"(
 Version history
 
+0.3.2.7 – (2025/04/25) DRAW bug fix;
 0.3.2.6 – (2025/01/20) LINE bug fix and SCREEN ON/OFF stmt;
 0.3.2.5 – (2024/12/18) KonamiSCC filename sufix added to MegaROM;
 0.3.2.4 – (2024/09/05) GET DATE date_format parameter;
@@ -385,9 +388,9 @@ COMPILING CODE
 
 RESOURCES DIRECTIVES
 
-  TEXT <text>
+  TEXT <string>
   FILE <file name>
-  INCLUDE <file name>
+  INCLUDE <MSX BASIC source code file name>
 
 EXTENDED COMMANDS
 
@@ -401,7 +404,7 @@ EXTENDED COMMANDS
   Draw a text resource with Basic (xbasic compatible)
     CMD DRAW <rsn>
 
-  Exec a binary uncompressed resource as an assembly code
+  Exec a small binary uncompressed resource (<256 bytes) as an assembly code
     CMD RUNASM <rsn>
 
   Exec a text resource as a plain text basic code (must start with ':')

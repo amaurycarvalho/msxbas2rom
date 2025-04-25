@@ -1389,7 +1389,9 @@ SymbolNode* Compiler::addSymbol(string line) {
     if(!found) {
         tag = new TagNode();
         tag->name = line;
-        tag->value = current_tag->name;
+        if(current_tag)
+            tag->value = current_tag->name;
+        else tag->value = "SUPPORT_ROUTINE";
         symbol = addSymbol(tag);
     }
 
@@ -13901,10 +13903,11 @@ void Compiler::addEnableBasicSlot() {
         addEI();
     } else {
         // call enable basic slot function
-        if(enable_basic_mark)
+        if(enable_basic_mark) {
             addFix(enable_basic_mark->symbol);
-        else
+        } else {
             enable_basic_mark = addMark();
+        }
         addCall(0x0000);
     }
 }
