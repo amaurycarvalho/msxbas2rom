@@ -71,7 +71,7 @@ class Rom {
   public:
     int code_start, rom_size;
     double stdMemoryPerc, rscMemoryPerc;
-    bool turbo, xtd, stripRemLines;
+    bool turbo, xtd, stripRemLines, konamiSCC;
 
     FileNode file;
 

@@ -54,7 +54,7 @@ Also, once in a while games developed using MSXBAS2ROM will be released as gift 
 - ON [PATREON](https://www.patreon.com/msxbas2rom);
 - ON [PAYPAL](https://www.paypal.com/donate?business=X793ZKW56SRBY&item_name=MSXBAS2ROM+compiler+project&currency_code=BRL);
 - ON [CATARSE.ME](https://www.catarse.me/msxbas2rom_msx_basic_compiler_21ec);
-- BRAZILIAN [PIX KEY](amauryspires@gmail.com).
+- Via Brazilian PIX: contact me for more information.
 
 Note: MSXBAS2ROM it's still an experimental prototype, so it's current status is development in progress.
 
@@ -63,7 +63,9 @@ Note: MSXBAS2ROM it's still an experimental prototype, so it's current status is
 - Luciano Cadari ([iPlay](http://www.iplay.com.br));
 - Mario Cavalcanti ([ClubeMSX](http://www.clubemsx.com.br));
 - Pedro de Medeiros;
-- Claudio Rodrigues;
+- Claudio Pinheiro;
+- Diogo Patrao;
+- Paulo Goncalves;
 - Gilberto Taborda;
 - Ronaldo Prado;
 - Julio Berrincha.

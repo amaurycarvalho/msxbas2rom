@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.2.7"
+#define app_version "0.3.2.8"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -18,14 +18,14 @@ bool parmHelp=false,  parmDebug=false,
      parmVer=false, parmTurbo=false,
      parmDoc=false, parmXtd=false,
      parmNoStripRemLines=false, parmSymbols=false,
-     parmCompile=false, parmLineNumber=false;
+     parmCompile=false, parmLineNumber=false, parmKonamiSCC=false;
 
 bool FileExists(char *filename);
 bool SaveSymbolFile(Compiler *compiler, int code_start);
 bool SaveSymbolFile(CompilerPT3 *compiler, int code_start);
 
 const char * info_splash = R"(MSXBAS2ROM - MSX BASIC TO ROM COMPILER
-Created by Amaury Carvalho (2020-2024)
+Created by Amaury Carvalho (2020-2025)
 Version:)";
 
 const char * info_support = R"(
@@ -47,6 +47,7 @@ Options:
        --ver = display version history
        --lin = register line numbers (compile mode)
        --nsr = no strip remark lines (tokenized/turbo mode, deprecated)
+       --scc = Konami with SCC MegaROM format support
 Output: <filename.rom>
 
 See more information at:
@@ -65,6 +66,7 @@ https://github.com/amaurycarvalho/msxbas2rom )";
 const char * info_history = R"(
 Version history
 
+0.3.2.8 – (2025/07/21) ASCII8 MegaROM format support;
 0.3.2.7 – (2025/04/25) DRAW bug fix;
 0.3.2.6 – (2025/01/20) LINE bug fix and SCREEN ON/OFF stmt;
 0.3.2.5 – (2024/12/18) KonamiSCC filename sufix added to MegaROM;
@@ -295,8 +297,8 @@ COMPILING CODE
        * 64kb Memory Mapper and/or MegaRAM for running with SofaRun;
        * MegaROM compiled mode needs a Memory Mapper and/or MegaRAM with
          at least the same size as the final ROM for running it in memory
-         with ExecROM (note: not required for running as Konami SCC
-         Cartridge in emulators);
+         with ExecROM (note: not required for running as ASCII8 or
+         Konami SCC Cartridge in emulators);
      - Partial file support (OPEN "GRP:", PRINT #...);
      - No dynamic arrays (REDIM);
      - No variant data type (only string, integer and single);

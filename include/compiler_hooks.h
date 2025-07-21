@@ -39,7 +39,7 @@
 
 //-- start of header.symbols adjust
 
-#define def_wrapper_routines_map_start   0x40C0
+#define def_wrapper_routines_map_start   0x40DB  // see "wrapper_routines_map_start" correct address in "header.symbols.asm"
 
 #define def_castParamFloatInt            def_wrapper_routines_map_start
 

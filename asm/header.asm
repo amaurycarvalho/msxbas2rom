@@ -362,28 +362,28 @@ ENDM
     db 'MSXB2R'     ; MSXBAS2ROM signature
 	;dw 0,0,0	    ; Reserved
 
-INIT1:	; Program code entry point label - 'c' has rom slot id
+INIT1:	                    ; Program code entry point label - 'c' has rom slot id
 
     ld a, (EXPTBL)
     ld h, 0x00
-    call SUB_ENASLT       ; page 0 - enable bios rom (Victor HC-95/Sony HB-F500 bug fix on ExecROM with disk driver)
+    call SUB_ENASLT         ; page 0 - enable bios rom (Victor HC-95/Sony HB-F500 bug fix on ExecROM with disk driver)
 
-    ld h, 0x40            ; page 1 - this rom
+    ld h, 0x40              ; page 1 - this rom
     call page.getslt
 
-    ld (SLTSTR), a        ; start slot
+    ld (SLTSTR), a          ; start slot
 
     ld hl, pre_start.hook_data
     ld de, HSTKE
     ld bc, 5
     ldir
 
-    ld (HSTKE+1), a     ; program rom slot
+    ld (HSTKE+1), a         ; program rom slot
 
     ret
 
 pre_start.hook_data:
-  db 0xF7, 0x00         ; CALLF
+  db 0xF7, 0x00             ; CALLF
   dw start
   db 0xC9
 
@@ -391,6 +391,20 @@ start:
   call verify.slots
 
   call select_rom_on_page_2
+
+megarom_ascii8_bug_fix:
+  ld a, (0x8000)            ; ASCII8 MegaROM loading bug fix
+  cp 0x41
+  jr nz, clear_basic_environment
+    ld a, (0x8001)
+    cp 0x42
+    jr nz, clear_basic_environment
+      ld a, 1
+      ld (0x6800), a
+      inc a
+      ld (0x7000), a
+      inc a
+      ld (0x7800), a
 
 clear_basic_environment:
   ld a, 0xC9
@@ -3092,10 +3106,19 @@ gfxVDP.set:
 ;---------------------------------------------------------------------------------------------------------
 ; MEGAROM SUPPORT CODE
 ; out (0x8E), a - MEGAROM SELECT TO READ
+; https://www.msx.org/wiki/MegaROM_Mappers
+;   ASCII 8K
+;       Page (8kB)                              Switching address
+;       6000h~7FFFh (mirror: E000h~FFFFh)	    6800h (mirrors: 6801h~6FFFh)
+;       8000h~9FFFh (mirror: 0000h~1FFFh)       7000h (mirrors: 7001h~77FFh)
+;       A000h~BFFFh (mirror: 2000h~3FFFh)       7800h (mirrors: 7801h~7FFFh)
+;   Konami MegaROMs with SCC
+;       8000h~9FFFh (mirror: 0000h~1FFFh)	    9000h (mirrors: 9001h~97FFh)
+;       A000h~BFFFh (mirror: 2000h~3FFFh)	    B000h (mirrors: B001h~B7FFh)
 ;---------------------------------------------------------------------------------------------------------
 
-Seg_P8000_SW:	 equ 0x9000 ; Segment switch on page 8000h-9FFFh (Konami with SCC Mapper)
-Seg_PA000_SW:	 equ 0xB000 ; Segment switch on page A000h-BFFFh (Konami with SCC Mapper)
+Seg_P8000_SW:	 equ 0x7000 ; Segment switch on page 8000h-9FFFh (ASCII8 or Konami with SCC Mapper)
+Seg_PA000_SW:	 equ 0x7800 ; Segment switch on page A000h-BFFFh (ASCII8 or Konami with SCC Mapper)
 MR_TRAP_FLAG:    equ 0xFC82
 MR_TRAP_SEGMS:   equ MR_TRAP_FLAG+1
 

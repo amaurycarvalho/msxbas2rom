@@ -1,6 +1,8 @@
 //-------------------------------------------------------------------
 // Compiler class specialized as a Z80 code builder for MSX system
 // created by Amaury Carvalho, 2020
+// References:
+//    Z80 Opcodes - https://clrhome.org/table/
 //-------------------------------------------------------------------
 
 #include "compiler.h"

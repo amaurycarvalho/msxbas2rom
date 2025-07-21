@@ -1419,6 +1419,31 @@ void Rom::buildHeaderAdjust() {
             if(xtd) {
                 resource_address = rscAddr + 0x0010;                  // resource map start address
                 resource_segment = rscSgm;                            // resource map segment (128kb rom)
+                // https://www.msx.org/wiki/MegaROM_Mappers
+                //   ASCII 8K
+                //       Page (8kB)                              Switching address
+                //       8000h~9FFFh (mirror: 0000h~1FFFh)       7000h (mirrors: 7001h~77FFh)
+                //       A000h~BFFFh (mirror: 2000h~3FFFh)       7800h (mirrors: 7801h~7FFFh)
+                //   Konami MegaROMs with SCC
+                //       8000h~9FFFh (mirror: 0000h~1FFFh)	    9000h (mirrors: 9001h~97FFh)
+                //       A000h~BFFFh (mirror: 2000h~3FFFh)	    B000h (mirrors: B001h~B7FFh)
+                if(konamiSCC) {
+                    char *p = (char *) &data[xbcAddr + 0xDB];
+                    int mapperCount = 0;
+                    for(int i = 0; i < 0x4000; i++) {
+                        if(p[1] == 0 && (p[0] == 0x32 || p[0] == 0x3A) && (p[2]==0x70 || p[2] ==0x78)) {
+                            if(p[2] == 0x70) {
+                                p[2] = 0x90;
+                            } else p[2] = 0xB0;
+                            mapperCount++;
+                            p += 3;
+                        } else p++;
+                    }
+                    if(mapperCount != 6) {
+                        printf("ERROR: Konami SCC ROM format adjust failed (%i locations)\n", mapperCount);
+                        errorFound = true;
+                    }
+                }
             } else {
                 resource_address = mapAddr;                           // resource map start address
                 resource_segment = 0;                                 // resource map segment (48kb rom)

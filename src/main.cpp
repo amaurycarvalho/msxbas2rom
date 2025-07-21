@@ -1,14 +1,13 @@
 //******************************************************************************
 //  PROJECT.......: MSXBAS2ROM
 //  COPYRIGHT.....: Copyright (C) 2020- Amaury S P Carvalho
-//  VERSION.......: 0.1
 //  DESCRIPTION...: MSX BASIC to ROM converter
-//  HOME PAGE.....: http://launchpad.net/msxbas2rom
+//  HOME PAGE.....: https://github.com/amaurycarvalho/msxbas2rom/
 //  CONTACT EMAIL.: amauryspires@gmail.com
-//  HISTORY.......:
-//  PERSON          DATE         COMMENT
-//  --------        ----------   -----------------------------------------------
-//  Amaury          21/05/2020   Initial version created
+//  HELP..........: msxbas2rom -h
+//  HISTORY.......: msxbas2rom --ver
+//  DOCUMENTATION.: msxbas2rom --doc
+//  UNIT TESTING..: ./test/unit/test
 //******************************************************************************
 
 #include <stdio.h>
@@ -41,7 +40,8 @@ int main(int argc, char *argv[]) {
     parmCompile = true;     // default = compile mode
 
     for(i = 1; i < argc; i++) {
-        if( argv[i][0] == '/' || argv[i][0] == '-' ) {
+        char *p = &argv[i][0];
+        if( p[0] == '/' || p[0] == '-' ) {
             switch( argv[i][1] ) {
                 case 'h':
                 case 'H':
@@ -77,14 +77,16 @@ int main(int argc, char *argv[]) {
                     parmSymbols = true;
                     break;
                 case '-': {
-                        if (argv[i][2] == 'v' && argv[i][3] == 'e' && argv[i][4] == 'r' ) {
+                        if (p[2] == 'v' && p[3] == 'e' && p[4] == 'r' ) {
                             parmVer = true;
-                        } else if (argv[i][2] == 'd' && argv[i][3] == 'o' && argv[i][4] == 'c' ) {
+                        } else if (p[2] == 'd' && p[3] == 'o' && p[4] == 'c' ) {
                             parmDoc = true;
-                        } else if (argv[i][2] == 'n' && argv[i][3] == 's' && argv[i][4] == 'r' ) {
+                        } else if (p[2] == 'n' && p[3] == 's' && p[4] == 'r' ) {
                             parmNoStripRemLines = true;
-                        } else if (argv[i][2] == 'l' && argv[i][3] == 'i' && argv[i][4] == 'n' ) {
+                        } else if (p[2] == 'l' && p[3] == 'i' && p[4] == 'n' ) {
                             parmLineNumber = true;
+                        } else if (p[2] == 's' && p[3] == 'c' && p[4] == 'c' ) {
+                            parmKonamiSCC = true;
                         }
                     }
                     break;
@@ -148,13 +150,19 @@ int main(int argc, char *argv[]) {
     s = strrchr(outputFilename, '.');
     if(s) {
         if(parmXtd) {
-            strcpy(s, "[KonamiSCC].rom");
+            if(parmKonamiSCC) {
+                strcpy(s, "[KonamiSCC].rom");
+            } else
+                strcpy(s, "[ASCII8].rom");
         } else {
             strcpy(s, ".rom");
         }
     } else {
         if(parmXtd) {
-            strcat(outputFilename, "[KonamiSCC].rom");
+            if(parmKonamiSCC) {
+                strcat(outputFilename, "[KonamiSCC].rom");
+            } else
+                strcat(outputFilename, "[ASCII8].rom");
         } else {
             strcat(outputFilename, ".rom");
         }
@@ -258,6 +266,7 @@ int main(int argc, char *argv[]) {
         } else {
 
             compiler.megaROM = parmXtd;
+            compiler.konamiSCC = parmKonamiSCC;
             compiler.debug = parmDebug;
             compiler.has_line_number = parmLineNumber;
 
@@ -270,7 +279,10 @@ int main(int argc, char *argv[]) {
 
             if(! parmQuiet) {
                 if(compiler.megaROM) {
-                    printf("    Compiling for MegaROM format (Konami with SCC mapper)\n");
+                    if(compiler.konamiSCC) {
+                        printf("    Compiling for MegaROM format (Konami with SCC mapper)\n");
+                    } else
+                        printf("    Compiling for MegaROM format (ASCII8 mapper)\n");
                 }
                 printf("    Compiled code size = %i byte(s)\n", compiler.code_size);
                 printf("    Memory allocated to variables = %i byte(s)\n", compiler.ram_size);
@@ -284,6 +296,7 @@ int main(int argc, char *argv[]) {
             printf("(4) Building ROM...\n");
 
         rom.xtd = parmXtd;
+        rom.konamiSCC = parmKonamiSCC;
 
         if(parser.has_pt3) {
 
@@ -333,7 +346,10 @@ int main(int argc, char *argv[]) {
                 }
 
                 if(parmXtd) {
-                    printf("Extended memory scheme mode activated (Konami with SCC mapper).\n");
+                    if(parmKonamiSCC) {
+                        printf("Extended memory scheme mode activated (Konami with SCC mapper).\n");
+                    } else
+                        printf("Extended memory scheme mode activated (ASCII8 mapper).\n");
                     printf("MegaROM size = %ikb\n", compilerPT3.segm_total * 8);
                     printf("Resources+Compiled code occupied %.1f%% of MegaROM space\n",  rom.stdMemoryPerc);
                 } else {
@@ -376,7 +392,10 @@ int main(int argc, char *argv[]) {
                 }
 
                 if(parmXtd) {
-                    printf("Extended memory scheme mode activated (Konami with SCC mapper).\n");
+                    if(parmKonamiSCC) {
+                        printf("Extended memory scheme mode activated (Konami with SCC mapper).\n");
+                    } else
+                        printf("Extended memory scheme mode activated (ASCII8 mapper).\n");
                     printf("MegaROM size = %ikb (%.1f%% free)\n", rom.rom_size / 1024, 100.0 - rom.stdMemoryPerc - rom.rscMemoryPerc);
                     if(compiler.resourceList.size()) {
                         printf("Resources occupied %.1f%% of MegaROM space\n",  rom.rscMemoryPerc);
@@ -455,6 +474,7 @@ int main(int argc, char *argv[]) {
 
         rom.turbo = parmTurbo;
         rom.xtd = parmXtd;
+        rom.konamiSCC = parmKonamiSCC;
         rom.stripRemLines = !parmNoStripRemLines;
 
         if( !parmQuiet && parmNoStripRemLines ) {

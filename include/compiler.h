@@ -402,7 +402,7 @@ class Compiler {
     bool pt3, akm, font, file_support, has_defusr;
     bool has_open_grp;
     bool has_tiny_sprite;
-    bool megaROM, debug, has_line_number;
+    bool megaROM, debug, has_line_number, konamiSCC;
 
     vector<Lexeme*> resourceList;
     vector<FileNode*> fileList;
