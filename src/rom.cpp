@@ -1439,7 +1439,7 @@ void Rom::buildHeaderAdjust() {
                             p += 3;
                         } else p++;
                     }
-                    if(mapperCount != 6) {
+                    if(mapperCount != 11) {
                         printf("ERROR: Konami SCC ROM format adjust failed (%i locations)\n", mapperCount);
                         errorFound = true;
                     }

@@ -3132,6 +3132,15 @@ MR_CHANGE_SGM:
   dec a
   ret                       ; indirect jump
 
+; OpenMSX MegaROM detection bug fix
+; http://github.com/openMSX/openMSX/blob/master/src/memory/RomFactory.cc
+OPENMSX_EMULATOR_AUTODETECTION:
+  ld (Seg_P8000_SW), a
+  ld (Seg_P8000_SW), a
+  ld (Seg_P8000_SW), a
+  ld (Seg_P8000_SW), a
+  ld (Seg_P8000_SW), a
+
 MR_CALL:
   ld bc, (SGMADR-1)         ; salve old segment number
   push bc

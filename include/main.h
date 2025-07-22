@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 
-#define app_version "0.3.2.8"
+#define app_version "0.3.2.9"
 
 char inputFilename[255]="",
      outputFilename[255]="",
@@ -45,9 +45,9 @@ Options:
        -t  = turbo mode (or use CALL TURBO instructions, deprecated)
        --doc = display documentation
        --ver = display version history
+       --scc = Konami with SCC MegaROM format support
        --lin = register line numbers (compile mode)
        --nsr = no strip remark lines (tokenized/turbo mode, deprecated)
-       --scc = Konami with SCC MegaROM format support
 Output: <filename.rom>
 
 See more information at:
@@ -66,6 +66,7 @@ https://github.com/amaurycarvalho/msxbas2rom )";
 const char * info_history = R"(
 Version history
 
+0.3.2.9 – (2025/07/22) MegaROM emulation detection bug fix;
 0.3.2.8 – (2025/07/21) ASCII8 MegaROM format support;
 0.3.2.7 – (2025/04/25) DRAW bug fix;
 0.3.2.6 – (2025/01/20) LINE bug fix and SCREEN ON/OFF stmt;

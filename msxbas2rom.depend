@@ -149,7 +149,7 @@
 	<math.h>
 	"lex.h"
 
-1753125006 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/rom.cpp
+1753191809 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/rom.cpp
 	"rom.h"
 	"routines.h"
 	"turbo.h"
@@ -168,13 +168,13 @@
 	"compiler.h"
 	"compiler_pt3.h"
 
-1753126331 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/routines.h
+1753192044 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/routines.h
 
 1598036919 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/turbo.h
 
-1753126331 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/pt3.h
+1753192044 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/pt3.h
 
-1753118738 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/main.cpp
+1753191746 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -185,7 +185,7 @@
 	<math.h>
 	"main.h"
 
-1753108458 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/main.h
+1753191910 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/main.h
 	"lex.h"
 	"tokenizer.h"
 	"rom.h"
@@ -201,9 +201,9 @@
 	<stack>
 	"lex.h"
 
-1753126331 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/header.h
+1753192044 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/header.h
 
-1753126331 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/start.h
+1753192044 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/start.h
 
 1643559364 source:/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/pletter.cpp
 	"pletter.h"
@@ -222,5 +222,5 @@
 
 1623679929 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/compiler_pt3_hooks.h
 
-1753126331 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/header_pt3.h
+1753192044 /home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/include/header_pt3.h
 

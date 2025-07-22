@@ -1,6 +1,6 @@
 //******************************************************************************
 //  PROJECT.......: MSXBAS2ROM
-//  COPYRIGHT.....: Copyright (C) 2020- Amaury S P Carvalho
+//  COPYRIGHT.....: Copyright (C) 2020~ Amaury S P Carvalho
 //  DESCRIPTION...: MSX BASIC to ROM converter
 //  HOME PAGE.....: https://github.com/amaurycarvalho/msxbas2rom/
 //  CONTACT EMAIL.: amauryspires@gmail.com
