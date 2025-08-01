@@ -1,5 +1,6 @@
 # Version history
 
+- #.#.#.# – (2025/08/01) Source code ported from Code::Blocks to VSCode;
 - 0.3.2.9 – (2025/07/22) MegaROM emulation detection bug fix;
 - 0.3.2.8 – (2025/07/21) ASCII8 MegaROM format support;
 - 0.3.2.7 – (2025/04/25) DRAW bug fix;
@@ -33,5 +34,4 @@
 
 Run command below for a complete list:
 
-	msxbas2rom --ver
-
+    msxbas2rom --ver

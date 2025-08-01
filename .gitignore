@@ -31,9 +31,3 @@
 *.out
 *.app
 
-# Scripts
-*.sh
-
-# Bazaar
-/.bzr
-

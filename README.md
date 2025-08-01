@@ -1,34 +1,37 @@
 # MSXBAS2ROM
+
 ## MSX BASIC to ROM compiler tool
 
 Create a ROM file from your old MSX BASIC code!
 
-### USAGE 
+MSXBAS2ROM is an open source MSX BASIC cross platform compiler written in C++ using VSCode IDE.
+
+### USAGE
 
 Use command below to transform your Basic program from plain text code into a tokenized form on a ROM file.
 
-	  msxbas2rom -p test.bas
+      msxbas2rom -p test.bas
 
 You can also compile it into a ROM binary form using the command below:
 
-	  msxbas2rom -c test.bas
+      msxbas2rom -c test.bas
 
 To test your brand new MSX Basic ROM file, use an emulator like WebMSX or OpenMSX:
 
--   [WebMSX](https://webmsx.org/);
--   [OpenMSX](https://openmsx.org/).
+- [WebMSX](https://webmsx.org/);
+- [OpenMSX](https://openmsx.org/).
 
 Run it at command line to get more conversion options:
 
-	  msxbas2rom
+      msxbas2rom
 
-### INSTALL 
+### INSTALL
 
 Install it into your Linux system using the commands below:
 
-	  sudo add-apt-repository ppa:amaurycarvalho/msxbas2rom
-	  sudo apt-get update
-	  sudo apt-get install msxbas2rom
+      sudo add-apt-repository ppa:amaurycarvalho/msxbas2rom
+      sudo apt-get update
+      sudo apt-get install msxbas2rom
 
 See [releases](https://github.com/amaurycarvalho/msxbas2rom/releases) area to get MSXBAS2ROM for Windows 32 and 64 bits.
 
@@ -36,11 +39,11 @@ See [releases](https://github.com/amaurycarvalho/msxbas2rom/releases) area to ge
 
 See the current version with command line below:
 
-	  msxbas2rom --ver
+      msxbas2rom --ver
 
 All [documentation](https://github.com/amaurycarvalho/msxbas2rom/wiki) can be listed too:
 
-	  msxbas2rom --doc
+      msxbas2rom --doc
 
 ### SUPPORT THE PROJECT!
 
