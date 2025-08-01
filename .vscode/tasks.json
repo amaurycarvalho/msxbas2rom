@@ -1,0 +1,91 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "clean up msxbas2rom",
+      "type": "shell",
+      "command": "make clean",
+      "windows": {
+        "command": "make clean"
+      },
+      "group": {
+        "kind": "none"
+      }
+    },
+    {
+      "label": "build Z80 routines",
+      "type": "shell",
+      "command": "./scripts/buildz80.sh",
+      "windows": {
+        "command": "cmd.exe /c .\\scripts\\buildz80.cmd"
+      },
+      "group": {
+        "kind": "build"
+      },
+      "problemMatcher": {
+        "owner": "shell",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": [
+          {
+            "regexp": "^ERROR on line (\\d+) of file (.+)$",
+            "line": 1,
+            "file": 2
+          },
+          {
+            "regexp": "^ERROR: (.*)$",
+            "message": 1,
+            "severity": 4
+          }
+        ]
+      }
+    },
+    {
+      "label": "build msxbas2rom (64 bits)",
+      "type": "shell",
+      "command": "make debug release",
+      "windows": {
+        "command": "make PARMS=-m64 debug release"
+      },
+      "group": {
+        "kind": "build"
+      },
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "build msxbas2rom (32 bits)",
+      "type": "shell",
+      "command": "make PARMS=-m32 clean debug release",
+      "windows": {
+        "command": "make PARMS=-m32 clean debug release"
+      },
+      "group": {
+        "kind": "build"
+      },
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "test msxbas2rom",
+      "type": "shell",
+      "command": "cd ./test/unit && make all && ./test",
+      "windows": {
+        "command": "cd .\\test\\unit && make all && .\\test"
+      },
+      "group": {
+        "kind": "test"
+      }
+    },
+    {
+      "label": "build all",
+      "dependsOn": [
+        "build Z80 routines",
+        "build msxbas2rom (64 bits)",
+        "test msxbas2rom"
+      ],
+      "dependsOrder": "sequence",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
