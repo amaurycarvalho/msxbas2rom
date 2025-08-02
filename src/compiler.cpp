@@ -733,22 +733,62 @@ int Compiler::getKernelCallAddr(unsigned int address) {
     return result;
 }
 
+/***
+ * @brief Relative jumps to the address.
+ * This means that it can only jump between 128 bytes ahead or behind.
+ * JR takes up one less byte than JP, but is also slower. 
+ * Weigh the needs of the code at the time before choosing one over the other (speed vs. size).  
+ * See [jr n](http://z80-heaven.wikidot.com/instructions-set:jr) for more information.
+ * @param n The signed value n is added to PC. The jump is measured from the start of the instruction opcode.
+ */ 
 void Compiler::addJr(unsigned char n) {
     addWord(0x18, n);
 }
 
+/***
+ * @brief Relative conditional jumps to the address.
+ * This means that it can only jump between 128 bytes ahead or behind.
+ * JR takes up one less byte than JP, but is also slower. 
+ * Weigh the needs of the code at the time before choosing one over the other (speed vs. size).  
+ * See [jr Z,n](http://z80-heaven.wikidot.com/instructions-set:jr) for more information.
+ * @param n The signed value n is added to PC. The jump is measured from the start of the instruction opcode.
+ */ 
 void Compiler::addJrZ(unsigned char n) {
     addWord(0x28, n);
 }
 
+/***
+ * @brief Relative conditional jumps to the address.
+ * This means that it can only jump between 128 bytes ahead or behind.
+ * JR takes up one less byte than JP, but is also slower. 
+ * Weigh the needs of the code at the time before choosing one over the other (speed vs. size).  
+ * See [jr NZ,n](http://z80-heaven.wikidot.com/instructions-set:jr) for more information.
+ * @param n The signed value n is added to PC. The jump is measured from the start of the instruction opcode.
+ */ 
 void Compiler::addJrNZ(unsigned char n) {
     addWord(0x20, n);
 }
 
+/***
+ * @brief Relative conditional jumps to the address.
+ * This means that it can only jump between 128 bytes ahead or behind.
+ * JR takes up one less byte than JP, but is also slower. 
+ * Weigh the needs of the code at the time before choosing one over the other (speed vs. size).  
+ * See [jr C,n](http://z80-heaven.wikidot.com/instructions-set:jr) for more information.
+ * @param n The signed value n is added to PC. The jump is measured from the start of the instruction opcode.
+ */ 
 void Compiler::addJrC(unsigned char n) {
     addWord(0x38, n);
 }
 
+/***
+ * @brief Relative conditional jumps to the address.
+ * This means that it can only jump between 128 bytes ahead or behind.
+ * JR takes up one less byte than JP, but is also slower. 
+ * Weigh the needs of the code at the time before choosing one over the other (speed vs. size).  
+ * See [jr NC,n](http://z80-heaven.wikidot.com/instructions-set:jr) for more information.
+ * @param n The signed value n is added to PC. The jump is measured from the start of the instruction opcode.
+ */ 
 void Compiler::addJrNC(unsigned char n) {
     addWord(0x30, n);
 }

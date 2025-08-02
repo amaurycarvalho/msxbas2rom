@@ -22,22 +22,66 @@
       "group": {
         "kind": "build"
       },
-      "problemMatcher": {
-        "owner": "shell",
-        "fileLocation": ["relative", "${workspaceFolder}"],
-        "pattern": [
-          {
-            "regexp": "^ERROR on line (\\d+) of file (.+)$",
-            "line": 1,
-            "file": 2
-          },
-          {
-            "regexp": "^ERROR: (.*)$",
-            "message": 1,
-            "severity": 4
-          }
-        ]
-      }
+      "problemMatcher": [
+        {
+          "owner": "pasmo",
+          "fileLocation": ["relative", "${workspaceFolder}"],
+          "pattern": [
+            {
+              "regexp": "^(.+).*(\\d+): pasmo: (.*)$",
+              "kind": "project",
+              "line": 2,
+              "file": 1,
+              "message": 3,
+              "severity": 4
+            }
+          ]
+        },
+        {
+          "owner": "xxd",
+          "fileLocation": ["relative", "${workspaceFolder}"],
+          "pattern": [
+            {
+              "regexp": "^(.+).*(\\d+): xxd: (.*)$",
+              "kind": "project",
+              "line": 2,
+              "file": 1,
+              "message": 3,
+              "severity": 4
+            }
+          ]
+        },
+        {
+          "owner": "pletter",
+          "fileLocation": ["relative", "${workspaceFolder}"],
+          "pattern": [
+            {
+              "regexp": "^(.+).*(\\d+): xxd: (.*)$",
+              "kind": "project",
+              "line": 2,
+              "file": 1,
+              "message": 3,
+              "severity": 4
+            }
+          ]
+        },
+        {
+          "owner": "shell",
+          "fileLocation": ["relative", "${workspaceFolder}"],
+          "pattern": [
+            {
+              "regexp": "^ERROR on line (\\d+) of file (.+)$",
+              "line": 1,
+              "file": 2
+            },
+            {
+              "regexp": "^ERROR: (.*)$",
+              "message": 1,
+              "severity": 4
+            }
+          ]
+        }
+      ]
     },
     {
       "label": "build msxbas2rom (64 bits)",
@@ -71,16 +115,13 @@
         "command": "cd .\\test\\unit && make all && .\\test"
       },
       "group": {
-        "kind": "test"
+        "kind": "test",
+        "isDefault": true
       }
     },
     {
       "label": "build all",
-      "dependsOn": [
-        "build Z80 routines",
-        "build msxbas2rom (64 bits)",
-        "test msxbas2rom"
-      ],
+      "dependsOn": ["build Z80 routines", "build msxbas2rom (64 bits)"],
       "dependsOrder": "sequence",
       "group": {
         "kind": "build",

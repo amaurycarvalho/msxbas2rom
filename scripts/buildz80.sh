@@ -1,4 +1,11 @@
-pasmo asm/header.asm asm/header.bin asm/header.symbols.asm
+#!/bin/bash
+# MSXBAS2ROM kernel compiling script
+# Compile Z80 kernel creating source code (C++ headers) from the resulting binary 
+# Reference:
+#   pasmo: Z80 assembly compiler
+#   xxd: file binary to C++ header converter
+#   pletter: compress binary files
+
 pasmo asm/header_pt3.asm asm/header_pt3.bin asm/header_pt3.symbols.asm
 xxd -i asm/header.bin include/header.h
 xxd -i asm/header_pt3.bin include/header_pt3.h
