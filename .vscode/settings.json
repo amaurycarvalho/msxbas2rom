@@ -1,0 +1,8 @@
+{
+  "files.associations": {
+    "typeinfo": "cpp",
+    "chrono": "cpp",
+    "variant": "cpp",
+    "span": "cpp"
+  }
+}
