@@ -1,7 +1,7 @@
 /***
  * @file compiler.h
- * @brief Compiler class header for semantic analysis, specialized as a Z80 code builder
- * for MSX system
+ * @brief Compiler class header for semantic analysis,
+ * specialized as a Z80 code builder for MSX system
  * @author Amaury Carvalho (2019-2025)
  * @note
  *   https://en.wikipedia.org/wiki/Semantic_analysis_(computational)
@@ -302,9 +302,6 @@ class Compiler {
 
   /***
    * @brief Relative conditional jumps to the address.
-   * This means that it can only jump between 128 bytes ahead or behind.
-   * JR takes up one less byte than JP, but is also slower.
-   * Weigh the needs of the code at the time before choosing one over the other (speed vs. size).
    * See [jr Z,n](http://z80-heaven.wikidot.com/instructions-set:jr) for more information.
    * @param n The signed value n is added to PC.
    * The jump is measured from the start of the instruction opcode.
@@ -314,9 +311,6 @@ class Compiler {
 
   /***
    * @brief Relative conditional jumps to the address.
-   * This means that it can only jump between 128 bytes ahead or behind.
-   * JR takes up one less byte than JP, but is also slower.
-   * Weigh the needs of the code at the time before choosing one over the other (speed vs. size).
    * See [jr NZ,n](http://z80-heaven.wikidot.com/instructions-set:jr) for more information.
    * @param n The signed value n is added to PC.
    * The jump is measured from the start of the instruction opcode.
@@ -326,9 +320,6 @@ class Compiler {
 
   /***
    * @brief Relative conditional jumps to the address.
-   * This means that it can only jump between 128 bytes ahead or behind.
-   * JR takes up one less byte than JP, but is also slower.
-   * Weigh the needs of the code at the time before choosing one over the other (speed vs. size).
    * See [jr C,n](http://z80-heaven.wikidot.com/instructions-set:jr) for more information.
    * @param n The signed value n is added to PC.
    * The jump is measured from the start of the instruction opcode.
@@ -338,9 +329,6 @@ class Compiler {
 
   /***
    * @brief Relative conditional jumps to the address.
-   * This means that it can only jump between 128 bytes ahead or behind.
-   * JR takes up one less byte than JP, but is also slower.
-   * Weigh the needs of the code at the time before choosing one over the other (speed vs. size).
    * See [jr NC,n](http://z80-heaven.wikidot.com/instructions-set:jr) for more information.
    * @param n The signed value n is added to PC.
    * The jump is measured from the start of the instruction opcode.
