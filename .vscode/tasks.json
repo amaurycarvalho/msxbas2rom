@@ -15,59 +15,18 @@
     {
       "label": "build Z80 routines",
       "type": "shell",
-      "command": "./scripts/buildz80.sh",
+      "command": "cd ./asm && make all",
       "windows": {
-        "command": "cmd.exe /c .\\scripts\\buildz80.cmd"
+        "command": "cd .\\asm && make all"
       },
       "group": {
         "kind": "build"
       },
       "problemMatcher": [
+        "$gcc",
         {
           "owner": "pasmo",
-          "fileLocation": ["relative", "${workspaceFolder}"],
-          "pattern": [
-            {
-              "regexp": "^(.+).*(\\d+): pasmo: (.*)$",
-              "kind": "project",
-              "line": 2,
-              "file": 1,
-              "message": 3,
-              "severity": 4
-            }
-          ]
-        },
-        {
-          "owner": "xxd",
-          "fileLocation": ["relative", "${workspaceFolder}"],
-          "pattern": [
-            {
-              "regexp": "^(.+).*(\\d+): xxd: (.*)$",
-              "kind": "project",
-              "line": 2,
-              "file": 1,
-              "message": 3,
-              "severity": 4
-            }
-          ]
-        },
-        {
-          "owner": "pletter",
-          "fileLocation": ["relative", "${workspaceFolder}"],
-          "pattern": [
-            {
-              "regexp": "^(.+).*(\\d+): xxd: (.*)$",
-              "kind": "project",
-              "line": 2,
-              "file": 1,
-              "message": 3,
-              "severity": 4
-            }
-          ]
-        },
-        {
-          "owner": "shell",
-          "fileLocation": ["relative", "${workspaceFolder}"],
+          "fileLocation": ["relative", "${workspaceFolder}/asm"],
           "pattern": [
             {
               "regexp": "^ERROR on line (\\d+) of file (.+)$",

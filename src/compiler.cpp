@@ -725,8 +725,8 @@ int Compiler::getKernelCallAddr(unsigned int address) {
 
     if(address >= 0x4000 && address < 0x8000) {
         i = address - 0x4000;
-        if(asm_header_bin[i] == 0xC3) {     // jp
-            result = asm_header_bin[i+1] | (asm_header_bin[i+2]<<8);
+        if(bin_header_bin[i] == 0xC3) {     // jp
+            result = bin_header_bin[i+1] | (bin_header_bin[i+2]<<8);
         }
     }
 

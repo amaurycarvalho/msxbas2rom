@@ -293,8 +293,8 @@ void Rom::buildXBASIC() {
 void Rom::buildRoutines() {
 
     rtnAddr = hdrAddr + hdrLen;
-    rtnLen = asm_routines_bin_len;
-    memcpy( &data[rtnAddr], asm_routines_bin, asm_routines_bin_len);
+    rtnLen = bin_routines_bin_len;
+    memcpy( &data[rtnAddr], bin_routines_bin, bin_routines_bin_len);
 
 }
 
@@ -302,11 +302,11 @@ void Rom::buildCompilerRoutines() {
 
     // add start code, Arkos Tracker and FONTS
     // limit XBASIC address: 0x5B36 (0x1B36 bytes = 6966 bytes)
-    memcpy( &data[xbcAddr], asm_header_bin, asm_header_bin_len);
+    memcpy( &data[xbcAddr], bin_header_bin, bin_header_bin_len);
 
     rtnAddr = hdrAddr + hdrLen;
-    rtnLen = asm_start_bin_len;
-    memcpy( &data[rtnAddr], asm_start_bin, asm_start_bin_len);
+    rtnLen = bin_start_bin_len;
+    memcpy( &data[rtnAddr], bin_start_bin, bin_start_bin_len);
 
 }
 
@@ -314,11 +314,11 @@ void Rom::buildCompilerRoutinesPT3() {
 
     // add start code, PT3TOOLS and FONTS
     // limit XBASIC address: 0x5B36 (0x1B36 bytes = 6966 bytes)
-    memcpy( &data[xbcAddr], asm_header_pt3_bin, asm_header_pt3_bin_len);
+    memcpy( &data[xbcAddr], bin_header_pt3_bin, bin_header_pt3_bin_len);
 
     rtnAddr = hdrAddr + hdrLen;
-    rtnLen = asm_start_bin_len;
-    memcpy( &data[rtnAddr], asm_start_bin, asm_start_bin_len);
+    rtnLen = bin_start_bin_len;
+    memcpy( &data[rtnAddr], bin_start_bin, bin_start_bin_len);
 
 }
 
@@ -1151,10 +1151,10 @@ void Rom::buildMapAndResourcesFileBIN(char *filename, char *fileext) {
 
 void Rom::buildPT3TOOLS() {
 
-    pt3Len = asm_pt3_bin_plet5_len;
+    pt3Len = bin_pt3_bin_plet5_len;
     pt3Addr = hdrAddr + hdrLen + rtnLen + mapLen + txtLen + filLen;
 
-    memcpy(&data[pt3Addr], asm_pt3_bin_plet5, asm_pt3_bin_plet5_len);
+    memcpy(&data[pt3Addr], bin_pt3_bin_plet5, bin_pt3_bin_plet5_len);
 
     memcpy(&data[mapAddr], &pt3Addr, 2);   // pt3 address at map list (last resource)
 

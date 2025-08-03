@@ -16,7 +16,7 @@
 #define COMPILE_CODE_SIZE (COMPILE_MAX_PAGES * 0x4000)
 #define COMPILE_RAM_SIZE  (0xFFFF)
 
-extern unsigned char asm_header_bin[];
+extern unsigned char bin_header_bin[];
 
 class SymbolNode {
   public:

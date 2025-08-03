@@ -88,10 +88,10 @@ $(OBJDIR_DEBUG)/tokenizer.o: $(SRC)/tokenizer.cpp
 $(OBJDIR_DEBUG)/rom.o: $(SRC)/rom.cpp $(INC_DEBUG)/header.h $(INC_DEBUG)/routines.h $(INC_DEBUG)/start.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/rom.cpp -o $(OBJDIR_DEBUG)/rom.o 
 
-$(OBJDIR_DEBUG)/compiler.o: $(SRC)/compiler.cpp
+$(OBJDIR_DEBUG)/compiler.o: $(SRC)/compiler.cpp $(INC_DEBUG)/header.h $(INC_DEBUG)/routines.h $(INC_DEBUG)/start.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/compiler.cpp -o $(OBJDIR_DEBUG)/compiler.o 
 
-$(OBJDIR_DEBUG)/compiler_pt3.o: $(SRC)/compiler_pt3.cpp
+$(OBJDIR_DEBUG)/compiler_pt3.o: $(SRC)/compiler_pt3.cpp $(INC_DEBUG)/header_pt3.h $(INC_DEBUG)/routines.h $(INC_DEBUG)/start.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/compiler_pt3.cpp -o $(OBJDIR_DEBUG)/compiler_pt3.o 
 
 $(OBJDIR_DEBUG)/parse.o: $(SRC)/parse.cpp
@@ -128,10 +128,10 @@ $(OBJDIR_RELEASE)/tokenizer.o: $(SRC)/tokenizer.cpp
 $(OBJDIR_RELEASE)/rom.o: $(SRC)/rom.cpp $(INC_RELEASE)/header.h $(INC_RELEASE)/routines.h $(INC_RELEASE)/start.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/rom.cpp -o $(OBJDIR_RELEASE)/rom.o 
 
-$(OBJDIR_RELEASE)/compiler.o: $(SRC)/compiler.cpp
+$(OBJDIR_RELEASE)/compiler.o: $(SRC)/compiler.cpp $(INC_RELEASE)/header.h $(INC_RELEASE)/routines.h $(INC_RELEASE)/start.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/compiler.cpp -o $(OBJDIR_RELEASE)/compiler.o 
 
-$(OBJDIR_RELEASE)/compiler_pt3.o: $(SRC)/compiler_pt3.cpp
+$(OBJDIR_RELEASE)/compiler_pt3.o: $(SRC)/compiler_pt3.cpp $(INC_RELEASE)/header_pt3.h $(INC_RELEASE)/routines.h $(INC_RELEASE)/start.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/compiler_pt3.cpp -o $(OBJDIR_RELEASE)/compiler_pt3.o 
 
 $(OBJDIR_RELEASE)/parse.o: $(SRC)/parse.cpp
