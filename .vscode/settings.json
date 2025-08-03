@@ -3,6 +3,7 @@
     "typeinfo": "cpp",
     "chrono": "cpp",
     "variant": "cpp",
-    "span": "cpp"
+    "span": "cpp",
+    "stack": "cpp"
   }
 }

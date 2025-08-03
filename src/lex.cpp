@@ -1,6 +1,6 @@
 /***
  * @file lex.cpp
- * @brief MSX BASIC lexer code
+ * @brief MSX BASIC lexer class code
  * @author Amaury Carvalho (2019-2025)
  * @note https://en.wikipedia.org/wiki/Lexical_analysis
  */

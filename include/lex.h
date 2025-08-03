@@ -1,7 +1,8 @@
 /***
  * @file lex.h
- * @brief MSX BASIC lexer header
+ * @brief MSX BASIC lexer class header
  * @author Amaury Carvalho (2019-2025)
+ * @note https://en.wikipedia.org/wiki/Lexical_analysis
  */
 
 #ifndef LEX_H_INCLUDED
