@@ -1,16 +1,19 @@
-//-----------------------------------------------------------
-// MSX BASIC lexer classes
-// created by Amaury Carvalho, 2019
-// reference: https://en.wikipedia.org/wiki/Lexical_analysis
-//-----------------------------------------------------------
+/***
+ * @file lex.cpp
+ * @brief MSX BASIC lexer code
+ * @author Amaury Carvalho (2019-2025)
+ * @note https://en.wikipedia.org/wiki/Lexical_analysis
+ */
 
 #include <stdio.h>
 #include <string.h>
 #include "lex.h"
 
 /***
- * @name Lexeme
- * @class Lexeme
+ * @name Lexeme class functions
+ */
+
+/***
  * @brief Lexeme class constructor. 
  * It represents a simple MSX BASIC lexeme (constant, keyword, identifier etc)
  */
@@ -19,11 +22,9 @@ Lexeme::Lexeme() {
 }
 
 /***
- * @name Lexeme
- * @class Lexeme
  * @brief Lexeme class constructor. 
  * It represents a simple MSX BASIC lexeme (constant, keyword, identifier etc)
- * @parm plexeme Lexeme to clone
+ * @param plexeme Lexeme to clone
  */
 Lexeme::Lexeme(Lexeme *plexeme) {
     clear();
@@ -45,13 +46,11 @@ Lexeme::Lexeme(Lexeme *plexeme) {
 }
 
 /***
- * @name Lexeme
- * @class Lexeme
  * @brief Lexeme class constructor. 
  * It represents a simple MSX BASIC lexeme (constant, keyword, identifier etc)
- * @parm ptype Lexeme type
- * @parm psubtype Lexeme subtype
- * @parm pname Lexeme name
+ * @param ptype Lexeme type
+ * @param psubtype Lexeme subtype
+ * @param pname Lexeme name
  */
 Lexeme::Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname) {
     clear();
@@ -62,14 +61,12 @@ Lexeme::Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname) {
 }
 
 /***
- * @name Lexeme
- * @class Lexeme
  * @brief Lexeme class constructor. 
  * It represents a simple MSX BASIC lexeme (constant, keyword, identifier etc)
- * @parm ptype Lexeme type
- * @parm psubtype Lexeme subtype
- * @parm pname Lexeme name
- * @parm pvalue Lexeme value
+ * @param ptype Lexeme type
+ * @param psubtype Lexeme subtype
+ * @param pname Lexeme name
+ * @param pvalue Lexeme value
  */
 Lexeme::Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname, string pvalue) {
     clear();
@@ -80,8 +77,6 @@ Lexeme::Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname, string pv
 }
 
 /***
- * @name clone
- * @class Lexeme
  * @brief Clone the current lexeme
  * @return A new lexeme copied from current one 
  */
@@ -90,8 +85,6 @@ Lexeme * Lexeme::clone() {
 }
 
 /***
- * @name clear
- * @class Lexeme
  * @brief Clear the current lexeme
  */
 void Lexeme::clear() {
@@ -113,8 +106,6 @@ void Lexeme::clear() {
 }
 
 /***
- * @name print
- * @class Lexeme
  * @brief Print to the terminal the current lexeme
  */
 void Lexeme::print() {
@@ -125,8 +116,6 @@ void Lexeme::print() {
 }
 
 /***
- * @name getTypeName
- * @class Lexeme
  * @brief Get the type name of current lexeme
  * @return Type name string
  */
@@ -137,8 +126,6 @@ char * Lexeme::getTypeName() {
 }
 
 /***
- * @name getSubTypeName
- * @class Lexeme
  * @brief Get the subtype name of current lexeme
  * @return Subtype name string
  */
@@ -149,8 +136,6 @@ char * Lexeme::getSubTypeName() {
 }
 
 /***
- * @name isKeyword
- * @class Lexeme
  * @brief Is the current lexeme a keyword?
  * @param pvalue Keyword to compare against
  * @return True or false
@@ -160,8 +145,6 @@ bool Lexeme::isKeyword(string pvalue) {
 }
 
 /***
- * @name isSeparator
- * @class Lexeme
  * @brief Is the current lexeme a separator?
  * @param pvalue Separator to compare against
  * @return True or false
@@ -171,8 +154,6 @@ bool Lexeme::isSeparator(string pvalue) {
 }
 
 /***
- * @name isOperator
- * @class Lexeme
  * @brief Is the current lexeme an operator?
  * @param pvalue Operator to compare against
  * @return True or false
@@ -182,8 +163,6 @@ bool Lexeme::isOperator(string pvalue) {
 }
 
 /***
- * @name isLiteralNumeric
- * @class Lexeme
  * @brief Is the current lexeme a literal numeric?
  * @return True or false
  */
@@ -192,13 +171,11 @@ bool Lexeme::isLiteralNumeric() {
 }
 
 /***
- * @name isKeyword
- * @class Lexeme
  * @brief Is the current lexeme a valid keyword?
  * @return True or false
+ * @note https://www.msx.org/wiki/Category:MSX-BASIC_Instructions
  */
 bool Lexeme::isKeyword() {
-    // https://www.msx.org/wiki/Category:MSX-BASIC_Instructions
     return ( value == "CLS" || value == "PRINT" || value == "END" || value == "GOTO"
              || value == "IF" || value == "THEN" || value == "ELSE" || value == "COLOR"
              || value == "GOSUB" || value == "FOR" || value == "NEXT" || value == "RETURN"
@@ -261,25 +238,21 @@ bool Lexeme::isKeyword() {
 }
 
 /***
- * @name isBooleanOperator
- * @class Lexeme
  * @brief Is the current lexeme a valid boolean operator?
  * @return True or false
+ * @note https://www.msx.org/wiki/Category:MSX-BASIC_Instructions
  */
 bool Lexeme::isBooleanOperator() {
-    // https://www.msx.org/wiki/Category:MSX-BASIC_Instructions
     return ( value == "AND" || value == "OR" || value == "XOR" || value == "MOD"
              || value == "IMP" || value == "EQV" || value == "NOT" || value == "SHR" || value == "SHL" );
 }
 
 /***
- * @name isFunction
- * @class Lexeme
  * @brief Is the current lexeme a valid function keyword?
  * @return True or false
+ * @note https://www.msx.org/wiki/Category:MSX-BASIC_Instructions
  */
 bool Lexeme::isFunction() {
-    // https://www.msx.org/wiki/Category:MSX-BASIC_Instructions
     return ( value == "DATE" || value == "TIME" || value == "ASC" || value == "BIN$"
              || value == "CDBL" || value == "CHR$" || value == "SPC"
              || value == "CINT" || value == "CSNG" || value == "HEX$" || value == "OCT$"
@@ -304,8 +277,10 @@ bool Lexeme::isFunction() {
 }
 
 /***
- * @name LexerLine
- * @class LexerLine
+ * @name LexerLine class functions
+ */
+
+/***
  * @brief LexerLine class constructor. 
  * It represents a set of MSX BASIC lexemes forming a line.
  */
@@ -314,8 +289,6 @@ LexerLine::LexerLine() {
 }
 
 /***
- * @name clearLexemes
- * @class LexerLine
  * @brief Clear the current line lexeme list
  */
 void LexerLine::clearLexemes() {
@@ -323,8 +296,6 @@ void LexerLine::clearLexemes() {
 }
 
 /***
- * @name addLexeme
- * @class LexerLine
  * @brief Add a lexeme to the line list
  * @param lexeme Lexeme object
  */
@@ -333,8 +304,6 @@ void LexerLine::addLexeme(Lexeme *lexeme) {
 }
 
 /***
- * @name setLexemeBOF
- * @class LexerLine
  * @brief Set index at before the top of the lexeme list
  */
 void LexerLine::setLexemeBOF() {
@@ -342,8 +311,6 @@ void LexerLine::setLexemeBOF() {
 }
 
 /***
- * @name getCurrentLexeme
- * @class LexerLine
  * @brief Get the current lexeme in the lexeme list
  * @return Lexeme object
  */
@@ -352,8 +319,6 @@ Lexeme *LexerLine::getCurrentLexeme() {
 }
 
 /***
- * @name getFirstLexeme
- * @class LexerLine
  * @brief Get the first lexeme in the lexeme list
  * @return Lexeme object
  */
@@ -362,8 +327,6 @@ Lexeme *LexerLine::getFirstLexeme() {
 }
 
 /***
- * @name getNextLexeme
- * @class LexerLine
  * @brief Get the next lexeme in the lexeme list
  * @return Lexeme object
  */
@@ -372,8 +335,6 @@ Lexeme *LexerLine::getNextLexeme() {
 }
 
 /***
- * @name getPreviousLexeme
- * @class LexerLine
  * @brief Get the previous lexeme in the lexeme list
  * @return Lexeme object
  */
@@ -382,8 +343,6 @@ Lexeme *LexerLine::getPreviousLexeme() {
 }
 
 /***
- * @name getLastLexeme
- * @class LexerLine
  * @brief Get the last lexeme in the lexeme list
  * @return Lexeme object
  */
@@ -392,8 +351,6 @@ Lexeme *LexerLine::getLastLexeme() {
 }
 
 /***
- * @name getLexeme
- * @class LexerLine
  * @brief Get an item in the lexeme list
  * @param i Index
  * @return Lexeme object
@@ -407,8 +364,6 @@ Lexeme* LexerLine::getLexeme(int i) {
 }
 
 /***
- * @name getLexemeCount
- * @class LexerLine
  * @brief Get the lexeme list items count
  * @return Lexeme count
  */
@@ -417,8 +372,6 @@ int LexerLine::getLexemeCount() {
 }
 
 /***
- * @name pushLexeme
- * @class LexerLine
  * @brief Push the current lexeme to the stack
  */
 void LexerLine::pushLexeme() {
@@ -426,8 +379,6 @@ void LexerLine::pushLexeme() {
 }
 
 /***
- * @name popLexeme
- * @class LexerLine
  * @brief Pop a lexeme from the stack, also setting it as current lexeme
  */
 void LexerLine::popLexeme() {
@@ -438,8 +389,6 @@ void LexerLine::popLexeme() {
 }
 
 /***
- * @name popLexemeDiscarding
- * @class LexerLine
  * @brief Discard a lexeme from the stack, but keeping the current lexeme
  */
 void LexerLine::popLexemeDiscarding() {
@@ -447,8 +396,6 @@ void LexerLine::popLexemeDiscarding() {
 }
 
 /***
- * @name print
- * @class LexerLine
  * @brief Print to the terminal the lexemes from the current line
  */
 void LexerLine::print() {
@@ -458,8 +405,6 @@ void LexerLine::print() {
 }
 
 /***
- * @name evaluate
- * @class LexerLine
  * @brief Evaluates the current line by performing a lexical analysis on it
  * @return True, if a valid line
  */
@@ -738,8 +683,6 @@ bool LexerLine::evaluate() {
 }
 
 /***
- * @name isNumeric
- * @class LexerLine
  * @brief Check if the character is numeric
  * @param c Character
  * @return True or false
@@ -749,8 +692,6 @@ bool LexerLine::isNumeric(char c) {
 }
 
 /***
- * @name isDecimal
- * @class LexerLine
  * @brief Check if the character is a decimal point
  * @param c Character
  * @return True or false
@@ -760,8 +701,6 @@ bool LexerLine::isDecimal(char c) {
 }
 
 /***
- * @name isHexDecimal
- * @class LexerLine
  * @brief Check if the character is hexadecimal
  * @param c Character
  * @return True or false
@@ -772,8 +711,6 @@ bool LexerLine::isHexDecimal(char c) {
 }
 
 /***
- * @name isSeperator
- * @class LexerLine
  * @brief Check if the character is a separator
  * @param c Character
  * @return True or false
@@ -783,8 +720,6 @@ bool LexerLine::isSeparator(char c) {
 }
 
 /***
- * @name isOperator
- * @class LexerLine
  * @brief Check if the character is an operator
  * @param c Character
  * @return True or false
@@ -794,8 +729,6 @@ bool LexerLine::isOperator(char c) {
 }
 
 /***
- * @name isIdentifier
- * @class LexerLine
  * @brief Check if the character is an identifier
  * @param c Character
  * @param start Is it the first character from the string?
@@ -807,8 +740,6 @@ bool LexerLine::isIdentifier(char c, bool start) {
 }
 
 /***
- * @name isComment
- * @class LexerLine
  * @brief Check if the character is in a commentary string
  * @param c Character
  * @return True or false
@@ -818,8 +749,10 @@ bool LexerLine::isComment(char c) {
 }
 
 /***
- * @name Lexer
- * @class Lexer
+ * @name Lexer class functions
+ */
+
+/***
  * @brief Lexer class constructor, specialized as a MSX BASIC lexical analyzer
  */
 Lexer::Lexer() {
@@ -827,8 +760,6 @@ Lexer::Lexer() {
 }
 
 /***
- * @name clear
- * @class Lexer
  * @brief Clear the lines list
  */
 void Lexer::clear() {
@@ -837,8 +768,6 @@ void Lexer::clear() {
 }
 
 /***
- * @name load
- * @class Lexer
  * @brief Load a MSX BASIC source code (plain text) in the lines list
  * @param filename Source code file name
  * @return True, if a valid MSX BASIC source code
@@ -893,8 +822,6 @@ bool Lexer::load(char *filename) {
 }
 
 /***
- * @name evaluate
- * @class Lexer
  * @brief Perform a lexical analysis on the lines list
  * @return True, if lexical analysis success
  */
@@ -913,8 +840,6 @@ bool Lexer::evaluate() {
 }
 
 /***
- * @name print
- * @class Lexer
  * @brief Print the lines list
  */
 void Lexer::print() {
@@ -927,8 +852,6 @@ void Lexer::print() {
 }
 
 /***
- * @name error
- * @class Lexer
  * @brief Print the invalid line
  */
 void Lexer::error() {

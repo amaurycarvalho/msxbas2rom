@@ -1,3 +1,9 @@
+/***
+ * @file lex.h
+ * @brief MSX BASIC lexer header
+ * @author Amaury Carvalho (2019-2025)
+ */
+
 #ifndef LEX_H_INCLUDED
 #define LEX_H_INCLUDED
 
@@ -7,6 +13,10 @@
 
 using namespace std;
 
+/***
+ * @class Lexeme
+ * @brief It represents a simple MSX BASIC lexeme (constant, keyword, identifier etc)
+ */
 class Lexeme {
   public:
     enum LexemeType {
@@ -69,6 +79,10 @@ class Lexeme {
 
 };
 
+/***
+ * @class LexerLine
+ * @brief It represents a set of MSX BASIC lexemes forming a line.
+ */
 class LexerLine {
   private:
     int lexemeIndex;
@@ -107,6 +121,10 @@ class LexerLine {
     LexerLine();
 };
 
+/***
+ * @class Lexer
+ * @brief Lexer class specialized as a MSX BASIC lexical analyzer
+ */
 class Lexer {
   public:
     int lineNo=0;
