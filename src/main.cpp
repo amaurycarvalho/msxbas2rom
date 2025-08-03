@@ -25,6 +25,29 @@
 
 using namespace std;
 
+/***
+ * @name main
+ * @brief msxbas2rom [options] <filename.bas>
+ * @details 
+ *   Options:
+ *     -h or -? = help
+ *     -q  = quiet (no verbose)
+ *     -d  = debug mode (show details)
+ *     -c  = compile mode (default)
+ *     -x  = extended memory scheme mode (MegaROM, compile mode)
+ *     -s  = generate symbols for OpenMSX debugger (compile mode)
+ *     -p  = tokenized p-code mode (deprecated)
+ *     -t  = turbo mode (or use CALL TURBO instructions, deprecated)
+ *     --doc = display documentation
+ *     --ver = display version history
+ *     --scc = Konami with SCC MegaROM format support
+ *     --lin = register line numbers (compile mode)
+ *     --nsr = no strip remark lines (tokenized/turbo mode, deprecated)
+ * @example 
+ *   msxbas2rom program.bas
+ *   msxbas2rom -x program.bas
+ *   msxbas2rom -x --scc program.bas
+ */
 int main(int argc, char *argv[]) {
     int i;
     char *s;
@@ -533,6 +556,11 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+/***
+ * @name FileExists
+ * @brief Verify if a file exists (path included)
+ * @param filename file name
+ */
 bool FileExists(char *filename) {
     FILE *file;
     if ((file = fopen(filename, "r"))) {
@@ -542,7 +570,12 @@ bool FileExists(char *filename) {
     return false;
 }
 
-// write symbols file to use with OpenMSX
+/***
+ * @name SaveSymbolFile
+ * @brief Write symbols file to use with OpenMSX
+ * @param compiler compiler object
+ * @param code_start code start position on RAM memory
+ */
 bool SaveSymbolFile(Compiler *compiler, int code_start) {
     FILE *file;
     CodeNode *codeItem;
@@ -584,7 +617,12 @@ bool SaveSymbolFile(Compiler *compiler, int code_start) {
     return false;
 }
 
-
+/***
+ * @name SaveSymbolFile overloaded for PT3 support (deprecated)
+ * @brief Write symbols file to use with OpenMSX
+ * @param compiler compiler object for PT3 support (deprecated)
+ * @param code_start code start position on RAM memory
+ */
 bool SaveSymbolFile(CompilerPT3 *compiler, int code_start) {
     FILE *file;
     CodeNode *codeItem;

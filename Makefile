@@ -1,6 +1,6 @@
 #------------------------------------------------------------------------------#
 # MSXBAS2ROM makefile                                                          #
-# by Amaury Carvalho (2022)                                                    #
+# by Amaury Carvalho (2022-2025)                                               #
 #------------------------------------------------------------------------------#
 
 WORKDIR = `pwd`
@@ -76,28 +76,28 @@ debug: before_debug out_debug after_debug
 out_debug: before_debug $(OBJ_DEBUG) $(DEP_DEBUG)
 	$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG)
 
-$(OBJDIR_DEBUG)/main.o: $(SRC)/main.cpp
+$(OBJDIR_DEBUG)/main.o: $(SRC)/main.cpp $(INC_DEBUG)/main.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/main.cpp -o $(OBJDIR_DEBUG)/main.o 
 
-$(OBJDIR_DEBUG)/lex.o: $(SRC)/lex.cpp
+$(OBJDIR_DEBUG)/lex.o: $(SRC)/lex.cpp $(INC_DEBUG)/lex.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/lex.cpp -o $(OBJDIR_DEBUG)/lex.o 
 
-$(OBJDIR_DEBUG)/tokenizer.o: $(SRC)/tokenizer.cpp
+$(OBJDIR_DEBUG)/tokenizer.o: $(SRC)/tokenizer.cpp $(INC_DEBUG)/tokenizer.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/tokenizer.cpp -o $(OBJDIR_DEBUG)/tokenizer.o 
 
-$(OBJDIR_DEBUG)/rom.o: $(SRC)/rom.cpp $(INC_DEBUG)/header.h $(INC_DEBUG)/routines.h $(INC_DEBUG)/start.h
+$(OBJDIR_DEBUG)/rom.o: $(SRC)/rom.cpp $(INC_DEBUG)/rom.h $(INC_DEBUG)/compiler.h $(INC_DEBUG)/compiler_hooks.h $(INC_DEBUG)/turbo.h $(INC_DEBUG)/pt3.h $(INC_DEBUG)/header_pt3.h $(INC_DEBUG)/header.h $(INC_DEBUG)/routines.h $(INC_DEBUG)/start.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/rom.cpp -o $(OBJDIR_DEBUG)/rom.o 
 
-$(OBJDIR_DEBUG)/compiler.o: $(SRC)/compiler.cpp $(INC_DEBUG)/header.h $(INC_DEBUG)/routines.h $(INC_DEBUG)/start.h
+$(OBJDIR_DEBUG)/compiler.o: $(SRC)/compiler.cpp $(INC_DEBUG)/compiler.h $(INC_DEBUG)/compiler_hooks.h $(INC_DEBUG)/header.h $(INC_DEBUG)/routines.h $(INC_DEBUG)/start.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/compiler.cpp -o $(OBJDIR_DEBUG)/compiler.o 
 
-$(OBJDIR_DEBUG)/compiler_pt3.o: $(SRC)/compiler_pt3.cpp $(INC_DEBUG)/header_pt3.h $(INC_DEBUG)/routines.h $(INC_DEBUG)/start.h
+$(OBJDIR_DEBUG)/compiler_pt3.o: $(SRC)/compiler_pt3.cpp $(INC_DEBUG)/compiler_pt3.h $(INC_DEBUG)/compiler_pt3_hooks.h $(INC_DEBUG)/header_pt3.h $(INC_DEBUG)/routines.h $(INC_DEBUG)/start.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/compiler_pt3.cpp -o $(OBJDIR_DEBUG)/compiler_pt3.o 
 
-$(OBJDIR_DEBUG)/parse.o: $(SRC)/parse.cpp
+$(OBJDIR_DEBUG)/parse.o: $(SRC)/parse.cpp $(INC_DEBUG)/parse.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/parse.cpp -o $(OBJDIR_DEBUG)/parse.o 
 
-$(OBJDIR_DEBUG)/pletter.o: $(SRC)/pletter.cpp
+$(OBJDIR_DEBUG)/pletter.o: $(SRC)/pletter.cpp $(INC_DEBUG)/pletter.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/pletter.cpp -o $(OBJDIR_DEBUG)/pletter.o 
 
 clean_debug: 
@@ -116,28 +116,28 @@ release: before_release out_release after_release
 out_release: before_release $(OBJ_RELEASE) $(DEP_RELEASE)
 	$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE)
 
-$(OBJDIR_RELEASE)/main.o: $(SRC)/main.cpp
+$(OBJDIR_RELEASE)/main.o: $(SRC)/main.cpp $(INC_RELEASE)/main.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/main.cpp -o $(OBJDIR_RELEASE)/main.o 
 
-$(OBJDIR_RELEASE)/lex.o: $(SRC)/lex.cpp
+$(OBJDIR_RELEASE)/lex.o: $(SRC)/lex.cpp $(INC_RELEASE)/lex.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/lex.cpp -o $(OBJDIR_RELEASE)/lex.o 
 
-$(OBJDIR_RELEASE)/tokenizer.o: $(SRC)/tokenizer.cpp
+$(OBJDIR_RELEASE)/tokenizer.o: $(SRC)/tokenizer.cpp  $(INC_RELEASE)/tokenizer.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/tokenizer.cpp -o $(OBJDIR_RELEASE)/tokenizer.o 
 
-$(OBJDIR_RELEASE)/rom.o: $(SRC)/rom.cpp $(INC_RELEASE)/header.h $(INC_RELEASE)/routines.h $(INC_RELEASE)/start.h
+$(OBJDIR_RELEASE)/rom.o: $(SRC)/rom.cpp $(INC_RELEASE)/rom.h $(INC_RELEASE)/compiler.h $(INC_RELEASE)/compiler_hooks.h $(INC_RELEASE)/turbo.h $(INC_RELEASE)/pt3.h $(INC_RELEASE)/header_pt3.h $(INC_RELEASE)/header.h $(INC_RELEASE)/routines.h $(INC_RELEASE)/start.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/rom.cpp -o $(OBJDIR_RELEASE)/rom.o 
 
-$(OBJDIR_RELEASE)/compiler.o: $(SRC)/compiler.cpp $(INC_RELEASE)/header.h $(INC_RELEASE)/routines.h $(INC_RELEASE)/start.h
+$(OBJDIR_RELEASE)/compiler.o: $(SRC)/compiler.cpp $(INC_RELEASE)/compiler.h $(INC_RELEASE)/compiler_hooks.h $(INC_RELEASE)/header.h $(INC_RELEASE)/routines.h $(INC_RELEASE)/start.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/compiler.cpp -o $(OBJDIR_RELEASE)/compiler.o 
 
-$(OBJDIR_RELEASE)/compiler_pt3.o: $(SRC)/compiler_pt3.cpp $(INC_RELEASE)/header_pt3.h $(INC_RELEASE)/routines.h $(INC_RELEASE)/start.h
+$(OBJDIR_RELEASE)/compiler_pt3.o: $(SRC)/compiler_pt3.cpp $(INC_RELEASE)/compiler_pt3.h $(INC_RELEASE)/compiler_pt3_hooks.h $(INC_RELEASE)/header_pt3.h $(INC_RELEASE)/routines.h $(INC_RELEASE)/start.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/compiler_pt3.cpp -o $(OBJDIR_RELEASE)/compiler_pt3.o 
 
-$(OBJDIR_RELEASE)/parse.o: $(SRC)/parse.cpp
+$(OBJDIR_RELEASE)/parse.o: $(SRC)/parse.cpp $(INC_RELEASE)/parse.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/parse.cpp -o $(OBJDIR_RELEASE)/parse.o 
 
-$(OBJDIR_RELEASE)/pletter.o: $(SRC)/pletter.cpp
+$(OBJDIR_RELEASE)/pletter.o: $(SRC)/pletter.cpp $(INC_RELEASE)/pletter.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/pletter.cpp -o $(OBJDIR_RELEASE)/pletter.o 
 
 clean_release: 
