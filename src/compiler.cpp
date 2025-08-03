@@ -1,7 +1,7 @@
 /***
  * @file compiler.cpp
  * @brief Compiler class code for semantic analysis,
- * specialized as a Z80 code builder for MSX system
+ *        specialized as a Z80 code builder for MSX system
  * @author Amaury Carvalho (2019-2025)
  * @note
  *   https://en.wikipedia.org/wiki/Semantic_analysis_(computational)
