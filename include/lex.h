@@ -55,17 +55,17 @@ class Lexeme {
     bool isSeparator(string pvalue);
     bool isOperator(string pvalue);
     bool isLiteralNumeric();
-	bool isBooleanOperator();
-	bool isFunction();
+	  bool isBooleanOperator();
+	  bool isFunction();
 
-	static Lexeme* factory(LexemeType ptype, LexemeSubType psubtype, string pname);
-	static Lexeme* factory(LexemeType ptype, LexemeSubType psubtype, string pname, string pvalue);
-	static Lexeme* factory(Lexeme *plexeme);
+	  static Lexeme* factory(LexemeType ptype, LexemeSubType psubtype, string pname);
+	  static Lexeme* factory(LexemeType ptype, LexemeSubType psubtype, string pname, string pvalue);
+	  static Lexeme* factory(Lexeme *plexeme);
 
     Lexeme();
-	Lexeme(Lexeme *plexeme);
-	Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname);
-	Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname, string pvalue);
+	  Lexeme(Lexeme *plexeme);
+	  Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname);
+	  Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname, string pvalue);
 
 };
 
@@ -75,13 +75,13 @@ class LexerLine {
     vector<Lexeme*> lexemes;
     stack<int> lexemeStack;
 
-	bool isNumeric(char c);
-	bool isDecimal(char c);
-	bool isHexDecimal(char c);
-	bool isSeparator(char c);
-	bool isOperator(char c);
-	bool isIdentifier(char c, bool start);
-	bool isComment(char c);
+	  bool isNumeric(char c);
+	  bool isDecimal(char c);
+	  bool isHexDecimal(char c);
+	  bool isSeparator(char c);
+	  bool isOperator(char c);
+	  bool isIdentifier(char c, bool start);
+	  bool isComment(char c);
 
   public:
     string line;
@@ -102,7 +102,7 @@ class LexerLine {
     int getLexemeCount();
     void pushLexeme();
     void popLexeme();
-    void popLexemeDiscarting();
+    void popLexemeDiscarding();
 
     LexerLine();
 };
@@ -113,12 +113,14 @@ class Lexer {
     vector<LexerLine*> lines;
     string errorMessage;
 
+    void clear();
     bool load(char *filename);
     bool evaluate();
 
     void print();
     void error();
 
+    Lexer();
 };
 
 #endif // LEX_H_INCLUDED
