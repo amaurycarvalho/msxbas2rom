@@ -1,38 +1,122 @@
+/***
+ * @file main.h
+ * @brief MSXBAS2ROM compiler CLI main header
+ * @author Amaury Carvalho
+ * @copyright (GNU GPL3) 2019~
+ * @see
+ *   MSX BASIC to ROM compiler project:
+ *     https://github.com/amaurycarvalho/msxbas2rom/
+ *   Contact email:
+ *     amauryspires@gmail.com
+ * @note
+ *   Unit testing:
+ *     ./test/unit/test
+ * @example
+ *   msxbas2rom -h
+ *   msxbas2rom --ver
+ *   msxbas2rom --doc
+ *   msxbas2rom program.bas
+ *   msxbas2rom -x program.bas
+ *   msxbas2rom -x --scc program.bas
+ */
+
 #ifndef MAIN_H_INCLUDED
 #define MAIN_H_INCLUDED
 
-#include "lex.h"
-#include "tokenizer.h"
-#include "rom.h"
 #include "compiler.h"
 #include "compiler_pt3.h"
+#include "lex.h"
+#include "rom.h"
+#include "tokenizer.h"
 
+/***
+ * @var
+ * @brief Compiler version
+ */
 #define app_version "0.3.2.9"
 
-char inputFilename[255]="",
-     outputFilename[255]="",
-     symbolFilename[255]="";
+/***
+ * @var
+ * @brief File names (input, output and symbol)
+ */
+char inputFilename[255] = "", outputFilename[255] = "",
+     symbolFilename[255] = "";
 
-bool parmHelp=false,  parmDebug=false,
-     parmQuiet=false, parmError=false,
-     parmVer=false, parmTurbo=false,
-     parmDoc=false, parmXtd=false,
-     parmNoStripRemLines=false, parmSymbols=false,
-     parmCompile=false, parmLineNumber=false, parmKonamiSCC=false;
+/***
+ * @var
+ * @brief Parameters flags
+ */
+bool parmHelp = false, parmDebug = false, parmQuiet = false, parmError = false,
+     parmVer = false, parmTurbo = false, parmDoc = false, parmXtd = false,
+     parmNoStripRemLines = false, parmSymbols = false, parmCompile = false,
+     parmLineNumber = false, parmKonamiSCC = false;
 
+/***
+ * @brief msxbas2rom [options] <filename.bas>
+ * @param -h help
+ * @param -q quiet (no verbose)
+ * @param -d debug mode (show details)
+ * @param -c compile mode (default)
+ * @param -x extended memory scheme mode (MegaROM, compile mode)
+ * @param -s generate symbols for OpenMSX debugger (compile mode)
+ * @param --doc display documentation
+ * @param --ver display version history
+ * @param --scc Konami with SCC MegaROM format support
+ * @param --lin register line numbers (compile mode)
+ * @param filename MSX BASIC file name (saved in plain text format)
+ * @deprecated -p tokenized p-code mode (deprecated);
+ *             -t turbo mode (or use CALL TURBO instructions, deprecated);
+ *             --nsr no strip remark lines (tokenized/turbo mode, deprecated)
+ * @example
+ *   msxbas2rom program.bas
+ *   msxbas2rom -x program.bas
+ *   msxbas2rom -x --scc program.bas
+ */
+int main(int argc, char *argv[]);
+
+/***
+ * @brief Check if a file exists
+ * @param filename File name to check into file system
+ * @return True or False
+ */
 bool FileExists(char *filename);
+
+/***
+ * @brief Write symbols file to use with OpenMSX
+ * @param compiler compiler object
+ * @param code_start code start position on RAM memory
+ */
 bool SaveSymbolFile(Compiler *compiler, int code_start);
+
+/***
+ * @brief Write symbols file to use with OpenMSX
+ * @deprecated Deprecated
+ * @param compiler compiler object for PT3 support (deprecated)
+ * @param code_start code start position on RAM memory
+ */
 bool SaveSymbolFile(CompilerPT3 *compiler, int code_start);
 
-const char * info_splash = R"(MSXBAS2ROM - MSX BASIC TO ROM COMPILER
+/***
+ * @var
+ * @brief Splash information
+ */
+const char *info_splash = R"(MSXBAS2ROM - MSX BASIC TO ROM COMPILER
 Created by Amaury Carvalho (2020-2025)
 Version:)";
 
-const char * info_support = R"(
+/***
+ * @var
+ * @brief Support information
+ */
+const char *info_support = R"(
 Help us to maintain this project, support us on Patreon:
 https://www.patreon.com/msxbas2rom)";
 
-const char * info_usage = R"(
+/***
+ * @var
+ * @brief Usage information (-h parameter)
+ */
+const char *info_usage = R"(
 Usage: msxbas2rom [options] <filename.bas>
 Options:
        -h or -? = help
@@ -53,17 +137,19 @@ Output: <filename.rom>
 See more information at:
 https://github.com/amaurycarvalho/msxbas2rom )";
 
-/*
-0.0.0.0 – (2023/xx/xx) RUN support to call sub-programs;
-0.0.0.0 – (2023/xx/xx) FM/SCC music support (furnace? Trillo Tracker?);
-0.0.0.0 – (2023/xx/xx) AKG music file support (Arkos Tracker);
-0.0.0.0 – (2023/xx/xx) Disk file support;
-0.0.0.0 – (2023/xx/xx) Better support to double precision type (BCD);
-0.0.0.0 – (2023/xx/xx) SET TILE FLIP/ROTATE new command;
-0.0.0.0 – (2023/xx/xx) SET SPRITE COLOR/PATTERN new command;
-*/
-
-const char * info_history = R"(
+/***
+ * @var
+ * @brief History information (--ver parameter)
+ * @todo
+ *   0.0.0.0 – (2023/xx/xx) RUN support to call sub-programs;
+ *   0.0.0.0 – (2023/xx/xx) FM/SCC music support (furnace? Trillo Tracker?);
+ *   0.0.0.0 – (2023/xx/xx) AKG music file support (Arkos Tracker);
+ *   0.0.0.0 – (2023/xx/xx) Disk file support;
+ *   0.0.0.0 – (2023/xx/xx) Better support to double precision type (BCD);
+ *   0.0.0.0 – (2023/xx/xx) SET TILE FLIP/ROTATE new command;
+ *   0.0.0.0 – (2023/xx/xx) SET SPRITE COLOR/PATTERN new command;
+ */
+const char *info_history = R"(
 Version history
 
 0.3.2.9 – (2025/07/22) MegaROM emulation detection bug fix;
@@ -235,7 +321,10 @@ Version history
 0.1.0.0 – (2020/05/21) Proof of concept.
 )";
 
-const char * info_documentation = R"(
+/***
+ * @brief Documentation information (--doc parameter)
+ */
+const char *info_documentation = R"(
 COMPILING CODE
 
    Use -c parameter to compile your BASIC code into ROM.
@@ -673,13 +762,15 @@ FOOTNOTES
 
 SUPPORTERS SPECIAL THANKS
 
-  Luciano Cadari (iplay.com.br)
-  Mario Cavalcanti (clubemsx.com.br)
-  Pedro de Medeiros
-  Claudio Rodrigues
-  Gilberto Taborda
-  Ronaldo Prado
-  Julio Berrincha
+  - Luciano Cadari (iplay.com.br);
+  - Mario Cavalcanti (clubemsx.com.br);
+  - Pedro de Medeiros;
+  - Claudio Pinheiro;
+  - Diogo Patrao;
+  - Paulo Goncalves;
+  - Gilberto Taborda;
+  - Ronaldo Prado;
+  - Julio Berrincha.
 )";
 
-#endif // MAIN_H_INCLUDED
+#endif  // MAIN_H_INCLUDED

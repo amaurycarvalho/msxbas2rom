@@ -1,8 +1,9 @@
 /***
  * @file lex.cpp
- * @brief MSX BASIC lexer class code
+ * @brief MSX BASIC lexer class implementation
  * @author Amaury Carvalho (2019-2025)
- * @note https://en.wikipedia.org/wiki/Lexical_analysis
+ * @note
+ *   https://en.wikipedia.org/wiki/Lexical_analysis
  */
 
 #include "lex.h"
@@ -14,9 +15,7 @@
  * @name Lexeme class functions
  */
 
-Lexeme::Lexeme() {
-  clear();
-}
+Lexeme::Lexeme() { clear(); }
 
 Lexeme::Lexeme(Lexeme* plexeme) {
   clear();
@@ -45,7 +44,8 @@ Lexeme::Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname) {
   value = pname;
 }
 
-Lexeme::Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname, string pvalue) {
+Lexeme::Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname,
+               string pvalue) {
   clear();
   type = ptype;
   subtype = psubtype;
@@ -53,9 +53,7 @@ Lexeme::Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname, string pv
   value = pvalue;
 }
 
-Lexeme* Lexeme::clone() {
-  return new Lexeme(this);
-}
+Lexeme* Lexeme::clone() { return new Lexeme(this); }
 
 void Lexeme::clear() {
   type = Lexeme::type_unknown;
@@ -77,15 +75,17 @@ void Lexeme::clear() {
 
 void Lexeme::print() {
   if (isArray)
-    printf("%*s--> %s %s (array): %s\n", indent, "", getTypeName(), getSubTypeName(),
-           value.c_str());
+    printf("%*s--> %s %s (array): %s\n", indent, "", getTypeName(),
+           getSubTypeName(), value.c_str());
   else
-    printf("%*s--> %s %s: %s\n", indent, "", getTypeName(), getSubTypeName(), value.c_str());
+    printf("%*s--> %s %s: %s\n", indent, "", getTypeName(), getSubTypeName(),
+           value.c_str());
 }
 
 char* Lexeme::getTypeName() {
-  static char LexemeTypeName[][20] = {"Unknown",  "Identifier", "Keyword", "Separator",
-                                      "Operator", "Literal",    "Comment"};
+  static char LexemeTypeName[][20] = {"Unknown",   "Identifier", "Keyword",
+                                      "Separator", "Operator",   "Literal",
+                                      "Comment"};
 
   return LexemeTypeName[type];
 }
@@ -125,126 +125,131 @@ bool Lexeme::isLiteralNumeric() {
 
 bool Lexeme::isKeyword() {
   return (
-      value == "CLS" || value == "PRINT" || value == "END" || value == "GOTO" || value == "IF" ||
-      value == "THEN" || value == "ELSE" || value == "COLOR" || value == "GOSUB" ||
-      value == "FOR" || value == "NEXT" || value == "RETURN" || value == "ON" || value == "OFF" ||
-      value == "STOP" || value == "MOD" || value == "CALL" || value == "PAUSE" ||
-      value == "INTERVAL" || value == "ERROR" || value == "FONT" || value == "GET" ||
-      value == "DATE" || value == "TIME" || value == "SET" || value == "ASC" || value == "BIN$" ||
-      value == "CDBL" || value == "CHR$" || value == "CINT" || value == "CSNG" || value == "HEX$" ||
-      value == "OCT$" || value == "VAL" || value == "WIDTH" || value == "SPC" || value == "STR$" ||
-      value == "BLOAD" || value == "BSAVE" || value == "CLOAD" || value == "CSAVE" ||
-      value == "CLOSE" || value == "EOF" || value == "LOAD" || value == "MAX" || value == "FILES" ||
-      value == "LEN" || value == "USING$" || value == "MERGE" || value == "MOTOR" ||
-      value == "OPEN" || value == "RUN" || value == "SAVE" || value == "VARPTR" || value == "NEW" ||
-      value == "USING" || value == "BASE" || value == "CIRCLE" || value == "COPY" ||
-      value == "SCREEN" || value == "CSRLIN" || value == "DRAW" || value == "LINE" ||
-      value == "LOCATE" || value == "LPOS" || value == "PAINT" || value == "POINT" ||
-      value == "POS" || value == "PRESET" || value == "PSET" || value == "DRAW" || value == "INP" ||
-      value == "PEEK" || value == "POKE" || value == "VPEEK" || value == "VPOKE" ||
-      value == "IPEEK" || value == "IPOKE" || value == "BASE" || value == "VDP" ||
-      value == "DEFINT" || value == "DEFDBL" || value == "DEFSNG" || value == "DEFSTR" ||
-      value == "DEF" || value == "FN" || value == "OUT" || value == "WAIT" || value == "INPUT$" ||
-      value == "INPUT" || value == "KEY" || value == "STRIG" || value == "STEP" || value == "PAD" ||
-      value == "PDL" || value == "STICK" || value == "AND" || value == "EQV" || value == "IMP" ||
-      value == "NOT" || value == "OR" || value == "XOR" || value == "ABS" || value == "CDBL" ||
-      value == "CINT" || value == "CSNG" || value == "EXP" || value == "FIX" || value == "INT" ||
-      value == "LOG" || value == "RND" || value == "SGN" || value == "SQR" || value == "DEF" ||
-      value == "USR" || value == "LLIST" || value == "LPRINT" || value == "BEEP" ||
-      value == "PLAY" || value == "SOUND" || value == "SPRITE$" || value == "SPRITE" ||
-      value == "INSTR" || value == "LEFT$" || value == "MID$" || value == "RIGHT$" ||
-      value == "SPACE$" || value == "STRING$" || value == "ATN" || value == "COS" ||
-      value == "SIN" || value == "TAN" || value == "CLEAR" || value == "DATA" || value == "DIM" ||
-      value == "ERASE" || value == "LET" || value == "REDIM" || value == "TO" || value == "AND" ||
-      value == "TAB" || value == "REM" || value == "READ" || value == "RESTORE" || value == "RUN" ||
-      value == "SWAP" || value == "SEED" || value == "RANDOMIZE" || value == "RESUME" ||
-      value == "SHR" || value == "SHL" || value == "INKEY$" || value == "INKEY" ||
-      value == "KANJI" || value == "PUT" || value == "TPSET" || value == "VIDEO" ||
-      value == "TAND" || value == "TOR" || value == "TPRESET" || value == "TXOR" ||
-      value == "PAGE" || value == "SCROLL" || value == "FRE" || value == "HEAP" ||
-      value == "TILE" || value == "TILES" || value == "MSX" || value == "RESOURCE" ||
-      value == "RESOURCESIZE" || value == "INCLUDE" || value == "TURBO" || value == "TEXT" ||
-      value == "CMD" || value == "FILE" || value == "RUNASM" || value == "RUNBAS" ||
-      value == "WRTVRAM" || value == "WRTCHR" || value == "WRTCLR" || value == "WRTSCR" ||
-      value == "WRTSPRPAT" || value == "WRTSPRCLR" || value == "WRTSPRATR" ||
-      value == "RAMTOVRAM" || value == "VRAMTORAM" || value == "RAMTORAM" || value == "RSCTORAM" ||
-      value == "PT3LOAD" || value == "PT3PLAY" || value == "PT3MUTE" || value == "PT3LOOP" ||
-      value == "PT3REPLAY" || value == "PLYLOAD" || value == "PLYSONG" || value == "PLYPLAY" ||
-      value == "PLYMUTE" || value == "PLYLOOP" || value == "PLYREPLAY" || value == "PLYSOUND" ||
-      value == "PLYSTATUS" || value == "DISSCR" || value == "ENASCR" || value == "WRTFNT" ||
+      value == "CLS" || value == "PRINT" || value == "END" || value == "GOTO" ||
+      value == "IF" || value == "THEN" || value == "ELSE" || value == "COLOR" ||
+      value == "GOSUB" || value == "FOR" || value == "NEXT" ||
+      value == "RETURN" || value == "ON" || value == "OFF" || value == "STOP" ||
+      value == "MOD" || value == "CALL" || value == "PAUSE" ||
+      value == "INTERVAL" || value == "ERROR" || value == "FONT" ||
+      value == "GET" || value == "DATE" || value == "TIME" || value == "SET" ||
+      value == "ASC" || value == "BIN$" || value == "CDBL" || value == "CHR$" ||
+      value == "CINT" || value == "CSNG" || value == "HEX$" ||
+      value == "OCT$" || value == "VAL" || value == "WIDTH" || value == "SPC" ||
+      value == "STR$" || value == "BLOAD" || value == "BSAVE" ||
+      value == "CLOAD" || value == "CSAVE" || value == "CLOSE" ||
+      value == "EOF" || value == "LOAD" || value == "MAX" || value == "FILES" ||
+      value == "LEN" || value == "USING$" || value == "MERGE" ||
+      value == "MOTOR" || value == "OPEN" || value == "RUN" ||
+      value == "SAVE" || value == "VARPTR" || value == "NEW" ||
+      value == "USING" || value == "BASE" || value == "CIRCLE" ||
+      value == "COPY" || value == "SCREEN" || value == "CSRLIN" ||
+      value == "DRAW" || value == "LINE" || value == "LOCATE" ||
+      value == "LPOS" || value == "PAINT" || value == "POINT" ||
+      value == "POS" || value == "PRESET" || value == "PSET" ||
+      value == "DRAW" || value == "INP" || value == "PEEK" || value == "POKE" ||
+      value == "VPEEK" || value == "VPOKE" || value == "IPEEK" ||
+      value == "IPOKE" || value == "BASE" || value == "VDP" ||
+      value == "DEFINT" || value == "DEFDBL" || value == "DEFSNG" ||
+      value == "DEFSTR" || value == "DEF" || value == "FN" || value == "OUT" ||
+      value == "WAIT" || value == "INPUT$" || value == "INPUT" ||
+      value == "KEY" || value == "STRIG" || value == "STEP" || value == "PAD" ||
+      value == "PDL" || value == "STICK" || value == "AND" || value == "EQV" ||
+      value == "IMP" || value == "NOT" || value == "OR" || value == "XOR" ||
+      value == "ABS" || value == "CDBL" || value == "CINT" || value == "CSNG" ||
+      value == "EXP" || value == "FIX" || value == "INT" || value == "LOG" ||
+      value == "RND" || value == "SGN" || value == "SQR" || value == "DEF" ||
+      value == "USR" || value == "LLIST" || value == "LPRINT" ||
+      value == "BEEP" || value == "PLAY" || value == "SOUND" ||
+      value == "SPRITE$" || value == "SPRITE" || value == "INSTR" ||
+      value == "LEFT$" || value == "MID$" || value == "RIGHT$" ||
+      value == "SPACE$" || value == "STRING$" || value == "ATN" ||
+      value == "COS" || value == "SIN" || value == "TAN" || value == "CLEAR" ||
+      value == "DATA" || value == "DIM" || value == "ERASE" || value == "LET" ||
+      value == "REDIM" || value == "TO" || value == "AND" || value == "TAB" ||
+      value == "REM" || value == "READ" || value == "RESTORE" ||
+      value == "RUN" || value == "SWAP" || value == "SEED" ||
+      value == "RANDOMIZE" || value == "RESUME" || value == "SHR" ||
+      value == "SHL" || value == "INKEY$" || value == "INKEY" ||
+      value == "KANJI" || value == "PUT" || value == "TPSET" ||
+      value == "VIDEO" || value == "TAND" || value == "TOR" ||
+      value == "TPRESET" || value == "TXOR" || value == "PAGE" ||
+      value == "SCROLL" || value == "FRE" || value == "HEAP" ||
+      value == "TILE" || value == "TILES" || value == "MSX" ||
+      value == "RESOURCE" || value == "RESOURCESIZE" || value == "INCLUDE" ||
+      value == "TURBO" || value == "TEXT" || value == "CMD" ||
+      value == "FILE" || value == "RUNASM" || value == "RUNBAS" ||
+      value == "WRTVRAM" || value == "WRTCHR" || value == "WRTCLR" ||
+      value == "WRTSCR" || value == "WRTSPRPAT" || value == "WRTSPRCLR" ||
+      value == "WRTSPRATR" || value == "RAMTOVRAM" || value == "VRAMTORAM" ||
+      value == "RAMTORAM" || value == "RSCTORAM" || value == "PT3LOAD" ||
+      value == "PT3PLAY" || value == "PT3MUTE" || value == "PT3LOOP" ||
+      value == "PT3REPLAY" || value == "PLYLOAD" || value == "PLYSONG" ||
+      value == "PLYPLAY" || value == "PLYMUTE" || value == "PLYLOOP" ||
+      value == "PLYREPLAY" || value == "PLYSOUND" || value == "PLYSTATUS" ||
+      value == "DISSCR" || value == "ENASCR" || value == "WRTFNT" ||
       value == "SETFNT" || value == "?" || value == "_" || value == "CLRSCR" ||
-      value == "KEYCLKOFF" || value == "CLRKEY" || value == "COLLISION" || value == "MUTE" ||
-      value == "PSG" || value == "NTSC" || value == "IDATA" || value == "IREAD" ||
-      value == "IRESTORE" || value == "MAKER" || value == "UPDFNTCLR" || value == "PATTERN" ||
-      value == "FLIP" || value == "ROTATE" || value == "FROM" || value == "PASTE" ||
-      value == "ADJUST" || value == "TITLE" || value == "PROMPT");
+      value == "KEYCLKOFF" || value == "CLRKEY" || value == "COLLISION" ||
+      value == "MUTE" || value == "PSG" || value == "NTSC" ||
+      value == "IDATA" || value == "IREAD" || value == "IRESTORE" ||
+      value == "MAKER" || value == "UPDFNTCLR" || value == "PATTERN" ||
+      value == "FLIP" || value == "ROTATE" || value == "FROM" ||
+      value == "PASTE" || value == "ADJUST" || value == "TITLE" ||
+      value == "PROMPT");
 }
 
 bool Lexeme::isBooleanOperator() {
-  return (value == "AND" || value == "OR" || value == "XOR" || value == "MOD" || value == "IMP" ||
-          value == "EQV" || value == "NOT" || value == "SHR" || value == "SHL");
+  return (value == "AND" || value == "OR" || value == "XOR" || value == "MOD" ||
+          value == "IMP" || value == "EQV" || value == "NOT" ||
+          value == "SHR" || value == "SHL");
 }
 
 bool Lexeme::isFunction() {
-  return (value == "DATE" || value == "TIME" || value == "ASC" || value == "BIN$" ||
-          value == "CDBL" || value == "CHR$" || value == "SPC" || value == "CINT" ||
-          value == "CSNG" || value == "HEX$" || value == "OCT$" || value == "VAL" ||
-          value == "EOF" || value == "VARPTR" || value == "STR$" || value == "CSRLIN" ||
-          value == "LPOS" || value == "POINT" || value == "POS" || value == "PEEK" ||
-          value == "LEN" || value == "FRE" || value == "HEAP" || value == "VPEEK" ||
-          value == "INP" || value == "BASE" || value == "VARPTR" || value == "IPEEK" ||
-          value == "INKEY" || value == "INPUT$" || value == "INKEY$" || value == "STRIG" ||
-          value == "PAD" || value == "PDL" || value == "STICK" || value == "ABS" ||
-          value == "CDBL" || value == "VDP" || value == "SNG" || value == "EXP" || value == "FIX" ||
-          value == "INT" || value == "DBL" || value == "LOG" || value == "RND" || value == "SGN" ||
-          value == "SQR" || value == "SPRITE$" || value == "INSTR" || value == "LEFT$" ||
-          value == "MID$" || value == "RIGHT$" || value == "SPACE$" || value == "STRING$" ||
-          value == "ATN" || value == "COS" || value == "SIN" || value == "TAN" || value == "TAB" ||
-          value == "ATTR$" || value == "USR0" || value == "USR" || value == "USING$" ||
-          value == "COLLISION" || value == "TILE" || value == "MSX" || value == "RESOURCE" ||
-          value == "RESOURCESIZE" || value == "PSG" || value == "NTSC" || value == "TURBO" ||
-          value == "MAKER" || value == "PLYSTATUS");
+  return (
+      value == "DATE" || value == "TIME" || value == "ASC" || value == "BIN$" ||
+      value == "CDBL" || value == "CHR$" || value == "SPC" || value == "CINT" ||
+      value == "CSNG" || value == "HEX$" || value == "OCT$" || value == "VAL" ||
+      value == "EOF" || value == "VARPTR" || value == "STR$" ||
+      value == "CSRLIN" || value == "LPOS" || value == "POINT" ||
+      value == "POS" || value == "PEEK" || value == "LEN" || value == "FRE" ||
+      value == "HEAP" || value == "VPEEK" || value == "INP" ||
+      value == "BASE" || value == "VARPTR" || value == "IPEEK" ||
+      value == "INKEY" || value == "INPUT$" || value == "INKEY$" ||
+      value == "STRIG" || value == "PAD" || value == "PDL" ||
+      value == "STICK" || value == "ABS" || value == "CDBL" || value == "VDP" ||
+      value == "SNG" || value == "EXP" || value == "FIX" || value == "INT" ||
+      value == "DBL" || value == "LOG" || value == "RND" || value == "SGN" ||
+      value == "SQR" || value == "SPRITE$" || value == "INSTR" ||
+      value == "LEFT$" || value == "MID$" || value == "RIGHT$" ||
+      value == "SPACE$" || value == "STRING$" || value == "ATN" ||
+      value == "COS" || value == "SIN" || value == "TAN" || value == "TAB" ||
+      value == "ATTR$" || value == "USR0" || value == "USR" ||
+      value == "USING$" || value == "COLLISION" || value == "TILE" ||
+      value == "MSX" || value == "RESOURCE" || value == "RESOURCESIZE" ||
+      value == "PSG" || value == "NTSC" || value == "TURBO" ||
+      value == "MAKER" || value == "PLYSTATUS");
 }
 
 /***
  * @name LexerLine class functions
  */
 
-LexerLine::LexerLine() {
-  lexemeIndex = 0;
-}
+LexerLine::LexerLine() { lexemeIndex = 0; }
 
-void LexerLine::clearLexemes() {
-  lexemes.clear();
-}
+void LexerLine::clearLexemes() { lexemes.clear(); }
 
-void LexerLine::addLexeme(Lexeme* lexeme) {
-  lexemes.push_back(lexeme);
-}
+void LexerLine::addLexeme(Lexeme* lexeme) { lexemes.push_back(lexeme); }
 
-void LexerLine::setLexemeBOF() {
-  lexemeIndex = -1;
-}
+void LexerLine::setLexemeBOF() { lexemeIndex = -1; }
 
-Lexeme* LexerLine::getCurrentLexeme() {
-  return getLexeme(lexemeIndex);
-}
+Lexeme* LexerLine::getCurrentLexeme() { return getLexeme(lexemeIndex); }
 
-Lexeme* LexerLine::getFirstLexeme() {
-  return getLexeme(0);
-}
+Lexeme* LexerLine::getFirstLexeme() { return getLexeme(0); }
 
-Lexeme* LexerLine::getNextLexeme() {
-  return getLexeme(lexemeIndex + 1);
-}
+Lexeme* LexerLine::getNextLexeme() { return getLexeme(lexemeIndex + 1); }
 
-Lexeme* LexerLine::getPreviousLexeme() {
-  return getLexeme(lexemeIndex - 1);
-}
+Lexeme* LexerLine::getPreviousLexeme() { return getLexeme(lexemeIndex - 1); }
 
-Lexeme* LexerLine::getLastLexeme() {
-  return getLexeme(lexemes.size() - 1);
-}
+Lexeme* LexerLine::getLastLexeme() { return getLexeme(lexemes.size() - 1); }
 
 Lexeme* LexerLine::getLexeme(int i) {
   if (i >= 0 && i < (int)lexemes.size()) {
@@ -254,13 +259,9 @@ Lexeme* LexerLine::getLexeme(int i) {
     return 0;
 }
 
-int LexerLine::getLexemeCount() {
-  return lexemes.size();
-}
+int LexerLine::getLexemeCount() { return lexemes.size(); }
 
-void LexerLine::pushLexeme() {
-  lexemeStack.push(lexemeIndex);
-}
+void LexerLine::pushLexeme() { lexemeStack.push(lexemeIndex); }
 
 void LexerLine::popLexeme() {
   if (!lexemeStack.empty()) {
@@ -269,9 +270,7 @@ void LexerLine::popLexeme() {
   }
 }
 
-void LexerLine::popLexemeDiscarding() {
-  lexemeStack.pop();
-}
+void LexerLine::popLexemeDiscarding() { lexemeStack.pop(); }
 
 void LexerLine::print() {
   printf("%s", line.c_str());
@@ -322,7 +321,8 @@ bool LexerLine::evaluate() {
           continue;
         } else if (isIdentifier(c, true)) {
           lexeme->type = Lexeme::type_identifier;
-          lexeme->subtype = Lexeme::subtype_single_decimal;  // default identifier subtype
+          lexeme->subtype =
+              Lexeme::subtype_single_decimal;  // default identifier subtype
           lexeme->value += toupper(c);
           lexeme->name = lexeme->value;
           continue;
@@ -533,44 +533,41 @@ bool LexerLine::evaluate() {
   return true;
 }
 
-bool LexerLine::isNumeric(char c) {
-  return (c >= '0' && c <= '9');
-}
+bool LexerLine::isNumeric(char c) { return (c >= '0' && c <= '9'); }
 
-bool LexerLine::isDecimal(char c) {
-  return isNumeric(c) || c == '.';
-}
+bool LexerLine::isDecimal(char c) { return isNumeric(c) || c == '.'; }
 
 bool LexerLine::isHexDecimal(char c) {
-  return isNumeric(c) || c == 'B' || c == 'b' || c == 'h' || c == 'H' || c == 'o' || c == 'O' ||
-         (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+  return isNumeric(c) || c == 'B' || c == 'b' || c == 'h' || c == 'H' ||
+         c == 'o' || c == 'O' || (c >= 'a' && c <= 'f') ||
+         (c >= 'A' && c <= 'F');
 }
 
 bool LexerLine::isSeparator(char c) {
-  return (c == ':' || c == '(' || c == ')' || c == '{' || c == '}' || c == ',' || c == ';');
+  return (c == ':' || c == '(' || c == ')' || c == '{' || c == '}' ||
+          c == ',' || c == ';');
 }
 
 bool LexerLine::isOperator(char c) {
-  return (c == '+' || c == '-' || c == '*' || c == '/' || c == '=' || c == '<' || c == '>' ||
-          c == '^' || c == '\\');  //|| c == '\''); remark quote symbol
+  return (c == '+' || c == '-' || c == '*' || c == '/' || c == '=' ||
+          c == '<' || c == '>' || c == '^' ||
+          c == '\\');  //|| c == '\''); remark quote symbol
 }
 
 bool LexerLine::isIdentifier(char c, bool start) {
   return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' ||
-          ((c == '%' || c == '$' || c == '!' || c == '#' || (c >= '0' && c <= '9')) && !start));
+          ((c == '%' || c == '$' || c == '!' || c == '#' ||
+            (c >= '0' && c <= '9')) &&
+           !start));
 }
 
-bool LexerLine::isComment(char c) {
-  return false;
-}
+bool LexerLine::isComment(char c) { return false; }
 
 /***
  * @name Lexer class functions
  */
 
-Lexer::Lexer() {
-  clear();
-}
+Lexer::Lexer() { clear(); }
 
 void Lexer::clear() {
   errorMessage = "";
@@ -598,12 +595,14 @@ bool Lexer::load(char* filename) {
     if (header[0] < 0x20 || header[0] > 126) {
       if (header[0] == 0xFF && header[2] == 0x80) {
         sprintf(line,
-                "Tokenized MSX BASIC source code file detected\nSave it as a plain text to use it "
+                "Tokenized MSX BASIC source code file detected\nSave it as a "
+                "plain text to use it "
                 "with MSXBAS2ROM:\nSAVE \"%s\",A",
                 filename);
         errorMessage = line;
         return false;
-      } else if (header[0] != 0x0D && header[0] != 0x0A && header[0] != 0x0C) {  // CR LF FF
+      } else if (header[0] != 0x0D && header[0] != 0x0A &&
+                 header[0] != 0x0C) {  // CR LF FF
         errorMessage = "This is not a MSX BASIC source code file.";
         return false;
       }

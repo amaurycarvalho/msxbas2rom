@@ -1,10 +1,11 @@
 /***
  * @file compiler.cpp
- * @brief Compiler class code for semantic analysis,
+ * @brief Compiler class implementation for semantic analysis,
  *        specialized as a Z80 code builder for MSX system
  * @author Amaury Carvalho (2019-2025)
  * @note
  *   https://en.wikipedia.org/wiki/Semantic_analysis_(computational)
+ *   https://refactoring.guru/design-patterns/bridge
  *   Z80 Opcodes:
  *     http://z80-heaven.wikidot.com/instructions-set
  *     https://clrhome.org/table/
@@ -18,7 +19,7 @@
  * @name Compiler class code
  */
 
-Compiler::Compiler() {
+Compiler::Compiler() : IZ80() {
   code = (unsigned char*)malloc(COMPILE_CODE_SIZE);
   ram = (unsigned char*)malloc(COMPILE_RAM_SIZE);
 
@@ -212,7 +213,8 @@ void Compiler::clear_symbols() {
   code_pointer = code_start;
 
   ram_size = 0;
-  ram_start = def_RAM_BOTTOM - 0x8000;  // code_start + 0x4000 + def_RAM_INTVARSIZ;
+  ram_start =
+      def_RAM_BOTTOM - 0x8000;  // code_start + 0x4000 + def_RAM_INTVARSIZ;
   ram_pointer = ram_start;
   ramMemoryPerc = 0;
 
@@ -248,12 +250,13 @@ void Compiler::clear_symbols() {
   while (!forNextStack.empty()) forNextStack.pop();
 
   temp_str_mark = new SymbolNode();
-  temp_str_mark->lexeme =
-      new Lexeme(Lexeme::type_identifier, Lexeme::subtype_numeric, "_TEMPSTR_START_", "0");
+  temp_str_mark->lexeme = new Lexeme(
+      Lexeme::type_identifier, Lexeme::subtype_numeric, "_TEMPSTR_START_", "0");
   temp_str_mark->lexeme->isAbstract = true;
 
   heap_mark = new SymbolNode();
-  heap_mark->lexeme = new Lexeme(Lexeme::type_identifier, Lexeme::subtype_numeric, "_HEAP_", "0");
+  heap_mark->lexeme = new Lexeme(Lexeme::type_identifier,
+                                 Lexeme::subtype_numeric, "_HEAP_", "0");
   heap_mark->lexeme->isAbstract = true;
 }
 
@@ -363,7 +366,8 @@ int Compiler::save_symbols() {
           if (lexeme->isArray) {
             var_size = lexeme->array_size;
             if (!var_size) {
-              syntax_error("Array [" + lexeme->value + "] declaration is missing");
+              syntax_error("Array [" + lexeme->value +
+                           "] declaration is missing");
             }
           }
 
@@ -373,8 +377,8 @@ int Compiler::save_symbols() {
           ram_pointer += var_size;
 
           if (ram_size > def_RAM_SIZE) {
-            syntax_error("Not enough memory to variables [" + to_string(ram_size) +
-                         "bytes occupied from RAM]");
+            syntax_error("Not enough memory to variables [" +
+                         to_string(ram_size) + "bytes occupied from RAM]");
           }
         }
       }
@@ -413,7 +417,8 @@ void Compiler::do_fix() {
         syntax_error("Symbol reference not found: variable or constant");
       } else if (symbol->tag) {
         current_tag = symbol->tag;
-        syntax_error("Symbol reference not found: line number in GOTO/GOSUB/RETURN");
+        syntax_error(
+            "Symbol reference not found: line number in GOTO/GOSUB/RETURN");
       } else
         syntax_error("Symbol reference not found");
       break;
@@ -424,26 +429,6 @@ void Compiler::do_fix() {
     code[fix->address] = address & 0xFF;
     code[fix->address + 1] = (address >> 8) & 0xFF;
   }
-}
-
-void Compiler::pushLastCode() {
-  int i;
-  for (i = 4; i > 0; i--) {
-    last_code[i] = last_code[i - 1];
-  }
-  last_code[0] = &code[code_pointer];
-}
-
-void Compiler::popLastCode() {
-  int i;
-  for (i = 1; i < 5; i++) {
-    last_code[i - 1] = last_code[i];
-  }
-}
-
-void Compiler::addCodeByte(unsigned char byte) {
-  code[code_pointer++] = byte;
-  code_size++;
 }
 
 void Compiler::addByteOptimized(unsigned char byte) {
@@ -457,8 +442,9 @@ void Compiler::addByteOptimized(unsigned char byte) {
       // pop de
       case 0xD1: {
         // ld hl,x | push hl | ld hl,x | pop de
-        if (*last_code[0] == 0x21 && *last_code[1] == 0xE5 && *last_code[2] == 0x21 &&
-            *last_code[3] != 0xDD && *last_code[3] != 0xFD) {
+        if (*last_code[0] == 0x21 && *last_code[1] == 0xE5 &&
+            *last_code[2] == 0x21 && *last_code[3] != 0xDD &&
+            *last_code[3] != 0xFD) {
           // optimize to ld de,x | ld hl,x
           s = last_code[2];
           s[0] = 0x11;
@@ -482,8 +468,9 @@ void Compiler::addByteOptimized(unsigned char byte) {
           optimized = true;
 
           // ld hl,(x) | push hl | ld hl,(x) | pop de
-        } else if (*last_code[0] == 0x2A && *last_code[1] == 0xE5 && *last_code[2] == 0x2A &&
-                   *last_code[3] != 0xDD && *last_code[3] != 0xFD) {
+        } else if (*last_code[0] == 0x2A && *last_code[1] == 0xE5 &&
+                   *last_code[2] == 0x2A && *last_code[3] != 0xDD &&
+                   *last_code[3] != 0xFD) {
           // optimize to ld hl,(x) | ex de,hl | ld hl,(x)
           s = last_code[1];
           s[0] = 0xEB;
@@ -591,8 +578,8 @@ void Compiler::addByteOptimized(unsigned char byte) {
           optimized = true;
 
           // ld de,x | ld hl,x | ex de,hl
-        } else if (*last_code[0] == 0x21 && *last_code[1] == 0x11 && *last_code[2] != 0xDD &&
-                   *last_code[2] != 0xFD) {
+        } else if (*last_code[0] == 0x21 && *last_code[1] == 0x11 &&
+                   *last_code[2] != 0xDD && *last_code[2] != 0xFD) {
           // optimize to ld hl,x | ld de,x
           s = last_code[1];
           s[0] = 0x21;
@@ -600,8 +587,8 @@ void Compiler::addByteOptimized(unsigned char byte) {
           optimized = true;
 
           // ld hl,x | ld de,x | ex de,hl
-        } else if (*last_code[0] == 0x11 && *last_code[1] == 0x21 && *last_code[2] != 0xDD &&
-                   *last_code[2] != 0xFD) {
+        } else if (*last_code[0] == 0x11 && *last_code[1] == 0x21 &&
+                   *last_code[2] != 0xDD && *last_code[2] != 0xFD) {
           // optimize to ld de,x | ld hl,x
           s = last_code[1];
           s[0] = 0x11;
@@ -634,32 +621,11 @@ void Compiler::addByteOptimized(unsigned char byte) {
   }
 }
 
-void Compiler::addByte(unsigned char byte) {
-  pushLastCode();
-  addCodeByte(byte);
-}
-
-void Compiler::addWord(unsigned int word) {
-  pushLastCode();
-  addCodeByte(word & 0xff);
-  addCodeByte((word >> 8) & 0xff);
-}
-
-void Compiler::addWord(unsigned char byte1, unsigned char byte2) {
-  pushLastCode();
-  addCodeByte(byte1);
-  addCodeByte(byte2);
-}
-
-void Compiler::addCmd(unsigned char byte, unsigned int word) {
-  pushLastCode();
-  addCodeByte(byte);
-  addCodeByte(word & 0xff);
-  addCodeByte((word >> 8) & 0xff);
-}
-
-// optimized kernel functions calls
-// skipping the jump map
+/***
+ * @remarks
+ * optimized kernel functions calls
+ * skipping the jump map
+ */
 void Compiler::addKernelCall(unsigned int address) {
   addCall(getKernelCallAddr(address));
 }
@@ -677,572 +643,6 @@ int Compiler::getKernelCallAddr(unsigned int address) {
   return result;
 }
 
-void Compiler::addJr(unsigned char n) {
-  addWord(0x18, n);
-}
-
-void Compiler::addJrZ(unsigned char n) {
-  addWord(0x28, n);
-}
-
-void Compiler::addJrNZ(unsigned char n) {
-  addWord(0x20, n);
-}
-
-void Compiler::addJrC(unsigned char n) {
-  addWord(0x38, n);
-}
-
-void Compiler::addJrNC(unsigned char n) {
-  addWord(0x30, n);
-}
-
-void Compiler::addJp(int n) {
-  addCmd(0xC3, n);
-}
-
-void Compiler::addJpZ(int n) {
-  addCmd(0xCA, n);
-}
-
-void Compiler::addJpNZ(int n) {
-  addCmd(0xC2, n);
-}
-
-void Compiler::addCall(unsigned int address) {
-  addCmd(0xCD, address);
-}
-
-void Compiler::addNop() {
-  addByte(0x00);
-}
-
-void Compiler::addExAF() {
-  addByte(0x08);
-}
-
-void Compiler::addExDEHL() {
-  addByte(0xEB);
-}
-
-void Compiler::addExiSPHL() {
-  addByte(0xE3);
-}
-
-void Compiler::addExx() {
-  addByte(0xD9);
-}
-
-void Compiler::addEI() {
-  addByte(0xFB);
-}
-
-void Compiler::addDI() {
-  addByte(0xF3);
-}
-
-void Compiler::addPushAF() {
-  addByte(0xF5);
-}
-
-void Compiler::addPushHL() {
-  addByte(0xE5);
-}
-
-void Compiler::addPushBC() {
-  addByte(0xC5);
-}
-
-void Compiler::addPushDE() {
-  addByte(0xD5);
-}
-
-void Compiler::addPopAF() {
-  addByte(0xF1);
-}
-
-void Compiler::addPopHL() {
-  addByte(0xE1);
-}
-
-void Compiler::addPopBC() {
-  addByte(0xC1);
-}
-
-void Compiler::addPopDE() {
-  addByte(0xD1);
-}
-
-void Compiler::addPopIX() {
-  addWord(0xDD, 0xE1);
-}
-
-void Compiler::addPopIY() {
-  addWord(0xFD, 0xE1);
-}
-
-void Compiler::addXorA() {
-  addByte(0xAF);
-}
-
-void Compiler::addXorH() {
-  addByte(0xAC);
-}
-
-void Compiler::addXorE() {
-  addByte(0xAB);
-}
-
-void Compiler::addXorD() {
-  addByte(0xAA);
-}
-
-void Compiler::addAndA() {
-  addByte(0xA7);
-}
-
-void Compiler::addAndD() {
-  addByte(0xA2);
-}
-
-void Compiler::addAnd(unsigned char n) {
-  addWord(0xE6, n);
-}
-
-void Compiler::addOr(unsigned char n) {
-  addWord(0xF6, n);
-}
-
-void Compiler::addOrH() {
-  addByte(0xB4);
-}
-
-void Compiler::addOrL() {
-  addByte(0xB5);
-}
-
-void Compiler::addOrB() {
-  addByte(0xB0);
-}
-
-void Compiler::addOrC() {
-  addByte(0xB1);
-}
-
-void Compiler::addOrE() {
-  addByte(0xB3);
-}
-
-void Compiler::addCpL() {
-  addByte(0xBD);
-}
-
-void Compiler::addCpB() {
-  addByte(0xB8);
-}
-
-void Compiler::addCp(unsigned char n) {
-  addWord(0xFE, n);
-}
-
-void Compiler::addIncA() {
-  addByte(0x3C);
-}
-
-void Compiler::addIncH() {
-  addByte(0x24);
-}
-
-void Compiler::addIncL() {
-  addByte(0x2C);
-}
-
-void Compiler::addIncD() {
-  addByte(0x14);
-}
-
-void Compiler::addIncHL() {
-  addByte(0x23);
-}
-
-void Compiler::addIncDE() {
-  addByte(0x13);
-}
-
-void Compiler::addDecHL() {
-  addByte(0x2B);
-}
-
-void Compiler::addAdd(unsigned char n) {
-  addWord(0xC6, n);
-}
-
-void Compiler::addAddH() {
-  addByte(0x7C);
-}
-
-void Compiler::addAddL() {
-  addByte(0x85);
-}
-
-void Compiler::addAddA() {
-  addByte(0x87);
-}
-
-void Compiler::addAdcA(unsigned char n) {
-  addWord(0xCE, n);
-}
-
-void Compiler::addAddHLHL() {
-  addByte(0x29);
-}
-
-void Compiler::addAddHLBC() {
-  addByte(0x09);
-}
-
-void Compiler::addAddHLDE() {
-  addByte(0x19);
-}
-
-void Compiler::addSub(unsigned char n) {
-  addWord(0xD6, n);
-}
-
-void Compiler::addSbcHLDE() {
-  addWord(0xED, 0x52);
-}
-
-void Compiler::addSbcHLBC() {
-  addWord(0xED, 0x42);
-}
-
-void Compiler::addDecA() {
-  addByte(0x3D);
-}
-
-void Compiler::addDecE() {
-  addByte(0x1D);
-}
-
-void Compiler::addRRCA() {
-  addByte(0x0F);
-}
-
-void Compiler::addRLA() {
-  addByte(0x17);
-}
-
-void Compiler::addSRAH() {
-  addWord(0xCB, 0x2C);
-}
-
-void Compiler::addSRLH() {
-  addWord(0xCB, 0x3C);
-}
-
-void Compiler::addRRL() {
-  addWord(0xCB, 0x1D);
-}
-
-void Compiler::addRRA() {
-  addByte(0x1F);
-}
-
-void Compiler::addCPL() {
-  addByte(0x2F);
-}
-
-void Compiler::addLDI() {
-  addWord(0xED, 0xA0);
-}
-
-void Compiler::addLDIR() {
-  addWord(0xED, 0xB0);
-}
-
-void Compiler::addRet() {
-  addByte(0xC9);
-}
-
-void Compiler::addRetC() {
-  addByte(0xD8);
-}
-
-void Compiler::addLdA(unsigned char n) {
-  addWord(0x3E, n);
-}
-
-void Compiler::addLdAB() {
-  addByte(0x78);
-}
-
-void Compiler::addLdAC() {
-  addByte(0x79);
-}
-
-void Compiler::addLdAH() {
-  addByte(0x7C);
-}
-
-void Compiler::addLdAL() {
-  addByte(0x7D);
-}
-
-void Compiler::addLdAE() {
-  addByte(0x7B);
-}
-
-void Compiler::addLdAD() {
-  addByte(0x7A);
-}
-
-void Compiler::addLdAiHL() {
-  addByte(0x7E);
-}
-
-void Compiler::addLdAiDE() {
-  addByte(0x1A);
-}
-
-void Compiler::addLdHA() {
-  addByte(0x67);
-}
-
-void Compiler::addLdLA() {
-  addByte(0x6F);
-}
-
-void Compiler::addLdL(unsigned char n) {
-  addWord(0x2E, n);
-}
-
-void Compiler::addLdHE() {
-  addByte(0x63);
-}
-
-void Compiler::addLdHC() {
-  addByte(0x61);
-}
-
-void Compiler::addLdHL() {
-  addByte(0x65);
-}
-
-void Compiler::addLdH(unsigned char n) {
-  addWord(0x26, n);
-}
-
-void Compiler::addLdLiHL() {
-  addByte(0x6E);
-}
-
-void Compiler::addLdBA() {
-  addByte(0x47);
-}
-
-void Compiler::addLdBH() {
-  addByte(0x44);
-}
-
-void Compiler::addLdBL() {
-  addByte(0x45);
-}
-
-void Compiler::addLdBE() {
-  addByte(0x43);
-}
-
-void Compiler::addLdBiHL() {
-  addByte(0x46);
-}
-
-void Compiler::addLdB(unsigned char n) {
-  addWord(0x06, n);
-}
-
-void Compiler::addLdC(unsigned char n) {
-  addWord(0x0E, n);
-}
-
-void Compiler::addLdEiHL() {
-  addByte(0x5E);
-}
-
-void Compiler::addLdEA() {
-  addByte(0x5F);
-}
-
-void Compiler::addLdEL() {
-  addByte(0x5D);
-}
-
-void Compiler::addLdCA() {
-  addByte(0x4F);
-}
-
-void Compiler::addLdCB() {
-  addByte(0x48);
-}
-
-void Compiler::addLdCD() {
-  addByte(0x4A);
-}
-
-void Compiler::addLdCE() {
-  addByte(0x4B);
-}
-
-void Compiler::addLdCH() {
-  addByte(0x4C);
-}
-
-void Compiler::addLdCL() {
-  addByte(0x4D);
-}
-
-void Compiler::addLdCiHL() {
-  addByte(0x4E);
-}
-
-void Compiler::addLdDA() {
-  addByte(0x57);
-}
-
-void Compiler::addLdDL() {
-  addByte(0x55);
-}
-
-void Compiler::addLdDH() {
-  addByte(0x54);
-}
-
-void Compiler::addLdDiHL() {
-  addByte(0x56);
-}
-
-void Compiler::addLdHB() {
-  addByte(0x60);
-}
-
-void Compiler::addLdLC() {
-  addByte(0x69);
-}
-
-void Compiler::addLdLH() {
-  addByte(0x6C);
-}
-
-void Compiler::addLdHL(int n) {
-  addCmd(0x21, n);
-}
-
-void Compiler::addLdHLmegarom() {
-  addCmd(0xFF, 0x0000);
-}
-
-void Compiler::addLdBC(int n) {
-  addCmd(0x01, n);
-}
-
-void Compiler::addLdDE() {
-  addByte(0x53);
-}
-
-void Compiler::addLdDE(int n) {
-  addCmd(0x11, n);
-}
-
-void Compiler::addLdIX(int n) {
-  addByte(0xDD);
-  addCmd(0x21, n);
-}
-
-void Compiler::addLdAii(int i) {
-  addCmd(0x3A, i);
-}
-
-void Compiler::addLdHLii(int i) {
-  addCmd(0x2A, i);
-}
-
-void Compiler::addLdBCii(int i) {
-  addByte(0xED);
-  addCmd(0x4B, i);
-}
-
-void Compiler::addLdDEii(int i) {
-  addByte(0xED);
-  addCmd(0x5B, i);
-}
-
-void Compiler::addLdIXii(int i) {
-  // addWord(0xDD,0xED);
-  // addCmd(0x5B, i);
-  addByte(0xDD);
-  addLdHLii(i);
-}
-
-void Compiler::addLdIYii(int i) {
-  addByte(0xFD);
-  addLdHLii(i);
-}
-
-void Compiler::addLdiiA(int i) {
-  addCmd(0x32, i);
-}
-
-void Compiler::addLdiiHL(int i) {
-  addCmd(0x22, i);
-}
-
-void Compiler::addLdiiDE(int i) {
-  addByte(0xED);
-  addCmd(0x53, i);
-}
-
-void Compiler::addLdiiSP(int i) {
-  addByte(0xED);
-  addCmd(0x73, i);
-}
-
-void Compiler::addLdSPii(int i) {
-  addByte(0xED);
-  addCmd(0x7b, i);
-}
-
-void Compiler::addLdSPHL() {
-  addByte(0xF9);
-}
-
-void Compiler::addLdiHL(unsigned char n) {
-  addWord(0x36, n);
-}
-
-void Compiler::addLdiHLA() {
-  addByte(0x77);
-}
-
-void Compiler::addLdiHLB() {
-  addByte(0x70);
-}
-
-void Compiler::addLdiHLC() {
-  addByte(0x71);
-}
-
-void Compiler::addLdiHLD() {
-  addByte(0x72);
-}
-
-void Compiler::addLdiHLE() {
-  addByte(0x73);
-}
-
-void Compiler::addLdiDEA() {
-  addByte(0x12);
-}
-
 SymbolNode* Compiler::getSymbol(Lexeme* lexeme) {
   unsigned int i, t = symbols.size();
   bool found = false;
@@ -1251,8 +651,10 @@ SymbolNode* Compiler::getSymbol(Lexeme* lexeme) {
   for (i = 0; i < t; i++) {
     symbol = symbols[i];
     if (symbol->lexeme) {
-      if (symbol->lexeme->type == lexeme->type && symbol->lexeme->subtype == lexeme->subtype &&
-          symbol->lexeme->name == lexeme->name && symbol->lexeme->value == lexeme->value) {
+      if (symbol->lexeme->type == lexeme->type &&
+          symbol->lexeme->subtype == lexeme->subtype &&
+          symbol->lexeme->name == lexeme->name &&
+          symbol->lexeme->value == lexeme->value) {
         found = true;
         break;
       }
@@ -1416,7 +818,8 @@ int Compiler::write(unsigned char* dest, int start_address) {
     for (i = 0; i < t; i++) {
       codeItem = codeList[i];
 
-      // printf("%i address %i size %i\n", i, codeItem->start, codeItem->length);
+      // printf("%i address %i size %i\n", i, codeItem->start,
+      // codeItem->length);
 
       if (codeItem->length) {
         s = &code[codeItem->start];
@@ -1536,8 +939,8 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
             segm_from = ((address + start_address - 0x8000) / 0x4000) * 2 +
                         2;  // segments (8k/8k): 0/1, 2/3, ....
-            segm_to =
-                ((new_address - 0x8000) / 0x4000) * 2 + 2;  // segments (8k/8k): 0/1, 2/3, ....
+            segm_to = ((new_address - 0x8000) / 0x4000) * 2 +
+                      2;  // segments (8k/8k): 0/1, 2/3, ....
 
             new_address = (new_address % 0x4000) + 0x8000;
 
@@ -1767,7 +1170,8 @@ int Compiler::str2FloatLib(string text) {
   try {
     value = stof(text);
   } catch (exception& e) {
-    printf("Warning: error while converting numeric constant %s\n", text.c_str());
+    printf("Warning: error while converting numeric constant %s\n",
+           text.c_str());
     value = 0;
   }
   float2FloatLib(value, (int*)&words);
@@ -1876,7 +1280,8 @@ bool Compiler::evaluate(TagNode* tag) {
     try {
       lin = stoi(tag->name);
     } catch (exception& e) {
-      printf("Warning: error while converting numeric constant %s\n", tag->name.c_str());
+      printf("Warning: error while converting numeric constant %s\n",
+             tag->name.c_str());
       lin = 0;
     }
     // ld hl, line number
@@ -1923,8 +1328,9 @@ bool Compiler::evalAction(ActionNode* action) {
         return true;
       } else if (lexeme->name == "CLEAR") {
         return true;
-      } else if (lexeme->name == "DEF" || lexeme->name == "DEFINT" || lexeme->name == "DEFSNG" ||
-                 lexeme->name == "DEFDBL" || lexeme->name == "DEFSTR") {
+      } else if (lexeme->name == "DEF" || lexeme->name == "DEFINT" ||
+                 lexeme->name == "DEFSNG" || lexeme->name == "DEFDBL" ||
+                 lexeme->name == "DEFSTR") {
         cmd_def();
       } else if (lexeme->name == "CLS") {
         cmd_cls();
@@ -2173,7 +1579,8 @@ int Compiler::evalExpression(ActionNode* action) {
           } else
             addLdHL(stoi(lexeme->value));  // ld hl, value
         } catch (exception& e) {
-          printf("Warning: error while converting numeric constant %s\n", lexeme->value.c_str());
+          printf("Warning: error while converting numeric constant %s\n",
+                 lexeme->value.c_str());
           addLdHL(0x0000);  // ld hl, value
         }
 
@@ -2585,8 +1992,8 @@ int Compiler::evalOperator(ActionNode* action) {
           addTempStr(false);
           // push de
           addPushDE();
-          //   call 0x7f05               ; xbasic concat strings (in: bc=str1, hl=str2, de=strdest;
-          //   out: hl fake)
+          //   call 0x7f05               ; xbasic concat strings (in: bc=str1,
+          //   hl=str2, de=strdest; out: hl fake)
           addCall(def_XBASIC_CONCAT_STRINGS);
           // pop hl                      ; correct destination
           addPopHL();
@@ -2649,7 +2056,8 @@ int Compiler::evalOperator(ActionNode* action) {
 
           i = s[1] | (s[2] << 8);
 
-          if (action->actions[0]->lexeme->type == Lexeme::type_literal && i <= 256) {
+          if (action->actions[0]->lexeme->type == Lexeme::type_literal &&
+              i <= 256) {
             if (megaROM) {
               code_pointer -= 5;
               code_size -= 5;
@@ -2795,7 +2203,8 @@ int Compiler::evalOperator(ActionNode* action) {
               } break;
 
               case 8: {
-                // OLD: LD A, L | SRA H | RRA | SRL H | RRA | SRL H | RRA | LD L, A
+                // OLD: LD A, L | SRA H | RRA | SRL H | RRA | SRL H | RRA | LD
+                // L, A
                 code_pointer -= 3;
                 code_size -= 3;
                 // LD A, L
@@ -2822,8 +2231,8 @@ int Compiler::evalOperator(ActionNode* action) {
               } break;
 
               case 16: {
-                // old: XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | ADD HL, HL | RLA | ADD HL, HL
-                // | RLA | LD L, H | LD H, A
+                // old: XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | ADD HL, HL
+                // | RLA | ADD HL, HL | RLA | LD L, H | LD H, A
                 code_pointer -= 3;
                 code_size -= 3;
                 // LD A, L
@@ -2852,8 +2261,8 @@ int Compiler::evalOperator(ActionNode* action) {
               } break;
 
               case 32: {
-                // old: XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | ADD HL, HL | RLA | LD L, H |
-                // LD H, A
+                // old: XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | ADD HL, HL
+                // | RLA | LD L, H | LD H, A
                 code_pointer -= 3;
                 code_size -= 3;
                 // LD A, L
@@ -2884,7 +2293,8 @@ int Compiler::evalOperator(ActionNode* action) {
               } break;
 
               case 64: {
-                // old: XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | LD L, H | LD H, A
+                // old: XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | LD L, H |
+                // LD H, A
                 code_pointer -= 3;
                 code_size -= 3;
                 // LD A, L
@@ -3385,7 +2795,8 @@ int Compiler::evalFunction(ActionNode* action) {
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "MSX") {
-          // ld hl, (VERSION)                    ; 0 = MSX1, 1 = MSX2, 2 = MSX2+, 3 = MSXturboR
+          // ld hl, (VERSION)                    ; 0 = MSX1, 1 = MSX2, 2 =
+          // MSX2+, 3 = MSXturboR
           addLdHLii(def_VERSION);
           // ld h, 0
           addLdH(0x00);
@@ -3635,7 +3046,8 @@ int Compiler::evalFunction(ActionNode* action) {
             return result[0];
 
           } else if (result[0] == Lexeme::subtype_string) {
-            // call 0x7e07   ; VAL function - xbasic string to float (in hl, out b:hl)
+            // call 0x7e07   ; VAL function - xbasic string to float (in hl, out
+            // b:hl)
             addCall(def_XBASIC_VAL);
             result[0] = Lexeme::subtype_single_decimal;
 
@@ -4017,7 +3429,8 @@ int Compiler::evalFunction(ActionNode* action) {
             addLdBL();
             // ld hl, temporary string
             addTempStr(true);
-            // call 0x7e4c    ; STRING$ (hl=destination, b=number of chars, a=char)
+            // call 0x7e4c    ; STRING$ (hl=destination, b=number of chars,
+            // a=char)
             addCall(def_XBASIC_STRING);
 
             result[0] = Lexeme::subtype_string;
@@ -4095,14 +3508,15 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[0] == Lexeme::subtype_numeric) {
             // ld c, 1
             addLdC(0x01);
-            // call 0x7e22    ; xbasic OCT$/HEX$/BIN$ (in: hl=integer, de=BUF, c=mode [1=bin, 3=oct,
-            // 4=hex]; out: hl destination corrected)
+            // call 0x7e22    ; xbasic OCT$/HEX$/BIN$ (in: hl=integer, de=BUF,
+            // c=mode [1=bin, 3=oct, 4=hex]; out: hl destination corrected)
             addCall(def_XBASIC_OCT_HEX_BIN);
             // ld de, temporary string
             addTempStr(false);
             // push de
             addPushDE();
-            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest; out: hl end of string)
+            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
+            //   out: hl end of string)
             addCall(def_XBASIC_COPY_STRING);
             // pop hl
             addPopHL();
@@ -4123,14 +3537,15 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[0] == Lexeme::subtype_numeric) {
             // ld c, 3
             addLdC(0x03);
-            // call 0x7e22    ; xbasic OCT$/HEX$/BIN$ (in: hl=integer, de=BUF, c=mode [1=bin, 3=oct,
-            // 4=hex]; out: hl destination corrected)
+            // call 0x7e22    ; xbasic OCT$/HEX$/BIN$ (in: hl=integer, de=BUF,
+            // c=mode [1=bin, 3=oct, 4=hex]; out: hl destination corrected)
             addCall(def_XBASIC_OCT_HEX_BIN);
             // ld de, temporary string
             addTempStr(false);
             // push de
             addPushDE();
-            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest; out: hl end of string)
+            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
+            //   out: hl end of string)
             addCall(def_XBASIC_COPY_STRING);
             // pop hl
             addPopHL();
@@ -4151,14 +3566,15 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[0] == Lexeme::subtype_numeric) {
             // ld c, 4
             addLdC(0x04);
-            // call 0x7e22    ; xbasic OCT$/HEX$/BIN$ (in: hl=integer, de=BUF, c=mode [1=bin, 3=oct,
-            // 4=hex]; out: hl destination corrected)
+            // call 0x7e22    ; xbasic OCT$/HEX$/BIN$ (in: hl=integer, de=BUF,
+            // c=mode [1=bin, 3=oct, 4=hex]; out: hl destination corrected)
             addCall(def_XBASIC_OCT_HEX_BIN);
             // ld de, temporary string
             addTempStr(false);
             // push de
             addPushDE();
-            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest; out: hl end of string)
+            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
+            //   out: hl end of string)
             addCall(def_XBASIC_COPY_STRING);
             // pop hl
             addPopHL();
@@ -4363,7 +3779,8 @@ int Compiler::evalFunction(ActionNode* action) {
             addPopDE();
           }
 
-          if (result[1] == Lexeme::subtype_numeric && result[0] == Lexeme::subtype_numeric) {
+          if (result[1] == Lexeme::subtype_numeric &&
+              result[0] == Lexeme::subtype_numeric) {
             // call 0x6fa7     ; xbasic POINT (in: de=x, hl=y; out: hl=color)
             addCall(def_XBASIC_POINT);
 
@@ -4405,7 +3822,8 @@ int Compiler::evalFunction(ActionNode* action) {
             addPopDE();
           }
 
-          if (result[1] == Lexeme::subtype_numeric && result[0] == Lexeme::subtype_numeric) {
+          if (result[1] == Lexeme::subtype_numeric &&
+              result[0] == Lexeme::subtype_numeric) {
             // ld h, e
             addLdHE();
             // inc l
@@ -4457,7 +3875,8 @@ int Compiler::evalFunction(ActionNode* action) {
             addPopDE();
           }
 
-          if (result[1] == Lexeme::subtype_numeric && result[0] == Lexeme::subtype_numeric) {
+          if (result[1] == Lexeme::subtype_numeric &&
+              result[0] == Lexeme::subtype_numeric) {
             // call SUB_SPRCOL_COUPLE
             addCall(def_usr3_COLLISION_COUPLE);
 
@@ -4505,14 +3924,16 @@ int Compiler::evalFunction(ActionNode* action) {
           } else
             result[1] = Lexeme::subtype_unknown;
 
-          if (result[0] == Lexeme::subtype_numeric && result[1] == Lexeme::subtype_numeric) {
+          if (result[0] == Lexeme::subtype_numeric &&
+              result[1] == Lexeme::subtype_numeric) {
             // ld a, l
             addLdAL();
             // ld b, e
             addLdBE();
             // ld hl, temporary string
             addTempStr(true);
-            // call 0x7e4c    ; STRING$ (hl=destination, b=number of chars, a=char)
+            // call 0x7e4c    ; STRING$ (hl=destination, b=number of chars,
+            // a=char)
             addCall(def_XBASIC_STRING);
 
             result[0] = Lexeme::subtype_string;
@@ -4528,19 +3949,22 @@ int Compiler::evalFunction(ActionNode* action) {
             result[0] = Lexeme::subtype_numeric;
           }
 
-          if (result[1] == Lexeme::subtype_string && result[0] == Lexeme::subtype_numeric) {
+          if (result[1] == Lexeme::subtype_string &&
+              result[0] == Lexeme::subtype_numeric) {
             // ld a, l
             addLdAL();
             // pop hl
             addPopHL();
 
-            // call 0x7d99     ; xbasic left string (in: a=size, hl=source; out: hl=BUF)
+            // call 0x7d99     ; xbasic left string (in: a=size, hl=source; out:
+            // hl=BUF)
             addCall(def_XBASIC_LEFT);
             // ld de, temporary string
             addTempStr(false);
             // push de
             addPushDE();
-            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest; out: hl end of string)
+            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
+            //   out: hl end of string)
             addCall(def_XBASIC_COPY_STRING);
             // pop hl
             addPopHL();
@@ -4558,19 +3982,22 @@ int Compiler::evalFunction(ActionNode* action) {
             result[0] = Lexeme::subtype_numeric;
           }
 
-          if (result[1] == Lexeme::subtype_string && result[0] == Lexeme::subtype_numeric) {
+          if (result[1] == Lexeme::subtype_string &&
+              result[0] == Lexeme::subtype_numeric) {
             // ld a, l
             addLdAL();
             // pop hl
             addPopHL();
 
-            // call 0x7da0     ; xbasic right string (in: a=size, hl=source; out: hl=BUF)
+            // call 0x7da0     ; xbasic right string (in: a=size, hl=source;
+            // out: hl=BUF)
             addCall(def_XBASIC_RIGHT);
             // ld de, temporary string
             addTempStr(false);
             // push de
             addPushDE();
-            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest; out: hl end of string)
+            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
+            //   out: hl end of string)
             addCall(def_XBASIC_COPY_STRING);
             // pop hl
             addPopHL();
@@ -4588,7 +4015,8 @@ int Compiler::evalFunction(ActionNode* action) {
             result[0] = Lexeme::subtype_numeric;
           }
 
-          if (result[1] == Lexeme::subtype_string && result[0] == Lexeme::subtype_numeric) {
+          if (result[1] == Lexeme::subtype_string &&
+              result[0] == Lexeme::subtype_numeric) {
             // ld b, l         ; start char
             addLdBL();
             // pop hl          ; source string
@@ -4597,14 +4025,16 @@ int Compiler::evalFunction(ActionNode* action) {
             // ld a, 0xff      ; number of chars (all left on source string)
             addLdA(0xff);
 
-            // call 0x7db1     ; xbasic mid string (in: b=start, a=size, hl=source; out: hl=BUF)
+            // call 0x7db1     ; xbasic mid string (in: b=start, a=size,
+            // hl=source; out: hl=BUF)
             addCall(def_XBASIC_MID);
 
             // ld de, temporary string
             addTempStr(false);
             // push de
             addPushDE();
-            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest; out: hl end of string)
+            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
+            //   out: hl end of string)
             addCall(def_XBASIC_COPY_STRING);
             // pop hl
             addPopHL();
@@ -4615,13 +4045,15 @@ int Compiler::evalFunction(ActionNode* action) {
             result[0] = Lexeme::subtype_unknown;
 
         } else if (lexeme->value == "USING$") {
-          if (result[0] == Lexeme::subtype_double_decimal || result[0] == Lexeme::subtype_numeric) {
+          if (result[0] == Lexeme::subtype_double_decimal ||
+              result[0] == Lexeme::subtype_numeric) {
             // cast
             addCast(result[0], Lexeme::subtype_single_decimal);
             result[0] = Lexeme::subtype_single_decimal;
           }
 
-          if (result[1] == Lexeme::subtype_string && result[0] == Lexeme::subtype_single_decimal) {
+          if (result[1] == Lexeme::subtype_string &&
+              result[0] == Lexeme::subtype_single_decimal) {
             // ld c, b
             addLdCB();
             // ex de, hl
@@ -4629,13 +4061,15 @@ int Compiler::evalFunction(ActionNode* action) {
             // pop hl
             addPopHL();
 
-            // call XBASIC_USING    ; hl = item format string, c:de = float, out hl=string
+            // call XBASIC_USING    ; hl = item format string, c:de = float, out
+            // hl=string
             addCall(def_XBASIC_USING);
             // ld de, temporary string
             addTempStr(false);
             // push de
             addPushDE();
-            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest; out: hl end of string)
+            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
+            //   out: hl end of string)
             addCall(def_XBASIC_COPY_STRING);
             // pop hl
             addPopHL();
@@ -4671,14 +4105,15 @@ int Compiler::evalFunction(ActionNode* action) {
             // pop af
             addPopAF();
 
-            // call XBASIC_USING_DO    ; a=format, d=thousand digits, e=decimal digits, b:hl=number,
-            // out hl=string
+            // call XBASIC_USING_DO    ; a=format, d=thousand digits, e=decimal
+            // digits, b:hl=number, out hl=string
             addCall(def_XBASIC_USING_DO);
             // ld de, temporary string
             addTempStr(false);
             // push de
             addPushDE();
-            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest; out: hl end of string)
+            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
+            //   out: hl end of string)
             addCall(def_XBASIC_COPY_STRING);
             // pop hl
             addPopHL();
@@ -4689,7 +4124,8 @@ int Compiler::evalFunction(ActionNode* action) {
             result[0] = Lexeme::subtype_unknown;
 
         } else if (lexeme->value == "INSTR") {
-          if (result[0] == Lexeme::subtype_string && result[1] == Lexeme::subtype_string) {
+          if (result[0] == Lexeme::subtype_string &&
+              result[1] == Lexeme::subtype_string) {
             // ex de,hl        ; search string
             addExDEHL();
             // pop hl          ; source string
@@ -4698,7 +4134,8 @@ int Compiler::evalFunction(ActionNode* action) {
             // ld a, 0x01      ; search start
             addLdA(0x01);
 
-            // call 0x7e6c     ; xbasic INSTR (in: a=start, hl=source, de=search; out: hl=position)
+            // call 0x7e6c     ; xbasic INSTR (in: a=start, hl=source,
+            // de=search; out: hl=position)
             addCall(def_XBASIC_INSTR);
 
             result[0] = Lexeme::subtype_numeric;
@@ -4741,21 +4178,24 @@ int Compiler::evalFunction(ActionNode* action) {
             addPopHL();
           }
 
-          if (result[2] == Lexeme::subtype_string && result[1] == Lexeme::subtype_numeric &&
+          if (result[2] == Lexeme::subtype_string &&
+              result[1] == Lexeme::subtype_numeric &&
               result[0] == Lexeme::subtype_numeric) {
             // ld b, l         ; start char
             addLdBL();
             // pop hl          ; source string
             addPopHL();
 
-            // call 0x7db1     ; xbasic mid string (in: b=start, a=size, hl=source; out: hl=BUF)
+            // call 0x7db1     ; xbasic mid string (in: b=start, a=size,
+            // hl=source; out: hl=BUF)
             addCall(def_XBASIC_MID);
 
             // ld de, temporary string
             addTempStr(false);
             // push de
             addPushDE();
-            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest; out: hl end of string)
+            //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
+            //   out: hl end of string)
             addCall(def_XBASIC_COPY_STRING);
             // pop hl
             addPopHL();
@@ -4793,9 +4233,11 @@ int Compiler::evalFunction(ActionNode* action) {
           // ld a, c             ; search start
           addLdAC();
 
-          if (result[0] == Lexeme::subtype_string && result[1] == Lexeme::subtype_string &&
+          if (result[0] == Lexeme::subtype_string &&
+              result[1] == Lexeme::subtype_string &&
               result[2] == Lexeme::subtype_numeric) {
-            // call 0x7e6c     ; xbasic INSTR (in: a=start, hl=source, de=search; out: hl=position)
+            // call 0x7e6c     ; xbasic INSTR (in: a=start, hl=source,
+            // de=search; out: hl=position)
             addCall(def_XBASIC_INSTR);
 
             result[0] = Lexeme::subtype_numeric;
@@ -4902,7 +4344,8 @@ bool Compiler::addVarAddress(ActionNode* action) {
         action2 = action->actions[0];
         lexeme2 = action2->lexeme;
 
-        if (lexeme1->type == Lexeme::type_literal && lexeme2->type == Lexeme::type_literal) {
+        if (lexeme1->type == Lexeme::type_literal &&
+            lexeme2->type == Lexeme::type_literal) {
           if (lexeme1->subtype == Lexeme::subtype_numeric ||
               lexeme1->subtype == Lexeme::subtype_single_decimal ||
               lexeme1->subtype == Lexeme::subtype_double_decimal) {
@@ -4924,7 +4367,8 @@ bool Compiler::addVarAddress(ActionNode* action) {
                        lexeme2->value.c_str());
               }
 
-              // ld hl, variable_address +  (x_index * x_factor) + (y_index * y_factor)
+              // ld hl, variable_address +  (x_index * x_factor) + (y_index *
+              // y_factor)
               addFix(lexeme)->step = i;
               addLdHL(0x0000);
 
@@ -5092,32 +4536,38 @@ void Compiler::addCast(int from, int to) {
       } else if (to == Lexeme::subtype_string) {
         // call 0x7b26   ; xbasic int to string (in hl, out hl)
         addCall(def_XBASIC_CAST_INTEGER_TO_STRING);
-      } else if (to == Lexeme::subtype_single_decimal || to == Lexeme::subtype_double_decimal) {
+      } else if (to == Lexeme::subtype_single_decimal ||
+                 to == Lexeme::subtype_double_decimal) {
         // call 0x782d   ; xbasic int to float (in hl, out b:hl)
         addCall(def_XBASIC_CAST_INTEGER_TO_FLOAT);
       }
 
     } else if (from == Lexeme::subtype_string) {
       if (to == Lexeme::subtype_numeric) {
-        // call 0x7e07   ; VAL function - xbasic string to float (in hl, out b:hl)
+        // call 0x7e07   ; VAL function - xbasic string to float (in hl, out
+        // b:hl)
         addCall(def_XBASIC_CAST_STRING_TO_FLOAT);
         // call 0x784f   ; xbasic float to integer (in b:hl, out hl)
         addCall(def_XBASIC_CAST_FLOAT_TO_INTEGER);
       } else if (to == Lexeme::subtype_string) {
         return;
-      } else if (to == Lexeme::subtype_single_decimal || to == Lexeme::subtype_double_decimal) {
-        // call 0x7e07   ; VAL function - xbasic string to float (in hl, out b:hl)
+      } else if (to == Lexeme::subtype_single_decimal ||
+                 to == Lexeme::subtype_double_decimal) {
+        // call 0x7e07   ; VAL function - xbasic string to float (in hl, out
+        // b:hl)
         addCall(def_XBASIC_CAST_STRING_TO_FLOAT);
       }
 
-    } else if (from == Lexeme::subtype_single_decimal || from == Lexeme::subtype_double_decimal) {
+    } else if (from == Lexeme::subtype_single_decimal ||
+               from == Lexeme::subtype_double_decimal) {
       if (to == Lexeme::subtype_numeric) {
         // call 0x784f   ; xbasic float to integer (in b:hl, out hl)
         addCall(def_XBASIC_CAST_FLOAT_TO_INTEGER);
       } else if (to == Lexeme::subtype_string) {
         // call 0x7b80   ; xbasic float to string (in b:hl, out hl)
         addCall(def_XBASIC_CAST_FLOAT_TO_STRING);
-      } else if (to == Lexeme::subtype_single_decimal || to == Lexeme::subtype_double_decimal) {
+      } else if (to == Lexeme::subtype_single_decimal ||
+                 to == Lexeme::subtype_double_decimal) {
         return;
       }
 
@@ -5162,8 +4612,8 @@ void Compiler::cmd_start() {
     addPopIX();
   }
 
-  // call XBASIC INIT                  ; hl=heap start address, de=temporary string start address,
-  // bc=data address, ix=font address, a=data segment
+  // call XBASIC INIT                  ; hl=heap start address, de=temporary
+  // string start address, bc=data address, ix=font address, a=data segment
   addCall(def_XBASIC_INIT);
 
   if (parser->has_traps) {
@@ -5174,7 +4624,8 @@ void Compiler::cmd_start() {
       // xor a
       addXorA();
     }
-    // ld (0xFC82), a          ; start of TRPTBL reserved area (megaROM flag to traps)
+    // ld (0xFC82), a          ; start of TRPTBL reserved area (megaROM flag to
+    // traps)
     addLdiiA(def_MR_TRAP_FLAG);
   }
 
@@ -5276,7 +4727,8 @@ void Compiler::cmd_goto() {
   if (current_action->actions.size() == 1) {
     lexeme = current_action->actions[0]->lexeme;
     if (lexeme) {
-      if (lexeme->type == Lexeme::type_literal && lexeme->subtype == Lexeme::subtype_numeric) {
+      if (lexeme->type == Lexeme::type_literal &&
+          lexeme->subtype == Lexeme::subtype_numeric) {
         // Trim leading zeros
         while (lexeme->value.find("0") == 0 && lexeme->value.size() > 1) {
           lexeme->value.erase(0, 1);
@@ -5299,7 +4751,8 @@ void Compiler::cmd_gosub() {
   if (current_action->actions.size() == 1) {
     lexeme = current_action->actions[0]->lexeme;
     if (lexeme) {
-      if (lexeme->type == Lexeme::type_literal && lexeme->subtype == Lexeme::subtype_numeric) {
+      if (lexeme->type == Lexeme::type_literal &&
+          lexeme->subtype == Lexeme::subtype_numeric) {
         // Trim leading zeros
         while (lexeme->value.find("0") == 0 && lexeme->value.size() > 1) {
           lexeme->value.erase(0, 1);
@@ -5328,7 +4781,8 @@ void Compiler::cmd_return() {
   } else if (t == 1) {
     lexeme = current_action->actions[0]->lexeme;
     if (lexeme) {
-      if (lexeme->type == Lexeme::type_literal && lexeme->subtype == Lexeme::subtype_numeric) {
+      if (lexeme->type == Lexeme::type_literal &&
+          lexeme->subtype == Lexeme::subtype_numeric) {
         // Trim leading zeros
         while (lexeme->value.find("0") == 0 && lexeme->value.size() > 1) {
           lexeme->value.erase(0, 1);
@@ -5578,7 +5032,8 @@ void Compiler::cmd_line() {
   ActionNode *action, *sub_action;
   unsigned int i, t = current_action->actions.size();
   int line_type = 0, result_subtype, state;
-  bool has_x0_coord = false, has_x1_coord = false, has_y0_coord = false, has_y1_coord = false;
+  bool has_x0_coord = false, has_x1_coord = false, has_y0_coord = false,
+       has_y1_coord = false;
   bool has_color = false, has_line_type = false, has_operator = false;
 
   if (t) {
@@ -5904,13 +5359,16 @@ void Compiler::cmd_line() {
     }
 
     if (line_type == 0 || !has_line_type) {
-      // call 0x6DA7   ; xbasic LINE (in: ix=x0, iy=y0, de=x1, hl=y1, a=color, b=operator)
+      // call 0x6DA7   ; xbasic LINE (in: ix=x0, iy=y0, de=x1, hl=y1, a=color,
+      // b=operator)
       addCall(def_XBASIC_LINE);
     } else if (line_type == 1) {
-      // call 0x6D49   ; xbasic BOX (in: ix=x0, iy=y0, de=x1, hl=y1, a=color, b=operator)
+      // call 0x6D49   ; xbasic BOX (in: ix=x0, iy=y0, de=x1, hl=y1, a=color,
+      // b=operator)
       addCall(def_XBASIC_BOX);
     } else {
-      // call 0x6E27   ; xbasic BOX FILLED (in: ix=x0, iy=y0, de=x1, hl=y1, a=color, b=operator)
+      // call 0x6E27   ; xbasic BOX FILLED (in: ix=x0, iy=y0, de=x1, hl=y1,
+      // a=color, b=operator)
       addCall(def_XBASIC_BOXF);
     }
 
@@ -6448,8 +5906,8 @@ void Compiler::cmd_copy() {
         addLdDEii(0xFCB7);
       }
 
-      // call COPY    ; in: de=x0, hl=y0, ix=x1, iy=y1, 0xFC18=srcpg, 0xFCB7=x2, 0xFCB9=y2,
-      // 0xFC19=destpg, b=operator
+      // call COPY    ; in: de=x0, hl=y0, ix=x1, iy=y1, 0xFC18=srcpg, 0xFCB7=x2,
+      // 0xFCB9=y2, 0xFC19=destpg, b=operator
       addCall(def_XBASIC_COPY);
     }
 
@@ -6585,7 +6043,8 @@ void Compiler::cmd_bload() {
         action = current_action->actions[0];
         lexeme = action->lexeme;
         if (lexeme) {
-          if (lexeme->type == Lexeme::type_literal && lexeme->subtype == Lexeme::subtype_string) {
+          if (lexeme->type == Lexeme::type_literal &&
+              lexeme->subtype == Lexeme::subtype_string) {
             // add to resource list
 
             resource_number = resourceList.size();
@@ -6762,7 +6221,8 @@ void Compiler::cmd_dim() {
               break;
             }
           } else {
-            syntax_error("Array 1st dimension index must be a integer constant");
+            syntax_error(
+                "Array 1st dimension index must be a integer constant");
             break;
           }
 
@@ -6782,7 +6242,8 @@ void Compiler::cmd_dim() {
                 break;
               }
             } else {
-              syntax_error("Array 2nd dimension index must be a integer constant");
+              syntax_error(
+                  "Array 2nd dimension index must be a integer constant");
               break;
             }
           } else
@@ -6860,7 +6321,8 @@ void Compiler::cmd_let() {
         result[0] = Lexeme::subtype_numeric;
       }
 
-      if (result[1] == Lexeme::subtype_string && result[0] == Lexeme::subtype_numeric) {
+      if (result[1] == Lexeme::subtype_string &&
+          result[0] == Lexeme::subtype_numeric) {
         // ld a, l         ; start char
         addLdAL();
         // pop de          ; de=destination string
@@ -6871,8 +6333,8 @@ void Compiler::cmd_let() {
         // ld b, (hl)      ; number of chars (all from source)
         addLdBiHL();
 
-        // call 0x7dd8    ; mid assignment (in: hl=source string, b=size, a=start, de=destination
-        // string)
+        // call 0x7dd8    ; mid assignment (in: hl=source string, b=size,
+        // a=start, de=destination string)
         addCall(def_XBASIC_MID_ASSIGN);
 
         return;
@@ -6914,15 +6376,16 @@ void Compiler::cmd_let() {
       // ld a, l         ; start char
       addLdAL();
 
-      if (result[2] == Lexeme::subtype_string && result[1] == Lexeme::subtype_numeric &&
+      if (result[2] == Lexeme::subtype_string &&
+          result[1] == Lexeme::subtype_numeric &&
           result[0] == Lexeme::subtype_numeric) {
         // pop de          ; de=destination string
         addPopDE();
         // pop hl          ; hl=source string
         addPopHL();
 
-        // call 0x7dd8    ; mid assignment (in: hl=source string, b=size, a=start, de=destination
-        // string)
+        // call 0x7dd8    ; mid assignment (in: hl=source string, b=size,
+        // a=start, de=destination string)
         addCall(def_XBASIC_MID_ASSIGN);
 
         return;
@@ -6992,7 +6455,8 @@ void Compiler::cmd_let() {
     // pop hl
     addPopHL();
 
-    // call 0x7143     ; xbasic SPRITE assignment (in: a=sprite pattern, hl=string)
+    // call 0x7143     ; xbasic SPRITE assignment (in: a=sprite pattern,
+    // hl=string)
     addCall(def_XBASIC_SPRITE_ASSIGN);
 
   } else {
@@ -7027,7 +6491,8 @@ bool Compiler::addAssignment(ActionNode* action) {
     }
 
   } else if (action->lexeme->type == Lexeme::type_identifier) {
-    if (action->lexeme->isArray || action->lexeme->subtype == Lexeme::subtype_string) {
+    if (action->lexeme->isArray ||
+        action->lexeme->subtype == Lexeme::subtype_string) {
       // push hl
       addPushHL();
 
@@ -7045,7 +6510,8 @@ bool Compiler::addAssignment(ActionNode* action) {
         // ex de,hl
         addExDEHL();
 
-        // call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest; out: hl end of string)
+        // call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest; out: hl
+        // end of string)
         addCall(def_XBASIC_COPY_STRING);
 
       } else if (action->lexeme->subtype == Lexeme::subtype_numeric) {
@@ -7153,8 +6619,8 @@ void Compiler::cmd_if() {
           if (tt) {
             last_action = action->actions[tt - 1];
             last_lexeme = last_action->lexeme;
-            isLastActionGoto =
-                (last_lexeme->type == Lexeme::type_keyword && last_lexeme->value == "GOTO");
+            isLastActionGoto = (last_lexeme->type == Lexeme::type_keyword &&
+                                last_lexeme->value == "GOTO");
           }
 
           if (!evalActions(action)) break;
@@ -7181,8 +6647,8 @@ void Compiler::cmd_if() {
           if (tt == 1) {
             last_action = action->actions[0];
             last_lexeme = last_action->lexeme;
-            isLastActionGoto =
-                (last_lexeme->type == Lexeme::type_keyword && last_lexeme->value == "GOTO");
+            isLastActionGoto = (last_lexeme->type == Lexeme::type_keyword &&
+                                last_lexeme->value == "GOTO");
           }
 
           if (isLastActionGoto) {
@@ -7246,14 +6712,16 @@ void Compiler::cmd_for() {
 
     forNext->index = for_count;
     forNext->tag = current_tag;
-    forNext->for_to = new Lexeme(Lexeme::type_identifier, Lexeme::subtype_numeric,
-                                 "FOR_TO_" + to_string(for_count));
+    forNext->for_to =
+        new Lexeme(Lexeme::type_identifier, Lexeme::subtype_numeric,
+                   "FOR_TO_" + to_string(for_count));
     forNext->for_to_action = new ActionNode();
     forNext->for_to_action->lexeme = forNext->for_to;
     addSymbol(forNext->for_to);
 
-    forNext->for_step = new Lexeme(Lexeme::type_identifier, Lexeme::subtype_numeric,
-                                   "FOR_STEP_" + to_string(for_count));
+    forNext->for_step =
+        new Lexeme(Lexeme::type_identifier, Lexeme::subtype_numeric,
+                   "FOR_STEP_" + to_string(for_count));
     forNext->for_step_action = new ActionNode();
     forNext->for_step_action->lexeme = forNext->for_step;
     addSymbol(forNext->for_step);
@@ -7530,7 +6998,8 @@ void Compiler::cmd_next() {
     addFix(forNext->for_step_mark);
     addJp(0x0000);
 
-    if (forNext->for_end_mark) forNext->for_end_mark->symbol->address = code_pointer;
+    if (forNext->for_end_mark)
+      forNext->for_end_mark->symbol->address = code_pointer;
 
   } else {
     syntax_error("NEXT without a FOR");
@@ -7616,7 +7085,8 @@ void Compiler::cmd_screen() {
       switch (i) {
         // display mode
         case 0: {
-          // call XBASIC_SCREEN ; xbasic SCREEN change mode (in: a, l = screen mode)
+          // call XBASIC_SCREEN ; xbasic SCREEN change mode (in: a, l = screen
+          // mode)
           addCall(def_XBASIC_SCREEN);
         } break;
 
@@ -7634,8 +7104,8 @@ void Compiler::cmd_screen() {
 
         // baud rate
         case 3: {
-          // ; original code: C1F63 on subrom of TurboR and A7A2D on main rom of the rest
-          // ld bc,5
+          // ; original code: C1F63 on subrom of TurboR and A7A2D on main rom of
+          // the rest ld bc,5
           addLdBC(0x0005);
           // and a
           addAndA();
@@ -8097,7 +7567,8 @@ void Compiler::cmd_pset(bool forecolor) {
   ActionNode *action, *sub_action;
   unsigned int i, t = current_action->actions.size();
   int result_subtype;
-  bool has_x_coord = false, has_y_coord = false, has_color = false, has_operator = false;
+  bool has_x_coord = false, has_y_coord = false, has_color = false,
+       has_operator = false;
 
   if (t) {
     for (i = 0; i < t; i++) {
@@ -8221,7 +7692,8 @@ void Compiler::cmd_pset(bool forecolor) {
           // ld a, l
           addLdAL();
 
-          // ld (LOGOPR), a          ; save new logical operator to basic interpreter
+          // ld (LOGOPR), a          ; save new logical operator to basic
+          // interpreter
           addLdiiA(def_LOGOPR);
 
           has_operator = true;
@@ -8290,7 +7762,8 @@ void Compiler::cmd_paint() {
   ActionNode *action, *sub_action;
   unsigned int i, t = current_action->actions.size();
   int result_subtype;
-  bool has_x_coord = false, has_y_coord = false, has_color = false, has_border = false;
+  bool has_x_coord = false, has_y_coord = false, has_color = false,
+       has_border = false;
 
   if (t) {
     for (i = 0; i < t; i++) {
@@ -8459,7 +7932,8 @@ void Compiler::cmd_paint() {
       addLdDEii(0xFCB7);
     }
 
-    // call 0x74B3   ; xbasic PAINT (in: hl=y, de=x, b=filling color, a=border color)
+    // call 0x74B3   ; xbasic PAINT (in: hl=y, de=x, b=filling color, a=border
+    // color)
     addCall(def_XBASIC_PAINT);
 
   } else {
@@ -8471,7 +7945,8 @@ void Compiler::cmd_circle() {
   ActionNode *action, *sub_action;
   unsigned int i, t = current_action->actions.size();
   int result_subtype;
-  bool has_x_coord = false, has_y_coord = false, has_radius = false, has_color = false;
+  bool has_x_coord = false, has_y_coord = false, has_radius = false,
+       has_color = false;
   bool has_trace1 = false, has_trace2 = false, has_aspect = false;
 
   if (t) {
@@ -8790,7 +8265,8 @@ void Compiler::cmd_put() {
     if (lexeme->type == Lexeme::type_keyword && lexeme->value == "SPRITE") {
       current_action = action;
       cmd_put_sprite();
-    } else if (lexeme->type == Lexeme::type_keyword && lexeme->value == "TILE") {
+    } else if (lexeme->type == Lexeme::type_keyword &&
+               lexeme->value == "TILE") {
       current_action = action;
       cmd_put_tile();
     } else {
@@ -8806,8 +8282,8 @@ void Compiler::cmd_put_sprite() {
   ActionNode *action, *sub_action;
   unsigned int i, t = current_action->actions.size();
   int result_subtype, parm_flag = 0;
-  bool has_sprite = false, has_x_coord = false, has_y_coord = false, has_color = false,
-       has_pattern = false;
+  bool has_sprite = false, has_x_coord = false, has_y_coord = false,
+       has_color = false, has_pattern = false;
 
   if (t) {
     for (i = 0; i < t; i++) {
@@ -9003,8 +8479,8 @@ void Compiler::cmd_put_sprite() {
     // ld b, parameters flag
     addLdB(parm_flag);
 
-    // call xbasic PUT SPRITE (in: ix=x, iy=y, d=color, a=sprite number, h=pattern number,
-    // b=parameters flag (b11100000)
+    // call xbasic PUT SPRITE (in: ix=x, iy=y, d=color, a=sprite number,
+    // h=pattern number, b=parameters flag (b11100000)
     addCall(def_XBASIC_PUT_SPRITE);
 
   } else {
@@ -9209,27 +8685,38 @@ void Compiler::cmd_set() {
     mark = addMark();
     addJpZ(0x0000);
 
-    if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "ADJUST") {
+    if (next_lexeme->type == Lexeme::type_keyword &&
+        next_lexeme->value == "ADJUST") {
       cmd_set_adjust();
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "BEEP") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "BEEP") {
       cmd_set_beep();
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "DATE") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "DATE") {
       cmd_set_date();
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "PAGE") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "PAGE") {
       cmd_set_page();
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "PASSWORD") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "PASSWORD") {
       syntax_error("SET PASSWORD will not be supported for end-user security");
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "PROMPT") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "PROMPT") {
       cmd_set_prompt();
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "SCREEN") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "SCREEN") {
       cmd_set_screen();
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "SCROLL") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "SCROLL") {
       cmd_set_scroll();
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "TIME") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "TIME") {
       cmd_set_time();
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "TITLE") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "TITLE") {
       cmd_set_title();
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "VIDEO") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "VIDEO") {
       cmd_set_video();
     } else {
       syntax_error("Invalid SET statement");
@@ -9613,7 +9100,8 @@ void Compiler::cmd_set_page() {
     sub_action = action->actions[0];
     lexeme = sub_action->lexeme;
 
-    if (!(lexeme->type == Lexeme::type_literal && lexeme->subtype == Lexeme::subtype_null)) {
+    if (!(lexeme->type == Lexeme::type_literal &&
+          lexeme->subtype == Lexeme::subtype_null)) {
       result_subtype = evalExpression(sub_action);
       addCast(result_subtype, Lexeme::subtype_numeric);
 
@@ -9651,7 +9139,8 @@ void Compiler::cmd_set_scroll() {
       sub_action = action->actions[i];
       lexeme = sub_action->lexeme;
 
-      if (lexeme->type == Lexeme::type_literal && lexeme->subtype == Lexeme::subtype_null) {
+      if (lexeme->type == Lexeme::type_literal &&
+          lexeme->subtype == Lexeme::subtype_null) {
         // ld hl, 0xffff
         addLdHL(0xFFFF);
       } else {
@@ -9830,7 +9319,8 @@ void Compiler::cmd_set_tile() {
             sub_sub_action = sub_action->actions[i];
             lexeme = sub_sub_action->lexeme;
 
-            if (lexeme->type == Lexeme::type_literal && lexeme->subtype == Lexeme::subtype_null) {
+            if (lexeme->type == Lexeme::type_literal &&
+                lexeme->subtype == Lexeme::subtype_null) {
               continue;
 
             } else {
@@ -9847,8 +9337,8 @@ void Compiler::cmd_set_tile() {
               // ld hl, (ARG)
               addLdHLii(def_ARG);
 
-              // call set_tile_pattern ; hl = tile number, de = line number, b = bank number
-              // (3=all), c = pattern data
+              // call set_tile_pattern ; hl = tile number, de = line number, b =
+              // bank number (3=all), c = pattern data
               addCall(def_set_tile_pattern);
             }
           }
@@ -9897,7 +9387,8 @@ void Compiler::cmd_set_tile() {
             sub_sub_action = sub_action->actions[i];
             lexeme = sub_sub_action->lexeme;
 
-            if (lexeme->type == Lexeme::type_literal && lexeme->subtype == Lexeme::subtype_null) {
+            if (lexeme->type == Lexeme::type_literal &&
+                lexeme->subtype == Lexeme::subtype_null) {
               continue;
 
             } else {
@@ -9922,7 +9413,8 @@ void Compiler::cmd_set_tile() {
                 sub_sub_action = action->actions[2];
                 lexeme = sub_sub_action->lexeme;
                 if (lexeme->value != "ARRAY") {
-                  syntax_error("Syntax not supported on SET TILE COLOR statement");
+                  syntax_error(
+                      "Syntax not supported on SET TILE COLOR statement");
                   return;
                 }
                 if (i < sub_sub_action->actions.size()) {
@@ -9952,8 +9444,8 @@ void Compiler::cmd_set_tile() {
               // ld hl, (ARG)        ; tile number
               addLdHLii(def_ARG);
 
-              // call set_tile_color ; hl = tile number, de = line number (15=all), b = bank number
-              // (3=all), c = color data (FC,BC)
+              // call set_tile_color ; hl = tile number, de = line number
+              // (15=all), b = bank number (3=all), c = color data (FC,BC)
               addCall(def_set_tile_color);
             }
           }
@@ -10003,8 +9495,8 @@ void Compiler::cmd_set_tile() {
           // ld hl, (ARG)        ; tile number
           addLdHLii(def_ARG);
 
-          // call set_tile_color ; hl = tile number, de = line number (15=all), b = bank number
-          // (3=all), c = color data (FC,BC)
+          // call set_tile_color ; hl = tile number, de = line number (15=all),
+          // b = bank number (3=all), c = color data (FC,BC)
           addCall(def_set_tile_color);
         }
 
@@ -10169,7 +9661,8 @@ void Compiler::cmd_set_sprite() {
             sub_sub_action = sub_action->actions[i];
             lexeme = sub_sub_action->lexeme;
 
-            if (lexeme->type == Lexeme::type_literal && lexeme->subtype == Lexeme::subtype_null) {
+            if (lexeme->type == Lexeme::type_literal &&
+                lexeme->subtype == Lexeme::subtype_null) {
               continue;
 
             } else {
@@ -10186,14 +9679,15 @@ void Compiler::cmd_set_sprite() {
               // ld hl, (ARG)
               addLdHLii(def_ARG);
 
-              // call set_tile_pattern ; hl = tile number, de = line number, b = bank number
-              // (3=all), c = pattern data
+              // call set_tile_pattern ; hl = tile number, de = line number, b =
+              // bank number (3=all), c = pattern data
               addCall(def_set_sprite_pattern);
             }
           }
 
         } else {
-          syntax_error("Wrong pattern parameter on SET SPRITE PATTERN statement");
+          syntax_error(
+              "Wrong pattern parameter on SET SPRITE PATTERN statement");
         }
 
       } else {
@@ -10236,7 +9730,8 @@ void Compiler::cmd_set_sprite() {
             sub_sub_action = sub_action->actions[i];
             lexeme = sub_sub_action->lexeme;
 
-            if (lexeme->type == Lexeme::type_literal && lexeme->subtype == Lexeme::subtype_null) {
+            if (lexeme->type == Lexeme::type_literal &&
+                lexeme->subtype == Lexeme::subtype_null) {
               continue;
 
             } else {
@@ -10261,7 +9756,8 @@ void Compiler::cmd_set_sprite() {
                 sub_sub_action = action->actions[2];
                 lexeme = sub_sub_action->lexeme;
                 if (lexeme->value != "ARRAY") {
-                  syntax_error("Syntax not supported on SET SPRITE COLOR statement");
+                  syntax_error(
+                      "Syntax not supported on SET SPRITE COLOR statement");
                   return;
                 }
                 if (i < sub_sub_action->actions.size()) {
@@ -10291,8 +9787,8 @@ void Compiler::cmd_set_sprite() {
               // ld hl, (ARG)        ; tile number
               addLdHLii(def_ARG);
 
-              // call set_tile_color ; hl = tile number, de = line number (15=all), b = bank number
-              // (3=all), c = color data (FC,BC)
+              // call set_tile_color ; hl = tile number, de = line number
+              // (15=all), b = bank number (3=all), c = color data (FC,BC)
               addCall(def_set_sprite_color);
             }
           }
@@ -10319,7 +9815,8 @@ void Compiler::cmd_set_sprite() {
             sub_sub_action = action->actions[2];
             lexeme = sub_sub_action->lexeme;
             if (lexeme->value == "ARRAY") {
-              syntax_error("Syntax not supported on SET SPRITE COLOR statement");
+              syntax_error(
+                  "Syntax not supported on SET SPRITE COLOR statement");
               return;
             }
             // push af
@@ -10342,8 +9839,8 @@ void Compiler::cmd_set_sprite() {
           // ld hl, (ARG)        ; tile number
           addLdHLii(def_ARG);
 
-          // call set_tile_color ; hl = tile number, de = line number (15=all), b = bank number
-          // (3=all), c = color data (FC,BC)
+          // call set_tile_color ; hl = tile number, de = line number (15=all),
+          // b = bank number (3=all), c = color data (FC,BC)
           addCall(def_set_tile_color);
         }
 
@@ -10394,7 +9891,8 @@ void Compiler::cmd_set_date() {
     addCall(def_set_date);
 
   } else {
-    syntax_error("Wrong SET DATE parameters count.\nTry: SET DATE iYear, iMonth, iDay");
+    syntax_error(
+        "Wrong SET DATE parameters count.\nTry: SET DATE iYear, iMonth, iDay");
   }
 }
 
@@ -10433,7 +9931,9 @@ void Compiler::cmd_set_time() {
     addCall(def_set_time);
 
   } else {
-    syntax_error("Wrong SET TIME parameters count.\nTry: SET TIME iHour, iMinute, iSecond");
+    syntax_error(
+        "Wrong SET TIME parameters count.\nTry: SET TIME iHour, iMinute, "
+        "iSecond");
   }
 }
 
@@ -10502,13 +10002,15 @@ void Compiler::cmd_get_date() {
 
           } else {
             syntax_error(
-                "Invalid GET DATE parameter type.\nTry: GET DATE iYear, iMonth, iDay, iWeek, "
+                "Invalid GET DATE parameter type.\nTry: GET DATE iYear, "
+                "iMonth, iDay, iWeek, "
                 "iDateFmt");
             return;
           }
 
         } else {
-          syntax_error("Invalid GET DATE parameter: it must be an integer variable.");
+          syntax_error(
+              "Invalid GET DATE parameter: it must be an integer variable.");
           return;
         }
       }
@@ -10516,7 +10018,8 @@ void Compiler::cmd_get_date() {
 
   } else {
     syntax_error(
-        "Wrong GET DATE parameters count.\nTry: GET DATE iYear, iMonth, iDay, iWeek, iDateFmt");
+        "Wrong GET DATE parameters count.\nTry: GET DATE iYear, iMonth, iDay, "
+        "iWeek, iDateFmt");
   }
 }
 
@@ -10548,19 +10051,24 @@ void Compiler::cmd_get_time() {
             addLdiHLD();
 
           } else {
-            syntax_error("Invalid GET TIME parameter type.\nTry: GET TIME iHour, iMinute, iSecond");
+            syntax_error(
+                "Invalid GET TIME parameter type.\nTry: GET TIME iHour, "
+                "iMinute, iSecond");
             return;
           }
 
         } else {
-          syntax_error("Invalid GET TIME parameter: it must be an integer variable.");
+          syntax_error(
+              "Invalid GET TIME parameter: it must be an integer variable.");
           return;
         }
       }
     }
 
   } else {
-    syntax_error("Wrong GET TIME parameters count.\nTry: GET TIME iHour, iMinute, iSecond");
+    syntax_error(
+        "Wrong GET TIME parameters count.\nTry: GET TIME iHour, iMinute, "
+        "iSecond");
   }
 }
 
@@ -10573,19 +10081,26 @@ void Compiler::cmd_on() {
     action = current_action->actions[0];
     next_lexeme = action->lexeme;
 
-    if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "ERROR") {
+    if (next_lexeme->type == Lexeme::type_keyword &&
+        next_lexeme->value == "ERROR") {
       cmd_on_error();
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "INTERVAL") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "INTERVAL") {
       cmd_on_interval();
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "KEY") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "KEY") {
       cmd_on_key();
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "SPRITE") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "SPRITE") {
       cmd_on_sprite();
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STOP") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "STOP") {
       cmd_on_stop();
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STRIG") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "STRIG") {
       cmd_on_strig();
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "INDEX") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "INDEX") {
       cmd_on_goto_gosub();
     } else {
       syntax_error("Invalid ON statement");
@@ -10701,13 +10216,16 @@ void Compiler::cmd_interval() {
     // ld hl, 0xFC7F    ; INTERVAL state
     addLdHL(0xfc7f);
 
-    if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "ON") {
+    if (next_lexeme->type == Lexeme::type_keyword &&
+        next_lexeme->value == "ON") {
       // call 0x6c89   ; xbasic turn on trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_ON);
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "OFF") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "OFF") {
       // call 0x6c9c   ; xbasic turn off trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_OFF);
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STOP") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "STOP") {
       // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_STOP);
     } else {
@@ -10731,13 +10249,16 @@ void Compiler::cmd_stop() {
     // ld hl, 0xFC6A    ; STOP state
     addLdHL(0xFC6A);
 
-    if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "ON") {
+    if (next_lexeme->type == Lexeme::type_keyword &&
+        next_lexeme->value == "ON") {
       // call 0x6c89   ; xbasic turn on trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_ON);
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "OFF") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "OFF") {
       // call 0x6c9c   ; xbasic turn off trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_OFF);
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STOP") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "STOP") {
       // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_STOP);
     } else {
@@ -10769,13 +10290,16 @@ void Compiler::cmd_sprite() {
     // ld hl, 0xFC6D   ; SPRITE state
     addLdHL(0xFC6D);
 
-    if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "ON") {
+    if (next_lexeme->type == Lexeme::type_keyword &&
+        next_lexeme->value == "ON") {
       // call 0x6c89   ; xbasic turn on trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_ON);
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "OFF") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "OFF") {
       // call 0x6c9c   ; xbasic turn off trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_OFF);
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STOP") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "STOP") {
       // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_STOP);
     } else {
@@ -10824,10 +10348,12 @@ void Compiler::cmd_key() {
     action1 = current_action->actions[0];
     next_lexeme = action1->lexeme;
 
-    if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "ON") {
+    if (next_lexeme->type == Lexeme::type_keyword &&
+        next_lexeme->value == "ON") {
       // call 0x00CF   ; DSPFNK - (0xF3DE = CNSDFG: function keys presentation)
       addCall(0x00CF);
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "OFF") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "OFF") {
       // call 0x00CC   ; ERAFNK
       addCall(0x00CC);
     } else {
@@ -10848,7 +10374,8 @@ void Compiler::cmd_key() {
 
     if ((next_lexeme->type == Lexeme::type_keyword &&
          next_lexeme->subtype == Lexeme::subtype_function) ||
-        (next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "+") ||
+        (next_lexeme->type == Lexeme::type_operator &&
+         next_lexeme->value == "+") ||
         (next_lexeme->subtype == Lexeme::subtype_string)) {
       // add hl, hl
       addAddHLHL();
@@ -10923,13 +10450,16 @@ void Compiler::cmd_key() {
       // add hl, de
       addAddHLDE();
 
-      if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "ON") {
+      if (next_lexeme->type == Lexeme::type_keyword &&
+          next_lexeme->value == "ON") {
         // call 0x6c89   ; xbasic turn on trap (hl=trap state address)
         addCall(def_XBASIC_TRAP_ON);
-      } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "OFF") {
+      } else if (next_lexeme->type == Lexeme::type_keyword &&
+                 next_lexeme->value == "OFF") {
         // call 0x6c9c   ; xbasic turn off trap (hl=trap state address)
         addCall(def_XBASIC_TRAP_OFF);
-      } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STOP") {
+      } else if (next_lexeme->type == Lexeme::type_keyword &&
+                 next_lexeme->value == "STOP") {
         // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
         addCall(def_XBASIC_TRAP_STOP);
       } else {
@@ -10975,13 +10505,16 @@ void Compiler::cmd_strig() {
     // add hl, de
     addAddHLDE();
 
-    if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "ON") {
+    if (next_lexeme->type == Lexeme::type_keyword &&
+        next_lexeme->value == "ON") {
       // call 0x6c89   ; xbasic turn on trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_ON);
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "OFF") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "OFF") {
       // call 0x6c9c   ; xbasic turn off trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_OFF);
-    } else if (next_lexeme->type == Lexeme::type_keyword && next_lexeme->value == "STOP") {
+    } else if (next_lexeme->type == Lexeme::type_keyword &&
+               next_lexeme->value == "STOP") {
       // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_STOP);
     } else {
@@ -11314,7 +10847,8 @@ void Compiler::cmd_on_goto_gosub() {
       if (sub_lexeme->type == Lexeme::type_literal &&
           sub_lexeme->subtype == Lexeme::subtype_numeric) {
         // Trim leading zeros
-        while (sub_lexeme->value.find("0") == 0 && sub_lexeme->value.size() > 1) {
+        while (sub_lexeme->value.find("0") == 0 &&
+               sub_lexeme->value.size() > 1) {
           sub_lexeme->value.erase(0, 1);
         }
 
@@ -11802,7 +11336,8 @@ void Compiler::cmd_file() {
     action = current_action->actions[0];
     lexeme = action->lexeme;
 
-    if (lexeme->type == Lexeme::type_literal && lexeme->subtype == Lexeme::subtype_string) {
+    if (lexeme->type == Lexeme::type_literal &&
+        lexeme->subtype == Lexeme::subtype_string) {
       lexeme->name = "FILE";
       resourceList.push_back(lexeme);
     } else {
@@ -11823,7 +11358,8 @@ void Compiler::cmd_text() {
     action = current_action->actions[0];
     lexeme = action->lexeme;
 
-    if (lexeme->type == Lexeme::type_literal && lexeme->subtype == Lexeme::subtype_string) {
+    if (lexeme->type == Lexeme::type_literal &&
+        lexeme->subtype == Lexeme::subtype_string) {
       lexeme->name = "TEXT";
       resourceList.push_back(lexeme);
     } else {
@@ -11922,10 +11458,11 @@ void Compiler::cmd_maxfiles() {
     // call MAXFILES
     addCall(def_MAXFILES);
 
-    // call 0x7304			; end printeroutput (basic interpreter function)
-    addCall(0x7304);
-    // call 0x4AFF			; return interpreter output to screen (basic interpreter
+    // call 0x7304			; end printeroutput (basic interpreter
     // function)
+    addCall(0x7304);
+    // call 0x4AFF			; return interpreter output to screen
+    // (basic interpreter function)
     addCall(0x4AFF);
 
     addDisableBasicSlot();
@@ -12100,7 +11637,8 @@ void Compiler::cmd_open() {
     // push hl
     addPushHL();
 
-    // jp FILESPEC        ; in e=string size, hl=string start; out d = device code, FILNAM
+    // jp FILESPEC        ; in e=string size, hl=string start; out d = device
+    // code, FILNAM
     addJp(def_FILESPEC);
 
     mark->symbol->address = code_pointer;  // return point after FILESPEC
@@ -13044,7 +12582,8 @@ void Compiler::func_symbols() {
     addIncHL();
     // ld (0xFB3B), a   ; MCLLEN
     addLdiiA(0xFB3B);
-    // jp 0x5691    ; DRAW subroutine = 0x568C+5  (main routine hook address = 0x39A8)
+    // jp 0x5691    ; DRAW subroutine = 0x568C+5  (main routine hook address =
+    // 0x39A8)
     addJp(0x5691);
   }
 
@@ -13288,9 +12827,10 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
 
       if (first) {
         first = false;
-        previous = data[subsongIndexTable - 2] |
-                   (data[subsongIndexTable - 1] << 8);  // adjust the last instrument
-        if (previous) {                                 // before first subsong
+        previous =
+            data[subsongIndexTable - 2] |
+            (data[subsongIndexTable - 1] << 8);  // adjust the last instrument
+        if (previous) {                          // before first subsong
           previous -= start;
           previous += address;
           data[subsongIndexTable - 2] = previous & 0xFF;
@@ -13298,7 +12838,8 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
         }
       }
 
-      noteBlockIndexTable = data[subsongIndexTable] | (data[subsongIndexTable + 1] << 8);
+      noteBlockIndexTable =
+          data[subsongIndexTable] | (data[subsongIndexTable + 1] << 8);
       if (noteBlockIndexTable) {
         noteBlockIndexTable -= start;
         noteBlockIndexTable += address;
@@ -13306,7 +12847,8 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
         data[subsongIndexTable + 1] = (noteBlockIndexTable >> 8) & 0xFF;
       }
 
-      trackIndexTable = data[subsongIndexTable + 2] | (data[subsongIndexTable + 3] << 8);
+      trackIndexTable =
+          data[subsongIndexTable + 2] | (data[subsongIndexTable + 3] << 8);
       if (trackIndexTable) {
         trackIndexTable -= start;
 
@@ -13315,8 +12857,9 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
         tracks = 0x80;
         track_annotation = false;
 
-        for (k = subsongIndexTable + 13; k < trackIndexTable;) {  // linker state machine
-          linker = data[k++];                                     // linker code
+        for (k = subsongIndexTable + 13;
+             k < trackIndexTable;) {  // linker state machine
+          linker = data[k++];         // linker code
 
           if (linker & 1) {  // if speed change/end song...
             k++;             // ...skip speed change/end song
@@ -13402,7 +12945,8 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
       if (first)
         first = false;
       else {
-        previous = data[current - 2] | (data[current - 1] << 8);  // adjust the previous instrument
+        previous = data[current - 2] |
+                   (data[current - 1] << 8);  // adjust the previous instrument
         if (previous) {
           previous -= start;
           previous += address;
@@ -13458,7 +13002,8 @@ void FileNode::fixAKX(unsigned char* data, int address, int length) {
 
 //----------------------------------------------------------------------------------------------
 
-bool FileNode::writeToFile(char* filename, unsigned char* data, int data_length) {
+bool FileNode::writeToFile(char* filename, unsigned char* data,
+                           int data_length) {
   name = string(filename);
 
   if (!create()) {
@@ -13486,7 +13031,8 @@ int FileNode::readFromFile(char* filename, unsigned char* data, int maxlen) {
   return total_bytes;
 }
 
-int FileNode::ParseTinySpriteFile(char* filename, unsigned char* data, int maxlen) {
+int FileNode::ParseTinySpriteFile(char* filename, unsigned char* data,
+                                  int maxlen) {
   FILE* file;
   char line[255];
   int len, size_read, state;
@@ -13502,11 +13048,11 @@ int FileNode::ParseTinySpriteFile(char* filename, unsigned char* data, int maxle
   *sprite_count = 0;
 
   // for msx1 tiny sprite format file:
-  //   [type=0][sprite count][sprites patterns=collection of 32 bytes][sprites colors=1 byte per
-  //   sprite]
+  //   [type=0][sprite count][sprites patterns=collection of 32 bytes][sprites
+  //   colors=1 byte per sprite]
   // for msx2 format file:
-  //   [type=1][sprite count][sprites patterns=collection of 32 bytes][sprites colors=16 bytes per
-  //   sprite]
+  //   [type=1][sprite count][sprites patterns=collection of 32 bytes][sprites
+  //   colors=16 bytes per sprite]
 
   if ((file = fopen(filename, "r"))) {
     size_read = 0;

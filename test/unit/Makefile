@@ -14,6 +14,10 @@ SRC = ../../src
 CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG)
 LDFLAGS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc 
 
+SRC_CPP = test.cpp $(SRC)/lex.cpp $(SRC)/parse.cpp $(SRC)/z80.cpp $(SRC)/compiler.cpp $(SRC)/pletter.cpp
+SRC_INC = $(INC)/lex.h $(INC)/parse.h $(INC)/z80.h $(INC)/compiler.h $(INC)/header.h $(INC)/pletter.h
+SRC_OBJ = test.o lex.o parse.o z80.o compiler.o pletter.o
+
 ifeq ($(OS),Windows_NT)
  OSFLAG += -D Win $(PARMS)
  LDFLAGS += -s $(PARMS) -lodbc32 -lwsock32 -lwinspool -lwinmm -lshell32 -lcomctl32 -ladvapi32 -lglu32 -lole32 -loleaut32 -luuid 
@@ -33,12 +37,13 @@ all: test clean
 clean: 
 	rm -f *.o
 
-test: test.cpp $(SRC)/lex.cpp $(SRC)/parse.cpp $(SRC)/compiler.cpp $(SRC)/pletter.cpp $(INC)/lex.h $(INC)/parse.h $(INC)/compiler.h $(INC)/header.h $(INC)/pletter.h
+test: $(SRC_CPP) $(SRC_INC) 
 	$(CXX) $(CFLAGS) -I $(INC) -c test.cpp -o test.o
 	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/lex.cpp -o lex.o
 	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/parse.cpp -o parse.o
+	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/z80.cpp -o z80.o
 	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/compiler.cpp -o compiler.o
 	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/pletter.cpp -o pletter.o
-	$(LD) -o test test.o lex.o parse.o compiler.o pletter.o $(LDFLAGS)
+	$(LD) -o test $(SRC_OBJ) $(LDFLAGS)
 
 

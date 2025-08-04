@@ -2,7 +2,8 @@
  * @file lex.h
  * @brief MSX BASIC lexer class header
  * @author Amaury Carvalho (2019-2025)
- * @note https://en.wikipedia.org/wiki/Lexical_analysis
+ * @note
+ *   https://en.wikipedia.org/wiki/Lexical_analysis
  */
 
 #ifndef LEX_H_INCLUDED
@@ -16,7 +17,8 @@ using namespace std;
 
 /***
  * @class Lexeme
- * @brief It represents a simple MSX BASIC lexeme (constant, keyword, identifier etc)
+ * @brief It represents a simple MSX BASIC lexeme (constant, keyword, identifier
+ * etc)
  */
 class Lexeme {
  public:
@@ -131,8 +133,10 @@ class Lexeme {
    */
   bool isFunction();
 
-  static Lexeme* factory(LexemeType ptype, LexemeSubType psubtype, string pname);
-  static Lexeme* factory(LexemeType ptype, LexemeSubType psubtype, string pname, string pvalue);
+  static Lexeme* factory(LexemeType ptype, LexemeSubType psubtype,
+                         string pname);
+  static Lexeme* factory(LexemeType ptype, LexemeSubType psubtype, string pname,
+                         string pvalue);
   static Lexeme* factory(Lexeme* plexeme);
 
   /***

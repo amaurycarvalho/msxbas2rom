@@ -10,7 +10,8 @@
       },
       "group": {
         "kind": "none"
-      }
+      },
+      "problemMatcher": []
     },
     {
       "label": "build Z80 routines",
