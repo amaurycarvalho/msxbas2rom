@@ -29,23 +29,14 @@
 #include "rom.h"
 #include "tokenizer.h"
 
-/***
- * @var
- * @brief Compiler version
- */
+//! @brief Compiler version
 #define app_version "0.3.2.9"
 
-/***
- * @var
- * @brief File names (input, output and symbol)
- */
+//! @brief File names (input, output and symbol)
 char inputFilename[255] = "", outputFilename[255] = "",
      symbolFilename[255] = "";
 
-/***
- * @var
- * @brief Parameters flags
- */
+//! @brief Parameters flags
 bool parmHelp = false, parmDebug = false, parmQuiet = false, parmError = false,
      parmVer = false, parmTurbo = false, parmDoc = false, parmXtd = false,
      parmNoStripRemLines = false, parmSymbols = false, parmCompile = false,
@@ -96,26 +87,17 @@ bool SaveSymbolFile(Compiler *compiler, int code_start);
  */
 bool SaveSymbolFile(CompilerPT3 *compiler, int code_start);
 
-/***
- * @var
- * @brief Splash information
- */
+//! @brief Splash information
 const char *info_splash = R"(MSXBAS2ROM - MSX BASIC TO ROM COMPILER
 Created by Amaury Carvalho (2020-2025)
 Version:)";
 
-/***
- * @var
- * @brief Support information
- */
+//! @brief Support information
 const char *info_support = R"(
 Help us to maintain this project, support us on Patreon:
 https://www.patreon.com/msxbas2rom)";
 
-/***
- * @var
- * @brief Usage information (-h parameter)
- */
+//! @brief Usage information (-h parameter)
 const char *info_usage = R"(
 Usage: msxbas2rom [options] <filename.bas>
 Options:

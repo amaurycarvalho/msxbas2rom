@@ -18,12 +18,9 @@
 #define def_VALTYP 0xF663
 #define def_PRMFLG 0xF7B4
 
-/***
- * @def
- * @note
- * BASMEM must to be adjusted if any change in
- * compiler internal variables workspace size
- */
+//! @warning
+//! BASMEM must to be adjusted if any change in
+//! compiler internal variables workspace size
 #define def_BASMEM 0xC038
 
 /***************************************************************
@@ -32,30 +29,60 @@
  */
 
 #define def_PLYBUF 0xEF00
-#define def_SPRTBL \
-  (def_PLYBUF - (32 * 5))  // 32 sprites * (test, x0, x1, y0, y1)
+
+//! @note 32 sprites * (test, x0, x1, y0, y1)
+#define def_SPRTBL (def_PLYBUF - (32 * 5))
+
 #define def_SPRSIZ (def_SPRTBL - 1)
 
-#define def_RAM_INIT 0xC010  // start of RAM
-#define def_RAM_INTVARSIZ \
-  (def_BASMEM -           \
-   def_RAM_INIT)  // compiler internal variables buffer (BASMEM - INIT)
+//! @brief start of RAM
+#define def_RAM_INIT 0xC010
+
+//! @brief compiler internal variables buffer
+//! @note RAM_INTVARSIZ = BASMEM - INIT
+#define def_RAM_INTVARSIZ (def_BASMEM - def_RAM_INIT)
+
 #define def_RAM_BOTTOM (def_RAM_INIT + def_RAM_INTVARSIZ)
 #define def_RAM_TOP (def_SPRSIZ - 1)
 #define def_RAM_SIZE (def_RAM_TOP - def_RAM_BOTTOM)
-#define def_RAM_BUFSIZ 0x0880  // 2176 bytes of font buffer in RAM
+
+//! @note 2176 bytes of font buffer in RAM
+#define def_RAM_BUFSIZ 0x0880
 
 #define def_SLTSTR 0xC010  // 1
 #define def_SLTAD2 0xC01D  // 1
-#define def_SOMODE \
-  0xC024  // 1 - screen output mode (0=text, 1=graphical, 2=tiled)
-#define def_HEAPSTR 0xC025      // 2 - heap start address
-#define def_HEAPSIZ 0xC027      // 2 - heap size
-#define def_TMPSTR_IND 0xC029   // 1 - temporary string index
-#define def_TMPSTR_ADDR 0xC02A  // 2 - temporary string start address
-#define def_TMPSTR_BUF 0xC02C   // 2 - temporary string next pointer
-#define def_FONT_OLD 0xC02F     // 2 - old bios font address
-#define def_FONT_NEW 0xC031     // 2 - new font space address
+
+//! @brief screen output mode
+//! @note 1 byte: 0=text, 1=graphical, 2=tiled
+#define def_SOMODE 0xC024
+
+//! @brief heap start address
+//! @note 2 bytes
+#define def_HEAPSTR 0xC025
+
+//! @brief heap size
+//! @note 2 bytes
+#define def_HEAPSIZ 0xC027
+
+//! @brief temporary string index
+//! @note 1 byte
+#define def_TMPSTR_IND 0xC029
+
+//! @brief temporary string start address
+//! @note 2 bytes
+#define def_TMPSTR_ADDR 0xC02A
+
+//! @brief temporary string next pointer
+//! @note 2 bytes
+#define def_TMPSTR_BUF 0xC02C
+
+//! @brief old bios font address
+//! @note 2 bytes
+#define def_FONT_OLD 0xC02F
+
+//! @brief new font space address
+//! @note 2 bytes
+#define def_FONT_NEW 0xC031
 
 #define def_MR_TRAP_FLAG 0xFC82
 #define def_MR_TRAP_SEGMS def_MR_TRAP_FLAG + 1
@@ -63,15 +90,16 @@
 /***************************************************************
  * @name kernel_hooks
  * @brief kernel internal addresses hooks
- * @remark start of header.symbols adjust
  */
 
-/***
- * @def
- * @note
- * see "wrapper_routines_map_start" correct address in
- * "header.symbols.asm" if Z80 kernel was recompiled
- */
+//! @defgroup header.symbols
+//! @brief hooks adjustments group based on header.symbols.asm file
+//! @remark start of header.symbols adjust
+//! @{
+
+//! @warning
+//! see "wrapper_routines_map_start" correct address in
+//! "header.symbols.asm" if Z80 kernel was recompiled
 #define def_wrapper_routines_map_start 0x40DB
 
 #define def_castParamFloatInt def_wrapper_routines_map_start
@@ -197,9 +225,8 @@
 #define def_XBASIC_USING_DO (def_XBASIC_USING + 3)
 #define def_XBASIC_USR (def_XBASIC_USING_DO + 3)
 
-/***
- * @remark end of header.symbols adjust
- */
+//! @remark end of header.symbols adjust
+//! @}
 
 /***************************************************************
  * @name basic

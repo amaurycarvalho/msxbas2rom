@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
   Compiler compiler;
   CompilerPT3 compilerPT3;
 
-  // parsing parameters
+  //! @remark parsing parameters
 
   parmCompile = true;  // default = compile mode
 
@@ -562,7 +562,7 @@ bool SaveSymbolFile(Compiler *compiler, int code_start) {
     strcpy(s, "LOADER EQU 04010H\n");
     fwrite(s, 1, strlen(s), file);
 
-    // lines symbols
+    //! lines symbols
 
     t = compiler->codeList.size();
 

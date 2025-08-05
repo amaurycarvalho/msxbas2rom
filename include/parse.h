@@ -55,7 +55,8 @@ class ActionNode {
   /***
    * @brief ActionNode class constructor.
    * It represents a simple action item (statement, function etc)
-   * @param name Keyword name for the new lexeme to be associated with this action node
+   * @param name Keyword name for the new lexeme to be associated with this
+   * action node
    */
   ActionNode(string name);
 };
@@ -171,15 +172,18 @@ class Parser {
   stack<ActionNode*> actionStack;
   stack<Lexeme*> expressionList;
 
-  int deftbl[26];  // DEFTBL
+  // @brief DEFTBL workarea
+  int deftbl[26];
 
   bool eval_expr_error, line_comment;
   string error_message;
 
  public:
   int lineNo;
-  vector<TagNode*> tags;       // abstract syntax tree in list form implementation
-  vector<Lexeme*> symbolList;  // symbols list coalesced
+  //! @brief abstract syntax tree in list form implementation
+  vector<TagNode*> tags;
+  //! @brief symbols list coalesced
+  vector<Lexeme*> symbolList;
   vector<Lexeme*> datas;
 
   bool debug;
@@ -205,7 +209,8 @@ class Parser {
   void error();
 
   /***
-   * @brief Parse class constructor, specialized as a MSX BASIC syntax tree builder
+   * @brief Parse class constructor, specialized as a MSX BASIC syntax tree
+   * builder
    */
   Parser();
 };

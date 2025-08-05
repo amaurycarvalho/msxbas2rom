@@ -24,7 +24,8 @@
  */
 class IZ80 {
  protected:
-  unsigned char* code;  //[20*0xFFFF];
+  //! @remark allocation size need to be at least 20*0xFFFF
+  unsigned char* code;
 
   int code_pointer;
   unsigned char* last_code[5];
