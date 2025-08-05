@@ -3,7 +3,7 @@
  * @brief MSX BASIC lexer class header
  * @author Amaury Carvalho (2019-2025)
  * @note
- *   https://en.wikipedia.org/wiki/Lexical_analysis
+ *   [Lexical analysis](https://en.wikipedia.org/wiki/Lexical_analysis)
  */
 
 #ifndef LEX_H_INCLUDED
@@ -17,8 +17,8 @@ using namespace std;
 
 /***
  * @class Lexeme
- * @brief It represents a simple MSX BASIC lexeme (constant, keyword, identifier
- * etc)
+ * @brief It represents a simple MSX BASIC lexeme
+ *        (constant, keyword, identifier etc)
  */
 class Lexeme {
  public:
@@ -88,7 +88,8 @@ class Lexeme {
   /***
    * @brief Is the current lexeme a valid keyword?
    * @return True or false
-   * @note https://www.msx.org/wiki/Category:MSX-BASIC_Instructions
+   * @note [MSX-BASIC
+   * Instructions](https://www.msx.org/wiki/Category:MSX-BASIC_Instructions)
    */
   bool isKeyword();
 
@@ -122,14 +123,16 @@ class Lexeme {
   /***
    * @brief Is the current lexeme a valid boolean operator?
    * @return True or false
-   * @note https://www.msx.org/wiki/Category:MSX-BASIC_Instructions
+   * @note [MSX-BASIC
+   * Instructions](https://www.msx.org/wiki/Category:MSX-BASIC_Instructions)
    */
   bool isBooleanOperator();
 
   /***
    * @brief Is the current lexeme a valid function keyword?
    * @return True or false
-   * @note https://www.msx.org/wiki/Category:MSX-BASIC_Instructions
+   * @note [MSX-BASIC
+   * Instructions](https://www.msx.org/wiki/Category:MSX-BASIC_Instructions)
    */
   bool isFunction();
 
