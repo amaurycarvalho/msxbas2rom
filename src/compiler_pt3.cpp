@@ -1,8 +1,16 @@
-//-------------------------------------------------------------------
-// Compiler class specialized as a Z80 code builder for MSX system
-// created by Amaury Carvalho, 2020
-// PT3 deprecated version
-//-------------------------------------------------------------------
+/***
+ * @file compiler_pt3.cpp
+ * @brief Compiler class implementation for semantic analysis (PT3 support),
+ *        specialized as a Z80 code builder for MSX system
+ * @author Amaury Carvalho (2019-2020)
+ * @note
+ *   https://en.wikipedia.org/wiki/Semantic_analysis_(computational)
+ *   https://refactoring.guru/design-patterns/bridge
+ *   Z80 Opcodes:
+ *     http://z80-heaven.wikidot.com/instructions-set
+ *     https://clrhome.org/table/
+ * @deprecated PT3 support is deprecated (not more future updates).
+ */
 
 #include "compiler_pt3.h"
 

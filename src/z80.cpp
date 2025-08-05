@@ -530,10 +530,6 @@ void IZ80::addLdHL(int n) {
   addCmd(0x21, n);
 }
 
-void IZ80::addLdHLmegarom() {
-  addCmd(0xFF, 0x0000);
-}
-
 void IZ80::addLdBC(int n) {
   addCmd(0x01, n);
 }

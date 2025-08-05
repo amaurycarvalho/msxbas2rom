@@ -643,6 +643,10 @@ int Compiler::getKernelCallAddr(unsigned int address) {
   return result;
 }
 
+void Compiler::addLdHLmegarom() {
+  addCmd(0xFF, 0x0000);
+}
+
 SymbolNode* Compiler::getSymbol(Lexeme* lexeme) {
   unsigned int i, t = symbols.size();
   bool found = false;

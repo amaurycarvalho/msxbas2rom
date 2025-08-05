@@ -149,6 +149,7 @@ class Compiler : public IZ80 {
   void addByteOptimized(unsigned char byte);
   void addKernelCall(unsigned int word);
   int getKernelCallAddr(unsigned int word);
+  void addLdHLmegarom();
 
   bool evalAction(ActionNode* action);
   bool evalActions(ActionNode* action);
