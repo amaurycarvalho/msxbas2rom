@@ -10,5 +10,6 @@
     "initializer_list": "cpp",
     "utility": "cpp",
     "format": "cpp"
-  }
+  },
+  "C_Cpp.codeAnalysis.clangTidy.enabled": true
 }

@@ -23,7 +23,8 @@
 Rom::Rom() {
   data = (unsigned char *)malloc(ROM_DATA_SIZE);
   memset(data, 0x00, ROM_DATA_SIZE);
-  rom_size = 0x4000 * 2;  // default rom size
+  //! @remark default rom size
+  rom_size = 0x4000 * 2;
 }
 
 Rom::~Rom() {
@@ -391,6 +392,7 @@ void Rom::buildMapAndResources() {
   int resource_segment, max_resource_size;
   Lexeme *lexeme;
 
+  //! @remarks
   // Resources location on ROM:
   //    48kb ROM - starts on page 0
   //    128kb MEGAROM - starts on the next segment after the code
@@ -443,17 +445,19 @@ void Rom::buildMapAndResources() {
     start_resource_address = resource_segment * 0x4000;
     rom_size = 0x20000;
     max_resource_size = rom_size - start_resource_address;
-    rscAddr = 0x8000;  // resource start address
-    rscSgm =
-        resource_segment *
-        2;  // resource start segment (two konami segments of 8kb size each)
-    start_resource_address += 0x4000;  // skip first page at temporary memory,
-                                       // because it will be discarded
+    //! resource start address
+    rscAddr = 0x8000;
+    //! resource start segment (two konami segments of 8kb size each)
+    rscSgm = resource_segment * 2;
+    //! @remark
+    //! skip first page at temporary memory because it will be discarded
+    start_resource_address += 0x4000;
+
   } else {
     resource_segment = 0;
-    start_resource_address = 0;
-    rscAddr = 0;
-    rscSgm = 0;
+    start_resource_address = resource_segment;
+    rscAddr = resource_segment;
+    rscSgm = resource_segment;
     max_resource_size = 0x4000 - 0x0100;
     rom_size = 0x4000 * 3;
   }
@@ -469,7 +473,8 @@ void Rom::buildMapAndResources() {
 
   t = compiler->resourceList.size();
 
-  if (t > 48) {  // max resource map length
+  //! @warning max resource map length
+  if (t > 48) {
     errorMessage = "Max of resources limit exceeded (>48)";
     errorFound = true;
     return;
@@ -519,8 +524,9 @@ void Rom::buildMapAndResources() {
             "page size limit (%i)\nDifference = %i byte(s)",
             rscLen, max_resource_size, rscLen - max_resource_size);
     if (!xtd) {
-      strcat(s,
-             "\nTry compiling it in MegaROM format by adding the -x parameter");
+      strlcat(s,
+              "\nTry compiling it in MegaROM format by adding the -x parameter",
+              sizeof(s));
     }
     errorMessage = s;
     errorFound = true;
@@ -1299,7 +1305,7 @@ void Rom::buildTurboLine() {
   dummy.goto_gosub = false;
   dummy.number = 0;
   dummy.length = 10;
-  strcpy((char *)&dummy.data[0], " TURBO ON");
+  strlcpy((char *)&dummy.data[0], " TURBO ON", sizeof(dummy.data));
   dummy.data[0] = 0xCA;  // CALL instruction token
 
   calcBasicLineAddress(&dummy);
@@ -1318,7 +1324,7 @@ void Rom::calcBasicLineAddress(TokenLine *line) {
 
 void Rom::buildBasicLine(TokenLine *line) {
   int number, address, i;
-  bool state = 0;
+  int state = 0;
 
   memcpy(&data[line->address], &line->next, 2);
 

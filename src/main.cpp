@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
       }
 
     } else {
-      strcpy(inputFilename, argv[i]);
+      strlcpy(inputFilename, argv[i], sizeof(inputFilename));
     }
   }
 
@@ -151,35 +151,35 @@ int main(int argc, char *argv[]) {
 
   // set output file name from input name
 
-  strcpy(outputFilename, inputFilename);
-  strcpy(symbolFilename, inputFilename);
+  strlcpy(outputFilename, inputFilename, sizeof(outputFilename));
+  strlcpy(symbolFilename, inputFilename, sizeof(symbolFilename));
 
   s = strrchr(outputFilename, '.');
   if (s) {
     if (parmXtd) {
       if (parmKonamiSCC) {
-        strcpy(s, "[KonamiSCC].rom");
+        strlcpy(s, "[KonamiSCC].rom", sizeof(outputFilename));
       } else
-        strcpy(s, "[ASCII8].rom");
+        strlcpy(s, "[ASCII8].rom", sizeof(outputFilename));
     } else {
-      strcpy(s, ".rom");
+      strlcpy(s, ".rom", sizeof(outputFilename));
     }
   } else {
     if (parmXtd) {
       if (parmKonamiSCC) {
-        strcat(outputFilename, "[KonamiSCC].rom");
+        strlcat(outputFilename, "[KonamiSCC].rom", sizeof(outputFilename));
       } else
-        strcat(outputFilename, "[ASCII8].rom");
+        strlcat(outputFilename, "[ASCII8].rom", sizeof(outputFilename));
     } else {
-      strcat(outputFilename, ".rom");
+      strlcat(outputFilename, ".rom", sizeof(outputFilename));
     }
   }
 
   s = strrchr(symbolFilename, '.');
   if (s) {
-    strcpy(s, ".symbol");
+    strlcpy(s, ".symbol", sizeof(symbolFilename));
   } else {
-    strcat(symbolFilename, ".symbol");
+    strlcat(symbolFilename, ".symbol", sizeof(symbolFilename));
   }
 
   if (FileExists(outputFilename)) {
