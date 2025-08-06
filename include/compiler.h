@@ -120,8 +120,9 @@ class FileNode {
   int read();
   int readAsLexeme();
   int readAsLexeme(unsigned char* data, int data_length);
-  void stripQuotes(string text, char* buf);
-  void getFileExt(char* filename, char* buf);
+  /// @brief strips quotes from a string
+  void stripQuotes(string text, char* buf, int buflen);
+  void getFileExt(char* filename, int namelen, char* buf, int buflen);
   string getFileExt();
 
   bool writeToFile(char* filename, unsigned char* data, int data_length);

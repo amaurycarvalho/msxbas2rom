@@ -15,7 +15,9 @@
  * @name Lexeme class functions
  */
 
-Lexeme::Lexeme() { clear(); }
+Lexeme::Lexeme() {
+  clear();
+}
 
 Lexeme::Lexeme(Lexeme* plexeme) {
   clear();
@@ -53,7 +55,9 @@ Lexeme::Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname,
   value = pvalue;
 }
 
-Lexeme* Lexeme::clone() { return new Lexeme(this); }
+Lexeme* Lexeme::clone() {
+  return new Lexeme(this);
+}
 
 void Lexeme::clear() {
   type = Lexeme::type_unknown;
@@ -233,23 +237,41 @@ bool Lexeme::isFunction() {
  * @name LexerLine class functions
  */
 
-LexerLine::LexerLine() { lexemeIndex = 0; }
+LexerLine::LexerLine() {
+  lexemeIndex = 0;
+}
 
-void LexerLine::clearLexemes() { lexemes.clear(); }
+void LexerLine::clearLexemes() {
+  lexemes.clear();
+}
 
-void LexerLine::addLexeme(Lexeme* lexeme) { lexemes.push_back(lexeme); }
+void LexerLine::addLexeme(Lexeme* lexeme) {
+  lexemes.push_back(lexeme);
+}
 
-void LexerLine::setLexemeBOF() { lexemeIndex = -1; }
+void LexerLine::setLexemeBOF() {
+  lexemeIndex = -1;
+}
 
-Lexeme* LexerLine::getCurrentLexeme() { return getLexeme(lexemeIndex); }
+Lexeme* LexerLine::getCurrentLexeme() {
+  return getLexeme(lexemeIndex);
+}
 
-Lexeme* LexerLine::getFirstLexeme() { return getLexeme(0); }
+Lexeme* LexerLine::getFirstLexeme() {
+  return getLexeme(0);
+}
 
-Lexeme* LexerLine::getNextLexeme() { return getLexeme(lexemeIndex + 1); }
+Lexeme* LexerLine::getNextLexeme() {
+  return getLexeme(lexemeIndex + 1);
+}
 
-Lexeme* LexerLine::getPreviousLexeme() { return getLexeme(lexemeIndex - 1); }
+Lexeme* LexerLine::getPreviousLexeme() {
+  return getLexeme(lexemeIndex - 1);
+}
 
-Lexeme* LexerLine::getLastLexeme() { return getLexeme(lexemes.size() - 1); }
+Lexeme* LexerLine::getLastLexeme() {
+  return getLexeme(lexemes.size() - 1);
+}
 
 Lexeme* LexerLine::getLexeme(int i) {
   if (i >= 0 && i < (int)lexemes.size()) {
@@ -259,9 +281,13 @@ Lexeme* LexerLine::getLexeme(int i) {
     return 0;
 }
 
-int LexerLine::getLexemeCount() { return lexemes.size(); }
+int LexerLine::getLexemeCount() {
+  return lexemes.size();
+}
 
-void LexerLine::pushLexeme() { lexemeStack.push(lexemeIndex); }
+void LexerLine::pushLexeme() {
+  lexemeStack.push(lexemeIndex);
+}
 
 void LexerLine::popLexeme() {
   if (!lexemeStack.empty()) {
@@ -270,7 +296,9 @@ void LexerLine::popLexeme() {
   }
 }
 
-void LexerLine::popLexemeDiscarding() { lexemeStack.pop(); }
+void LexerLine::popLexemeDiscarding() {
+  lexemeStack.pop();
+}
 
 void LexerLine::print() {
   printf("%s", line.c_str());
@@ -346,8 +374,8 @@ bool LexerLine::evaluate() {
           lexemes.push_back(lexeme);
           if (line[i + 1] == '#') {  // if xbasic special commands...
             char s[255];
-            strcpy(s, &line[i + 1]);
-            s[strlen(s) - 1] = 0;
+            strlcpy(s, &line[i + 1], sizeof(s));
+            s[strnlen(s, sizeof(s)) - 1] = 0;
             lexeme = new Lexeme(Lexeme::type_comment, Lexeme::subtype_any, s);
             lexemes.push_back(lexeme);
           }
@@ -527,15 +555,21 @@ bool LexerLine::evaluate() {
       }
     }
     lexemes.push_back(lexeme);
-  } else
+  } else {
+    //! NOLINTNEXTLINE(clang-analyzer-unix.MismatchedDeallocator)
     free(lexeme);
+  }
 
   return true;
 }
 
-bool LexerLine::isNumeric(char c) { return (c >= '0' && c <= '9'); }
+bool LexerLine::isNumeric(char c) {
+  return (c >= '0' && c <= '9');
+}
 
-bool LexerLine::isDecimal(char c) { return isNumeric(c) || c == '.'; }
+bool LexerLine::isDecimal(char c) {
+  return isNumeric(c) || c == '.';
+}
 
 bool LexerLine::isHexDecimal(char c) {
   return isNumeric(c) || c == 'B' || c == 'b' || c == 'h' || c == 'H' ||
@@ -561,13 +595,17 @@ bool LexerLine::isIdentifier(char c, bool start) {
            !start));
 }
 
-bool LexerLine::isComment(char c) { return false; }
+bool LexerLine::isComment(char c) {
+  return false;
+}
 
 /***
  * @name Lexer class functions
  */
 
-Lexer::Lexer() { clear(); }
+Lexer::Lexer() {
+  clear();
+}
 
 void Lexer::clear() {
   errorMessage = "";

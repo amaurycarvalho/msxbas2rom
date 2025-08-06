@@ -46,9 +46,9 @@ int main(int argc, char *argv[]) {
   Compiler compiler;
   CompilerPT3 compilerPT3;
 
-  //! @remark parsing parameters
+  /// parsing parameters
 
-  parmCompile = true;  // default = compile mode
+  parmCompile = true;  //! default = compile mode
 
   for (i = 1; i < argc; i++) {
     char *p = &argv[i][0];
@@ -111,11 +111,11 @@ int main(int argc, char *argv[]) {
   }
 
   if (!parmQuiet) {
-    // splash screen
+    /// splash screen
 
     printf("%s %s\n", info_splash, app_version);
 
-    // help hint
+    /// help hint
     if (parmDoc) {
       printf("%s", info_documentation);
       printf("%s\n", info_support);
@@ -149,20 +149,21 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  // set output file name from input name
+  /// set output file name from input name
 
   strlcpy(outputFilename, inputFilename, sizeof(outputFilename));
   strlcpy(symbolFilename, inputFilename, sizeof(symbolFilename));
 
   s = strrchr(outputFilename, '.');
   if (s) {
+    int slen = strnlen(outputFilename, sizeof(outputFilename));
     if (parmXtd) {
       if (parmKonamiSCC) {
-        strlcpy(s, "[KonamiSCC].rom", sizeof(outputFilename));
+        strlcpy(s, "[KonamiSCC].rom", sizeof(outputFilename) - slen);
       } else
-        strlcpy(s, "[ASCII8].rom", sizeof(outputFilename));
+        strlcpy(s, "[ASCII8].rom", sizeof(outputFilename) - slen);
     } else {
-      strlcpy(s, ".rom", sizeof(outputFilename));
+      strlcpy(s, ".rom", sizeof(outputFilename) - slen);
     }
   } else {
     if (parmXtd) {
@@ -177,7 +178,8 @@ int main(int argc, char *argv[]) {
 
   s = strrchr(symbolFilename, '.');
   if (s) {
-    strlcpy(s, ".symbol", sizeof(symbolFilename));
+    int slen = strnlen(outputFilename, sizeof(symbolFilename));
+    strlcpy(s, ".symbol", sizeof(symbolFilename) - slen);
   } else {
     strlcat(symbolFilename, ".symbol", sizeof(symbolFilename));
   }
@@ -189,8 +191,8 @@ int main(int argc, char *argv[]) {
   if (!parmQuiet)
     printf("Converting %s to %s ...\n", inputFilename, outputFilename);
 
-  // LEXICAL ANALYSIS
-  // lexing the input file, tokenizing it
+  /// LEXICAL ANALYSIS
+  //! @note lexing the input file, tokenizing it
 
   if (!parmQuiet) printf("(1) Doing lexical analysis...\n");
 
@@ -215,8 +217,8 @@ int main(int argc, char *argv[]) {
   parser.debug = parmDebug;
 
   if (parmCompile) {
-    // SYNTACTIC ANALYSIS
-    // parsing the lexing tokens, building the syntax tree
+    /// SYNTACTIC ANALYSIS
+    //! @note parsing the lexing tokens, building the syntax tree
 
     if (!parmQuiet) printf("(2) Doing syntactic analysis...\n");
 
@@ -235,8 +237,8 @@ int main(int argc, char *argv[]) {
       parser.print();
     }
 
-    // SEMANTIC ANALYSIS
-    // create assembly output
+    /// SEMANTIC ANALYSIS
+    //! @note create assembly output
 
     if (!parmQuiet) printf("(3) Doing semantic analysis (compiling)...\n");
 
@@ -291,7 +293,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    // ROM OUTPUT
+    /// ROM OUTPUT
 
     if (!parmQuiet) printf("(4) Building ROM...\n");
 
@@ -321,7 +323,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    // finish process
+    /// finish process
 
     if (!parmQuiet) {
       if (parser.has_pt3) {
@@ -447,8 +449,8 @@ int main(int argc, char *argv[]) {
     }
 
   } else {
-    // TOKEN ANALYSIS
-    // default basic interpreter tokenizer
+    /// TOKEN ANALYSIS
+    //! @note default basic interpreter tokenizer
 
     if (!parmQuiet) printf("(2) Doing token analysis...\n");
 
@@ -474,7 +476,7 @@ int main(int argc, char *argv[]) {
       tokenizer.print();
     }
 
-    // ROM OUTPUT
+    /// ROM OUTPUT
 
     if (!parmQuiet) printf("(3) Building ROM...\n");
 
@@ -493,7 +495,7 @@ int main(int argc, char *argv[]) {
       return 1;
     }
 
-    // finish process
+    /// finish process
 
     if (!parmQuiet) {
       if (tokenizer.resourceList.size()) {
@@ -562,7 +564,7 @@ bool SaveSymbolFile(Compiler *compiler, int code_start) {
     strcpy(s, "LOADER EQU 04010H\n");
     fwrite(s, 1, strlen(s), file);
 
-    //! lines symbols
+    /// lines symbols
 
     t = compiler->codeList.size();
 
@@ -575,7 +577,7 @@ bool SaveSymbolFile(Compiler *compiler, int code_start) {
       }
     }
 
-    // variables symbols
+    /// variables symbols
 
     t = compiler->dataList.size();
 

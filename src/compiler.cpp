@@ -5392,7 +5392,7 @@ void Compiler::cmd_copy() {
   bool has_address_from = false, has_address_to = false;
 
   if (t) {
-    action = current_action->actions[0];
+    // action = current_action->actions[0];
 
     state = 0;
 
@@ -6066,8 +6066,9 @@ void Compiler::cmd_bload() {
             // verify file type (screen or sprite)
 
             file = new FileNode();
-            file->stripQuotes(lexeme->value, filename);
-            file->getFileExt(filename, fileext);
+            file->stripQuotes(lexeme->value, filename, sizeof(filename));
+            file->getFileExt(filename, sizeof(filename), fileext,
+                             sizeof(fileext));
             isTinySprite = (strcasecmp(fileext, ".SPR") == 0);
             delete file;
 
@@ -12747,47 +12748,47 @@ void FileNode::write(unsigned char* data, int data_length) {
 
 //----------------------------------------------------------------------------------------------
 
-void FileNode::stripQuotes(string text, char* buf) {
+void FileNode::stripQuotes(string text, char* buf, int buflen) {
   int tt;
   char* s;
 
-  // strips quotes from text
+  /// strips quotes from text
   tt = text.size();
   s = (char*)text.c_str();
   if (s[0] == '"') {
     s++;
     tt--;
   }
-  strcpy(buf, s);
+  strlcpy(buf, s, buflen);
   if (buf[tt - 1] == '"') {
     buf[tt - 1] = 0;
     tt--;
   }
 }
 
-string FileNode::getFileExt() {
-  char buf[255];
-  getFileExt((char*)name.c_str(), &buf[0]);
-  return string(buf);
-}
-
-void FileNode::getFileExt(char* filename, char* buf) {
+void FileNode::getFileExt(char* filename, int namelen, char* buf, int buflen) {
   char* s;
   int i, t;
-  t = strlen(filename);
+  t = strnlen(filename, namelen);
   s = filename;
   s += t;
   buf[0] = 0;
   while (t) {
     if (s[0] == '.') {
-      strcpy(buf, s);
-      t = strlen(buf);
+      strlcpy(buf, s, buflen);
+      t = strnlen(buf, buflen);
       for (i = 0; i < t; i++) buf[i] = toupper(buf[i]);
       break;
     }
     s--;
     t--;
   }
+}
+
+string FileNode::getFileExt() {
+  char buf[255];
+  getFileExt((char*)name.c_str(), name.size() + 1, buf, sizeof(buf));
+  return string(buf);
 }
 
 void FileNode::fixAKM(unsigned char* data, int address, int length) {
@@ -12797,7 +12798,7 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
   int noteBlockIndexTable, trackIndexTable;
   bool first, track_annotation;
 
-  // adjust header
+  /// adjust header
 
   instrumentIndexTable = data[0] | (data[1] << 8);
   arpeggioIndexTable = data[2] | (data[3] << 8);
@@ -12818,7 +12819,7 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
     data[5] = (current >> 8) & 0xFF;
   }
 
-  // adjust subsongs table
+  /// adjust subsongs table
 
   first = true;
 
@@ -12856,40 +12857,41 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
       if (trackIndexTable) {
         trackIndexTable -= start;
 
-        // read subsong linker
+        /// read subsong linker
 
         tracks = 0x80;
         track_annotation = false;
 
-        for (k = subsongIndexTable + 13;
-             k < trackIndexTable;) {  // linker state machine
-          linker = data[k++];         // linker code
+        /// @brief linker state machine
 
-          if (linker & 1) {  // if speed change/end song...
-            k++;             // ...skip speed change/end song
+        for (k = subsongIndexTable + 13; k < trackIndexTable;) {
+          linker = data[k++];  //! linker code
+
+          if (linker & 1) {  //! if speed change/end song...
+            k++;             //! ...skip speed change/end song
           }
 
-          if (linker == 1) {  // if end of song...
+          if (linker == 1) {  //! if end of song...
             current = data[k] | (data[k + 1] << 8);
             current -= start;
             current += address;
             data[k] = current & 0xFF;
             data[k + 1] = (current >> 8) & 0xFF;
-            k += 2;  // ...skip loop address
+            k += 2;  //! ...skip loop address
                      // printf("   end of song\n");
           } else {
             linker >>= 1;
-            if (linker & 1) {  // if line count...
-              k++;             // ...skip line count
+            if (linker & 1) {  //! if line count...
+              k++;             //! ...skip line count
             }
             for (w = 0; w < 3; w++) {
               linker >>= 1;
-              if (linker & 1) {  // if transposition w...
-                k++;             // ...skip transp w
+              if (linker & 1) {  //! if transposition w...
+                k++;             //! ...skip transp w
               }
               linker >>= 1;
-              if (linker & 1) {     // if channel w...
-                current = data[k];  // ...check channel w
+              if (linker & 1) {     //! if channel w...
+                current = data[k];  //! ...check channel w
                 k++;
                 if (current & 0x80) {
                   if (current >= 0x80 && current <= 0x83) {
@@ -12898,6 +12900,10 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
                   }
                   // printf("   track c %i: 0x%02X\n", w, current);
                 } else {
+                  /// @remark
+                  /// "current" value needs to be calculated to keep
+                  /// the state machine loop consistency
+                  /// NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
                   current = (current << 8) | data[k];
                   k++;
                   // printf("   track c %i: 0x%04X\n", w, current);
@@ -12914,7 +12920,8 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
           t = trackIndexTable + tracks;
 
           for (k = trackIndexTable; k < t; k += 2) {
-            current = data[k] | (data[k + 1] << 8);  // adjust the track address
+            current =
+                data[k] | (data[k + 1] << 8);  //! adjust the track address
             if (current) {
               current -= start;
               current += address;
@@ -12935,7 +12942,7 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
     }
   }
 
-  // adjust instruments table
+  /// adjust instruments table
 
   t = data[instrumentIndexTable] | (data[instrumentIndexTable + 1] << 8);
   t -= start;
@@ -12950,7 +12957,7 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
         first = false;
       else {
         previous = data[current - 2] |
-                   (data[current - 1] << 8);  // adjust the previous instrument
+                   (data[current - 1] << 8);  //! adjust the previous instrument
         if (previous) {
           previous -= start;
           previous += address;

@@ -47,7 +47,8 @@ Parser::Parser() {
 
   lex_null = new Lexeme(Lexeme::type_literal, Lexeme::subtype_null, "NULL");
 
-  lex_index = new Lexeme(Lexeme::type_keyword, Lexeme::subtype_numeric, "INDEX");
+  lex_index =
+      new Lexeme(Lexeme::type_keyword, Lexeme::subtype_numeric, "INDEX");
 }
 
 bool Parser::evaluate(Lexer* lexer) {
@@ -134,9 +135,11 @@ bool Parser::eval_line(LexerLine* lexerLine) {
 
       } else if (lexeme->value == "INCLUDE") {
         if ((lexeme = lexerLine->getNextLexeme())) {
-          if (lexeme->type == Lexeme::type_literal && lexeme->subtype == Lexeme::subtype_string) {
+          if (lexeme->type == Lexeme::type_literal &&
+              lexeme->subtype == Lexeme::subtype_string) {
             if (!loadInclude(lexeme)) {
-              error_message = "INCLUDE file not found or with content syntax error";
+              error_message =
+                  "INCLUDE file not found or with content syntax error";
               return false;
             }
 
@@ -159,7 +162,8 @@ bool Parser::eval_phrase(LexerLine* phrase) {
     lexeme = coalesceSymbols(lexeme);
 
     if (lexeme->type == Lexeme::type_identifier ||
-        (lexeme->type == Lexeme::type_keyword && lexeme->subtype == Lexeme::subtype_function &&
+        (lexeme->type == Lexeme::type_keyword &&
+         lexeme->subtype == Lexeme::subtype_function &&
          lexeme->value != "STRIG")) {
       phrase->setLexemeBOF();
       return eval_assignment(phrase);
@@ -191,8 +195,9 @@ bool Parser::eval_statement(LexerLine* statement) {
     action = new ActionNode(lexeme);
     pushActionRoot(action);
 
-    if (lexeme->value == "REM" || lexeme->value == "CLS" || lexeme->value == "END" ||
-        lexeme->value == "BEEP" || lexeme->value == "RANDOMIZE") {
+    if (lexeme->value == "REM" || lexeme->value == "CLS" ||
+        lexeme->value == "END" || lexeme->value == "BEEP" ||
+        lexeme->value == "RANDOMIZE") {
       result = true;
     } else if (lexeme->value == "'") {
       lexeme->type = Lexeme::type_keyword;
@@ -209,14 +214,17 @@ bool Parser::eval_statement(LexerLine* statement) {
       result = eval_cmd_def(statement, 4);
     } else if (lexeme->value == "DEFDBL") {
       result = eval_cmd_def(statement, 8);
-    } else if (lexeme->value == "WIDTH" || lexeme->value == "CLEAR" || lexeme->value == "ERASE" ||
-               lexeme->value == "LOCATE" || lexeme->value == "DRAW" || lexeme->value == "GOTO" ||
-               lexeme->value == "GOSUB" || lexeme->value == "RETURN" || lexeme->value == "SOUND" ||
-               lexeme->value == "RESTORE" || lexeme->value == "RESUME" || lexeme->value == "READ" ||
-               lexeme->value == "IREAD" || lexeme->value == "IRESTORE" || lexeme->value == "POKE" ||
-               lexeme->value == "IPOKE" || lexeme->value == "VPOKE" || lexeme->value == "OUT" ||
-               lexeme->value == "SWAP" || lexeme->value == "WAIT" || lexeme->value == "SEED" ||
-               lexeme->value == "BLOAD") {
+    } else if (lexeme->value == "WIDTH" || lexeme->value == "CLEAR" ||
+               lexeme->value == "ERASE" || lexeme->value == "LOCATE" ||
+               lexeme->value == "DRAW" || lexeme->value == "GOTO" ||
+               lexeme->value == "GOSUB" || lexeme->value == "RETURN" ||
+               lexeme->value == "SOUND" || lexeme->value == "RESTORE" ||
+               lexeme->value == "RESUME" || lexeme->value == "READ" ||
+               lexeme->value == "IREAD" || lexeme->value == "IRESTORE" ||
+               lexeme->value == "POKE" || lexeme->value == "IPOKE" ||
+               lexeme->value == "VPOKE" || lexeme->value == "OUT" ||
+               lexeme->value == "SWAP" || lexeme->value == "WAIT" ||
+               lexeme->value == "SEED" || lexeme->value == "BLOAD") {
       if (lexeme->value == "BLOAD") resourceCount++;
       result = eval_cmd_generic(statement);
     } else if (lexeme->value == "SCREEN") {
@@ -322,7 +330,8 @@ Lexeme* Parser::coalesceSymbols(Lexeme* lexeme) {
     if (lexeme->type == Lexeme::type_identifier) {
       for (i = 0; i < t; i++) {
         result = symbolList[i];
-        if (result->type == lexeme->type && result->subtype == lexeme->subtype &&
+        if (result->type == lexeme->type &&
+            result->subtype == lexeme->subtype &&
             result->name == lexeme->name && result->value == lexeme->value) {
           ok = true;
           break;
@@ -376,7 +385,8 @@ bool Parser::eval_assignment(LexerLine* assignment) {
     lexeme = coalesceSymbols(lexeme);
 
     if (lexeme->type == Lexeme::type_identifier ||
-        (lexeme->type == Lexeme::type_keyword && lexeme->subtype == Lexeme::subtype_function)) {
+        (lexeme->type == Lexeme::type_keyword &&
+         lexeme->subtype == Lexeme::subtype_function)) {
       if (actionRoot) {
         lexLet = actionRoot->lexeme;
         if (lexLet->isKeyword("LET")) {
@@ -386,7 +396,7 @@ bool Parser::eval_assignment(LexerLine* assignment) {
 
       if (add_let_action) {
         action = new ActionNode("LET");
-        lexLet = action->lexeme;
+        // lexLet = action->lexeme;
         pushActionRoot(action);
       }
 
@@ -482,8 +492,8 @@ bool Parser::eval_expression_push(LexerLine* parm) {
   while (lexeme) {
     lexeme = coalesceSymbols(lexeme);
 
-    if (lexeme->type == Lexeme::type_keyword && lexeme->subtype == Lexeme::subtype_function &&
-        lexeme->value == "USR") {
+    if (lexeme->type == Lexeme::type_keyword &&
+        lexeme->subtype == Lexeme::subtype_function && lexeme->value == "USR") {
       check_lexeme = parm->getNextLexeme();
       if (check_lexeme) {
         if (check_lexeme->isLiteralNumeric()) {
@@ -497,7 +507,8 @@ bool Parser::eval_expression_push(LexerLine* parm) {
 
     // if operators, push to operators stack
 
-    if (lexeme->type == Lexeme::type_operator || lexeme->type == Lexeme::type_separator) {
+    if (lexeme->type == Lexeme::type_operator ||
+        lexeme->type == Lexeme::type_separator) {
       // test when first operand in expression or unary operator
 
       if (outputCount == 0 || unary) {
@@ -534,13 +545,15 @@ bool Parser::eval_expression_push(LexerLine* parm) {
             error_message = "Invalid > symbol in expression";
             return false;
           }
-        } else if (lexeme->value != "+" && lexeme->value != "-" && lexeme->value != "(" &&
-                   lexeme->value != ")" && lexeme->value != "NOT") {
+        } else if (lexeme->value != "+" && lexeme->value != "-" &&
+                   lexeme->value != "(" && lexeme->value != ")" &&
+                   lexeme->value != "NOT") {
           eval_expr_error = true;
           error_message = "Invalid expression unary symbol";
           return false;
         } else {
-          if (lexeme->value == "+" || lexeme->value == "-") {  // unary plus or minus
+          if (lexeme->value == "+" ||
+              lexeme->value == "-") {  // unary plus or minus
             lexeme->isUnary = true;
             operatorStack.push(lexeme);
             lexeme = parm->getNextLexeme();
@@ -555,7 +568,8 @@ bool Parser::eval_expression_push(LexerLine* parm) {
         if (lastWasFunction || lastWasIdentifier) {
           if (expressionList.empty()) {
             eval_expr_error = true;
-            error_message = "Invalid FUNCTION or ARRAY declaration in expression";
+            error_message =
+                "Invalid FUNCTION or ARRAY declaration in expression";
             return false;
           }
 
@@ -600,7 +614,8 @@ bool Parser::eval_expression_push(LexerLine* parm) {
           if (!parmcount) {
             eval_expr_error = true;
             error_message =
-                "Invalid FUNCTION or ARRAY declaration in expression (missing parameters?)";
+                "Invalid FUNCTION or ARRAY declaration in expression (missing "
+                "parameters?)";
             return false;
           }
 
@@ -632,7 +647,8 @@ bool Parser::eval_expression_push(LexerLine* parm) {
       while (!operatorStack.empty()) {
         next_lexeme = operatorStack.top();
         stackPreced = getOperatorPrecedence(next_lexeme);
-        if ((thisPreced <= stackPreced || next_lexeme->type == Lexeme::type_keyword) &&
+        if ((thisPreced <= stackPreced ||
+             next_lexeme->type == Lexeme::type_keyword) &&
             next_lexeme->value != "(") {
           pushStackFromLexeme(next_lexeme);
           operatorStack.pop();
@@ -705,13 +721,15 @@ int Parser::getOperatorPrecedence(Lexeme* lexeme) {
     result = 5;
   else if (lexeme->value == "NOT")
     result = 6;
-  else if (lexeme->value == ">" || lexeme->value == "<" || lexeme->value == "=" ||
-           lexeme->value == ">=" || lexeme->value == "<=" || lexeme->value == "<>")
+  else if (lexeme->value == ">" || lexeme->value == "<" ||
+           lexeme->value == "=" || lexeme->value == ">=" ||
+           lexeme->value == "<=" || lexeme->value == "<>")
     result = 7;
   else if (lexeme->value == "+" || lexeme->value == "-")
     result = 8;
-  else if (lexeme->value == "*" || lexeme->value == "/" || lexeme->value == "\\" ||
-           lexeme->value == "MOD" || lexeme->value == "SHR" || lexeme->value == "SHL")
+  else if (lexeme->value == "*" || lexeme->value == "/" ||
+           lexeme->value == "\\" || lexeme->value == "MOD" ||
+           lexeme->value == "SHR" || lexeme->value == "SHL")
     result = 9;
   else if (lexeme->value == "^")
     result = 10;
@@ -728,12 +746,15 @@ int Parser::getOperatorParmCount(Lexeme* lexeme) {
     if (lexeme->type == Lexeme::type_operator) {
       if (lexeme->value == "NOT" || lexeme->isUnary)
         result = 1;
-      else if (lexeme->value == "AND" || lexeme->value == "OR" || lexeme->value == "XOR" ||
-               lexeme->value == "EQV" || lexeme->value == "IMP" || lexeme->value == ">" ||
-               lexeme->value == "<" || lexeme->value == "=" || lexeme->value == ">=" ||
-               lexeme->value == "<=" || lexeme->value == "<>" || lexeme->value == "+" ||
-               lexeme->value == "-" || lexeme->value == "*" || lexeme->value == "/" ||
-               lexeme->value == "\\" || lexeme->value == "^" || lexeme->value == "MOD" ||
+      else if (lexeme->value == "AND" || lexeme->value == "OR" ||
+               lexeme->value == "XOR" || lexeme->value == "EQV" ||
+               lexeme->value == "IMP" || lexeme->value == ">" ||
+               lexeme->value == "<" || lexeme->value == "=" ||
+               lexeme->value == ">=" || lexeme->value == "<=" ||
+               lexeme->value == "<>" || lexeme->value == "+" ||
+               lexeme->value == "-" || lexeme->value == "*" ||
+               lexeme->value == "/" || lexeme->value == "\\" ||
+               lexeme->value == "^" || lexeme->value == "MOD" ||
                lexeme->value == "SHR" || lexeme->value == "SHL")
         result = 2;
     } else if (lexeme->type == Lexeme::type_identifier) {
@@ -741,8 +762,9 @@ int Parser::getOperatorParmCount(Lexeme* lexeme) {
     } else if (lexeme->type == Lexeme::type_keyword) {
       if (lexeme->value == "NOT")
         result = 1;
-      else if (lexeme->value == "AND" || lexeme->value == "OR" || lexeme->value == "XOR" ||
-               lexeme->value == "EQV" || lexeme->value == "IMP" || lexeme->value == "MOD" ||
+      else if (lexeme->value == "AND" || lexeme->value == "OR" ||
+               lexeme->value == "XOR" || lexeme->value == "EQV" ||
+               lexeme->value == "IMP" || lexeme->value == "MOD" ||
                lexeme->value == "SHR" || lexeme->value == "SHL")
         result = 2;
       else
@@ -762,10 +784,12 @@ ActionNode* Parser::pushActionFromLexeme(Lexeme* lexeme) {
 
   actionExpr = new ActionNode(lexeme);
 
-  if (lexeme->type == Lexeme::type_operator || lexeme->type == Lexeme::type_separator ||
+  if (lexeme->type == Lexeme::type_operator ||
+      lexeme->type == Lexeme::type_separator ||
       (lexeme->type == Lexeme::type_keyword && lexeme->value != "TIME" &&
-       lexeme->value != "INKEY" && lexeme->value != "INKEY$" && lexeme->value != "MAXFILES" &&
-       lexeme->value != "ERL" && lexeme->value != "ERR") ||
+       lexeme->value != "INKEY" && lexeme->value != "INKEY$" &&
+       lexeme->value != "MAXFILES" && lexeme->value != "ERL" &&
+       lexeme->value != "ERR") ||
       (lexeme->type == Lexeme::type_identifier && lexeme->parm_count > 0)) {
     pushActionRoot(actionExpr);
 
@@ -792,7 +816,8 @@ bool Parser::eval_cmd_generic(LexerLine* statement) {
     } else if (next_lexeme->isSeparator(")") && sepcount > 0) {
       sepcount--;
     } else if (next_lexeme->type == Lexeme::type_separator &&
-               (next_lexeme->value == "," || next_lexeme->value == ";") && sepcount == 0) {
+               (next_lexeme->value == "," || next_lexeme->value == ";") &&
+               sepcount == 0) {
       if (parm.getLexemeCount()) {
         parm.setLexemeBOF();
         if (!eval_expression(&parm)) {
@@ -822,7 +847,8 @@ bool Parser::eval_cmd_generic(LexerLine* statement) {
   return true;
 }
 
-bool Parser::eval_cmd_data(LexerLine* statement, Lexeme::LexemeSubType subtype) {
+bool Parser::eval_cmd_data(LexerLine* statement,
+                           Lexeme::LexemeSubType subtype) {
   Lexeme* next_lexeme;
   string stext = "";
   int i, itext;
@@ -842,7 +868,8 @@ bool Parser::eval_cmd_data(LexerLine* statement, Lexeme::LexemeSubType subtype) 
 
       } else if (stext.size()) {
         i = datas.size() + 1;
-        next_lexeme = new Lexeme(Lexeme::type_literal, subtype, "_DATA_" + to_string(i), stext);
+        next_lexeme = new Lexeme(Lexeme::type_literal, subtype,
+                                 "_DATA_" + to_string(i), stext);
         next_lexeme->tag = tag->name;
 
         s = (char*)stext.c_str();
@@ -857,7 +884,8 @@ bool Parser::eval_cmd_data(LexerLine* statement, Lexeme::LexemeSubType subtype) 
             else
               itext = 0;
           } catch (exception& e) {
-            printf("Warning: error while converting numeric constant %s\n", stext.c_str());
+            printf("Warning: error while converting numeric constant %s\n",
+                   stext.c_str());
             itext = 0;
           }
           next_lexeme->value = to_string(itext);
@@ -892,7 +920,8 @@ bool Parser::eval_cmd_data(LexerLine* statement, Lexeme::LexemeSubType subtype) 
 
   if (stext.size()) {
     i = datas.size() + 1;
-    next_lexeme = new Lexeme(Lexeme::type_literal, subtype, "_DATA_" + to_string(i), stext);
+    next_lexeme = new Lexeme(Lexeme::type_literal, subtype,
+                             "_DATA_" + to_string(i), stext);
     next_lexeme->tag = tag->name;
 
     s = (char*)stext.c_str();
@@ -907,7 +936,8 @@ bool Parser::eval_cmd_data(LexerLine* statement, Lexeme::LexemeSubType subtype) 
         else
           itext = 0;
       } catch (exception& e) {
-        printf("Warning: error while converting numeric constant %s\n", stext.c_str());
+        printf("Warning: error while converting numeric constant %s\n",
+               stext.c_str());
         itext = 0;
       }
       next_lexeme->value = to_string(itext);
@@ -936,7 +966,8 @@ bool Parser::eval_cmd_dim(LexerLine* statement) {
     lexeme->isArray = true;
     lexeme->parm_count = subaction->actions.size();
     if (!lexeme->parm_count) {
-      error_message = "Invalid array declaration: DIM size parameter is missing";
+      error_message =
+          "Invalid array declaration: DIM size parameter is missing";
       return false;
     }
   }
@@ -975,7 +1006,8 @@ bool Parser::eval_cmd_print(LexerLine* statement) {
         } else if (next_lexeme->isSeparator(")") && sepcount > 0) {
           sepcount--;
         } else if (next_lexeme->type == Lexeme::type_separator &&
-                   (next_lexeme->value == "," || next_lexeme->value == ";") && sepcount == 0) {
+                   (next_lexeme->value == "," || next_lexeme->value == ";") &&
+                   sepcount == 0) {
           if (parm.getLexemeCount()) {
             if (print_using) {
               parm.addLexeme(lex_using[4]);
@@ -1013,11 +1045,15 @@ bool Parser::eval_cmd_print(LexerLine* statement) {
       case 3: {
         if (next_lexeme->type == Lexeme::type_identifier ||
             next_lexeme->type == Lexeme::type_literal) {
-          lex_using[0] = new Lexeme(Lexeme::type_keyword, Lexeme::subtype_function, "USING$");
-          lex_using[1] = new Lexeme(Lexeme::type_separator, Lexeme::subtype_string, "(");
+          lex_using[0] = new Lexeme(Lexeme::type_keyword,
+                                    Lexeme::subtype_function, "USING$");
+          lex_using[1] =
+              new Lexeme(Lexeme::type_separator, Lexeme::subtype_string, "(");
           lex_using[2] = next_lexeme;
-          lex_using[3] = new Lexeme(Lexeme::type_separator, Lexeme::subtype_string, ",");
-          lex_using[4] = new Lexeme(Lexeme::type_separator, Lexeme::subtype_string, ")");
+          lex_using[3] =
+              new Lexeme(Lexeme::type_separator, Lexeme::subtype_string, ",");
+          lex_using[4] =
+              new Lexeme(Lexeme::type_separator, Lexeme::subtype_string, ")");
 
           for (i = 0; i <= 3; i++) parm.addLexeme(lex_using[i]);
 
@@ -1079,7 +1115,7 @@ bool Parser::eval_cmd_color(LexerLine* statement) {
     } else if (next_lexeme->isKeyword("SPRITE$")) {
       return eval_cmd_color_sprite(statement);
     } else {
-      next_lexeme = statement->getPreviousLexeme();
+      statement->getPreviousLexeme();
       return eval_cmd_generic(statement);
     }
   } else {
@@ -1098,14 +1134,16 @@ bool Parser::eval_cmd_color_rgb(LexerLine* statement) {
     switch (state) {
       case 0: {
         if (next_lexeme->isSeparator("(")) {
-          lex_rgb = new Lexeme(Lexeme::type_keyword, Lexeme::subtype_any, "RGB");
+          lex_rgb =
+              new Lexeme(Lexeme::type_keyword, Lexeme::subtype_any, "RGB");
           pushActionFromLexeme(lex_rgb);
 
           state++;
           sepCount++;
           continue;
 
-        } else if (next_lexeme->isKeyword("NEW") || next_lexeme->isKeyword("RESTORE")) {
+        } else if (next_lexeme->isKeyword("NEW") ||
+                   next_lexeme->isKeyword("RESTORE")) {
           pushActionFromLexeme(next_lexeme);
           return true;
 
@@ -1280,18 +1318,22 @@ bool Parser::eval_cmd_def_usr(LexerLine* statement) {
   Lexeme *next_lexeme, *lex_zero;
   LexerLine parm;
   int state = 0;
+  bool lex_zero_used = false;
 
   has_defusr = true;
 
-  lex_zero = new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, "0");
-
   next_lexeme = statement->getCurrentLexeme();
-  if (!next_lexeme) return false;
+  if (!next_lexeme) {
+    return false;
+  }
+
+  lex_zero = new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, "0");
 
   if (next_lexeme->value == "USR0") {
     next_lexeme->name = "USR";
     next_lexeme->value = next_lexeme->name;
     pushActionFromLexeme(lex_zero);
+    lex_zero_used = true;
     state = 1;
   }
 
@@ -1307,8 +1349,10 @@ bool Parser::eval_cmd_def_usr(LexerLine* statement) {
         } else if (next_lexeme->isOperator("=")) {
           state = 2;
           pushActionFromLexeme(lex_zero);
+          lex_zero_used = true;
         } else {
           error_message = "Invalid DEF USR assignment";
+          if (!lex_zero_used) delete lex_zero;
           return false;
         }
       } break;
@@ -1318,6 +1362,7 @@ bool Parser::eval_cmd_def_usr(LexerLine* statement) {
           state = 2;
         } else {
           error_message = "DEF USR assignment is missing";
+          if (!lex_zero_used) delete lex_zero;
           return false;
         }
       } break;
@@ -1331,12 +1376,15 @@ bool Parser::eval_cmd_def_usr(LexerLine* statement) {
   if (parm.getLexemeCount()) {
     parm.setLexemeBOF();
     if (!eval_expression(&parm)) {
+      if (!lex_zero_used) delete lex_zero;
       return false;
     }
     parm.clearLexemes();
   }
 
   popActionRoot();
+
+  if (!lex_zero_used) delete lex_zero;
 
   return true;
 }
@@ -1450,7 +1498,8 @@ bool Parser::eval_cmd_put_sprite(LexerLine* statement) {
             popActionRoot();
             next_lexeme = statement->getNextLexeme();
             if (next_lexeme) {
-              if (next_lexeme->type != Lexeme::type_separator || next_lexeme->value != ",") {
+              if (next_lexeme->type != Lexeme::type_separator ||
+                  next_lexeme->value != ",") {
                 return false;
               }
             }
@@ -1592,7 +1641,8 @@ bool Parser::eval_cmd_put_tile(LexerLine* statement) {
             popActionRoot();
             next_lexeme = statement->getNextLexeme();
             if (next_lexeme) {
-              if (next_lexeme->type != Lexeme::type_separator || next_lexeme->value != ",") {
+              if (next_lexeme->type != Lexeme::type_separator ||
+                  next_lexeme->value != ",") {
                 return false;
               }
             }
@@ -1797,7 +1847,8 @@ bool Parser::eval_cmd_base(LexerLine* statement) {
       while( (next_lexeme = statement->getNextLexeme()) ) {
 
           if(state == 0) {
-              if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+              if(next_lexeme->type == Lexeme::type_separator &&
+     next_lexeme->value == "(") {
 
                   action = new ActionNode("SET_BASE");
                   pushActionRoot(action);
@@ -1810,13 +1861,12 @@ bool Parser::eval_cmd_base(LexerLine* statement) {
                   return false;
 
           } else if(state == 1) {
-              if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
-                  sepCount ++;
-              } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
-                  sepCount --;
+              if(next_lexeme->type == Lexeme::type_separator &&
+     next_lexeme->value == "(") { sepCount ++; } else if(next_lexeme->type ==
+     Lexeme::type_separator && next_lexeme->value == ")") { sepCount --;
               }
-              if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")" &&
-     sepCount == 0) {
+              if(next_lexeme->type == Lexeme::type_separator &&
+     next_lexeme->value == ")" && sepCount == 0) {
 
                   parm.setLexemeBOF();
                   if(!eval_expression(&parm)) {
@@ -1832,11 +1882,8 @@ bool Parser::eval_cmd_base(LexerLine* statement) {
 
 
           } else if(state == 2) {
-              if(next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "=") {
-                  state ++;
-                  continue;
-              } else
-                  return false;
+              if(next_lexeme->type == Lexeme::type_operator &&
+     next_lexeme->value == "=") { state ++; continue; } else return false;
 
           } else {
               parm.addLexeme(next_lexeme);
@@ -1871,7 +1918,8 @@ bool Parser::eval_cmd_vdp(LexerLine* statement) {
       while( (next_lexeme = statement->getNextLexeme()) ) {
 
           if(state == 0) {
-              if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
+              if(next_lexeme->type == Lexeme::type_separator &&
+     next_lexeme->value == "(") {
 
                   action = new ActionNode("SET_VDP");
                   pushActionRoot(action);
@@ -1884,13 +1932,12 @@ bool Parser::eval_cmd_vdp(LexerLine* statement) {
                   return false;
 
           } else if(state == 1) {
-              if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == "(") {
-                  sepCount ++;
-              } else if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")") {
-                  sepCount --;
+              if(next_lexeme->type == Lexeme::type_separator &&
+     next_lexeme->value == "(") { sepCount ++; } else if(next_lexeme->type ==
+     Lexeme::type_separator && next_lexeme->value == ")") { sepCount --;
               }
-              if(next_lexeme->type == Lexeme::type_separator && next_lexeme->value == ")" &&
-     sepCount == 0) {
+              if(next_lexeme->type == Lexeme::type_separator &&
+     next_lexeme->value == ")" && sepCount == 0) {
 
                   parm.setLexemeBOF();
                   if(!eval_expression(&parm)) {
@@ -1906,11 +1953,8 @@ bool Parser::eval_cmd_vdp(LexerLine* statement) {
 
 
           } else if(state == 2) {
-              if(next_lexeme->type == Lexeme::type_operator && next_lexeme->value == "=") {
-                  state ++;
-                  continue;
-              } else
-                  return false;
+              if(next_lexeme->type == Lexeme::type_operator &&
+     next_lexeme->value == "=") { state ++; continue; } else return false;
 
           } else {
               parm.addLexeme(next_lexeme);
@@ -2033,7 +2077,8 @@ bool Parser::eval_cmd_if(LexerLine* statement, int level) {
         if (testGotoGosub) {
           testGotoGosub = false;
           if (next_lexeme->isLiteralNumeric()) {
-            if (last_lexeme->isKeyword("THEN") || last_lexeme->isKeyword("ELSE")) {
+            if (last_lexeme->isKeyword("THEN") ||
+                last_lexeme->isKeyword("ELSE")) {
               action = new ActionNode("GOTO");
               pushActionRoot(action);
               pushActionFromLexeme(next_lexeme);
@@ -2323,7 +2368,8 @@ bool Parser::eval_cmd_open(LexerLine* statement) {
         } else if (s[0] == 'A' && s[1] == 'S' && s[2] == '#') {
           s += 3;
           stext = *s;
-          next_lexeme = new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, stext);
+          next_lexeme =
+              new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, stext);
           pushActionFromLexeme(next_lexeme);
           state = 5;
           continue;
@@ -2342,7 +2388,8 @@ bool Parser::eval_cmd_open(LexerLine* statement) {
           popActionRoot();
           continue;
         } else if (next_lexeme->type == Lexeme::type_keyword &&
-                   (next_lexeme->value == "PUT" || next_lexeme->value == "END")) {
+                   (next_lexeme->value == "PUT" ||
+                    next_lexeme->value == "END")) {
           continue;
         } else if (next_lexeme->value == "AS") {
           state = 4;
@@ -2350,7 +2397,8 @@ bool Parser::eval_cmd_open(LexerLine* statement) {
         } else if (s[0] == 'A' && s[1] == 'S' && s[2] == '#') {
           s += 3;
           stext = *s;
-          next_lexeme = new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, stext);
+          next_lexeme =
+              new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, stext);
           pushActionFromLexeme(next_lexeme);
           state = 5;
           continue;
@@ -2369,7 +2417,8 @@ bool Parser::eval_cmd_open(LexerLine* statement) {
         } else if (s[0] == 'A' && s[1] == 'S' && s[2] == '#') {
           s += 3;
           stext = *s;
-          next_lexeme = new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, stext);
+          next_lexeme =
+              new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, stext);
           pushActionFromLexeme(next_lexeme);
           state = 5;
           continue;
@@ -2580,7 +2629,8 @@ bool Parser::eval_cmd_pset(LexerLine* statement) {
     next_lexeme = parm.getFirstLexeme();
 
     if (parmCount > 3) {
-      if (next_lexeme->type == Lexeme::type_keyword || next_lexeme->type == Lexeme::type_operator) {
+      if (next_lexeme->type == Lexeme::type_keyword ||
+          next_lexeme->type == Lexeme::type_operator) {
         int operatorCode = gfxOperatorCode(next_lexeme);
 
         isKeyword = true;
@@ -2596,7 +2646,8 @@ bool Parser::eval_cmd_pset(LexerLine* statement) {
     }
 
     if (isKeyword) {
-      next_lexeme = new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, parmValue);
+      next_lexeme =
+          new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, parmValue);
       pushActionFromLexeme(next_lexeme);
     } else {
       parm.setLexemeBOF();
@@ -2646,7 +2697,8 @@ bool Parser::eval_cmd_line(LexerLine* statement) {
             state = 3;
           else
             state++;
-          if (actionRoot->lexeme->value != "STEP" && actionRoot->lexeme->value != "TO_STEP") {
+          if (actionRoot->lexeme->value != "STEP" &&
+              actionRoot->lexeme->value != "TO_STEP") {
             action = new ActionNode("COORD");
             if (startAsParm2) action->lexeme->name = "TO_COORD";
             action->lexeme->value = action->lexeme->name;
@@ -2760,7 +2812,8 @@ bool Parser::eval_cmd_line(LexerLine* statement) {
             }
 
             if (isKeyword) {
-              next_lexeme = new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, parmValue);
+              next_lexeme = new Lexeme(Lexeme::type_literal,
+                                       Lexeme::subtype_numeric, parmValue);
               pushActionFromLexeme(next_lexeme);
             } else {
               parm.setLexemeBOF();
@@ -2809,8 +2862,8 @@ bool Parser::eval_cmd_line(LexerLine* statement) {
           isKeyword = true;
         }
       } else if (next_lexeme->type == Lexeme::type_keyword ||
-                 (next_lexeme->type == Lexeme::type_operator && next_lexeme->value != "+" &&
-                  next_lexeme->value != "-")) {
+                 (next_lexeme->type == Lexeme::type_operator &&
+                  next_lexeme->value != "+" && next_lexeme->value != "-")) {
         int operatorCode = gfxOperatorCode(next_lexeme);
 
         isKeyword = true;
@@ -2826,7 +2879,8 @@ bool Parser::eval_cmd_line(LexerLine* statement) {
     }
 
     if (isKeyword) {
-      next_lexeme = new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, parmValue);
+      next_lexeme =
+          new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, parmValue);
       pushActionFromLexeme(next_lexeme);
     } else {
       parm.setLexemeBOF();
@@ -3305,7 +3359,8 @@ bool Parser::eval_cmd_copy(LexerLine* statement) {
     }
 
     if (isKeyword) {
-      next_lexeme = new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, parmValue);
+      next_lexeme =
+          new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, parmValue);
       pushActionFromLexeme(next_lexeme);
     } else {
       parm.setLexemeBOF();
@@ -3326,7 +3381,7 @@ bool Parser::eval_cmd_set(LexerLine* statement) {
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = coalesceSymbols(next_lexeme);
+    coalesceSymbols(next_lexeme);
 
     next_lexeme = statement->getCurrentLexeme();
     action = new ActionNode(next_lexeme);
@@ -3413,7 +3468,7 @@ bool Parser::eval_cmd_set_adjust(LexerLine* statement) {
   }
 
   if (parm.getLexemeCount()) {
-    next_lexeme = parm.getFirstLexeme();
+    parm.getFirstLexeme();
 
     parm.setLexemeBOF();
     if (!eval_expression(&parm)) {
@@ -3432,7 +3487,7 @@ bool Parser::eval_cmd_set_tile(LexerLine* statement) {
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = coalesceSymbols(next_lexeme);
+    coalesceSymbols(next_lexeme);
 
     next_lexeme = statement->getCurrentLexeme();
     action = new ActionNode(next_lexeme);
@@ -3550,7 +3605,7 @@ bool Parser::eval_cmd_set_sprite(LexerLine* statement) {
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = coalesceSymbols(next_lexeme);
+    coalesceSymbols(next_lexeme);
 
     next_lexeme = statement->getCurrentLexeme();
     action = new ActionNode(next_lexeme);
@@ -3666,7 +3721,7 @@ bool Parser::eval_cmd_get(LexerLine* statement) {
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = coalesceSymbols(next_lexeme);
+    coalesceSymbols(next_lexeme);
 
     next_lexeme = statement->getCurrentLexeme();
     action = new ActionNode(next_lexeme);
@@ -3704,7 +3759,7 @@ bool Parser::eval_cmd_screen(LexerLine* statement) {
       }
     }
 
-    next_lexeme = statement->getPreviousLexeme();
+    statement->getPreviousLexeme();
 
     return eval_cmd_generic(statement);
   }
@@ -4316,12 +4371,14 @@ bool Parser::eval_cmd_cmd(LexerLine* statement) {
   action = new ActionNode(lexeme);
   pushActionRoot(action);
 
-  if (lexeme->value == "WRTFNT" || lexeme->value == "SETFNT" || lexeme->value == "WRTCHR")
+  if (lexeme->value == "WRTFNT" || lexeme->value == "SETFNT" ||
+      lexeme->value == "WRTCHR")
     has_font = true;
 
   if (lexeme->value == "PT3LOAD" || lexeme->value == "PT3PLAY") has_pt3 = true;
 
-  if (lexeme->value == "PLYLOAD" || lexeme->value == "PLYPLAY" || lexeme->value == "PLYSONG")
+  if (lexeme->value == "PLYLOAD" || lexeme->value == "PLYPLAY" ||
+      lexeme->value == "PLYSONG")
     has_akm = true;
 
   if (lexeme->value == "RESTORE") has_resource_restore = true;
@@ -4391,20 +4448,26 @@ bool Parser::loadInclude(Lexeme* lexeme) {
    */
 
   if ((file = fopen(filename, "r"))) {
+    bool result = true;
+
     lexerLine = new LexerLine();
 
     while (fgets(line, len, file)) {
       lexerLine->line = line;
       if (lexerLine->evaluate())
         eval_line(lexerLine);
-      else
-        return false;
+      else {
+        result = false;
+        break;
+      }
     }
 
+    delete lexerLine;
     fclose(file);
 
-    return true;
+    return result;
   }
+
   return false;
 }
 

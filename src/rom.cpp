@@ -366,7 +366,7 @@ void Rom::buildResources(vector<Lexeme *> *resourceList) {
 
     } else if (lexeme->name == "FILE") {
       // strips quotes from file name
-      file.stripQuotes(lexeme->value, filename);
+      file.stripQuotes(lexeme->value, filename, sizeof(filename));
 
       size_read = file.readFromFile(filename, &data[filInd], 0x4000);
       if (size_read > 0) {
@@ -732,9 +732,9 @@ void Rom::buildMapAndResourcesFile(Lexeme *lexeme) {
   char filename[255], fileext[20];
 
   // strips quotes from file name
-  file.stripQuotes(lexeme->value, filename);
+  file.stripQuotes(lexeme->value, filename, sizeof(filename));
 
-  file.getFileExt(filename, fileext);
+  file.getFileExt(filename, sizeof(filename), fileext, sizeof(fileext));
 
   // text data resource file
   if (strcasecmp(fileext, ".TXT") == 0) {

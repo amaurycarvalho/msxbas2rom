@@ -1,9 +1,9 @@
 Checks: >
-  clang-analyzer-*, 
-  bugprone-*,
-  google-*,
-  modernize-*,
-  performance-*,
+  clang-analyzer-*,     # static analysis engine
+  bugprone-*,           # static analysis engine
+  google-*,             # google clang checks
+  modernize-*,          # safer, modern constructs
+  performance-*,        # can catch inefficient or risky code
   portability-*,
   readability-*,
   -modernize-use-trailing-return-type,

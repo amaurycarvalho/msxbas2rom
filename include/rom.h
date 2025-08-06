@@ -94,10 +94,35 @@ class Rom {
   Rom();
   ~Rom();
 
+  /***
+   * @brief Creates a MSX BASIC ROM based on a pcoded source code
+   * @param tokenizer Tokenized source code
+   * @param filename Destination file name
+   * @return True, if success
+   */
   bool build(Tokenizer *tokenizer, char *filename);
+
+  /***
+   * @brief Creates a MSX BASIC ROM based on a compiled source code
+   * @param compiler Compiled source code
+   * @param filename Destination file name
+   * @return True, if success
+   */
   bool build(Compiler *compiler, char *filename);
+
+  /***
+   * @brief Creates a MSX BASIC ROM based on a compiled source code usind PT3
+   * player
+   * @param compiler Compiled PT3 source code
+   * @param filename Destination file name
+   * @return True, if success
+   * @deprecated PT3 is not supported anymore
+   */
   bool build(CompilerPT3 *compiler, char *filename);
 
+  /***
+   * @brief Print to the terminal the invalid source code
+   */
   void error();
 };
 
