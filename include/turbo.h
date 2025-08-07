@@ -5,6 +5,8 @@
  * @note
  *   Adapted from XBASIC
  *     https://www.msx.org/wiki/X-BASIC
+ *   Basic Kun Math Pack:
+ *     https://www.msx.org/wiki/Category:X-BASIC#Floating_points
  *   Header generated with xxd tool:
  *     xxd -i xbasic.bin *
  */

@@ -9,6 +9,8 @@
  *   Z80 Opcodes:
  *     http://z80-heaven.wikidot.com/instructions-set
  *     https://clrhome.org/table/
+ *   Basic Kun Math Pack:
+ *     https://www.msx.org/wiki/Category:X-BASIC#Floating_points
  */
 
 #ifndef COMPILER_H
@@ -183,9 +185,44 @@ class Compiler : public IZ80 {
   int save_symbols();
   void do_fix();
 
+  /***
+   * @brief Convert a double to MSX float point math pack library format
+   * @param value Value to convert
+   * @param words 32 bits destination buffer
+   * @note
+   * [Basic Kun Math
+   * Pack](https://www.msx.org/wiki/Category:X-BASIC#Floating_points)
+   */
   void double2FloatLib(double value, int* words);
+
+  /***
+   * @brief Convert a float to MSX float point math pack library format
+   * @param value Value to convert
+   * @param words 16 bits destination buffer
+   * @note
+   * [Basic Kun Math
+   * Pack](https://www.msx.org/wiki/Category:X-BASIC#Floating_points)
+   */
   void float2FloatLib(float value, int* words);
+
+  /***
+   * @brief Convert a string to MSX float point math pack library format
+   * @param value String to convert
+   * @return 16 bits float value
+   * @note
+   * [Basic Kun Math
+   * Pack](https://www.msx.org/wiki/Category:X-BASIC#Floating_points)
+   */
   int str2FloatLib(string value);
+
+  /***
+   * @brief Convert a string to MSX PRINT USING format flags
+   * @param value String to convert
+   * @return 16 bits flags value
+   * @example flags = getUsingFormat("###,##0.00");
+   * @note
+   * [PRINT USING](https://www.msx.org/wiki/PRINT#Parameters)
+   */
   int getUsingFormat(string text);
 
   void cmd_start();

@@ -9,6 +9,8 @@
  *   Z80 Opcodes:
  *     http://z80-heaven.wikidot.com/instructions-set
  *     https://clrhome.org/table/
+ *   Basic Kun Math Pack:
+ *     https://www.msx.org/wiki/Category:X-BASIC#Floating_points
  */
 
 #include "compiler.h"

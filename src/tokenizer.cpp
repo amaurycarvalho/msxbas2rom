@@ -35,7 +35,7 @@ bool Tokenizer::evalLine(LexerLine *lexerLine) {
   Lexeme *lexeme = lexerLine->getFirstLexeme();
   TokenLine *tokenLine;
   unsigned char *s;
-  int length;
+  int length, maxlen;
 
   error_line = lexerLine;
   remark = false;
@@ -71,6 +71,7 @@ bool Tokenizer::evalLine(LexerLine *lexerLine) {
 
       tokenLine->length = 0;
       s = tokenLine->data;
+      maxlen = sizeof(tokenLine->data);
       s[0] = 0;
 
       while ((lexeme = lexerLine->getNextLexeme())) {
@@ -78,7 +79,7 @@ bool Tokenizer::evalLine(LexerLine *lexerLine) {
           skip_next_bracket = false;
           continue;
         }
-        length = writeToken(lexeme, s);
+        length = writeToken(lexeme, s, maxlen);
         if (length < 0) {
           continue;
         } else if (length == 0) {
@@ -87,6 +88,7 @@ bool Tokenizer::evalLine(LexerLine *lexerLine) {
         }
         if (goto_gosub) tokenLine->goto_gosub = true;
         s += length;
+        maxlen -= length;
         tokenLine->length += length;
         s[0] = 0;
         if (tokenLine->length >= 254) {
@@ -206,7 +208,7 @@ bool Tokenizer::loadInclude(Lexeme *lexeme) {
   return false;
 }
 
-int Tokenizer::writeToken(Lexeme *lexeme, unsigned char *s) {
+int Tokenizer::writeToken(Lexeme *lexeme, unsigned char *s, int maxlen) {
   int result, i;
 
   if (lexeme->type == Lexeme::type_separator && lexeme->value == ":") {
@@ -218,7 +220,7 @@ int Tokenizer::writeToken(Lexeme *lexeme, unsigned char *s) {
       call_cmd = false;
       call_cmd_parm = false;
     } else
-      return writeTokenText(lexeme, s);
+      return writeTokenText(lexeme, s, maxlen);
   }
 
   if (cmd_cmd) {
@@ -247,7 +249,7 @@ int Tokenizer::writeToken(Lexeme *lexeme, unsigned char *s) {
           result =
               sprintf((char *)s, ",%i,%i,%i", '#', i & 0xFF, i >> 8 & 0xFF);
         } else if (lexeme->type == Lexeme::type_keyword) {
-          writeTokenKeyword(lexeme, s);
+          writeTokenKeyword(lexeme, s, maxlen);
           i = s[0];
           result = sprintf((char *)s, ",%i", i);
         } else {
@@ -259,23 +261,23 @@ int Tokenizer::writeToken(Lexeme *lexeme, unsigned char *s) {
   }
 
   if (data) {
-    result = writeTokenText(lexeme, s);
+    result = writeTokenText(lexeme, s, maxlen);
   } else {
     if (lexeme->type == Lexeme::type_keyword)
-      result = writeTokenKeyword(lexeme, s);
+      result = writeTokenKeyword(lexeme, s, maxlen);
     else if (lexeme->type == Lexeme::type_literal)
-      result = writeTokenLiteral(lexeme, s);
+      result = writeTokenLiteral(lexeme, s, maxlen);
     else if (lexeme->type == Lexeme::type_operator)
-      result = writeTokenOperator(lexeme, s);
+      result = writeTokenOperator(lexeme, s, maxlen);
     else {
-      result = writeTokenText(lexeme, s);
+      result = writeTokenText(lexeme, s, maxlen);
     }
   }
 
   return result;
 }
 
-int Tokenizer::writeTokenKeyword(Lexeme *lexeme, unsigned char *s) {
+int Tokenizer::writeTokenKeyword(Lexeme *lexeme, unsigned char *s, int maxlen) {
   int result = 0, i;
   char *ss;
   string value;
@@ -333,7 +335,7 @@ int Tokenizer::writeTokenKeyword(Lexeme *lexeme, unsigned char *s) {
         turbo_mode = true;
         turbo_on = !turbo_on;
       }
-      result = writeTokenText(lexeme, s);
+      result = writeTokenText(lexeme, s, maxlen);
       if (!call_cmd_parm) {
         s[result] = 32;
         s[result + 1] = 0;
@@ -475,14 +477,14 @@ int Tokenizer::writeTokenKeyword(Lexeme *lexeme, unsigned char *s) {
   return result;
 }
 
-int Tokenizer::writeTokenLiteral(Lexeme *lexeme, unsigned char *s) {
+int Tokenizer::writeTokenLiteral(Lexeme *lexeme, unsigned char *s, int maxlen) {
   int result = 0, ivalue;
   double dvalue;
   int words[4];
   char *ss;
 
   if (data) {
-    result = writeTokenText(lexeme, s);
+    result = writeTokenText(lexeme, s, maxlen);
   } else if (lexeme->subtype == Lexeme::subtype_single_decimal) {
     try {
       dvalue = stod(lexeme->value);
@@ -522,7 +524,7 @@ int Tokenizer::writeTokenLiteral(Lexeme *lexeme, unsigned char *s) {
     if (ss[0] == '&') {
       if (ss[1] == 'B' || ss[1] == 'b') {
         ss[1] = 'B';  // force uppercase
-        result = writeTokenText(lexeme, s);
+        result = writeTokenText(lexeme, s, maxlen);
       } else if (ss[1] == 'O' || ss[1] == 'o') {
         try {
           ivalue = stoi(&ss[2], 0, 8);
@@ -578,15 +580,16 @@ int Tokenizer::writeTokenLiteral(Lexeme *lexeme, unsigned char *s) {
       }
     }
   } else {
-    result = writeTokenText(lexeme, s);
+    result = writeTokenText(lexeme, s, maxlen);
   }
   return result;
 }
 
-int Tokenizer::writeTokenOperator(Lexeme *lexeme, unsigned char *s) {
+int Tokenizer::writeTokenOperator(Lexeme *lexeme, unsigned char *s,
+                                  int maxlen) {
   int result = 0;
   if (lexeme->subtype == Lexeme::subtype_boolean_operator) {
-    result = writeTokenKeyword(lexeme, s);
+    result = writeTokenKeyword(lexeme, s, maxlen);
   } else if (lexeme->value == "'") {
     s[0] = ':';
     s[1] = 0x8F;  // rem
@@ -621,13 +624,13 @@ int Tokenizer::writeTokenOperator(Lexeme *lexeme, unsigned char *s) {
     s[0] = 0xFC;
     result = 1;
   } else {
-    result = writeTokenText(lexeme, s);
+    result = writeTokenText(lexeme, s, maxlen);
   }
   return result;
 }
 
-int Tokenizer::writeTokenText(Lexeme *lexeme, unsigned char *s) {
-  strlcpy((char *)s, lexeme->value.c_str(), 255);
+int Tokenizer::writeTokenText(Lexeme *lexeme, unsigned char *s, int maxlen) {
+  strlcpy((char *)s, lexeme->value.c_str(), maxlen);
   return lexeme->value.size();
 }
 

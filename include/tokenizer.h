@@ -4,6 +4,8 @@
  * @author Amaury Carvalho (2019-2025)
  * @note
  *   https://www.msx.org/wiki/Internal_Structure_Of_BASIC_listing
+ *   https://en.wikipedia.org/wiki/Binary-coded_decimal
+ *   https://www.msx.org/wiki/BASIC_Routines_In_Main-ROM#Math-pack_routines
  */
 
 #ifndef TOKENIZER_H_INCLUDED
@@ -47,15 +49,85 @@ class Tokenizer {
    * @return True, if a valid line
    */
   bool evalLine(LexerLine *lexerLine);
-  int writeToken(Lexeme *lexeme, unsigned char *s);
-  int writeTokenKeyword(Lexeme *lexeme, unsigned char *s);
-  int writeTokenLiteral(Lexeme *lexeme, unsigned char *s);
-  int writeTokenOperator(Lexeme *lexeme, unsigned char *s);
-  int writeTokenText(Lexeme *lexeme, unsigned char *s);
+
+  /***
+   * @brief Write a token pcode
+   * @param lexeme Lexeme source
+   * @param s Destination buffer
+   * @param maxlen Buffer maximum length
+   * @return pcodes count written
+   */
+  int writeToken(Lexeme *lexeme, unsigned char *s, int maxlen);
+
+  /***
+   * @brief Write a keyword token
+   * @param lexeme Lexeme source
+   * @param s Destination buffer
+   * @param maxlen Buffer maximum length
+   * @return pcodes count written
+   */
+  int writeTokenKeyword(Lexeme *lexeme, unsigned char *s, int maxlen);
+
+  /***
+   * @brief Write a literal token
+   * @param lexeme Lexeme object
+   * @param s Buffer string
+   * @param maxlen Buffer maximum length
+   * @return pcodes count written
+   */
+  int writeTokenLiteral(Lexeme *lexeme, unsigned char *s, int maxlen);
+
+  /***
+   * @brief Write an operator token
+   * @param lexeme Lexeme source
+   * @param s Destination buffer
+   * @param maxlen Buffer maximum length
+   * @return pcodes count written
+   */
+  int writeTokenOperator(Lexeme *lexeme, unsigned char *s, int maxlen);
+
+  /***
+   * @brief Write a string token
+   * @param lexeme Lexeme source
+   * @param s Destination buffer
+   * @param maxlen Buffer maximum length
+   * @return pcodes count written
+   */
+  int writeTokenText(Lexeme *lexeme, unsigned char *s, int maxlen);
+
+  /***
+   * @brief Load an additional source code
+   * @param lexeme Lexeme source
+   * @return True if success
+   */
   bool loadInclude(Lexeme *lexeme);
 
+  /***
+   * @brief Convert a double to BCD format
+   * @param value Value to convert
+   * @param words 32 bits destination buffer
+   * @note
+   * [MSX BASIC math
+   * pack](https://www.msx.org/wiki/BASIC_Routines_In_Main-ROM#Math-pack_routines)
+   */
   void double2BCD(double value, int *words);
+
+  /***
+   * @brief Convert a float to BCD format
+   * @param value Value to convert
+   * @param words 16 bits destination buffer
+   * @note
+   * [MSX BASIC math
+   * pack](https://www.msx.org/wiki/BASIC_Routines_In_Main-ROM#Math-pack_routines)
+   */
   void float2BCD(float value, int *words);
+
+  /***
+   * @brief Get the logarithm base 10 from a value
+   * @param x Value to compute
+   * @return Log10 value computed
+   * @note [Common logarithm](https://en.wikipedia.org/wiki/Common_logarithm)
+   */
   double log10(double x);
 
   LexerLine *error_line;
