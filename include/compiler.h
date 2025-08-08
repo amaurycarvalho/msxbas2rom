@@ -225,6 +225,12 @@ class Compiler : public IZ80 {
    */
   int getUsingFormat(string text);
 
+  /***
+   * @defgroup StatementsCompilingGroup
+   * @brief Statements compiling group
+   * @{
+   */
+
   void cmd_start();
   void cmd_end(bool last);
   void cmd_cls();
@@ -316,6 +322,11 @@ class Compiler : public IZ80 {
   void cmd_close();
   void cmd_def();
   void cmd_bload();
+
+  /***
+   * @remark End of StatementsCompilingGroup
+   * @}
+   */
 
   bool addCheckTraps();
   void addEnableBasicSlot();

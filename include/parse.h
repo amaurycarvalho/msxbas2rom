@@ -91,6 +91,12 @@ class Parser {
   bool eval_expression_push(LexerLine* parm);
   void eval_expression_pop(int n);
 
+  /***
+   * @defgroup StatementsParsingGroup
+   * @brief Statements parsing group
+   * @{
+   */
+
   bool eval_cmd_generic(LexerLine* statement);
   bool eval_cmd_let(LexerLine* statement);
   bool eval_cmd_dim(LexerLine* statement);
@@ -150,6 +156,11 @@ class Parser {
   bool eval_cmd_open(LexerLine* statement);
   bool eval_cmd_close(LexerLine* statement);
   bool eval_cmd_maxfiles(LexerLine* statement);
+
+  /***
+   * @remark End of StatementsParsingGroup
+   * @}
+   */
 
   bool loadInclude(Lexeme* lexeme);
   int gfxOperatorCode(Lexeme* lexeme);

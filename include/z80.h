@@ -39,6 +39,12 @@ class IZ80 {
   void popLastCode();
 
   /***
+   * @defgroup IntructionsOpcodeGroup
+   * @brief Z80 instructions to opcode group
+   * @{
+   */
+
+  /***
    * @brief NOP does nothing for 4 clock cycles.
    * @note [nop](http://z80-heaven.wikidot.com/instructions-set:nop)
    * @result opcode size: 1 byte; clock cycles: 4 t-states
@@ -1080,6 +1086,11 @@ class IZ80 {
    * @result opcode size: 3 bytes; clock cycles: 17 t-states
    */
   void addCall(unsigned int word);
+
+  /***
+   * @remark End of IntructionsOpcodeGroup
+   * @}
+   */
 
  public:
   IZ80();
