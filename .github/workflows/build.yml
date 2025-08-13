@@ -23,7 +23,7 @@ jobs:
       - name: Uploading artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: msxtileforge-linux-x64-bin
+          name: msxbas2rom-linux-x64-bin
           path: dist/*
 
   build-mac-x86_64:

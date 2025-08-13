@@ -30,7 +30,7 @@ jobs:
           mkdir -p dist
       - name: Packing Linux .DEB package artifact
         run: |
-          cp msxbas2rom-linux-x64-bin/*.deb dist
+          mv msxbas2rom-linux-x64-bin/*.deb dist
       - name: Preparing Linux .RPM package folder
         run: |
           mkdir -p .rpmpkg/usr/bin
