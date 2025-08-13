@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+#include "oswrapper.h"
+
 using namespace std;
 
 /***

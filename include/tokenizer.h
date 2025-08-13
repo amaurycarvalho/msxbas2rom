@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "lex.h"
+#include "oswrapper.h"
 
 using namespace std;
 

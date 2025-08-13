@@ -21,6 +21,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 #include "lex.h"
+#include "oswrapper.h"
 #include "tokenizer.h"
 
 #define ROM_DATA_SIZE COMPILE_CODE_SIZE
