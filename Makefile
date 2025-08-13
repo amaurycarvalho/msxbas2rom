@@ -82,8 +82,8 @@ clean: clean_debug clean_release
 
 before_debug: 
 	@echo "📦 Building debug artifacts..."
-	@test -d bin/Debug || mkdir -p bin/Debug
-	@test -d $(OBJDIR_DEBUG) || mkdir -p $(OBJDIR_DEBUG)
+	@mkdir -p bin/Debug
+	@mkdir -p $(OBJDIR_DEBUG)
 
 after_debug: 
 	@echo "✅ Building debug finished"
@@ -122,9 +122,8 @@ $(OBJDIR_DEBUG)/pletter.o: $(SRC)/pletter.cpp $(INC_DEBUG)/pletter.h
 
 clean_debug: 
 	@echo "🧹 Cleaning debug artifacts..."
-	@rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
-	@rm -rf bin/Debug
-	@rm -rf $(OBJDIR_DEBUG)
+	@rm -rf bin/Debug/*
+	@rm -rf $(OBJDIR_DEBUG)/*
 
 # ----------------------------
 # Release build
@@ -132,8 +131,8 @@ clean_debug:
 
 before_release: 
 	@echo "📦 Building release artifacts..."
-	@test -d bin/Release || mkdir -p bin/Release
-	@test -d $(OBJDIR_RELEASE) || mkdir -p $(OBJDIR_RELEASE)
+	@mkdir -p bin/Release
+	@mkdir -p $(OBJDIR_RELEASE)
 
 after_release: 
 	@echo "✅ Building release finished"
@@ -172,9 +171,8 @@ $(OBJDIR_RELEASE)/pletter.o: $(SRC)/pletter.cpp $(INC_RELEASE)/pletter.h
 
 clean_release: 
 	@echo "🧹 Cleaning release artifacts..."
-	@rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
-	@rm -rf bin/Release
-	@rm -rf $(OBJDIR_RELEASE)
+	@rm -rf bin/Release/*
+	@rm -rf $(OBJDIR_RELEASE)/*
 
 # ----------------------------
 # Debian package build
