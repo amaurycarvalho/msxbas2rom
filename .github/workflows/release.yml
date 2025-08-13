@@ -30,12 +30,12 @@ jobs:
           mkdir -p dist
       - name: Packing Linux .DEB package artifact
         run: |
-          mv msxbas2rom-linux-x64-bin/*.deb dist
+          cp msxbas2rom-linux-x64-bin/*.deb dist
       - name: Preparing Linux .RPM package folder
         run: |
           mkdir -p .rpmpkg/usr/bin
+          chmod +x msxbas2rom-linux-x64-bin/msxbas2rom
           cp msxbas2rom-linux-x64-bin/msxbas2rom .rpmpkg/usr/bin
-          chmod +x .rpmpkg/usr/bin/msxbas2rom
       - name: Building .RPM package artifact
         id: pack_rpm
         uses: jiro4989/build-rpm-action@v2
@@ -52,10 +52,9 @@ jobs:
           mv *.rpm dist
       - name: Packing Linux binary artifact (x64) - tar.gz
         run: |
-          chmod +x msxbas2rom-linux-x64-bin/msxbas2rom
           tar cvzf \
             dist/msxbas2rom-${{ steps.get_version.outputs.version }}-linux-x64-bin.tar.gz \
-            msxbas2rom-linux-x64-bin/*
+            msxbas2rom-linux-x64-bin/msxbas2rom
       - name: Packing MacOS binary artifact (x86_64)
         run: |
           sudo apt-get install genisoimage
