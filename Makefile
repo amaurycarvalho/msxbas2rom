@@ -3,6 +3,10 @@
 # by Amaury Carvalho (2022-2025)                                               #
 #------------------------------------------------------------------------------#
 
+# ----------------------------
+# Variables
+# ----------------------------
+
 WORKDIR = `pwd`
 
 CC = gcc
@@ -61,19 +65,32 @@ OBJ_DEBUG = $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/lex.o $(OBJDIR_DEBUG)/tokeniz
 
 OBJ_RELEASE = $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/lex.o $(OBJDIR_RELEASE)/tokenizer.o $(OBJDIR_RELEASE)/rom.o $(OBJDIR_RELEASE)/z80.o $(OBJDIR_RELEASE)/compiler.o $(OBJDIR_RELEASE)/compiler_pt3.o $(OBJDIR_RELEASE)/parse.o $(OBJDIR_RELEASE)/pletter.o  
 
-all: debug release
+DEB_DIR = dist
+DEB_PACKAGE = msxbas2rom_*.deb
+
+# ----------------------------
+# Main build
+# ----------------------------
+
+all: clean debug release
 
 clean: clean_debug clean_release
 
+# ----------------------------
+# Debug build
+# ----------------------------
+
 before_debug: 
-	test -d bin/Debug || mkdir -p bin/Debug
-	test -d $(OBJDIR_DEBUG) || mkdir -p $(OBJDIR_DEBUG)
+	@echo "📦 Building debug artifacts..."
+	@test -d bin/Debug || mkdir -p bin/Debug
+	@test -d $(OBJDIR_DEBUG) || mkdir -p $(OBJDIR_DEBUG)
 
 after_debug: 
+	@echo "✅ Building debug finished"
 
 debug: before_debug out_debug after_debug
 
-out_debug: before_debug $(OBJ_DEBUG) $(DEP_DEBUG)
+out_debug: $(OBJ_DEBUG) $(DEP_DEBUG)
 	$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG)
 
 $(OBJDIR_DEBUG)/main.o: $(SRC)/main.cpp $(INC_DEBUG)/main.h
@@ -104,19 +121,26 @@ $(OBJDIR_DEBUG)/pletter.o: $(SRC)/pletter.cpp $(INC_DEBUG)/pletter.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/pletter.cpp -o $(OBJDIR_DEBUG)/pletter.o 
 
 clean_debug: 
-	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
-	rm -rf bin/Debug
-	rm -rf $(OBJDIR_DEBUG)
+	@echo "🧹 Cleaning debug artifacts..."
+	@rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
+	@rm -rf bin/Debug
+	@rm -rf $(OBJDIR_DEBUG)
+
+# ----------------------------
+# Release build
+# ----------------------------
 
 before_release: 
-	test -d bin/Release || mkdir -p bin/Release
-	test -d $(OBJDIR_RELEASE) || mkdir -p $(OBJDIR_RELEASE)
+	@echo "📦 Building release artifacts..."
+	@test -d bin/Release || mkdir -p bin/Release
+	@test -d $(OBJDIR_RELEASE) || mkdir -p $(OBJDIR_RELEASE)
 
 after_release: 
+	@echo "✅ Building release finished"
 
 release: before_release out_release after_release
 
-out_release: before_release $(OBJ_RELEASE) $(DEP_RELEASE)
+out_release: $(OBJ_RELEASE) $(DEP_RELEASE)
 	$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE)
 
 $(OBJDIR_RELEASE)/main.o: $(SRC)/main.cpp $(INC_RELEASE)/main.h
@@ -147,9 +171,24 @@ $(OBJDIR_RELEASE)/pletter.o: $(SRC)/pletter.cpp $(INC_RELEASE)/pletter.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/pletter.cpp -o $(OBJDIR_RELEASE)/pletter.o 
 
 clean_release: 
-	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
-	rm -rf bin/Release
-	rm -rf $(OBJDIR_RELEASE)
+	@echo "🧹 Cleaning release artifacts..."
+	@rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
+	@rm -rf bin/Release
+	@rm -rf $(OBJDIR_RELEASE)
 
-.PHONY: before_debug after_debug clean_debug before_release after_release clean_release
+# ----------------------------
+# Debian package build
+# ----------------------------
+
+debian:
+	@echo "🧹 Cleaning debian artifacts..."
+	@mkdir -p $(DEB_DIR)
+	@rm -f $(DEB_DIR)/*.deb
+	@echo "📦 Building Debian package..."
+	@debuild -us -uc -b -tc
+	@mv ../$(DEB_PACKAGE) $(DEB_DIR)/
+	@rm -f ../*.changes ../*.build ../*.buildinfo
+	@echo "✅ Debian package saved to $(DEB_DIR)/$(DEB_PACKAGE)"
+
+.PHONY: all clean debug release debian before_debug after_debug clean_debug before_release after_release clean_release
 

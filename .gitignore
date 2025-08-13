@@ -33,3 +33,7 @@
 
 # Backups
 *.bak
+
+# Deploys
+dist/
+

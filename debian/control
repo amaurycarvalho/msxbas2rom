@@ -2,8 +2,9 @@ Source: msxbas2rom
 Maintainer: Amaury Carvalho <amauryspires@gmail.com>
 Section: utils
 Priority: optional
-Standards-Version: 3.9.3
-Build-Depends: debhelper (>= 8)
+Standards-Version: 4.6.2
+Build-Depends: debhelper-compat (= 13)
+Homepage: https://github.com/amaurycarvalho/msxbas2rom
 
 Package: msxbas2rom
 Architecture: any

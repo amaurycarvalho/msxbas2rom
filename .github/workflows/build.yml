@@ -1,0 +1,86 @@
+name: Build
+
+on:
+  workflow_call:
+
+jobs:
+  build-linux-x64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y devscripts build-essential debhelper-compat=13
+      - name: Build all artifacts
+        run: |
+          make clean release debian
+      - name: Prepare artifacts
+        run: |
+          mkdir -p dist          
+          mv bin/Release/msxbas2rom dist
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: msxtileforge-linux-x64-bin
+          path: dist/*
+
+  build-mac-x86_64:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          brew install argp-standalone
+      - name: Build all artifacts
+        run: |
+          make clean release
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: msxbas2rom-mac-x86_64-bin
+          path: bin/Release/msxbas2rom*
+
+  build-windows-x32:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up MinGW (32 bits)
+        uses: egor-tensin/setup-mingw@v2.2.0
+        with:
+          platform: x86
+          version: 12.2.0.3042023
+      - name: Refresh environment
+        run: |
+          refreshenv
+          choco install make
+      - name: Build all artifacts (32 bits)
+        run: |
+          make PARMS=-m32 clean release
+      - name: Upload artifact (32bits)
+        uses: actions/upload-artifact@v4
+        with:
+          name: msxbas2rom-windows-x32-bin
+          path: bin/Release/msxbas2rom.exe
+
+  build-windows-x64:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up MinGW (64 bits)
+        uses: egor-tensin/setup-mingw@v2.2.0
+        with:
+          platform: x64
+          version: 12.2.0.3042023
+      - name: Build all artifacts (32 bits)
+        run: |
+          make PARMS=-m64 clean release
+      - name: Upload artifact (64bits)
+        uses: actions/upload-artifact@v4
+        with:
+          name: msxbas2rom-windows-x64-bin
+          path: bin/Release/msxbas2rom.exe

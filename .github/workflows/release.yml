@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  workflow_call:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Ensure tags are available
+      - name: Determine release version
+        id: get_version
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+            PRERELEASE=false
+          else
+            VERSION="dev-$(date +%Y%m%d%H%M)-unstable"
+            PRERELEASE=true
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "prerelease=$PRERELEASE" >> $GITHUB_OUTPUT
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+      - name: Preparing distribution folder
+        run: |
+          mkdir -p dist
+      - name: Packing Linux .DEB package artifact
+        run: |
+          mv msxbas2rom-linux-x64-bin/*.deb dist
+      - name: Preparing Linux .RPM package folder
+        run: |
+          mkdir -p .rpmpkg/usr/bin
+          cp msxbas2rom-linux-x64-bin/msxbas2rom .rpmpkg/usr/bin
+          chmod +x .rpmpkg/usr/bin/msxbas2rom
+      - name: Building .RPM package artifact
+        id: pack_rpm
+        uses: jiro4989/build-rpm-action@v2
+        with:
+          summary: "msxbas2rom package"
+          package: msxbas2rom
+          package_root: .rpmpkg
+          maintainer: amauryspires@gmail.com
+          version: ${{ steps.get_version.outputs.version }}
+          arch: "x86_64"
+          desc: "msxbas2rom package"
+      - name: Packing .RPM package artifact
+        run: |
+          mv *.rpm dist
+      - name: Packing Linux binary artifact (x64) - tar.gz
+        run: |
+          chmod +x msxbas2rom-linux-x64-bin/msxbas2rom
+          tar cvzf \
+            dist/msxbas2rom-${{ steps.get_version.outputs.version }}-linux-x64-bin.tar.gz \
+            msxbas2rom-linux-x64-bin/*
+      - name: Packing MacOS binary artifact (x86_64)
+        run: |
+          sudo apt-get install genisoimage
+          genisoimage -V msxbas2rom -D -R -apple -no-pad \
+            -o dist/msxbas2rom-${{ steps.get_version.outputs.version }}-mac-x86_64-bin.dmg \
+            msxbas2rom-mac-x86_64-bin
+          cd dist
+          gzip -k msxbas2rom-${{ steps.get_version.outputs.version }}-mac-x86_64-bin.dmg
+          cd ..
+          zip --junk-paths \
+            dist/msxbas2rom-${{ steps.get_version.outputs.version }}-mac-x86_64-bin.zip \
+            msxbas2rom-mac-x86_64-bin/*
+      - name: Packing Windows binary artifact (x32)
+        run: |
+          zip --junk-paths \
+            dist/msxbas2rom-${{ steps.get_version.outputs.version }}-windows-x32-bin.zip \
+            msxbas2rom-windows-x32-bin/*
+      - name: Packing Windows binary artifact (x64)
+        run: |
+          zip --junk-paths \
+            dist/msxbas2rom-${{ steps.get_version.outputs.version }}-windows-x64-bin.zip \
+            msxbas2rom-windows-x64-bin/*
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          name: "Release ${{ steps.get_version.outputs.version }}"
+          files: dist/*
+          prerelease: ${{ steps.get_version.outputs.prerelease }}
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

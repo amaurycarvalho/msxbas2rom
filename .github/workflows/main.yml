@@ -1,0 +1,23 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*.*"
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: "Branch to run the workflow on"
+        required: true
+        default: "master"
+
+jobs:
+  build:
+    name: Build
+    uses: ./.github/workflows/build.yml
+
+  release:
+    name: Release
+    uses: ./.github/workflows/release.yml
+    needs: build
+    permissions: write-all
