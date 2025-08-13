@@ -9,18 +9,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install dependencies
+      - name: Installing dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y devscripts build-essential debhelper-compat=13
-      - name: Build all artifacts
+      - name: Building artifacts
         run: |
-          make clean release debian
-      - name: Prepare artifacts
+          make debian
+      - name: Preparing artifacts to upload
         run: |
           mkdir -p dist          
           mv bin/Release/msxbas2rom dist
-      - name: Upload artifacts
+      - name: Uploading artifacts
         uses: actions/upload-artifact@v4
         with:
           name: msxtileforge-linux-x64-bin
@@ -31,13 +31,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install dependencies
+      - name: Installing dependencies
         run: |
           brew install argp-standalone
-      - name: Build all artifacts
+      - name: Building artifacts
         run: |
           make clean release
-      - name: Upload artifacts
+      - name: Uploading artifacts
         uses: actions/upload-artifact@v4
         with:
           name: msxbas2rom-mac-x86_64-bin
@@ -48,19 +48,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up MinGW (32 bits)
+      - name: Installing dependencies
         uses: egor-tensin/setup-mingw@v2.2.0
         with:
           platform: x86
           version: 12.2.0.3042023
-      - name: Refresh environment
+      - name: Refreshing environment
         run: |
           refreshenv
           choco install make
-      - name: Build all artifacts (32 bits)
+      - name: Building artifacts (32 bits)
         run: |
           make PARMS=-m32 clean release
-      - name: Upload artifact (32bits)
+      - name: Uploading artifact (32bits)
         uses: actions/upload-artifact@v4
         with:
           name: msxbas2rom-windows-x32-bin
@@ -71,15 +71,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up MinGW (64 bits)
+      - name: Installing dependencies
         uses: egor-tensin/setup-mingw@v2.2.0
         with:
           platform: x64
           version: 12.2.0.3042023
-      - name: Build all artifacts (32 bits)
+      - name: Building artifacts (32 bits)
         run: |
           make PARMS=-m64 clean release
-      - name: Upload artifact (64bits)
+      - name: Uploading artifact (64bits)
         uses: actions/upload-artifact@v4
         with:
           name: msxbas2rom-windows-x64-bin

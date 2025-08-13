@@ -9,7 +9,9 @@
     "string_view": "cpp",
     "initializer_list": "cpp",
     "utility": "cpp",
-    "format": "cpp"
+    "format": "cpp",
+    "unordered_map": "cpp",
+    "unordered_set": "cpp"
   },
   "C_Cpp.codeAnalysis.clangTidy.enabled": true
 }

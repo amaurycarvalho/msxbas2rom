@@ -13250,17 +13250,3 @@ int FileNode::ParseTinySpriteFile(char* filename, unsigned char* data,
     return -1;
   }
 }
-
-#ifdef Win
-int _strcasecmp(const char* str1, const char* str2) {
-  int d = 0;
-  while (1) {
-    int c1 = tolower(*(str1++));
-    int c2 = tolower(*(str2++));
-    if (((d = c1 - c2) != 0) || (c2 == '\0')) {
-      break;
-    }
-  }
-  return d;
-}
-#endif

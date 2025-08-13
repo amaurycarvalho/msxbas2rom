@@ -26,6 +26,7 @@
 #include "compiler.h"
 #include "compiler_pt3.h"
 #include "lex.h"
+#include "oswrapper.h"
 #include "rom.h"
 #include "tokenizer.h"
 
