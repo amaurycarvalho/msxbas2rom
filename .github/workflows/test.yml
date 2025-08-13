@@ -13,10 +13,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.0.0
-      - name: Unit testing
+        uses: actions/checkout@v4
+      - name: Preparing environment
         run: |
           cd test/unit
+      - name: Building unit tests
+        run: |
           make all
           chmod +x test
+      - name: Doing test scenarios
+        run: |
           ./test
