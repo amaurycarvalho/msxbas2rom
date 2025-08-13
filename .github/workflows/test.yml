@@ -2,38 +2,21 @@ name: Test artifacts
 
 on:
   workflow_dispatch:
+    inputs:
+      branch_name:
+        description: "Branch to run the workflow on"
+        required: true
+        default: "master"
 
 jobs:
   test-linux:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2.0.0
-    - name: Unit testing
-      run: |
-        cd test/unit
-        make all
-        chmod +x test
-        ./test
-                   
-#  test-windows:
-#    runs-on: windows-latest
-#    steps:
-#    - name: Set up MinGW (64 bits)
-#      uses: Honeybunch/setup-mingw@v3
-#      with:
-#        platform: x64
-#    - name: Checkout
-#      uses: actions/checkout@v2
-#    - name: Make -> clean release (64bits)
-#      run: make PARMS=-m64 clean release
-#    - name: Integration test
-#      run: |
-#        cp bin\Release\*.exe test\deprecated\check\simple
-#        cd test\check\simple
-#        $files = Get-ChildItem -Path .\*.bas -Name
-#        foreach ($f in $files) {
-#          echo $f
-#          ./msxbas2rom -c -q $f
-#        }
-
+      - name: Checkout
+        uses: actions/checkout@v2.0.0
+      - name: Unit testing
+        run: |
+          cd test/unit
+          make all
+          chmod +x test
+          ./test
