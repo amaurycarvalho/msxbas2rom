@@ -14,13 +14,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Preparing environment
-        run: |
-          cd test/unit
       - name: Building unit tests
         run: |
+          cd test/unit
           make all
-          chmod +x test
       - name: Doing test scenarios
         run: |
+          cd test/unit
           ./test
