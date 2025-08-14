@@ -7,9 +7,7 @@
 
 ### 💡 WHAT IS MSXBAS2ROM?
 
-Create a ROM file from your old MSX BASIC code!
-
-MSXBAS2ROM is an open source cross-platform MSX BASIC compiler written in C++ using the VSCode IDE.
+**MSXBAS2ROM** is a powerful, open-source, cross-platform compiler for MSX BASIC, developed in C++ within the VSCode IDE. Designed as a command-line tool (CLI), it offers seamless execution from the terminal and easy integration with any development environment, giving developers full control over compiling their MSX BASIC programs into ROMs.
 
 ### 📥 INSTALL
 
@@ -19,7 +17,7 @@ Get a detailed How-To on the [Installation](https://github.com/amaurycarvalho/ms
 
 ### ⚙️ USAGE
 
-Use command below to compile your MSX BASIC program from plain text code into a ROM file.
+Use command below in a terminal to compile your MSX BASIC program from plain text code into a ROM file.
 
 ```bash
 msxbas2rom test.bas
@@ -73,3 +71,7 @@ See the [Support](https://github.com/amaurycarvalho/msxbas2rom/wiki#%EF%B8%8F-su
 - Gilberto Taborda;
 - Ronaldo Prado;
 - Julio Berrincha.
+
+---
+
+**MSXBAS2ROM** — Create a ROM file from your old MSX BASIC code!
