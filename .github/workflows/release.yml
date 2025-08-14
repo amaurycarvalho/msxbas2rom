@@ -42,7 +42,7 @@ jobs:
           zip --junk-paths \
             dist/msxbas2rom-${{ steps.get_version.outputs.version }}-linux-x64-bin.zip \
             msxbas2rom-linux-x64-bin/msxbas2rom
-      - name: Packing MacOS binary artifact (x86_64)
+      - name: Packing macOS binary artifact (x86_64)
         run: |
           sudo apt-get install genisoimage
           genisoimage -V msxbas2rom -D -R -apple -no-pad \
