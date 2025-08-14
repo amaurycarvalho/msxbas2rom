@@ -6,44 +6,50 @@ Create a ROM file from your old MSX BASIC code!
 
 MSXBAS2ROM is an open source cross-platform MSX BASIC compiler written in C++ using the VSCode IDE.
 
+### INSTALL
+
+On the [releases](https://github.com/amaurycarvalho/msxbas2rom/releases) area you will find binaries and install packages for Linux, Windows (32 and 64 bits) and macOS.
+
+Get a detailed How-To on the [Installation Wiki Page](https://github.com/amaurycarvalho/msxbas2rom/wiki/Install).
+
 ### USAGE
 
-Use command below to transform your Basic program from plain text code into a tokenized form on a ROM file.
+Use command below to compile your MSX BASIC program from plain text code into a ROM file.
 
-      msxbas2rom -p test.bas
+```bash
+msxbas2rom test.bas
+```
 
-You can also compile it into a ROM binary form using the command below:
-
-      msxbas2rom -c test.bas
-
-To test your brand new MSX Basic ROM file, use an emulator like WebMSX or OpenMSX:
+To test your brand new MSX BASIC ROM file, use an emulator like WebMSX or OpenMSX:
 
 - [WebMSX](https://webmsx.org/);
 - [OpenMSX](https://openmsx.org/).
 
-Run it at command line to get more conversion options:
+Run it at command line to get more compiling options:
 
-      msxbas2rom
+```bash
+msxbas2rom
+```
 
-### INSTALL
+See more on the [Getting Started Wiki Page](https://github.com/amaurycarvalho/msxbas2rom/wiki/Gettingstarted).
 
-Install it into your Linux system using the commands below:
-
-      sudo add-apt-repository ppa:amaurycarvalho/msxbas2rom
-      sudo apt-get update
-      sudo apt-get install msxbas2rom
-
-See [releases](https://github.com/amaurycarvalho/msxbas2rom/releases) area to get MSXBAS2ROM for Windows 32 and 64 bits.
-
-### DOCUMENTATION AND VERSION HISTORY
+### VERSION HISTORY AND REFERENCE GUIDE
 
 See the current version with command line below:
 
-      msxbas2rom --ver
+```bash
+msxbas2rom --ver
+```
 
-All [documentation](https://github.com/amaurycarvalho/msxbas2rom/wiki) can be listed too:
+A [Reference Guide](https://github.com/amaurycarvalho/msxbas2rom/wiki/Documentation) can be listed too:
 
-      msxbas2rom --doc
+```bash
+msxbas2rom --doc
+```
+
+### WANT TO KNOW MORE?
+
+See the project [Main Wiki Page](https://github.com/amaurycarvalho/msxbas2rom/wiki) for more information.
 
 ### SUPPORT THE PROJECT!
 
@@ -57,7 +63,7 @@ Also, once in a while games developed using MSXBAS2ROM will be released as gift 
 - ON [PATREON](https://www.patreon.com/msxbas2rom);
 - ON [PAYPAL](https://www.paypal.com/donate?business=X793ZKW56SRBY&item_name=MSXBAS2ROM+compiler+project&currency_code=BRL);
 - ON [CATARSE.ME](https://www.catarse.me/msxbas2rom_msx_basic_compiler_21ec);
-- Via Brazilian PIX: contact me for more information.
+- Via Brazilian PIX: contact me by email for more information.
 
 Note: MSXBAS2ROM it's still an experimental prototype, so it's current status is development in progress.
 
