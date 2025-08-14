@@ -12,10 +12,14 @@ jobs:
       - name: Installing dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y devscripts build-essential debhelper-compat=13
-      - name: Building artifacts
+          sudo apt-get install -y devscripts build-essential \
+            debhelper-compat=13 rpm rpmlint
+      - name: Building Debian artifacts
         run: |
           make debian
+      - name: Building RPM artifacts
+        run: |
+          make rpm
       - name: Preparing artifacts to upload
         run: |
           mkdir -p dist          

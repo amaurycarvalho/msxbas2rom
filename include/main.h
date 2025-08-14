@@ -30,7 +30,13 @@
 #include "rom.h"
 #include "tokenizer.h"
 
-//! @brief Compiler version
+/***
+ * @brief Compiler version
+ * @warning Dont forget to update CHANGELOG.md, debian/changelog and
+ * rpmbuild/SPECS/msxbas2rom.spec files
+ * @note Run the code below to create a new release on github:
+ * git tag -a v0.0.0.0 -m "Release 0.0.0.0" && git push msxbas2rom --tags
+ */
 #define app_version "0.3.2.9"
 
 //! @brief File names (input, output and symbol)

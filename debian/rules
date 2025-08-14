@@ -1,8 +1,10 @@
 #!/usr/bin/make -f
 
 override_dh_auto_clean:
-	$(RM) -r lib
-	$(RM) lib *.res msxbas2rom
+	make clean_release
+
+override_dh_auto_build:
+	make release
 
 %:
 	dh $@

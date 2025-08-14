@@ -3,6 +3,8 @@
 # by Amaury Carvalho (2022-2025)                                               #
 #------------------------------------------------------------------------------#
 
+.PHONY: all clean debug release debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
+
 # ----------------------------
 # Variables
 # ----------------------------
@@ -65,8 +67,11 @@ OBJ_DEBUG = $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/lex.o $(OBJDIR_DEBUG)/tokeniz
 
 OBJ_RELEASE = $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/lex.o $(OBJDIR_RELEASE)/tokenizer.o $(OBJDIR_RELEASE)/rom.o $(OBJDIR_RELEASE)/z80.o $(OBJDIR_RELEASE)/compiler.o $(OBJDIR_RELEASE)/compiler_pt3.o $(OBJDIR_RELEASE)/parse.o $(OBJDIR_RELEASE)/pletter.o  
 
-DEB_DIR = dist
-DEB_PACKAGE = msxbas2rom_*.deb
+DIST_DIR = dist
+DEB_DIR = ..
+DEB_PACKAGE = msxbas2rom*.deb
+RPM_DIR = /tmp/rpmbuild
+RPM_PACKAGE = msxbas2rom*.rpm
 
 # ----------------------------
 # Main build
@@ -80,18 +85,21 @@ clean: clean_debug clean_release
 # Debug build
 # ----------------------------
 
+clean_debug: 
+	@echo "🧹 Cleaning debug artifacts..."
+	@rm -rf $(OBJDIR_DEBUG)/*
+
+debug: before_debug out_debug after_debug
+
 before_debug: 
 	@echo "📦 Building debug artifacts..."
 	@mkdir -p bin/Debug
 	@mkdir -p $(OBJDIR_DEBUG)
 
+out_debug: $(OUT_DEBUG)
+
 after_debug: 
 	@echo "✅ Building debug finished"
-
-debug: before_debug out_debug after_debug
-
-out_debug: $(OBJ_DEBUG) $(DEP_DEBUG)
-	$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG)
 
 $(OBJDIR_DEBUG)/main.o: $(SRC)/main.cpp $(INC_DEBUG)/main.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/main.cpp -o $(OBJDIR_DEBUG)/main.o 
@@ -120,27 +128,28 @@ $(OBJDIR_DEBUG)/parse.o: $(SRC)/parse.cpp $(INC_DEBUG)/parse.h
 $(OBJDIR_DEBUG)/pletter.o: $(SRC)/pletter.cpp $(INC_DEBUG)/pletter.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/pletter.cpp -o $(OBJDIR_DEBUG)/pletter.o 
 
-clean_debug: 
-	@echo "🧹 Cleaning debug artifacts..."
-	@rm -rf bin/Debug/*
-	@rm -rf $(OBJDIR_DEBUG)/*
+$(OUT_DEBUG): $(OBJ_DEBUG) $(DEP_DEBUG)
+	$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG)
 
 # ----------------------------
 # Release build
 # ----------------------------
+
+clean_release: 
+	@echo "🧹 Cleaning release artifacts..."
+	@rm -rf $(OBJDIR_RELEASE)/*
+
+release: before_release out_release after_release
 
 before_release: 
 	@echo "📦 Building release artifacts..."
 	@mkdir -p bin/Release
 	@mkdir -p $(OBJDIR_RELEASE)
 
+out_release: $(OUT_RELEASE)
+
 after_release: 
 	@echo "✅ Building release finished"
-
-release: before_release out_release after_release
-
-out_release: $(OBJ_RELEASE) $(DEP_RELEASE)
-	$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE)
 
 $(OBJDIR_RELEASE)/main.o: $(SRC)/main.cpp $(INC_RELEASE)/main.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/main.cpp -o $(OBJDIR_RELEASE)/main.o 
@@ -169,24 +178,46 @@ $(OBJDIR_RELEASE)/parse.o: $(SRC)/parse.cpp $(INC_RELEASE)/parse.h
 $(OBJDIR_RELEASE)/pletter.o: $(SRC)/pletter.cpp $(INC_RELEASE)/pletter.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/pletter.cpp -o $(OBJDIR_RELEASE)/pletter.o 
 
-clean_release: 
-	@echo "🧹 Cleaning release artifacts..."
-	@rm -rf bin/Release/*
-	@rm -rf $(OBJDIR_RELEASE)/*
+$(OUT_RELEASE): $(OBJ_RELEASE) $(DEP_RELEASE)
+	$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE)
 
-# ----------------------------
+# -----------------------------------------------
 # Debian package build
-# ----------------------------
+# Dependencies:
+#   sudo apt-get install devscripts 
+#        build-essentialdebhelper-compat=13
+# -----------------------------------------------
 
 debian:
 	@echo "🧹 Cleaning debian artifacts..."
-	@mkdir -p $(DEB_DIR)
-	@rm -f $(DEB_DIR)/*.deb
+	@mkdir -p $(DIST_DIR)
+	@rm -f $(DIST_DIR)/*.deb
 	@echo "📦 Building Debian package..."
 	@debuild -us -uc -b -tc
-	@mv ../$(DEB_PACKAGE) $(DEB_DIR)/
+	@mv $(DEB_DIR)/$(DEB_PACKAGE) $(DIST_DIR)/
+	@echo "🧹 Cleaning temporary files..."
 	@rm -f ../*.changes ../*.build ../*.buildinfo
-	@echo "✅ Debian package saved to $(DEB_DIR)/$(DEB_PACKAGE)"
+	@echo "✅ Debian package saved to $(DIST_DIR)/$(DEB_PACKAGE)"
 
-.PHONY: all clean debug release debian before_debug after_debug clean_debug before_release after_release clean_release
+# -----------------------------------------------
+# RPM package build
+# Dependencies:
+#   sudo apt-get install rpmrpm rpmlint
+# -----------------------------------------------
+
+rpm:
+	@echo "🧹 Cleaning RPM artifacts..."
+	@mkdir -p $(DIST_DIR)
+	@rm -f $(DIST_DIR)/*.rpm
+	@rm -rf $(RPM_DIR)
+	@mkdir -p $(RPM_DIR)/SOURCES
+	@echo "📦 Building RPM package..."
+	@tar czvf msxbas2rom.tar.gz bin/Release
+	@mv msxbas2rom.tar.gz $(RPM_DIR)/SOURCES/
+	@rpmbuild -bb --define "_topdir $(RPM_DIR)" rpmbuild/SPECS/msxbas2rom.spec
+	@mv $(RPM_DIR)/RPMS/x86_64/$(RPM_PACKAGE) $(DIST_DIR)/
+	@echo "🧹 Cleaning temporary files..."
+	@rm -rf $(RPM_DIR)
+	@echo "✅ RPM package saved to $(DIST_DIR)/$(RPM_PACKAGE)"
+
 
