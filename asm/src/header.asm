@@ -607,10 +607,14 @@ XBASIC_INIT:
   ld (TMPSTRADDR), de     ; temporary string list start pointer
 
   ld (HEAPSTR), hl        ; heap start address
+  ld (STREND), hl         ; address of the end of the variable area
   ex de, hl
   ld hl, HEAPEND          ; (HIMEM)
   sbc hl, de
   ld (HEAPSIZ), hl        ; heap size
+
+  ld hl, BASMEM           ; address of the variables area
+  ld (ARYTAB), hl         ; address of the array variables area
 
   ld (FONTADDR), ix       ; temporary font buffer address
 

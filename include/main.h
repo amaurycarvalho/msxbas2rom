@@ -101,30 +101,37 @@ Version:)";
 
 //! @brief Support information
 const char *info_support = R"(
-Help us to maintain this project, support us on Patreon:
-https://www.patreon.com/msxbas2rom)";
+Help us to maintain this project, learn how:
+https://github.com/amaurycarvalho/msxbas2rom/wiki/Contributing )";
 
 //! @brief Usage information (-h parameter)
 const char *info_usage = R"(
 Usage: msxbas2rom [options] <filename.bas>
-Options:
-       -h or -? = help
-       -q  = quiet (no verbose)
-       -d  = debug mode (show details)
-       -c  = compile mode (default)
-       -x  = extended memory scheme mode (MegaROM, compile mode)
-       -s  = generate symbols for OpenMSX debugger (compile mode)
-       -p  = tokenized p-code mode (deprecated)
-       -t  = turbo mode (or use CALL TURBO instructions, deprecated)
-       --doc = display documentation
-       --ver = display version history
-       --scc = Konami with SCC MegaROM format support
-       --lin = register line numbers (compile mode)
-       --nsr = no strip remark lines (tokenized/turbo mode, deprecated)
+
+Info options:
+    -h or -? = help
+    -q  = quiet (no verbose)
+    -d  = debug mode (show details)
+    --doc = display documentation
+    --ver = display version history
+
+Compile options:
+    -c  = plain ROM compile mode (default)
+    -x  = ASCII8 MegaROM compile mode
+    -x --scc = Konami SCC MegaROM compile mode
+    -s  = generate symbols for OpenMSX debugger
+    --lin = write the MSX BASIC line numbers in the binary code
+
+P-code options (DEPRECATED):
+    -p  = tokenized p-code mode
+    -t  = turbo mode (or use CALL TURBO instructions)
+    --nsr = no strip remark lines (tokenized/turbo mode)
+
 Output: <filename.rom>
 
 See more information at:
-https://github.com/amaurycarvalho/msxbas2rom )";
+https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
+)";
 
 /***
  * @var
@@ -308,6 +315,9 @@ Version history
 0.1.2.0 – (2020/05/27) Resources initial implementation (TEXT, CMD PLAY);
 0.1.1.0 – (2020/05/24) Turbo mode implemented (xbasic);
 0.1.0.0 – (2020/05/21) Proof of concept.
+
+Know more about the project:
+https://github.com/amaurycarvalho/msxbas2rom
 )";
 
 /***
@@ -760,6 +770,9 @@ SUPPORTERS SPECIAL THANKS
   - Gilberto Taborda;
   - Ronaldo Prado;
   - Julio Berrincha.
+
+Know more at:
+https://github.com/amaurycarvalho/msxbas2rom/wiki
 )";
 
 #endif  // MAIN_H_INCLUDED
