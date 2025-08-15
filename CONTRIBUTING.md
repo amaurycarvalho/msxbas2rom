@@ -27,6 +27,19 @@ If you want to contribute code, please follow the **Inner Source** principles:
 - Code should follow the project’s style guidelines and be tested before submission;
 - PRs will be reviewed before merging into the `master` branch.
 
+#### 1️⃣ Project style guidelines
+
+We use .clang-format and .clang-tidy in this project to enforce style and do code quality checks.
+
+Also, we use [Doxygen notation](https://en.wikipedia.org/wiki/Doxygen) for inline documentation.
+
+#### 2️⃣ [Inner Source](https://en.wikipedia.org/wiki/Inner_source) Principles in Action
+
+- Transparency: All discussions, reviews, and design decisions happen in the open via GitHub PRs and Issues;
+- Autonomy: You can contribute directly without waiting for “permission,” as long as you follow the rules;
+- Quality Gates: Automated builds and tests ensure changes are safe;
+- Documentation First: Every new feature or change must be documented before merge.
+
 ---
 
 ## ⚙ Developer Quick Start Guide
@@ -66,10 +79,6 @@ Depending on your platform:
 - **Windows**: Install [MSYS2](https://www.msys2.org/) or MinGW for `g++`;
 - **Linux/macOS**: Ensure `g++` and `make` are installed;
 - Install the C++ extension in VSCode.
-
-We use clang-format and clang-tidy in this project to enforce style and do security checks.
-
-Also, we use [Doxygen notation](https://en.wikipedia.org/wiki/Doxygen) for inline documentation.
 
 ### 5️⃣ Compile the Project
 
@@ -120,15 +129,6 @@ Example:
 `feat: add option to compile without BASIC interpreter`
 
 Then go to your GitHub repository page and open a **Pull Request** to the `master` branch of the original project.
-
----
-
-## [Inner Source](https://en.wikipedia.org/wiki/Inner_source) Principles in Action
-
-- Transparency: All discussions, reviews, and design decisions happen in the open via GitHub PRs and Issues;
-- Autonomy: You can contribute directly without waiting for “permission,” as long as you follow the rules;
-- Quality Gates: Automated builds and tests ensure changes are safe;
-- Documentation First: Every new feature or change must be documented before merge.
 
 ---
 
