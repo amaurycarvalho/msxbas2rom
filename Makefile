@@ -49,8 +49,9 @@ LIBDIR_DEBUG = $(LIBDIR)
 LIB_DEBUG = $(LIB)
 LDFLAGS_DEBUG = $(LDFLAGS)
 OBJDIR_DEBUG = obj/Debug
+BINDIR_DEBUG = bin/Debug
 DEP_DEBUG = 
-OUT_DEBUG = bin/Debug/msxbas2rom
+OUT_DEBUG = $(BINDIR_DEBUG)/msxbas2rom
 
 INC_RELEASE = $(INC)
 CFLAGS_RELEASE = $(CFLAGS) -O2
@@ -60,8 +61,9 @@ LIBDIR_RELEASE = $(LIBDIR)
 LIB_RELEASE = $(LIB)
 LDFLAGS_RELEASE = $(LDFLAGS) -s $(LDFLAGS_PLUS)
 OBJDIR_RELEASE = obj/Release
+BINDIR_RELEASE = bin/Release
 DEP_RELEASE = 
-OUT_RELEASE = bin/Release/msxbas2rom
+OUT_RELEASE = $(BINDIR_RELEASE)/msxbas2rom
 
 OBJ_DEBUG = $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/lex.o $(OBJDIR_DEBUG)/tokenizer.o $(OBJDIR_DEBUG)/rom.o $(OBJDIR_DEBUG)/z80.o $(OBJDIR_DEBUG)/compiler.o $(OBJDIR_DEBUG)/compiler_pt3.o $(OBJDIR_DEBUG)/parse.o $(OBJDIR_DEBUG)/pletter.o    
 
@@ -93,7 +95,7 @@ debug: before_debug out_debug after_debug
 
 before_debug: 
 	@echo "📦 Building debug artifacts..."
-	@mkdir -p bin/Debug
+	@mkdir -p $(BINDIR_DEBUG)
 	@mkdir -p $(OBJDIR_DEBUG)
 
 out_debug: $(OUT_DEBUG)
@@ -143,7 +145,7 @@ release: before_release out_release after_release
 
 before_release: 
 	@echo "📦 Building release artifacts..."
-	@mkdir -p bin/Release
+	@mkdir -p $(BINDIR_RELEASE)
 	@mkdir -p $(OBJDIR_RELEASE)
 
 out_release: $(OUT_RELEASE)
@@ -212,7 +214,7 @@ rpm:
 	@rm -rf $(RPM_DIR)
 	@mkdir -p $(RPM_DIR)/SOURCES
 	@echo "📦 Building RPM package..."
-	@tar czvf msxbas2rom.tar.gz bin/Release
+	@tar czvf msxbas2rom.tar.gz $(BINDIR_RELEASE)
 	@mv msxbas2rom.tar.gz $(RPM_DIR)/SOURCES/
 	@rpmbuild -bb --define "_topdir $(RPM_DIR)" rpmbuild/SPECS/msxbas2rom.spec
 	@mv $(RPM_DIR)/RPMS/x86_64/$(RPM_PACKAGE) $(DIST_DIR)/
