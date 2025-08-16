@@ -53,14 +53,35 @@ cd msxbas2rom
 
 ### 2️⃣ Create a Branch for Your Work
 
+Follow this branch prefixes:
+
+- **Feature**: These branches are used for developing new features. Use the prefix feature/. For instance, feature/login-system;
+- **Bugfix**: These branches are used to fix bugs in the code. Use the prefix bugfix/. For example, bugfix/header-styling;
+- **Hotfix**: These branches are made directly from the production branch to fix critical bugs in the production environment. Use the prefix hotfix/. For instance, hotfix/critical-security-issue;
+- **Chore/Maintenance**: These branches are used for refactoring purpose. For instance: chore/refactor-authentication-module;
+- **Documentation**: These branches are used to write, update, or fix documentation eg. the README.md file. Use the prefix docs/. For instance, docs/api-endpoints;
+- **Release**: These branches are used to prepare for a new production release. They allow for last-minute dotting of i’s and crossing t’s. Use the prefix release/. For example, release/v1.0.1.
+
+Examples:
+
 ```bash
-git checkout -b issue-nn
+git checkout -b feature/user-authentication
+git checkout -b feature/issue-nn
+git checkout -b bugfix/fix-header-styling
+git checkout -b bugfix/issue-nn
+git checkout -b hotfix/security-patch
+git checkout -b hotfix/issue-nn
+git checkout -b chore/refactor-authentication-module
+git checkout -b docs/update-readme
+git checkout -b docs/issue-nn
+git checkout -b release/v0.0.0.0
 ```
 
-or
+Also, you can switch between branches with:
 
 ```bash
-git checkout -b feature/my-feature-name
+git switch my-other-branch
+git switch master
 ```
 
 ### 3️⃣ Install VSCode
