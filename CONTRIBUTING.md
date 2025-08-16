@@ -44,14 +44,23 @@ Also, we use [Doxygen notation](https://en.wikipedia.org/wiki/Doxygen) for inlin
 
 ## ⚙ Developer Quick Start Guide
 
-### 1️⃣ Clone the Repository
+### 1️⃣ Fork the MSXBAS2ROM Repository on GitHub
+
+1. Go to the original repo:
+   [https://github.com/amaurycarvalho/msxbas2rom](https://github.com/amaurycarvalho/msxbas2rom)
+2. Click **Fork** (top-right corner);
+3. Choose **your GitHub account** as the destination.
+
+### 2️⃣ Clone Your Fork Repository
 
 ```bash
-git clone https://github.com/amaurycarvalho/msxbas2rom.git
+git clone https://github.com/YOUR_GITHUB_ACCOUNT/msxbas2rom.git
 cd msxbas2rom
 ```
 
-### 2️⃣ Create a Branch for Your Work
+Now you have a repository where you have full write access.
+
+### 3️⃣ Create a Branch for Your Work
 
 Follow this branch prefixes:
 
@@ -84,7 +93,7 @@ git switch my-other-branch
 git switch master
 ```
 
-### 3️⃣ Install VSCode
+### 4️⃣ Install VSCode and Dependencies
 
 Download and install [Visual Studio Code](https://code.visualstudio.com/).  
 Open the project folder in VSCode.
@@ -92,8 +101,6 @@ Open the project folder in VSCode.
 ```bash
 code .
 ```
-
-### 4️⃣ Install Dependencies
 
 Depending on your platform:
 
@@ -134,7 +141,7 @@ Create new test scenarios if need.
 ```bash
 git add .
 git commit -am "change: Description of my changes"
-git push origin your-branch-name
+git push msxbas2rom your-branch-name
 ```
 
 Follow [Conventional](https://www.conventionalcommits.org/) commits:
@@ -149,7 +156,7 @@ Example:
 
 `feat: add option to compile without BASIC interpreter`
 
-Then go to your GitHub repository page and open a **Pull Request** to the `master` branch of the original project.
+Then go to your GitHub fork repository page and open a **Pull Request** to the `master` branch of the original project.
 
 ---
 
