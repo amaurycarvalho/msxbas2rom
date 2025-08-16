@@ -34,6 +34,10 @@
 # Backups
 *.bak
 
+# Binaries and objects
+bin/
+obj/
+
 # Deploys
 dist/
 

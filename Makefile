@@ -73,6 +73,9 @@ DIST_DIR = dist
 DEB_DIR = ..
 DEB_PACKAGE = msxbas2rom*.deb
 RPM_DIR = /tmp/rpmbuild
+RPM_SPECS = rpmbuild/SPECS
+RPM_SOURCES = $(RPM_DIR)/SOURCES
+RPM_RPMS = $(RPM_DIR)/RPMS/x86_64
 RPM_PACKAGE = msxbas2rom*.rpm
 
 # ----------------------------
@@ -212,12 +215,12 @@ rpm:
 	@mkdir -p $(DIST_DIR)
 	@rm -f $(DIST_DIR)/*.rpm
 	@rm -rf $(RPM_DIR)
-	@mkdir -p $(RPM_DIR)/SOURCES
+	@mkdir -p $(RPM_SOURCES)
 	@echo "📦 Building RPM package..."
 	@tar czvf msxbas2rom.tar.gz $(BINDIR_RELEASE)
-	@mv msxbas2rom.tar.gz $(RPM_DIR)/SOURCES/
-	@rpmbuild -bb --define "_topdir $(RPM_DIR)" rpmbuild/SPECS/msxbas2rom.spec
-	@mv $(RPM_DIR)/RPMS/x86_64/$(RPM_PACKAGE) $(DIST_DIR)/
+	@mv msxbas2rom.tar.gz $(RPM_SOURCES)/
+	@rpmbuild -bb --define "_topdir $(RPM_DIR)" $(RPM_SPECS)/msxbas2rom.spec
+	@mv $(RPM_RPMS)/$(RPM_PACKAGE) $(DIST_DIR)/
 	@echo "🧹 Cleaning temporary files..."
 	@rm -rf $(RPM_DIR)
 	@echo "✅ RPM package saved to $(DIST_DIR)/$(RPM_PACKAGE)"
