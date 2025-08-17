@@ -38,6 +38,9 @@
 bin/
 obj/
 
+# Testing objects
+test/integration/*.rom
+
 # Deploys
 dist/
 
