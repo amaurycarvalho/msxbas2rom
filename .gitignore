@@ -39,7 +39,7 @@ bin/
 obj/
 
 # Testing objects
-test/integration/*.rom
+test/**/*.rom
 
 # Deploys
 dist/
