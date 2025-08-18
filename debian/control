@@ -3,7 +3,7 @@ Maintainer: Amaury Carvalho <amauryspires@gmail.com>
 Section: utils
 Priority: optional
 Standards-Version: 4.6.2
-Build-Depends: debhelper-compat (= 12)
+Build-Depends: debhelper-compat (= 8)
 Homepage: https://github.com/amaurycarvalho/msxbas2rom
 
 Package: msxbas2rom
