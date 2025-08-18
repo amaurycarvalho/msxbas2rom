@@ -215,7 +215,7 @@ $(OUT_RELEASE): $(OBJ_RELEASE) $(DEP_RELEASE)
 # Debian package build
 # Dependencies:
 #   sudo apt-get install devscripts 
-#        build-essentialdebhelper-compat=8
+#        build-essentialdebhelper-compat=11
 # -----------------------------------------------
 
 debian:

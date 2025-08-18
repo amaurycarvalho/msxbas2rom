@@ -13,7 +13,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y devscripts build-essential \
-            debhelper-compat=13 rpm rpmlint
+            debhelper-compat=11 rpm rpmlint
       - name: Building Debian artifacts
         run: |
           make debian
