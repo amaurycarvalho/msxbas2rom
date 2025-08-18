@@ -14,6 +14,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Building release application
+        run: |
+          make release
       - name: Building unit tests
         run: |
           cd test/unit
@@ -24,5 +27,6 @@ jobs:
           ./test
       - name: Doing integration test scenarios
         run: |
+          make release
           cd test/integration
           ./test.sh
