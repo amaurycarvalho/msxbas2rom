@@ -18,6 +18,7 @@
 
 #include "fswrapper.h"
 #include "lex.h"
+#include "options.h"
 
 using namespace std;
 
@@ -198,11 +199,13 @@ class Parser {
   vector<Lexeme*> symbolList;
   vector<Lexeme*> datas;
 
-  bool debug;
   bool has_traps, has_defusr, has_data;
   bool has_play, has_input, has_font;
   bool has_pt3, has_akm, has_resource_restore;
   int resourceCount;
+
+  Lexer* lexer;
+  BuildOptions* opts;
 
   /***
    * @brief Perform a syntatic analysis on the tags list

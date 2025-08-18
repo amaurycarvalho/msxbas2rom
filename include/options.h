@@ -51,11 +51,18 @@ class BuildOptions {
   //! @brief Parse CLI
   bool parse(int argc, char *argv[]);
 
+  //! @brief Set input filename
+  void setInputFilename(string filename);
+
   //! @brief Get compile mode long name
   string getCompileModeLongName();
 
   //! @brief Get compile mode short name
   string getCompileModeShortName();
+
+  //! @brief Build options constructor
+  //! @param filename Input file name
+  BuildOptions(string filename);
 
   //! @brief Build options constructor
   BuildOptions();

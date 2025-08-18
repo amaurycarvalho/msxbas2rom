@@ -55,11 +55,13 @@ bool Parser::evaluate(Lexer* lexer) {
   int i, t = lexer->lines.size();
   LexerLine* lexerLine;
 
+  this->opts = lexer->opts;
+
   Parser();
 
   for (i = 0, lineNo = 1; i < t; i++, lineNo++) {
     lexerLine = lexer->lines[i];
-    // if(debug) {
+    // if(opts->debug) {
     // printf("%s\n",lexerLine->line.c_str());
     // }
     if (lexerLine->getLexemeCount() > 0) {

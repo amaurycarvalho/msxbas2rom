@@ -42,9 +42,6 @@ Compiler::Compiler() : IZ80() {
 
   error_message = "";
   current_tag = 0;
-  debug = false;
-  megaROM = false;
-  has_line_number = false;
   compiled = false;
 }
 
@@ -60,6 +57,7 @@ bool Compiler::build(Parser* parser) {
   unsigned int i, t;
 
   this->parser = parser;
+  this->opts = parser->opts;
 
   clear_symbols();
 
@@ -72,7 +70,7 @@ bool Compiler::build(Parser* parser) {
   ram_size = 0;
   for (i = 0; i < 5; i++) last_code[i] = &code[code_pointer];
 
-  if (debug) printf("Registering start of program...");
+  if (opts->debug) printf("Registering start of program...");
 
   codeItem = new CodeNode();
   codeItem->name = "START_PGM";
@@ -82,19 +80,19 @@ bool Compiler::build(Parser* parser) {
   codeItem->is_code = true;
   codeItem->debug = true;
   codeList.push_back(codeItem);
-  if (debug) printf(" %i byte(s)\n", codeItem->length);
+  if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
   if (codeItem->length >= 0x4000) {
     syntax_error("Maximum of start of program code per ROM reached (16k)");
     return false;
   }
 
-  if (debug) printf("Registering compiled code (line/bytes): ");
+  if (opts->debug) printf("Registering compiled code (line/bytes): ");
 
   for (i = 0; i < t; i++) {
     tag = parser->tags[i];
 
     if (tag) {
-      if (debug) {
+      if (opts->debug) {
         if (i)
           printf(", %s", tag->name.c_str());
         else
@@ -110,7 +108,7 @@ bool Compiler::build(Parser* parser) {
         symbol = getSymbol(tag);
         if (symbol) {
           if (symbol->address) {
-            if (debug) printf(" error\n");
+            if (opts->debug) printf(" error\n");
             current_tag = tag;
             syntax_error("Line number already declared");
             break;
@@ -135,17 +133,17 @@ bool Compiler::build(Parser* parser) {
       codeItem->debug = true;
       codeList.push_back(codeItem);
 
-      if (debug) printf("/%i", codeItem->length);
+      if (opts->debug) printf("/%i", codeItem->length);
 
       if (codeItem->length >= 0x4000) {
-        if (debug) printf(" error\n");
+        if (opts->debug) printf(" error\n");
         syntax_error("Maximum of code per line per ROM reached (16k)");
         return false;
       }
     }
   }
 
-  if (debug) printf("\n");
+  if (opts->debug) printf("\n");
 
   if (compiled) {
     if (forNextStack.size()) {
@@ -157,7 +155,7 @@ bool Compiler::build(Parser* parser) {
   if (compiled) {
     current_tag = 0;
 
-    if (debug) printf("Registering end of program...");
+    if (opts->debug) printf("Registering end of program...");
 
     codeItem = new CodeNode();
     codeItem->name = "END_PGM";
@@ -167,13 +165,13 @@ bool Compiler::build(Parser* parser) {
     codeItem->is_code = true;
     codeItem->debug = true;
     codeList.push_back(codeItem);
-    if (debug) printf(" %i byte(s)\n", codeItem->length);
+    if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
     if (codeItem->length >= 0x4000) {
       syntax_error("Maximum of end of program code per ROM reached (16k)");
       return false;
     }
 
-    if (debug) printf("Registering support code...");
+    if (opts->debug) printf("Registering support code...");
 
     codeItem = new CodeNode();
     codeItem->start = code_pointer;
@@ -182,24 +180,24 @@ bool Compiler::build(Parser* parser) {
     codeItem->is_code = true;
     codeItem->debug = false;
     codeList.push_back(codeItem);
-    if (debug) printf(" %i byte(s)\n", codeItem->length);
+    if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
     if (codeItem->length >= 0x4000) {
       syntax_error("Maximum of support code per ROM reached (16k)");
       return false;
     }
 
-    if (debug) printf("Registering data resource...");
+    if (opts->debug) printf("Registering data resource...");
     data_symbols();
 
-    if (debug) printf("Registering symbols..");
+    if (opts->debug) printf("Registering symbols..");
 
-    if (debug) printf(".");
+    if (opts->debug) printf(".");
 
     i = save_symbols();
 
-    if (debug) printf(" %i byte(s)\n", i);
+    if (opts->debug) printf(" %i byte(s)\n", i);
 
-    if (debug) printf("Adjusting code/data memory address...\n");
+    if (opts->debug) printf("Adjusting code/data memory address...\n");
 
     do_fix();
 
@@ -439,7 +437,7 @@ void Compiler::addByteOptimized(unsigned char byte) {
   int code_reduced = 0;
   unsigned char* s;
 
-  if (!megaROM) {
+  if (!opts->megaROM) {
     switch (byte) {
       // pop de
       case 0xD1: {
@@ -757,7 +755,7 @@ FixNode* Compiler::addFix(SymbolNode* symbol) {
     is_id = (symbol->lexeme->type == Lexeme::type_identifier);
   }
 
-  if (megaROM && !is_id) {
+  if (opts->megaROM && !is_id) {
     // nop, nop      ; reserved to "jr ?, ??" when "call ?, ??" or "jp ?, ??"
     addNop();
     addNop();
@@ -811,7 +809,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
   // copy compiled code to final destination
 
-  if (megaROM) {
+  if (opts->megaROM) {
     skips.clear();
 
     t = codeList.size();
@@ -915,7 +913,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
         address = fix->address;
 
-        if (megaROM) {
+        if (opts->megaROM) {
           step = 0;
           for (k = 0; k < tt; k++) {
             skip = skips[k];
@@ -1282,7 +1280,7 @@ bool Compiler::evaluate(TagNode* tag) {
 
   current_tag = tag;
 
-  if (has_line_number) {
+  if (opts->lineNumber) {
     try {
       lin = stoi(tag->name);
     } catch (exception& e) {
@@ -2055,7 +2053,7 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xD1);
 
           // math optimization when second parameter is a integer constant
-          if (megaROM)
+          if (opts->megaROM)
             s = last_code[1];
           else
             s = last_code[0];
@@ -2064,7 +2062,7 @@ int Compiler::evalOperator(ActionNode* action) {
 
           if (action->actions[0]->lexeme->type == Lexeme::type_literal &&
               i <= 256) {
-            if (megaROM) {
+            if (opts->megaROM) {
               code_pointer -= 5;
               code_size -= 5;
             } else {
@@ -4623,7 +4621,7 @@ void Compiler::cmd_start() {
   addCall(def_XBASIC_INIT);
 
   if (parser->has_traps) {
-    if (megaROM) {
+    if (opts->megaROM) {
       // ld a, 0xFF
       addLdA(0xFF);
     } else {
@@ -4635,7 +4633,7 @@ void Compiler::cmd_start() {
     addLdiiA(def_MR_TRAP_FLAG);
   }
 
-  if (megaROM) {
+  if (opts->megaROM) {
     // ld a, 2
     addLdA(0x02);
     // call MR_CHANGE_SGM
@@ -4678,7 +4676,7 @@ void Compiler::cmd_end(bool last) {
     // ld hl, fake empty line
     addLdHL(def_ENDPRG);
 
-    if (megaROM) {
+    if (opts->megaROM) {
       // ld a, 2
       addLdA(0x02);
       // ld iy, (SLTSTR-1)
@@ -4794,7 +4792,7 @@ void Compiler::cmd_return() {
           lexeme->value.erase(0, 1);
         }
 
-        if (megaROM) {
+        if (opts->megaROM) {
           // pop bc           ; delete old return segment/address
           addPopBC();
           // pop de           ; delete old return segment/address
@@ -10184,7 +10182,7 @@ void Compiler::cmd_on_interval() {
 
     if (parm_lexeme->type == Lexeme::type_literal &&
         parm_lexeme->subtype == Lexeme::subtype_numeric) {
-      if (megaROM) {
+      if (opts->megaROM) {
         // ld hl, GOSUB ADDRESS
         addFix(parm_lexeme->value);
         addLdHLmegarom();
@@ -10573,7 +10571,7 @@ void Compiler::cmd_on_key() {
 
       if (sub_lexeme->type == Lexeme::type_literal &&
           sub_lexeme->subtype == Lexeme::subtype_numeric) {
-        if (megaROM) {
+        if (opts->megaROM) {
           // push hl
           addPushHL();
           //   ld hl, GOSUB ADDRESS
@@ -10641,7 +10639,7 @@ void Compiler::cmd_on_sprite() {
 
     if (sub_lexeme->type == Lexeme::type_literal &&
         sub_lexeme->subtype == Lexeme::subtype_numeric) {
-      if (megaROM) {
+      if (opts->megaROM) {
         // push hl
         addPushHL();
         //   ld hl, GOSUB ADDRESS
@@ -10700,7 +10698,7 @@ void Compiler::cmd_on_stop() {
 
     if (sub_lexeme->type == Lexeme::type_literal &&
         sub_lexeme->subtype == Lexeme::subtype_numeric) {
-      if (megaROM) {
+      if (opts->megaROM) {
         // push hl
         addPushHL();
         //   ld hl, GOSUB ADDRESS
@@ -10763,7 +10761,7 @@ void Compiler::cmd_on_strig() {
 
       if (sub_lexeme->type == Lexeme::type_literal &&
           sub_lexeme->subtype == Lexeme::subtype_numeric) {
-        if (megaROM) {
+        if (opts->megaROM) {
           // push hl
           addPushHL();
           //   ld hl, GOSUB ADDRESS
@@ -10836,7 +10834,7 @@ void Compiler::cmd_on_goto_gosub() {
     // ld a, l
     addLdAL();
 
-    if (megaROM) {
+    if (opts->megaROM) {
       // ld (TEMP), a
       addLdiiA(def_TEMP);
     }
@@ -10860,7 +10858,7 @@ void Compiler::cmd_on_goto_gosub() {
         }
 
         if (lexeme->value == "GOTO") {
-          if (megaROM) {
+          if (opts->megaROM) {
             // ld a, (TEMP)
             addLdAii(def_TEMP);
           }
@@ -10868,7 +10866,7 @@ void Compiler::cmd_on_goto_gosub() {
           // dec a
           addDecA();
 
-          if (megaROM) {
+          if (opts->megaROM) {
             // ld (TEMP), a
             addLdiiA(def_TEMP);
           }
@@ -10878,7 +10876,7 @@ void Compiler::cmd_on_goto_gosub() {
           addJpZ(0x0000);
 
         } else {
-          if (megaROM) {
+          if (opts->megaROM) {
             // ld a, (TEMP)
             addLdAii(def_TEMP);
           }
@@ -10886,12 +10884,12 @@ void Compiler::cmd_on_goto_gosub() {
           // dec a
           addDecA();
 
-          if (megaROM) {
+          if (opts->megaROM) {
             // ld (TEMP), a
             addLdiiA(def_TEMP);
           }
 
-          if (megaROM) {
+          if (opts->megaROM) {
             // jr nz, $+25
             addJrNZ(24);
           } else {
@@ -10907,7 +10905,7 @@ void Compiler::cmd_on_goto_gosub() {
         }
 
       } else {
-        if (megaROM) {
+        if (opts->megaROM) {
           // ld a, (TEMP)
           addLdAii(def_TEMP);
         }
@@ -10915,7 +10913,7 @@ void Compiler::cmd_on_goto_gosub() {
         // dec a
         addDecA();
 
-        if (megaROM) {
+        if (opts->megaROM) {
           // ld (TEMP), a
           addLdiiA(def_TEMP);
         }
@@ -11609,7 +11607,7 @@ void Compiler::cmd_open() {
     // ld (TEMP+1), a           ; file mode
     addLdiiA(def_TEMP + 1);
 
-    if (megaROM) {
+    if (opts->megaROM) {
       // ld hl, 0x0000             ; get return point address
       mark = addMark();
       addLdHLmegarom();
@@ -12466,7 +12464,7 @@ void Compiler::cmd_cmd() {
 }
 
 void Compiler::addEnableBasicSlot() {
-  if (megaROM) {
+  if (opts->megaROM) {
     // ld a, (EXPTBL)
     addLdAii(def_EXPTBL);
     // ld h,040h        ; <--- enable jump to here
@@ -12487,7 +12485,7 @@ void Compiler::addEnableBasicSlot() {
 }
 
 void Compiler::addDisableBasicSlot() {
-  if (megaROM) {
+  if (opts->megaROM) {
     // ld a, (SLTSTR)
     addLdAii(def_SLTSTR);
     // ld h,040h        ; <--- enable jump to here

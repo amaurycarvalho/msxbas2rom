@@ -7,7 +7,7 @@
 set -e
 
 # Variables 
-APP_PATH="""$(pwd)""/../../bin/Release/msxbas2rom"
+APP_PATH="../../bin/Release/msxbas2rom"
 BAS_FILES=$(find . -type f -name "*.bas")
 
 # Clean old rom files

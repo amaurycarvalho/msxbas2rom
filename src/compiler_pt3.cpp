@@ -30,9 +30,6 @@ CompilerPT3::CompilerPT3() : Compiler() {
 
   error_message = "";
   current_tag = 0;
-  debug = false;
-  megaROM = false;
-  has_line_number = false;
   compiled = false;
 }
 
@@ -48,6 +45,7 @@ bool CompilerPT3::build(Parser *parser) {
   unsigned int i, t;
 
   this->parser = parser;
+  this->opts = parser->opts;
 
   clear_symbols();
 
@@ -59,7 +57,7 @@ bool CompilerPT3::build(Parser *parser) {
   ram_pointer = ram_start;
   ram_size = 0;
 
-  if (debug) printf("Registering start of program...");
+  if (opts->debug) printf("Registering start of program...");
 
   codeItem = new CodeNode();
   codeItem->name = "START_PGM";
@@ -69,19 +67,19 @@ bool CompilerPT3::build(Parser *parser) {
   codeItem->is_code = true;
   codeItem->debug = true;
   codeList.push_back(codeItem);
-  if (debug) printf(" %i byte(s)\n", codeItem->length);
+  if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
   if (codeItem->length >= 0x4000) {
     syntax_error("Maximum of start of program code per ROM reached (16k)");
     return false;
   }
 
-  if (debug) printf("Registering compiled code (line/bytes): ");
+  if (opts->debug) printf("Registering compiled code (line/bytes): ");
 
   for (i = 0; i < t; i++) {
     tag = parser->tags[i];
 
     if (tag) {
-      if (debug) {
+      if (opts->debug) {
         if (i)
           printf(", %s", tag->name.c_str());
         else
@@ -97,7 +95,7 @@ bool CompilerPT3::build(Parser *parser) {
         symbol = getSymbol(tag);
         if (symbol) {
           if (symbol->address) {
-            if (debug) printf(" error\n");
+            if (opts->debug) printf(" error\n");
             current_tag = tag;
             syntax_error("Line number already declared");
             break;
@@ -122,17 +120,17 @@ bool CompilerPT3::build(Parser *parser) {
       codeItem->debug = true;
       codeList.push_back(codeItem);
 
-      if (debug) printf("/%i", codeItem->length);
+      if (opts->debug) printf("/%i", codeItem->length);
 
       if (codeItem->length >= 0x4000) {
-        if (debug) printf(" error\n");
+        if (opts->debug) printf(" error\n");
         syntax_error("Maximum of code per line per ROM reached (16k)");
         return false;
       }
     }
   }
 
-  if (debug) printf("\n");
+  if (opts->debug) printf("\n");
 
   if (compiled) {
     if (forNextStack.size()) {
@@ -144,7 +142,7 @@ bool CompilerPT3::build(Parser *parser) {
   if (compiled) {
     current_tag = 0;
 
-    if (debug) printf("Registering end of program...");
+    if (opts->debug) printf("Registering end of program...");
 
     codeItem = new CodeNode();
     codeItem->name = "END_PGM";
@@ -154,13 +152,13 @@ bool CompilerPT3::build(Parser *parser) {
     codeItem->is_code = true;
     codeItem->debug = true;
     codeList.push_back(codeItem);
-    if (debug) printf(" %i byte(s)\n", codeItem->length);
+    if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
     if (codeItem->length >= 0x4000) {
       syntax_error("Maximum of end of program code per ROM reached (16k)");
       return false;
     }
 
-    if (debug) printf("Registering support code...");
+    if (opts->debug) printf("Registering support code...");
 
     codeItem = new CodeNode();
     codeItem->start = code_pointer;
@@ -169,23 +167,23 @@ bool CompilerPT3::build(Parser *parser) {
     codeItem->is_code = true;
     codeItem->debug = false;
     codeList.push_back(codeItem);
-    if (debug) printf(" %i byte(s)\n", codeItem->length);
+    if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
     if (codeItem->length >= 0x4000) {
       syntax_error("Maximum of support code per ROM reached (16k)");
       return false;
     }
 
-    if (debug) printf("Registering symbols..");
+    if (opts->debug) printf("Registering symbols..");
 
     data_symbols();
 
-    if (debug) printf(".");
+    if (opts->debug) printf(".");
 
     i = save_symbols();
 
-    if (debug) printf(" %i byte(s)\n", i);
+    if (opts->debug) printf(" %i byte(s)\n", i);
 
-    if (debug) printf("Adjusting code/data memory address...\n");
+    if (opts->debug) printf("Adjusting code/data memory address...\n");
 
     do_fix();
 
@@ -547,7 +545,7 @@ FixNode *CompilerPT3::addFix(SymbolNode *symbol) {
     is_id = (symbol->lexeme->type == Lexeme::type_identifier);
   }
 
-  if (megaROM && !is_id) {
+  if (opts->megaROM && !is_id) {
     // nop, nop      ; reserved to "jr ?, ??" when "call ?, ??" or "jp ?, ??"
     addByte(0x00);
     addByte(0x00);
@@ -601,7 +599,7 @@ int CompilerPT3::write(unsigned char *dest, int start_address) {
 
   // copy compiled code to final destination
 
-  if (megaROM) {
+  if (opts->megaROM) {
     skips.clear();
 
     t = codeList.size();
@@ -705,7 +703,7 @@ int CompilerPT3::write(unsigned char *dest, int start_address) {
 
         address = fix->address;
 
-        if (megaROM) {
+        if (opts->megaROM) {
           step = 0;
           for (k = 0; k < tt; k++) {
             skip = skips[k];
@@ -975,7 +973,7 @@ bool CompilerPT3::evaluate(TagNode *tag) {
 
   current_tag = tag;
 
-  if (has_line_number) {
+  if (opts->lineNumber) {
     lin = stoi(tag->name);
     // ld hl, line number
     addCmd(0x21, lin);
@@ -3943,7 +3941,7 @@ void CompilerPT3::cmd_start() {
   addCmd(0xCD, def_XBASIC_INIT);
 
   if (parser->has_traps) {
-    if (megaROM) {
+    if (opts->megaROM) {
       // ld a, 0xFF
       addWord(0x3E, 0xFF);
     } else {
@@ -3955,7 +3953,7 @@ void CompilerPT3::cmd_start() {
     addCmd(0x32, def_MR_TRAP_FLAG);
   }
 
-  if (megaROM) {
+  if (opts->megaROM) {
     // ld a, 2
     addWord(0x3E, 0x02);
     // call MR_CHANGE_SGM
@@ -3992,7 +3990,7 @@ void CompilerPT3::cmd_end(bool last) {
     // ld hl, fake empty line
     addCmd(0x21, def_ENDPRG);
 
-    if (megaROM) {
+    if (opts->megaROM) {
       // ld a, 2
       addWord(0x3E, 0x02);
       // ld iy, (SLTSTR-1)
@@ -4106,7 +4104,7 @@ void CompilerPT3::cmd_return() {
           lexeme->value.erase(0, 1);
         }
 
-        if (megaROM) {
+        if (opts->megaROM) {
           // pop bc           ; delete old return segment/address
           addByte(0xC1);
           // pop de           ; delete old return segment/address
@@ -5298,7 +5296,7 @@ void CompilerPT3::cmd_bload() {
 
               if (file->first_lexeme) {
                 if (file->file_header[0] == 0xFE) {
-                  if (megaROM) {
+                  if (opts->megaROM) {
                     // special ld hl, first file block address
                     addFix(file->first_lexeme);
                     addCmd(0xFF, 0x0000);
@@ -5321,7 +5319,7 @@ void CompilerPT3::cmd_bload() {
               // ld bc, blocks count
               addCmd(0x01, file->blocks);
 
-              if (megaROM) {
+              if (opts->megaROM) {
                 // exx
                 addByte(0xD9);
                 // ld hl, SUB_LOAD
@@ -7788,7 +7786,7 @@ void CompilerPT3::cmd_on_interval() {
 
     if (parm_lexeme->type == Lexeme::type_literal &&
         parm_lexeme->subtype == Lexeme::subtype_numeric) {
-      if (megaROM) {
+      if (opts->megaROM) {
         // ld hl, GOSUB ADDRESS
         addFix(parm_lexeme->value);
         addCmd(0xFF, 0x0000);
@@ -8144,7 +8142,7 @@ void CompilerPT3::cmd_on_key() {
 
       if (sub_lexeme->type == Lexeme::type_literal &&
           sub_lexeme->subtype == Lexeme::subtype_numeric) {
-        if (megaROM) {
+        if (opts->megaROM) {
           // push hl
           addByte(0xE5);
           //   ld hl, GOSUB ADDRESS
@@ -8212,7 +8210,7 @@ void CompilerPT3::cmd_on_sprite() {
 
     if (sub_lexeme->type == Lexeme::type_literal &&
         sub_lexeme->subtype == Lexeme::subtype_numeric) {
-      if (megaROM) {
+      if (opts->megaROM) {
         // push hl
         addByte(0xE5);
         //   ld hl, GOSUB ADDRESS
@@ -8271,7 +8269,7 @@ void CompilerPT3::cmd_on_stop() {
 
     if (sub_lexeme->type == Lexeme::type_literal &&
         sub_lexeme->subtype == Lexeme::subtype_numeric) {
-      if (megaROM) {
+      if (opts->megaROM) {
         // push hl
         addByte(0xE5);
         //   ld hl, GOSUB ADDRESS
@@ -8334,7 +8332,7 @@ void CompilerPT3::cmd_on_strig() {
 
       if (sub_lexeme->type == Lexeme::type_literal &&
           sub_lexeme->subtype == Lexeme::subtype_numeric) {
-        if (megaROM) {
+        if (opts->megaROM) {
           // push hl
           addByte(0xE5);
           //   ld hl, GOSUB ADDRESS
@@ -8407,7 +8405,7 @@ void CompilerPT3::cmd_on_goto_gosub() {
     // ld a, l
     addByte(0x7D);
 
-    if (megaROM) {
+    if (opts->megaROM) {
       // ld (TEMP), a
       addCmd(0x32, def_TEMP);
     }
@@ -8431,7 +8429,7 @@ void CompilerPT3::cmd_on_goto_gosub() {
         }
 
         if (lexeme->value == "GOTO") {
-          if (megaROM) {
+          if (opts->megaROM) {
             // ld a, (TEMP)
             addCmd(0x3A, def_TEMP);
           }
@@ -8439,7 +8437,7 @@ void CompilerPT3::cmd_on_goto_gosub() {
           // dec a
           addByte(0x3D);
 
-          if (megaROM) {
+          if (opts->megaROM) {
             // ld (TEMP), a
             addCmd(0x32, def_TEMP);
           }
@@ -8449,7 +8447,7 @@ void CompilerPT3::cmd_on_goto_gosub() {
           addCmd(0xCA, 0x0000);
 
         } else {
-          if (megaROM) {
+          if (opts->megaROM) {
             // ld a, (TEMP)
             addCmd(0x3A, def_TEMP);
           }
@@ -8457,12 +8455,12 @@ void CompilerPT3::cmd_on_goto_gosub() {
           // dec a
           addByte(0x3D);
 
-          if (megaROM) {
+          if (opts->megaROM) {
             // ld (TEMP), a
             addCmd(0x32, def_TEMP);
           }
 
-          if (megaROM) {
+          if (opts->megaROM) {
             // jr nz, $+25
             addWord(0x20, 24);
           } else {
@@ -8478,7 +8476,7 @@ void CompilerPT3::cmd_on_goto_gosub() {
         }
 
       } else {
-        if (megaROM) {
+        if (opts->megaROM) {
           // ld a, (TEMP)
           addCmd(0x3A, def_TEMP);
         }
@@ -8486,7 +8484,7 @@ void CompilerPT3::cmd_on_goto_gosub() {
         // dec a
         addByte(0x3D);
 
-        if (megaROM) {
+        if (opts->megaROM) {
           // ld (TEMP), a
           addCmd(0x32, def_TEMP);
         }
@@ -8647,7 +8645,7 @@ void CompilerPT3::cmd_read() {
       }
 
       // call read
-      if (megaROM) {
+      if (opts->megaROM) {
         addCmd(0xCD, def_XBASIC_READ_MR);
       } else {
         addCmd(0xCD, def_XBASIC_READ);
@@ -8706,7 +8704,7 @@ void CompilerPT3::cmd_restore() {
     addCmd(0x11, 0x0000);
 
     // call restore
-    if (megaROM) {
+    if (opts->megaROM) {
       addCmd(0xCD, def_XBASIC_RESTORE_MR);
     } else {
       addCmd(0xCD, def_XBASIC_RESTORE);
@@ -8746,7 +8744,7 @@ void CompilerPT3::cmd_restore() {
       return;
     }
 
-    if (megaROM) {
+    if (opts->megaROM) {
       // ld de, data count
       addCmd(0x11, i);
       // call restore
@@ -9140,7 +9138,7 @@ void CompilerPT3::cmd_open() {
     // ld (TEMP+1), a           ; file mode
     addCmd(0x32, def_TEMP + 1);
 
-    if (megaROM) {
+    if (opts->megaROM) {
       // ld hl, 0x0000             ; get return point address
       mark = addMark();
       addCmd(0xFF, 0x0000);
@@ -9792,7 +9790,7 @@ void CompilerPT3::cmd_cmd() {
 }
 
 void CompilerPT3::addEnableBasicSlot() {
-  if (megaROM) {
+  if (opts->megaROM) {
     // ld a, (EXPTBL)
     addCmd(0x3A, def_EXPTBL);
     // ld h,040h        ; <--- enable jump to here
@@ -9810,7 +9808,7 @@ void CompilerPT3::addEnableBasicSlot() {
 }
 
 void CompilerPT3::addDisableBasicSlot() {
-  if (megaROM) {
+  if (opts->megaROM) {
     // ld a, (SLTSTR)
     addCmd(0x3A, def_SLTSTR);
     // ld h,040h        ; <--- enable jump to here

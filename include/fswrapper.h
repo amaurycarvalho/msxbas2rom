@@ -33,7 +33,7 @@ using namespace std;
  * @param filename File name to check into file system
  * @return True or False
  */
-bool FileExists(const string& filename);
+bool fileExists(const string& filename);
 
 /***
  * @brief Return the path of the file

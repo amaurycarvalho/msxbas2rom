@@ -146,6 +146,8 @@ class Tokenizer {
   int lineNo = 0;
   vector<TokenLine *> lines;
   vector<Lexeme *> resourceList;
+  Lexer *lexer;
+  BuildOptions *opts;
 
   /***
    * @brief Evaluates the lexed source code by performing

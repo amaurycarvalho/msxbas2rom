@@ -22,6 +22,7 @@
 #include "compiler_pt3.h"
 #include "fswrapper.h"
 #include "lex.h"
+#include "options.h"
 #include "tokenizer.h"
 
 #define ROM_DATA_SIZE COMPILE_CODE_SIZE
@@ -36,6 +37,7 @@ class Rom {
  private:
   Tokenizer *tokenizer;
   Compiler *compiler;
+  BuildOptions *opts;
 
   string errorMessage;
   bool errorFound;
@@ -83,12 +85,11 @@ class Rom {
   void buildAssemblyLine();
   void buildHeaderAdjust();
 
-  void writeRom(char *filename);
+  void writeRom(string filename);
 
  public:
   int code_start, rom_size;
   double stdMemoryPerc, rscMemoryPerc;
-  bool turbo, xtd, stripRemLines, konamiSCC;
 
   FileNode file;
 
@@ -98,28 +99,25 @@ class Rom {
   /***
    * @brief Creates a MSX BASIC ROM based on a pcoded source code
    * @param tokenizer Tokenized source code
-   * @param filename Destination file name
    * @return True, if success
    */
-  bool build(Tokenizer *tokenizer, char *filename);
+  bool build(Tokenizer *tokenizer);
 
   /***
    * @brief Creates a MSX BASIC ROM based on a compiled source code
    * @param compiler Compiled source code
-   * @param filename Destination file name
    * @return True, if success
    */
-  bool build(Compiler *compiler, char *filename);
+  bool build(Compiler *compiler);
 
   /***
    * @brief Creates a MSX BASIC ROM based on a compiled source code usind PT3
    * player
    * @param compiler Compiled PT3 source code
-   * @param filename Destination file name
    * @return True, if success
    * @deprecated PT3 is not supported anymore
    */
-  bool build(CompilerPT3 *compiler, char *filename);
+  bool build(CompilerPT3 *compiler);
 
   /***
    * @brief Print to the terminal the invalid source code

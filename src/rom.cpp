@@ -31,13 +31,14 @@ Rom::~Rom() {
   free(data);
 }
 
-bool Rom::build(Tokenizer *tokenizer, char *filename) {
+bool Rom::build(Tokenizer *tokenizer) {
   int stdPageLen;
   float maxPageLen = 0x4000;
 
   // initialize data
 
   this->tokenizer = tokenizer;
+  this->opts = tokenizer->opts;
   this->compiler = 0;
 
   buildInit();
@@ -65,14 +66,14 @@ bool Rom::build(Tokenizer *tokenizer, char *filename) {
   // save ROM file
 
   if (!errorFound) {
-    writeRom(filename);
+    writeRom(opts->outputFilename);
   }
 
   // calculate and check sizes
 
   stdPageLen = hdrLen + rtnLen + mapLen + txtLen + filLen + pt3Len + basLen;
 
-  if (xtd) {
+  if (opts->megaROM) {
     errorMessage = "Extended scheme (MegaROM) not allowed to tokenized mode";
     errorFound = true;
   } else {
@@ -88,7 +89,7 @@ bool Rom::build(Tokenizer *tokenizer, char *filename) {
   return !errorFound;
 }
 
-bool Rom::build(Compiler *compiler, char *filename) {
+bool Rom::build(Compiler *compiler) {
   int stdPageLen;
   float maxPageLen;
 
@@ -96,6 +97,7 @@ bool Rom::build(Compiler *compiler, char *filename) {
 
   this->tokenizer = 0;
   this->compiler = compiler;
+  this->opts = compiler->opts;
 
   buildInit();
 
@@ -114,7 +116,7 @@ bool Rom::build(Compiler *compiler, char *filename) {
   if (compiler->resourceList.size()) {
     buildMapAndResources();
     if (errorFound) return false;
-    if (!xtd) {
+    if (!opts->megaROM) {
       writePage[0] = true;
     }
   }
@@ -125,13 +127,13 @@ bool Rom::build(Compiler *compiler, char *filename) {
 
   // save ROM file
 
-  writeRom(filename);
+  writeRom(opts->outputFilename);
 
   // calculate and check sizes
 
   stdPageLen = hdrLen + rtnLen + basLen;
 
-  if (xtd) {
+  if (opts->megaROM) {
     maxPageLen = rom_size - 0x4000;  // first page = kernel
     stdMemoryPerc = (stdPageLen / maxPageLen) * 100;
     rscMemoryPerc = (rscLen / maxPageLen) * 100;
@@ -149,7 +151,7 @@ bool Rom::build(Compiler *compiler, char *filename) {
   return !errorFound;
 }
 
-bool Rom::build(CompilerPT3 *compiler, char *filename) {
+bool Rom::build(CompilerPT3 *compiler) {
   int stdPageLen;
   float maxPageLen = 0x4000;
 
@@ -157,6 +159,7 @@ bool Rom::build(CompilerPT3 *compiler, char *filename) {
 
   this->tokenizer = 0;
   this->compiler = compiler;
+  this->opts = compiler->opts;
 
   buildInit();
 
@@ -188,13 +191,13 @@ bool Rom::build(CompilerPT3 *compiler, char *filename) {
 
   // save ROM file
 
-  writeRom(filename);
+  writeRom(opts->outputFilename);
 
   // calculate and check sizes
 
   stdPageLen = hdrLen + rtnLen + mapLen + txtLen + filLen + pt3Len + basLen;
 
-  if (xtd) {
+  if (opts->megaROM) {
     maxPageLen = rom_size - 0x4000;
     if (compiler->segm_total == 0) compiler->segm_total = 4;
     stdMemoryPerc = (stdPageLen / maxPageLen) * 100;
@@ -368,6 +371,12 @@ void Rom::buildResources(vector<Lexeme *> *resourceList) {
       // strips quotes from file name
       file.stripQuotes(lexeme->value, filename, sizeof(filename));
 
+      // if file not found, try search it at input path
+      if (!fileExists(filename)) {
+        string fn = pathJoin(opts->inputPath, filename);
+        strlcpy(filename, fn.c_str(), sizeof(filename));
+      }
+
       size_read = file.readFromFile(filename, &data[filInd], 0x4000);
       if (size_read > 0) {
         memcpy(&data[mapInd], &filInd, 2);
@@ -440,7 +449,7 @@ void Rom::buildMapAndResources() {
   //                         length (1 byte)
   //                             followed by the compressed data itself
 
-  if (xtd) {
+  if (opts->megaROM) {
     resource_segment = codeSgm;
     start_resource_address = resource_segment * 0x4000;
     rom_size = 0x20000;
@@ -507,7 +516,7 @@ void Rom::buildMapAndResources() {
   filLen = 0;
   txtLen = 0;
 
-  if (xtd) {
+  if (opts->megaROM) {
     i = (start_resource_address - 0x4000 + rscLen + 0x0100);
     rom_size = ((i / 0x20000) + 1) * 0x20000;
     max_resource_size = rom_size - i + rscLen;
@@ -523,7 +532,7 @@ void Rom::buildMapAndResources() {
             "Resources total size = %i byte(s)\nResources exceeded valid ROM "
             "page size limit (%i)\nDifference = %i byte(s)",
             rscLen, max_resource_size, rscLen - max_resource_size);
-    if (!xtd) {
+    if (!opts->megaROM) {
       strlcat(s,
               "\nTry compiling it in MegaROM format by adding the -x parameter",
               sizeof(s));
@@ -534,8 +543,8 @@ void Rom::buildMapAndResources() {
 }
 
 void Rom::addResourceToMap(int offset, int length, int filler) {
-  int address = (xtd) ? (offset % 0x4000) + rscAddr : offset;
-  int segment = (xtd) ? ((offset / 0x4000) - 1) * 2 : 0;
+  int address = (opts->megaROM) ? (offset % 0x4000) + rscAddr : offset;
+  int segment = (opts->megaROM) ? ((offset / 0x4000) - 1) * 2 : 0;
 
   memcpy(&data[mapInd], &address, 2);
   mapInd += 2;
@@ -733,6 +742,12 @@ void Rom::buildMapAndResourcesFile(Lexeme *lexeme) {
 
   // strips quotes from file name
   file.stripQuotes(lexeme->value, filename, sizeof(filename));
+
+  // if file not found, try search it at input path
+  if (!fileExists(filename)) {
+    string fn = pathJoin(opts->inputPath, filename);
+    strlcpy(filename, fn.c_str(), sizeof(filename));
+  }
 
   file.getFileExt(filename, sizeof(filename), fileext, sizeof(fileext));
 
@@ -1133,7 +1148,7 @@ void Rom::buildMapAndResourcesFileBIN(char *filename, char *fileext) {
 
     memcpy(&data[filInd], buffer, size_read);
 
-    if (xtd)
+    if (opts->megaROM)
       address = (filInd % 0x4000) + 0x8000;
     else
       address = filInd;
@@ -1221,7 +1236,7 @@ void Rom::buildBasicCode() {
 
   // insert dummy CALL TURBO ON into code
   // if its not included yet
-  if (turbo && !tokenizer->turbo_mode) {
+  if (opts->turbo && !tokenizer->turbo_mode) {
     buildTurboLine();
   }
 
@@ -1229,7 +1244,8 @@ void Rom::buildBasicCode() {
   for (unsigned int i = 0; i < tokenizer->lines.size(); i++) {
     line = tokenizer->lines[i];
     if (line->data[0] == 143 || (line->data[0] == ':' && line->data[1] == 143))
-      if (stripRemLines && (line->data[2] != '#' && line->data[3] != '#'))
+      if (!opts->noStripRemLines &&
+          (line->data[2] != '#' && line->data[3] != '#'))
         continue;
     calcBasicLineAddress(line);
   }
@@ -1238,7 +1254,8 @@ void Rom::buildBasicCode() {
   for (unsigned int i = 0; i < tokenizer->lines.size(); i++) {
     line = tokenizer->lines[i];
     if (line->data[0] == 143 || (line->data[0] == ':' && line->data[1] == 143))
-      if (stripRemLines && (line->data[2] != '#' && line->data[3] != '#'))
+      if (!opts->noStripRemLines &&
+          (line->data[2] != '#' && line->data[3] != '#'))
         continue;
     buildBasicLine(line);
   }
@@ -1412,7 +1429,7 @@ void Rom::buildHeaderAdjust() {
       resource_address = rtnAddr + rtnLen;
       resource_segment = 0xFF;  // music player enabled
     } else {
-      if (xtd) {
+      if (opts->megaROM) {
         resource_address = rscAddr + 0x0010;  // resource map start address
         resource_segment = rscSgm;  // resource map segment (128kb rom)
         // https://www.msx.org/wiki/MegaROM_Mappers
@@ -1425,7 +1442,7 @@ void Rom::buildHeaderAdjust() {
         //       8000h~9FFFh (mirror: 0000h~1FFFh)	    9000h (mirrors:
         //       9001h~97FFh) A000h~BFFFh (mirror: 2000h~3FFFh)	    B000h
         //       (mirrors: B001h~B7FFh)
-        if (konamiSCC) {
+        if (opts->compileMode == BuildOptions::CompileMode::KonamiSCC) {
           char *p = (char *)&data[xbcAddr + 0xDB];
           int mapperCount = 0;
           for (int i = 0; i < 0x4000; i++) {
@@ -1464,10 +1481,10 @@ void Rom::error() {
 
 //----------------------------------------------------------------------------------------------
 
-void Rom::writeRom(char *filename) {
+void Rom::writeRom(string filename) {
   int i, k, t;
 
-  file.name = string(filename);
+  file.name = filename;
 
   if (!file.create()) {
     errorMessage = "Cannot create output file";

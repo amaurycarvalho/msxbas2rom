@@ -9,6 +9,11 @@
 
 #include "options.h"
 
+BuildOptions::BuildOptions(string filename) {
+  BuildOptions();
+  setInputFilename(filename);
+}
+
 BuildOptions::BuildOptions() {
   /// default file names
   inputFilename = outputFilename = symbolFilename = "";
@@ -84,30 +89,35 @@ BuildOptions::BuildOptions() {
                    [&](const std::string&) { noStripRemLines = true; });
 }
 
+void BuildOptions::setInputFilename(string filename) {
+  inputFilename = filename;
+  if (!inputFilename.empty()) {
+    if (inputPath.empty()) {
+      inputPath = getFilePath(inputFilename);
+    }
+    if (outputPath.empty()) {
+      outputPath = inputPath;
+    }
+    outputFilename =
+        pathJoin(outputPath, getFileNameWithoutExtension(inputFilename));
+
+    if (compileMode == CompileMode::ASCII8 ||
+        compileMode == CompileMode::KonamiSCC) {
+      outputFilename += "[" + getCompileModeShortName() + "]";
+      megaROM = true;
+    }
+
+    symbolFilename = outputFilename + ".symbol";
+    outputFilename += ".rom";
+  }
+}
+
 bool BuildOptions::parse(int argc, char* argv[]) {
   try {
     appFileName = argv[0];
     parser.parse(argc, argv);
-    inputFilename = parser.getFilename();
-    if (!inputFilename.empty()) {
-      if (inputPath.empty()) {
-        inputPath = getFilePath(inputFilename);
-      }
-      if (outputPath.empty()) {
-        outputPath = inputPath;
-      }
-      outputFilename =
-          pathJoin(outputPath, getFileNameWithoutExtension(inputFilename));
+    setInputFilename(parser.getFilename());
 
-      if (compileMode == CompileMode::ASCII8 ||
-          compileMode == CompileMode::KonamiSCC) {
-        outputFilename += "[" + getCompileModeShortName() + "]";
-        megaROM = true;
-      }
-
-      symbolFilename = outputFilename + ".symbol";
-      outputFilename += ".rom";
-    }
   } catch (const std::exception& ex) {
     errorMessage = ex.what();
     error = true;

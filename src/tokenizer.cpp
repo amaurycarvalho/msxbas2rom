@@ -12,6 +12,9 @@ bool Tokenizer::evaluate(Lexer *lexer) {
   int i, t = lexer->lines.size();
   LexerLine *lexerLine;
 
+  this->lexer = lexer;
+  this->opts = lexer->opts;
+
   turbo_mode = false;
   turbo_on = false;
   font = false;

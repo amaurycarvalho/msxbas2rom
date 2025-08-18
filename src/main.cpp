@@ -99,12 +99,12 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  if (!FileExists(opts.inputFilename)) {
+  if (!fileExists(opts.inputFilename)) {
     printf("ERROR: Input file not found!\n");
     return 1;
   }
 
-  if (FileExists(opts.outputFilename)) {
+  if (fileExists(opts.outputFilename)) {
     remove(opts.outputFilename.c_str());
   }
 
@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
 
   if (!opts.quiet) printf("(1) Doing lexical analysis...\n");
 
-  if (!lexer.load((char *)opts.inputFilename.c_str())) {
+  if (!lexer.load(&opts)) {
     printf("ERROR: Cannot load input file for lexical analysis\n");
     printf("%s\n", lexer.errorMessage.c_str());
     return 1;
@@ -134,8 +134,6 @@ int main(int argc, char *argv[]) {
     printf("Displaying lexical analysis:\n");
     lexer.print();
   }
-
-  parser.debug = opts.debug;
 
   if (opts.compileMode != BuildOptions::CompileMode::Pcoded) {
     /// SYNTACTIC ANALYSIS
@@ -169,10 +167,6 @@ int main(int argc, char *argv[]) {
     }
 
     if (parser.has_pt3) {
-      compilerPT3.megaROM = opts.megaROM;
-      compilerPT3.debug = opts.debug;
-      compilerPT3.has_line_number = opts.lineNumber;
-
       if (!compilerPT3.build(&parser)) {
         printf("Error: %s\n", compilerPT3.error_message.c_str());
         if (compilerPT3.current_tag) compilerPT3.current_tag->print();
@@ -180,7 +174,7 @@ int main(int argc, char *argv[]) {
       }
 
       if (!opts.quiet) {
-        if (compilerPT3.megaROM) {
+        if (opts.megaROM) {
           printf("    Compiling for MegaROM format (Konami with SCC mapper)\n");
         }
         printf("    Compiled code size = %i byte(s)\n", compilerPT3.code_size);
@@ -189,12 +183,6 @@ int main(int argc, char *argv[]) {
       }
 
     } else {
-      compiler.megaROM = opts.megaROM;
-      compiler.konamiSCC =
-          (opts.compileMode == BuildOptions::CompileMode::KonamiSCC);
-      compiler.debug = opts.debug;
-      compiler.has_line_number = opts.lineNumber;
-
       if (!compiler.build(&parser)) {
         printf("Error: %s\n", compiler.error_message.c_str());
         if (compiler.current_tag) compiler.current_tag->print();
@@ -202,8 +190,8 @@ int main(int argc, char *argv[]) {
       }
 
       if (!opts.quiet) {
-        if (compiler.megaROM) {
-          if (compiler.konamiSCC) {
+        if (opts.megaROM) {
+          if (opts.compileMode == BuildOptions::CompileMode::KonamiSCC) {
             printf(
                 "    Compiling for MegaROM format (Konami with SCC mapper)\n");
           } else
@@ -219,11 +207,8 @@ int main(int argc, char *argv[]) {
 
     if (!opts.quiet) printf("(4) Building ROM...\n");
 
-    rom.xtd = opts.megaROM;
-    rom.konamiSCC = (opts.compileMode == BuildOptions::CompileMode::KonamiSCC);
-
     if (parser.has_pt3) {
-      if (!rom.build(&compilerPT3, (char *)opts.outputFilename.c_str())) {
+      if (!rom.build(&compilerPT3)) {
         rom.error();
         printf("ERROR: ROM building error\n");
         return 1;
@@ -234,7 +219,7 @@ int main(int argc, char *argv[]) {
       }
 
     } else {
-      if (!rom.build(&compiler, (char *)opts.outputFilename.c_str())) {
+      if (!rom.build(&compiler)) {
         rom.error();
         printf("ERROR: ROM building error\n");
         return 1;
@@ -402,16 +387,11 @@ int main(int argc, char *argv[]) {
 
     if (!opts.quiet) printf("(3) Building ROM...\n");
 
-    rom.turbo = opts.turbo;
-    rom.xtd = opts.megaROM;
-    rom.konamiSCC = opts.compileMode == BuildOptions::CompileMode::KonamiSCC;
-    rom.stripRemLines = !opts.noStripRemLines;
-
     if (!opts.quiet && opts.noStripRemLines) {
       printf("Including remark (REM) lines into ROM file\n");
     }
 
-    if (!rom.build(&tokenizer, (char *)opts.outputFilename.c_str())) {
+    if (!rom.build(&tokenizer)) {
       rom.error();
       printf("ERROR: ROM building error\n");
       return 1;

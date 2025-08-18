@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "fswrapper.h"
+#include "options.h"
 
 using namespace std;
 
@@ -341,6 +342,7 @@ class Lexer {
   int lineNo = 0;
   vector<LexerLine*> lines;
   string errorMessage;
+  BuildOptions* opts;
 
   /***
    * @brief Clear the lines list
@@ -352,7 +354,14 @@ class Lexer {
    * @param filename Source code file name
    * @return True, if a valid MSX BASIC source code
    */
-  bool load(char* filename);
+  bool load(string filename);
+
+  /***
+   * @brief Load a MSX BASIC source code (plain text) in the lines list
+   * @param opts Build options
+   * @return True, if a valid MSX BASIC source code
+   */
+  bool load(BuildOptions* opts);
 
   /***
    * @brief Perform a lexical analysis on the lines list

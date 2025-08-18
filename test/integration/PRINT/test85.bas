@@ -23,7 +23,7 @@
 
 160 END
 
-170 RESUME
+170 rem RESUME
 
 
 

@@ -9,7 +9,7 @@
 
 using namespace std;
 
-bool FileExists(const string& filename) {
+bool fileExists(const string& filename) {
   FILE* file;
   if ((file = fopen(filename.c_str(), "r"))) {
     fclose(file);
