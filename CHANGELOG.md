@@ -1,5 +1,6 @@
 # Version history
 
+- 0.3.3.0 – (2025/08/18) New -i and -o parameters;
 - #.#.#.# – (2025/08/14) GitHub CI/CD and RPM/DEB packaging refactoring;
 - #.#.#.# – (2025/08/01) Source code ported from Code::Blocks to VSCode;
 - 0.3.2.9 – (2025/07/22) MegaROM emulation detection bug fix;

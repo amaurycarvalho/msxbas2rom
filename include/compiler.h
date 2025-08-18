@@ -20,7 +20,7 @@
 
 #include <queue>
 
-#include "oswrapper.h"
+#include "fswrapper.h"
 #include "parse.h"
 #include "pletter.h"
 #include "z80.h"

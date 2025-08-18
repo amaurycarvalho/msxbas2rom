@@ -65,9 +65,16 @@ BINDIR_RELEASE = bin/Release
 DEP_RELEASE = 
 OUT_RELEASE = $(BINDIR_RELEASE)/msxbas2rom
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/lex.o $(OBJDIR_DEBUG)/tokenizer.o $(OBJDIR_DEBUG)/rom.o $(OBJDIR_DEBUG)/z80.o $(OBJDIR_DEBUG)/compiler.o $(OBJDIR_DEBUG)/compiler_pt3.o $(OBJDIR_DEBUG)/parse.o $(OBJDIR_DEBUG)/pletter.o    
+OBJ_DEBUG = $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/lex.o $(OBJDIR_DEBUG)/tokenizer.o \
+			$(OBJDIR_DEBUG)/rom.o $(OBJDIR_DEBUG)/z80.o $(OBJDIR_DEBUG)/compiler.o \
+			$(OBJDIR_DEBUG)/compiler_pt3.o $(OBJDIR_DEBUG)/parse.o $(OBJDIR_DEBUG)/pletter.o \
+			$(OBJDIR_DEBUG)/cliparser.o $(OBJDIR_DEBUG)/options.o $(OBJDIR_DEBUG)/fswrapper.o 
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/lex.o $(OBJDIR_RELEASE)/tokenizer.o $(OBJDIR_RELEASE)/rom.o $(OBJDIR_RELEASE)/z80.o $(OBJDIR_RELEASE)/compiler.o $(OBJDIR_RELEASE)/compiler_pt3.o $(OBJDIR_RELEASE)/parse.o $(OBJDIR_RELEASE)/pletter.o  
+OBJ_RELEASE = $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/lex.o $(OBJDIR_RELEASE)/tokenizer.o \
+ 			  $(OBJDIR_RELEASE)/rom.o $(OBJDIR_RELEASE)/z80.o $(OBJDIR_RELEASE)/compiler.o \
+			  $(OBJDIR_RELEASE)/compiler_pt3.o $(OBJDIR_RELEASE)/parse.o \
+			  $(OBJDIR_RELEASE)/pletter.o $(OBJDIR_RELEASE)/cliparser.o \
+			  $(OBJDIR_RELEASE)/options.o $(OBJDIR_RELEASE)/fswrapper.o
 
 DIST_DIR = dist
 DEB_DIR = ..
@@ -106,7 +113,7 @@ out_debug: $(OUT_DEBUG)
 after_debug: 
 	@echo "✅ Building debug finished"
 
-$(OBJDIR_DEBUG)/main.o: $(SRC)/main.cpp $(INC_DEBUG)/main.h
+$(OBJDIR_DEBUG)/main.o: $(SRC)/main.cpp $(INC_DEBUG)/main.h $(INC_DEBUG)/appinfo.h $(INC_DEBUG)/options.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/main.cpp -o $(OBJDIR_DEBUG)/main.o 
 
 $(OBJDIR_DEBUG)/lex.o: $(SRC)/lex.cpp $(INC_DEBUG)/lex.h
@@ -130,8 +137,17 @@ $(OBJDIR_DEBUG)/compiler_pt3.o: $(SRC)/compiler_pt3.cpp $(INC_DEBUG)/compiler_pt
 $(OBJDIR_DEBUG)/parse.o: $(SRC)/parse.cpp $(INC_DEBUG)/parse.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/parse.cpp -o $(OBJDIR_DEBUG)/parse.o 
 
+$(OBJDIR_DEBUG)/options.o: $(SRC)/options.cpp $(INC_DEBUG)/options.h
+	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/options.cpp -o $(OBJDIR_DEBUG)/options.o 
+
 $(OBJDIR_DEBUG)/pletter.o: $(SRC)/pletter.cpp $(INC_DEBUG)/pletter.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/pletter.cpp -o $(OBJDIR_DEBUG)/pletter.o 
+
+$(OBJDIR_DEBUG)/cliparser.o: $(SRC)/cliparser.cpp $(INC_DEBUG)/cliparser.h
+	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/cliparser.cpp -o $(OBJDIR_DEBUG)/cliparser.o 
+
+$(OBJDIR_DEBUG)/fswrapper.o: $(SRC)/fswrapper.cpp $(INC_DEBUG)/fswrapper.h
+	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/fswrapper.cpp -o $(OBJDIR_DEBUG)/fswrapper.o 
 
 $(OUT_DEBUG): $(OBJ_DEBUG) $(DEP_DEBUG)
 	$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG)
@@ -156,7 +172,7 @@ out_release: $(OUT_RELEASE)
 after_release: 
 	@echo "✅ Building release finished"
 
-$(OBJDIR_RELEASE)/main.o: $(SRC)/main.cpp $(INC_RELEASE)/main.h
+$(OBJDIR_RELEASE)/main.o: $(SRC)/main.cpp $(INC_RELEASE)/main.h $(INC_RELEASE)/appinfo.h $(INC_RELEASE)/options.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/main.cpp -o $(OBJDIR_RELEASE)/main.o 
 
 $(OBJDIR_RELEASE)/lex.o: $(SRC)/lex.cpp $(INC_RELEASE)/lex.h
@@ -180,8 +196,17 @@ $(OBJDIR_RELEASE)/compiler_pt3.o: $(SRC)/compiler_pt3.cpp $(INC_RELEASE)/compile
 $(OBJDIR_RELEASE)/parse.o: $(SRC)/parse.cpp $(INC_RELEASE)/parse.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/parse.cpp -o $(OBJDIR_RELEASE)/parse.o 
 
+$(OBJDIR_RELEASE)/options.o: $(SRC)/options.cpp $(INC_RELEASE)/options.h
+	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/options.cpp -o $(OBJDIR_RELEASE)/options.o 
+
 $(OBJDIR_RELEASE)/pletter.o: $(SRC)/pletter.cpp $(INC_RELEASE)/pletter.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/pletter.cpp -o $(OBJDIR_RELEASE)/pletter.o 
+
+$(OBJDIR_RELEASE)/cliparser.o: $(SRC)/cliparser.cpp $(INC_RELEASE)/cliparser.h
+	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/cliparser.cpp -o $(OBJDIR_RELEASE)/cliparser.o 
+
+$(OBJDIR_RELEASE)/fswrapper.o: $(SRC)/fswrapper.cpp $(INC_RELEASE)/fswrapper.h
+	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/fswrapper.cpp -o $(OBJDIR_RELEASE)/fswrapper.o 
 
 $(OUT_RELEASE): $(OBJ_RELEASE) $(DEP_RELEASE)
 	$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE)

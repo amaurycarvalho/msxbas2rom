@@ -11,6 +11,8 @@
  * @note
  *   Unit testing:
  *     ./test/unit/test
+ *   Integration testing:
+ *     ./test/integration/test.sh
  * @example
  *   msxbas2rom -h
  *   msxbas2rom --ver
@@ -37,8 +39,7 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-  int i;
-  char *s;
+  BuildOptions opts;
   Lexer lexer;
   Tokenizer tokenizer;
   Rom rom;
@@ -48,155 +49,75 @@ int main(int argc, char *argv[]) {
 
   /// parsing parameters
 
-  parmCompile = true;  //! default = compile mode
+  if (!opts.parse(argc, argv)) {
+    printHeader();
+    printf("ERROR: Invalid parameter(s)\n%s\n", opts.errorMessage.c_str());
+    return 1;
+  };
 
-  for (i = 1; i < argc; i++) {
-    char *p = &argv[i][0];
-    if (p[0] == '/' || p[0] == '-') {
-      switch (argv[i][1]) {
-        case 'h':
-        case 'H':
-        case '?':
-          parmHelp = true;
-          break;
-        case 'd':
-        case 'D':
-          parmDebug = true;
-          break;
-        case 'q':
-        case 'Q':
-          parmQuiet = true;
-          break;
-        case 't':
-        case 'T':
-          parmTurbo = true;
-          break;
-        case 'x':
-        case 'X':
-          parmXtd = true;
-          break;
-        case 'c':
-        case 'C':
-          parmCompile = true;
-          break;
-        case 'p':
-        case 'P':
-          parmCompile = false;
-          break;
-        case 's':
-        case 'S':
-          parmSymbols = true;
-          break;
-        case '-': {
-          if (p[2] == 'v' && p[3] == 'e' && p[4] == 'r') {
-            parmVer = true;
-          } else if (p[2] == 'd' && p[3] == 'o' && p[4] == 'c') {
-            parmDoc = true;
-          } else if (p[2] == 'n' && p[3] == 's' && p[4] == 'r') {
-            parmNoStripRemLines = true;
-          } else if (p[2] == 'l' && p[3] == 'i' && p[4] == 'n') {
-            parmLineNumber = true;
-          } else if (p[2] == 's' && p[3] == 'c' && p[4] == 'c') {
-            parmKonamiSCC = true;
-          }
-        } break;
-        default:
-          parmError = true;
-          break;
-      }
+  if (!opts.quiet) {
+    bool footer = false;
 
-    } else {
-      strlcpy(inputFilename, argv[i], sizeof(inputFilename));
+    /// version
+    if (opts.version) {
+      printVersion();
+      return 0;
     }
-  }
 
-  if (!parmQuiet) {
-    /// splash screen
+    /// header information
+    printHeader();
 
-    printf("%s %s\n", info_splash, app_version);
+    /// quick reference
+    if (opts.doc) {
+      printDocs();
+      footer = true;
 
-    /// help hint
-    if (parmDoc) {
-      printf("%s", info_documentation);
-      printf("%s\n", info_support);
+      /// history
+    } else if (opts.history) {
+      printHistory();
+      footer = true;
+
+      /// help hint
+    } else if (argc == 1 || opts.help) {
+      printHelp();
+      footer = true;
+    }
+
+    if (footer) {
+      printFooter();
       return 0;
-    } else if (parmVer) {
-      printf("%s", info_history);
-      printf("%s\n", info_support);
-      return 0;
-    } else if (argc == 1 || parmHelp) {
-      printf("%s", info_usage);
-      printf("%s\n", info_support);
-      return 0;
-    } else {
     }
   } else {
-    if (argc == 1 || parmHelp || parmError) return 1;
+    if (argc == 1 || opts.help || opts.doc || opts.version || opts.history) {
+      printf("ERROR: Invalid parameter for quiet mode\n");
+      return 1;
+    }
   }
 
-  if (parmError) {
-    printf("ERROR: Invalid parameter(s)\n");
-    return 1;
-  }
-
-  if (!inputFilename[0]) {
+  if (opts.inputFilename.empty()) {
     printf("ERROR: Input file name parameter is missing!\n");
     return 1;
   }
 
-  if (!FileExists(inputFilename)) {
+  if (!FileExists(opts.inputFilename)) {
     printf("ERROR: Input file not found!\n");
     return 1;
   }
 
-  /// set output file name from input name
-
-  strlcpy(outputFilename, inputFilename, sizeof(outputFilename));
-  strlcpy(symbolFilename, inputFilename, sizeof(symbolFilename));
-
-  s = strrchr(outputFilename, '.');
-  if (s) {
-    int slen = strnlen(outputFilename, sizeof(outputFilename));
-    if (parmXtd) {
-      if (parmKonamiSCC) {
-        strlcpy(s, "[KonamiSCC].rom", sizeof(outputFilename) - slen);
-      } else
-        strlcpy(s, "[ASCII8].rom", sizeof(outputFilename) - slen);
-    } else {
-      strlcpy(s, ".rom", sizeof(outputFilename) - slen);
-    }
-  } else {
-    if (parmXtd) {
-      if (parmKonamiSCC) {
-        strlcat(outputFilename, "[KonamiSCC].rom", sizeof(outputFilename));
-      } else
-        strlcat(outputFilename, "[ASCII8].rom", sizeof(outputFilename));
-    } else {
-      strlcat(outputFilename, ".rom", sizeof(outputFilename));
-    }
+  if (FileExists(opts.outputFilename)) {
+    remove(opts.outputFilename.c_str());
   }
 
-  s = strrchr(symbolFilename, '.');
-  if (s) {
-    int slen = strnlen(outputFilename, sizeof(symbolFilename));
-    strlcpy(s, ".symbol", sizeof(symbolFilename) - slen);
-  } else {
-    strlcat(symbolFilename, ".symbol", sizeof(symbolFilename));
-  }
-
-  if (FileExists(outputFilename)) {
-    remove(outputFilename);
-  }
-
-  if (!parmQuiet)
-    printf("Converting %s to %s ...\n", inputFilename, outputFilename);
+  if (!opts.quiet)
+    printf("Converting %s to %s ...\n", opts.inputFilename.c_str(),
+           opts.outputFilename.c_str());
 
   /// LEXICAL ANALYSIS
   //! @note lexing the input file, tokenizing it
 
-  if (!parmQuiet) printf("(1) Doing lexical analysis...\n");
+  if (!opts.quiet) printf("(1) Doing lexical analysis...\n");
 
-  if (!lexer.load(inputFilename)) {
+  if (!lexer.load((char *)opts.inputFilename.c_str())) {
     printf("ERROR: Cannot load input file for lexical analysis\n");
     printf("%s\n", lexer.errorMessage.c_str());
     return 1;
@@ -209,18 +130,18 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  if (parmDebug) {
+  if (opts.debug) {
     printf("Displaying lexical analysis:\n");
     lexer.print();
   }
 
-  parser.debug = parmDebug;
+  parser.debug = opts.debug;
 
-  if (parmCompile) {
+  if (opts.compileMode != BuildOptions::CompileMode::Pcoded) {
     /// SYNTACTIC ANALYSIS
     //! @note parsing the lexing tokens, building the syntax tree
 
-    if (!parmQuiet) printf("(2) Doing syntactic analysis...\n");
+    if (!opts.quiet) printf("(2) Doing syntactic analysis...\n");
 
     if (!parser.evaluate(&lexer)) {
       if (parser.lineNo == 0)
@@ -232,7 +153,7 @@ int main(int argc, char *argv[]) {
       return 1;
     }
 
-    if (parmDebug) {
+    if (opts.debug) {
       printf("Displaying syntactic analysis:\n");
       parser.print();
     }
@@ -240,7 +161,7 @@ int main(int argc, char *argv[]) {
     /// SEMANTIC ANALYSIS
     //! @note create assembly output
 
-    if (!parmQuiet) printf("(3) Doing semantic analysis (compiling)...\n");
+    if (!opts.quiet) printf("(3) Doing semantic analysis (compiling)...\n");
 
     if (parser.has_akm && parser.has_pt3) {
       printf("ERROR: Cannot compile PT3 and Arkos players in the same ROM\n");
@@ -248,9 +169,9 @@ int main(int argc, char *argv[]) {
     }
 
     if (parser.has_pt3) {
-      compilerPT3.megaROM = parmXtd;
-      compilerPT3.debug = parmDebug;
-      compilerPT3.has_line_number = parmLineNumber;
+      compilerPT3.megaROM = opts.megaROM;
+      compilerPT3.debug = opts.debug;
+      compilerPT3.has_line_number = opts.lineNumber;
 
       if (!compilerPT3.build(&parser)) {
         printf("Error: %s\n", compilerPT3.error_message.c_str());
@@ -258,7 +179,7 @@ int main(int argc, char *argv[]) {
         return 1;
       }
 
-      if (!parmQuiet) {
+      if (!opts.quiet) {
         if (compilerPT3.megaROM) {
           printf("    Compiling for MegaROM format (Konami with SCC mapper)\n");
         }
@@ -268,10 +189,11 @@ int main(int argc, char *argv[]) {
       }
 
     } else {
-      compiler.megaROM = parmXtd;
-      compiler.konamiSCC = parmKonamiSCC;
-      compiler.debug = parmDebug;
-      compiler.has_line_number = parmLineNumber;
+      compiler.megaROM = opts.megaROM;
+      compiler.konamiSCC =
+          (opts.compileMode == BuildOptions::CompileMode::KonamiSCC);
+      compiler.debug = opts.debug;
+      compiler.has_line_number = opts.lineNumber;
 
       if (!compiler.build(&parser)) {
         printf("Error: %s\n", compiler.error_message.c_str());
@@ -279,7 +201,7 @@ int main(int argc, char *argv[]) {
         return 1;
       }
 
-      if (!parmQuiet) {
+      if (!opts.quiet) {
         if (compiler.megaROM) {
           if (compiler.konamiSCC) {
             printf(
@@ -295,37 +217,37 @@ int main(int argc, char *argv[]) {
 
     /// ROM OUTPUT
 
-    if (!parmQuiet) printf("(4) Building ROM...\n");
+    if (!opts.quiet) printf("(4) Building ROM...\n");
 
-    rom.xtd = parmXtd;
-    rom.konamiSCC = parmKonamiSCC;
+    rom.xtd = opts.megaROM;
+    rom.konamiSCC = (opts.compileMode == BuildOptions::CompileMode::KonamiSCC);
 
     if (parser.has_pt3) {
-      if (!rom.build(&compilerPT3, outputFilename)) {
+      if (!rom.build(&compilerPT3, (char *)opts.outputFilename.c_str())) {
         rom.error();
         printf("ERROR: ROM building error\n");
         return 1;
       }
 
-      if (parmSymbols) {
-        SaveSymbolFile(&compilerPT3, rom.code_start);
+      if (opts.symbols) {
+        saveSymbolFile(&opts, &compilerPT3, rom.code_start);
       }
 
     } else {
-      if (!rom.build(&compiler, outputFilename)) {
+      if (!rom.build(&compiler, (char *)opts.outputFilename.c_str())) {
         rom.error();
         printf("ERROR: ROM building error\n");
         return 1;
       }
 
-      if (parmSymbols) {
-        SaveSymbolFile(&compiler, rom.code_start);
+      if (opts.symbols) {
+        saveSymbolFile(&opts, &compiler, rom.code_start);
       }
     }
 
     /// finish process
 
-    if (!parmQuiet) {
+    if (!opts.quiet) {
       if (parser.has_pt3) {
         if (compilerPT3.fileList.size()) {
           int i, t = compilerPT3.fileList.size(), len1 = 0, len2 = 0;
@@ -344,8 +266,8 @@ int main(int argc, char *argv[]) {
           printf("Built-In fonts included as resources\n");
         }
 
-        if (parmXtd) {
-          if (parmKonamiSCC) {
+        if (opts.megaROM) {
+          if (opts.compileMode == BuildOptions::CompileMode::KonamiSCC) {
             printf(
                 "Extended memory scheme mode activated (Konami with SCC "
                 "mapper).\n");
@@ -363,7 +285,7 @@ int main(int argc, char *argv[]) {
         printf("RAM memory will be occupied in %.1f%% of avaliable space\n",
                compilerPT3.ramMemoryPerc);
 
-        if (parmSymbols) {
+        if (opts.symbols) {
           printf("Symbols file created for use on OpenMSX debugger\n");
         }
 
@@ -378,7 +300,7 @@ int main(int argc, char *argv[]) {
               "<dioniso072@yahoo.es>\n");
         }
 
-        printf("%s\n", info_support);
+        printFooter();
 
       } else {
         if (compiler.fileList.size()) {
@@ -397,8 +319,8 @@ int main(int argc, char *argv[]) {
           printf("Built-In fonts included as resources\n");
         }
 
-        if (parmXtd) {
-          if (parmKonamiSCC) {
+        if (opts.megaROM) {
+          if (opts.compileMode == BuildOptions::CompileMode::KonamiSCC) {
             printf(
                 "Extended memory scheme mode activated (Konami with SCC "
                 "mapper).\n");
@@ -425,7 +347,7 @@ int main(int argc, char *argv[]) {
         printf("RAM memory will be occupied in %.1f%% of avaliable space\n",
                compiler.ramMemoryPerc);
 
-        if (parmSymbols) {
+        if (opts.symbols) {
           printf("Symbols file created for use on OpenMSX debugger\n");
         }
 
@@ -444,7 +366,7 @@ int main(int argc, char *argv[]) {
               "- Tiny Sprite resource file support (Rafael Jannone, 2022)\n");
         }
 
-        printf("%s\n", info_support);
+        printFooter();
       }
     }
 
@@ -452,10 +374,10 @@ int main(int argc, char *argv[]) {
     /// TOKEN ANALYSIS
     //! @note default basic interpreter tokenizer
 
-    if (!parmQuiet) printf("(2) Doing token analysis...\n");
+    if (!opts.quiet) printf("(2) Doing token analysis...\n");
 
-    tokenizer.debug = parmDebug;
-    tokenizer.force_turbo = parmTurbo;
+    tokenizer.debug = opts.debug;
+    tokenizer.force_turbo = opts.turbo;
 
     if (!tokenizer.evaluate(&lexer)) {
       tokenizer.error();
@@ -463,33 +385,33 @@ int main(int argc, char *argv[]) {
       return 1;
     }
 
-    if (tokenizer.turbo_mode) parmTurbo = true;
+    if (tokenizer.turbo_mode) opts.turbo = true;
 
-    if (!parmQuiet) {
-      if (parmTurbo) printf("Turbo mode detected and activated\n");
+    if (!opts.quiet) {
+      if (opts.turbo) printf("Turbo mode detected and activated\n");
       if (tokenizer.cmd) printf("CMD instruction detected and activated\n");
       if (tokenizer.pt3) printf("PT3 support detected and activated\n");
     }
 
-    if (parmDebug) {
+    if (opts.debug) {
       printf("Displaying token analysis:\n");
       tokenizer.print();
     }
 
     /// ROM OUTPUT
 
-    if (!parmQuiet) printf("(3) Building ROM...\n");
+    if (!opts.quiet) printf("(3) Building ROM...\n");
 
-    rom.turbo = parmTurbo;
-    rom.xtd = parmXtd;
-    rom.konamiSCC = parmKonamiSCC;
-    rom.stripRemLines = !parmNoStripRemLines;
+    rom.turbo = opts.turbo;
+    rom.xtd = opts.megaROM;
+    rom.konamiSCC = opts.compileMode == BuildOptions::CompileMode::KonamiSCC;
+    rom.stripRemLines = !opts.noStripRemLines;
 
-    if (!parmQuiet && parmNoStripRemLines) {
+    if (!opts.quiet && opts.noStripRemLines) {
       printf("Including remark (REM) lines into ROM file\n");
     }
 
-    if (!rom.build(&tokenizer, outputFilename)) {
+    if (!rom.build(&tokenizer, (char *)opts.outputFilename.c_str())) {
       rom.error();
       printf("ERROR: ROM building error\n");
       return 1;
@@ -497,7 +419,7 @@ int main(int argc, char *argv[]) {
 
     /// finish process
 
-    if (!parmQuiet) {
+    if (!opts.quiet) {
       if (tokenizer.resourceList.size()) {
         printf("%i resource(s) found\n", (int)tokenizer.resourceList.size());
       }
@@ -505,7 +427,7 @@ int main(int argc, char *argv[]) {
         printf("Built-In fonts included as resources\n");
       }
 
-      if (parmXtd) {
+      if (opts.megaROM) {
         printf("Extended memory scheme mode activated.\n");
         printf("Basic code occupied %.1f%% of STD avaliable space\n",
                rom.stdMemoryPerc);
@@ -521,9 +443,10 @@ int main(int argc, char *argv[]) {
 
       printf("Conversion finished with success.\n");
 
-      if (tokenizer.turbo_mode || parmTurbo || tokenizer.cmd || tokenizer.pt3) {
+      if (tokenizer.turbo_mode || opts.turbo || tokenizer.cmd ||
+          tokenizer.pt3) {
         printf("\nIncluded into this ROM:\n");
-        if (tokenizer.turbo_mode || parmTurbo) {
+        if (tokenizer.turbo_mode || opts.turbo) {
           printf("- XBASIC, copyright by J.Suzuki 1989.\n");
         }
         if (tokenizer.cmd) {
@@ -538,29 +461,20 @@ int main(int argc, char *argv[]) {
         }
       }
 
-      printf("%s\n", info_support);
+      printFooter();
     }
   }
 
   return 0;
 }
 
-bool FileExists(char *filename) {
-  FILE *file;
-  if ((file = fopen(filename, "r"))) {
-    fclose(file);
-    return true;
-  }
-  return false;
-}
-
-bool SaveSymbolFile(Compiler *compiler, int code_start) {
+bool saveSymbolFile(BuildOptions *opts, Compiler *compiler, int code_start) {
   FILE *file;
   CodeNode *codeItem;
   int i, t;
   char s[255];
 
-  if ((file = fopen(symbolFilename, "w"))) {
+  if ((file = fopen(opts->symbolFilename.c_str(), "w"))) {
     strcpy(s, "LOADER EQU 04010H\n");
     fwrite(s, 1, strlen(s), file);
 
@@ -596,13 +510,13 @@ bool SaveSymbolFile(Compiler *compiler, int code_start) {
   return false;
 }
 
-bool SaveSymbolFile(CompilerPT3 *compiler, int code_start) {
+bool saveSymbolFile(BuildOptions *opts, CompilerPT3 *compiler, int code_start) {
   FILE *file;
   CodeNode *codeItem;
   int i, t;
   char s[255];
 
-  if ((file = fopen(symbolFilename, "w"))) {
+  if ((file = fopen(opts->symbolFilename.c_str(), "w"))) {
     strcpy(s, "LOADER EQU 04010H\n");
     fwrite(s, 1, strlen(s), file);
 
@@ -632,4 +546,29 @@ bool SaveSymbolFile(CompilerPT3 *compiler, int code_start) {
     return true;
   }
   return false;
+}
+
+void printHeader() {
+  printf("%s %s\n", info_header, app_version);
+}
+
+void printVersion() {
+  printf("%s\n", app_version);
+}
+
+void printHelp() {
+  printf("%s", info_help);
+  // parser.printHelp(appFileName);
+}
+
+void printHistory() {
+  printf("%s", info_history);
+}
+
+void printDocs() {
+  printf("%s", info_documentation);
+}
+
+void printFooter() {
+  printf("%s\n", info_footer);
 }
