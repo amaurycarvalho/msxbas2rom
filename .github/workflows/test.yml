@@ -18,7 +18,11 @@ jobs:
         run: |
           cd test/unit
           make all
-      - name: Doing test scenarios
+      - name: Doing unit test scenarios
         run: |
           cd test/unit
           ./test
+      - name: Doing integration test scenarios
+        run: |
+          cd test/integration
+          ./test.sh
