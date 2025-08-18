@@ -14,9 +14,9 @@ SRC = ../../src
 CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG)
 LDFLAGS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc 
 
-SRC_CPP = test.cpp $(SRC)/lex.cpp $(SRC)/parse.cpp $(SRC)/z80.cpp $(SRC)/compiler.cpp $(SRC)/pletter.cpp
-SRC_INC = $(INC)/lex.h $(INC)/parse.h $(INC)/z80.h $(INC)/compiler.h $(INC)/header.h $(INC)/pletter.h
-SRC_OBJ = test.o lex.o parse.o z80.o compiler.o pletter.o
+SRC_CPP = test.cpp $(SRC)/lex.cpp $(SRC)/parse.cpp $(SRC)/z80.cpp $(SRC)/compiler.cpp $(SRC)/pletter.cpp $(SRC)/options.cpp $(SRC)/cliparser.cpp $(SRC)/fswrapper.cpp
+SRC_INC = $(INC)/lex.h $(INC)/parse.h $(INC)/z80.h $(INC)/compiler.h $(INC)/header.h $(INC)/pletter.h $(INC)/options.h $(INC)/cliparser.h $(INC)/fswrapper.h
+SRC_OBJ = test.o lex.o parse.o z80.o compiler.o pletter.o options.o cliparser.o fswrapper.o
 
 ifeq ($(OS),Windows_NT)
  OSFLAG += -D Win $(PARMS)
@@ -44,6 +44,9 @@ test: $(SRC_CPP) $(SRC_INC)
 	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/z80.cpp -o z80.o
 	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/compiler.cpp -o compiler.o
 	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/pletter.cpp -o pletter.o
+	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/options.cpp -o options.o
+	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/cliparser.cpp -o cliparser.o
+	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/fswrapper.cpp -o fswrapper.o
 	$(LD) -o test $(SRC_OBJ) $(LDFLAGS)
 
 
