@@ -22,6 +22,8 @@ using namespace std;
 #ifdef Win
 #define strlcpy(dst, src, size) strcpy_s((dst), (size), (src))
 #define strlcat(dst, src, size) strcat_s((dst), (size), (src))
+#define strncpy(dst, src, size) strcpy_s((dst), (size), (src))
+#define strncat(dst, src, size) strcat_s((dst), (size), (src))
 #define strcasecmp _stricmp
 #define fsFolderSeparator '\\'
 #else

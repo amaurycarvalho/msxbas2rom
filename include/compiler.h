@@ -118,14 +118,18 @@ class FileNode {
   int read();
   int readAsLexeme();
   int readAsLexeme(unsigned char* data, int data_length);
+
   /// @brief strips quotes from a string
-  void stripQuotes(string text, char* buf, int buflen);
-  void getFileExt(char* filename, int namelen, char* buf, int buflen);
+  string stripQuotes(const string& text);
+  /// @brief string to uppercase
+  string toUpper(const string& input);
+  /// @brief get file extension in uppercase
+  string getFileExt(string filename);
   string getFileExt();
 
-  bool writeToFile(char* filename, unsigned char* data, int data_length);
-  int readFromFile(char* filename, unsigned char* data, int maxlen);
-  int ParseTinySpriteFile(char* filename, unsigned char* data, int maxlen);
+  bool writeToFile(string filename, unsigned char* data, int data_length);
+  int readFromFile(string filename, unsigned char* data, int maxlen);
+  int ParseTinySpriteFile(string filename, unsigned char* data, int maxlen);
 
   void fixAKM(unsigned char* data, int address, int length);
   void fixAKX(unsigned char* data, int address, int length);

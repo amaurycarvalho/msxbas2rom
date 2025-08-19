@@ -30,11 +30,15 @@ string getFileName(const string& filepath) {
   return filepath.substr(pos + 1);
 }
 
+/***
+ * @brief get file extension
+ * @example .txt
+ */
 string getFileExtension(const string& filepath) {
   string filename = getFileName(filepath);
   size_t pos = filename.find_last_of('.');
   if (pos == string::npos) return "";  // no extension
-  return filename.substr(pos + 1);
+  return filename.substr(pos);
 }
 
 string getFileNameWithoutExtension(const string& filepath) {

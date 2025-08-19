@@ -6037,7 +6037,7 @@ void Compiler::cmd_bload() {
   FileNode* file;
   bool isTinySprite;
   int resource_number;
-  char filename[255], fileext[20];
+  string filename, fileext;
 
   if (t == 2) {
     action = current_action->actions[1];
@@ -6066,10 +6066,9 @@ void Compiler::cmd_bload() {
             // verify file type (screen or sprite)
 
             file = new FileNode();
-            file->stripQuotes(lexeme->value, filename, sizeof(filename));
-            file->getFileExt(filename, sizeof(filename), fileext,
-                             sizeof(fileext));
-            isTinySprite = (strcasecmp(fileext, ".SPR") == 0);
+            filename = file->stripQuotes(lexeme->value);
+            fileext = file->getFileExt(filename);
+            isTinySprite = (strcasecmp((char*)fileext.c_str(), ".SPR") == 0);
             delete file;
 
             if (isTinySprite) {
@@ -12748,6 +12747,23 @@ void FileNode::write(unsigned char* data, int data_length) {
 
 //----------------------------------------------------------------------------------------------
 
+string FileNode::stripQuotes(const string& text) {
+  string s = text;
+
+  // Remove leading quote
+  if (!s.empty() && s.front() == '"') {
+    s.erase(s.begin());
+  }
+
+  // Remove trailing quote
+  if (!s.empty() && s.back() == '"') {
+    s.pop_back();
+  }
+
+  return s;
+}
+
+/*
 void FileNode::stripQuotes(string text, char* buf, int buflen) {
   int tt;
   char* s;
@@ -12759,36 +12775,27 @@ void FileNode::stripQuotes(string text, char* buf, int buflen) {
     s++;
     tt--;
   }
-  strlcpy(buf, s, buflen);
+  strncpy(buf, s, buflen);
   if (buf[tt - 1] == '"') {
     buf[tt - 1] = 0;
     tt--;
   }
 }
+  */
 
-void FileNode::getFileExt(char* filename, int namelen, char* buf, int buflen) {
-  char* s;
-  int i, t;
-  t = strnlen(filename, namelen);
-  s = filename;
-  s += t;
-  buf[0] = 0;
-  while (t) {
-    if (s[0] == '.') {
-      strlcpy(buf, s, buflen);
-      t = strnlen(buf, buflen);
-      for (i = 0; i < t; i++) buf[i] = toupper(buf[i]);
-      break;
-    }
-    s--;
-    t--;
-  }
+string FileNode::toUpper(const string& input) {
+  string result = input;
+  transform(result.begin(), result.end(), result.begin(),
+            [](unsigned char c) { return toupper(c); });
+  return result;
+}
+
+string FileNode::getFileExt(string filename) {
+  return toUpper(getFileExtension(filename));
 }
 
 string FileNode::getFileExt() {
-  char buf[255];
-  getFileExt((char*)name.c_str(), name.size() + 1, buf, sizeof(buf));
-  return string(buf);
+  return getFileExt(name);
 }
 
 void FileNode::fixAKM(unsigned char* data, int address, int length) {
@@ -13013,9 +13020,9 @@ void FileNode::fixAKX(unsigned char* data, int address, int length) {
 
 //----------------------------------------------------------------------------------------------
 
-bool FileNode::writeToFile(char* filename, unsigned char* data,
+bool FileNode::writeToFile(string filename, unsigned char* data,
                            int data_length) {
-  name = string(filename);
+  this->name = filename;
 
   if (!create()) {
     return false;
@@ -13028,11 +13035,11 @@ bool FileNode::writeToFile(char* filename, unsigned char* data,
   return true;
 }
 
-int FileNode::readFromFile(char* filename, unsigned char* data, int maxlen) {
+int FileNode::readFromFile(string filename, unsigned char* data, int maxlen) {
   FILE* file;
   int total_bytes = 0;
 
-  if ((file = fopen(filename, "rb"))) {
+  if ((file = fopen(filename.c_str(), "rb"))) {
     total_bytes = fread(data, 1, maxlen, file);
     fclose(file);
   }
@@ -13042,7 +13049,7 @@ int FileNode::readFromFile(char* filename, unsigned char* data, int maxlen) {
   return total_bytes;
 }
 
-int FileNode::ParseTinySpriteFile(char* filename, unsigned char* data,
+int FileNode::ParseTinySpriteFile(string filename, unsigned char* data,
                                   int maxlen) {
   FILE* file;
   char line[255];
@@ -13058,6 +13065,7 @@ int FileNode::ParseTinySpriteFile(char* filename, unsigned char* data,
 
   *sprite_count = 0;
 
+  /// @note structure
   // for msx1 tiny sprite format file:
   //   [type=0][sprite count][sprites patterns=collection of 32 bytes][sprites
   //   colors=1 byte per sprite]
@@ -13065,7 +13073,7 @@ int FileNode::ParseTinySpriteFile(char* filename, unsigned char* data,
   //   [type=1][sprite count][sprites patterns=collection of 32 bytes][sprites
   //   colors=16 bytes per sprite]
 
-  if ((file = fopen(filename, "r"))) {
+  if ((file = fopen(filename.c_str(), "r"))) {
     size_read = 0;
     state = 0;
     memset(sprite_attr, 0, 64);

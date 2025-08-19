@@ -64,11 +64,11 @@ class Rom {
   void buildMapAndResourcesText(Lexeme *lexeme);
   void buildMapAndResourcesData(Parser *parser);
   void buildMapAndResourcesFile(Lexeme *lexeme);
-  void buildMapAndResourcesFileTXT(char *filename);
-  void buildMapAndResourcesFileCSV(char *filename);
-  void buildMapAndResourcesFileSPR(char *filename);
-  void buildMapAndResourcesFileSCR(char *filename);
-  void buildMapAndResourcesFileBIN(char *filename, char *fileext);
+  void buildMapAndResourcesFileTXT(string filename);
+  void buildMapAndResourcesFileCSV(string filename);
+  void buildMapAndResourcesFileSPR(string filename);
+  void buildMapAndResourcesFileSCR(string filename);
+  void buildMapAndResourcesFileBIN(string filename, string fileext);
   void addResourceToMap(int offset, int length, int filler);
   void buildXBASIC();
   void buildPT3TOOLS();

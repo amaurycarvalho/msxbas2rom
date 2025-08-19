@@ -331,7 +331,7 @@ void Rom::buildMap(vector<Lexeme *> *resourceList, bool font) {
 }
 
 void Rom::buildResources(vector<Lexeme *> *resourceList) {
-  char filename[255];
+  string filename;
   int size_read, i, t;
   Lexeme *lexeme;
 
@@ -369,12 +369,11 @@ void Rom::buildResources(vector<Lexeme *> *resourceList) {
 
     } else if (lexeme->name == "FILE") {
       // strips quotes from file name
-      file.stripQuotes(lexeme->value, filename, sizeof(filename));
+      filename = file.stripQuotes(lexeme->value);
 
       // if file not found, try search it at input path
       if (!fileExists(filename)) {
-        string fn = pathJoin(opts->inputPath, filename);
-        strlcpy(filename, fn.c_str(), sizeof(filename));
+        filename = pathJoin(opts->inputPath, filename);
       }
 
       size_read = file.readFromFile(filename, &data[filInd], 0x4000);
@@ -738,45 +737,44 @@ void Rom::buildMapAndResourcesData(Parser *parser) {
 }
 
 void Rom::buildMapAndResourcesFile(Lexeme *lexeme) {
-  char filename[255], fileext[20];
+  string filename, fileext;
 
   // strips quotes from file name
-  file.stripQuotes(lexeme->value, filename, sizeof(filename));
+  filename = file.stripQuotes(lexeme->value);
 
   // if file not found, try search it at input path
   if (!fileExists(filename)) {
-    string fn = pathJoin(opts->inputPath, filename);
-    strlcpy(filename, fn.c_str(), sizeof(filename));
+    filename = pathJoin(opts->inputPath, filename);
   }
 
-  file.getFileExt(filename, sizeof(filename), fileext, sizeof(fileext));
+  fileext = file.getFileExt(filename);
 
   // text data resource file
-  if (strcasecmp(fileext, ".TXT") == 0) {
+  if (strcasecmp(fileext.c_str(), ".TXT") == 0) {
     buildMapAndResourcesFileTXT(filename);
 
     // csv data resource file
-  } else if (strcasecmp(fileext, ".CSV") == 0) {
+  } else if (strcasecmp(fileext.c_str(), ".CSV") == 0) {
     buildMapAndResourcesFileCSV(filename);
 
     // tiny sprite resource file
-  } else if (strcasecmp(fileext, ".SPR") == 0) {
+  } else if (strcasecmp(fileext.c_str(), ".SPR") == 0) {
     buildMapAndResourcesFileSPR(filename);
 
     // screen resource file
-  } else if (strcasecmp(fileext, ".SC0") == 0 ||
-             strcasecmp(fileext, ".SC1") == 0 ||
-             strcasecmp(fileext, ".SC2") == 0 ||
-             strcasecmp(fileext, ".SC3") == 0 ||
-             strcasecmp(fileext, ".SC4") == 0 ||
-             strcasecmp(fileext, ".SC5") == 0 ||
-             strcasecmp(fileext, ".SC6") == 0 ||
-             strcasecmp(fileext, ".SC7") == 0 ||
-             strcasecmp(fileext, ".SC8") == 0 ||
-             strcasecmp(fileext, ".SC9") == 0 ||
-             strcasecmp(fileext, ".S10") == 0 ||
-             strcasecmp(fileext, ".S11") == 0 ||
-             strcasecmp(fileext, ".S12") == 0) {
+  } else if (strcasecmp(fileext.c_str(), ".SC0") == 0 ||
+             strcasecmp(fileext.c_str(), ".SC1") == 0 ||
+             strcasecmp(fileext.c_str(), ".SC2") == 0 ||
+             strcasecmp(fileext.c_str(), ".SC3") == 0 ||
+             strcasecmp(fileext.c_str(), ".SC4") == 0 ||
+             strcasecmp(fileext.c_str(), ".SC5") == 0 ||
+             strcasecmp(fileext.c_str(), ".SC6") == 0 ||
+             strcasecmp(fileext.c_str(), ".SC7") == 0 ||
+             strcasecmp(fileext.c_str(), ".SC8") == 0 ||
+             strcasecmp(fileext.c_str(), ".SC9") == 0 ||
+             strcasecmp(fileext.c_str(), ".S10") == 0 ||
+             strcasecmp(fileext.c_str(), ".S11") == 0 ||
+             strcasecmp(fileext.c_str(), ".S12") == 0) {
     buildMapAndResourcesFileSCR(filename);
 
     // binary resource file
@@ -785,14 +783,14 @@ void Rom::buildMapAndResourcesFile(Lexeme *lexeme) {
   }
 }
 
-void Rom::buildMapAndResourcesFileTXT(char *filename) {
+void Rom::buildMapAndResourcesFileTXT(string filename) {
   FILE *file;
   char line[255];
   int len;
   int size_read, filler = 0;
   int item_size_forecast, item_start_segment, item_end_segment;
 
-  if ((file = fopen(filename, "r"))) {
+  if ((file = fopen(filename.c_str(), "r"))) {
     data[filInd++] = 2;  // TXT data resource
     size_read = 1;
 
@@ -841,7 +839,7 @@ void Rom::buildMapAndResourcesFileTXT(char *filename) {
   }
 }
 
-void Rom::buildMapAndResourcesFileCSV(char *filename) {
+void Rom::buildMapAndResourcesFileCSV(string filename) {
   FILE *file;
   char line[255];
   int len;
@@ -856,7 +854,7 @@ void Rom::buildMapAndResourcesFileCSV(char *filename) {
   vector<int> maps;
   string item;
 
-  if ((file = fopen(filename, "r"))) {
+  if ((file = fopen(filename.c_str(), "r"))) {
     // prepare CSV items to be processed...
 
     items.clear();
@@ -998,7 +996,7 @@ void Rom::buildMapAndResourcesFileCSV(char *filename) {
 }
 
 // bload alternative via resource file
-void Rom::buildMapAndResourcesFileSCR(char *filename) {
+void Rom::buildMapAndResourcesFileSCR(string filename) {
   FileNode *file;
   int block_start;
   int bytes, size_read, filler;
@@ -1090,7 +1088,7 @@ void Rom::buildMapAndResourcesFileSCR(char *filename) {
   delete file;
 }
 
-void Rom::buildMapAndResourcesFileSPR(char *filename) {
+void Rom::buildMapAndResourcesFileSPR(string filename) {
   unsigned char *buffer = (unsigned char *)malloc(0x4000);
   int size_read = file.ParseTinySpriteFile(filename, buffer, 0x4000);
   int next_segment = ((filInd / 0x4000) + 1) * 0x4000;
@@ -1123,20 +1121,20 @@ void Rom::buildMapAndResourcesFileSPR(char *filename) {
   free(buffer);
 }
 
-void Rom::buildMapAndResourcesFileBIN(char *filename, char *fileext) {
+void Rom::buildMapAndResourcesFileBIN(string filename, string fileext) {
   unsigned char *buffer = (unsigned char *)malloc(0x4000);
   int size_read = file.readFromFile(filename, buffer, 0x4000);
   int next_segment = ((filInd / 0x4000) + 1) * 0x4000, address;
   int filler = 0;
 
   if (size_read <= 0) {
-    errorMessage = "Resource file not found: " + string(filename);
+    errorMessage = "Resource file not found: " + filename;
     errorFound = true;
   } else if (size_read >
              0x3D00) {  // 15kb: arkos tracker AKM+AKX files (+map) must fit
                         // together on the first resource page
     errorMessage =
-        "Resource file size exceeds maximum limit (15kb): " + string(filename);
+        "Resource file size exceeds maximum limit (15kb): " + filename;
     errorFound = true;
   } else {
     if ((filInd + size_read + 0xF) >=
@@ -1153,9 +1151,9 @@ void Rom::buildMapAndResourcesFileBIN(char *filename, char *fileext) {
     else
       address = filInd;
 
-    if (strcasecmp(fileext, ".AKM") == 0) {
+    if (strcasecmp(fileext.c_str(), ".AKM") == 0) {
       file.fixAKM(&data[filInd], address, size_read);
-    } else if (strcasecmp(fileext, ".AKX") == 0) {
+    } else if (strcasecmp(fileext.c_str(), ".AKX") == 0) {
       file.fixAKX(&data[filInd], address, size_read);
     }
 
@@ -1322,7 +1320,7 @@ void Rom::buildTurboLine() {
   dummy.goto_gosub = false;
   dummy.number = 0;
   dummy.length = 10;
-  strlcpy((char *)&dummy.data[0], " TURBO ON", sizeof(dummy.data));
+  strncpy((char *)&dummy.data[0], " TURBO ON", sizeof(dummy.data));
   dummy.data[0] = 0xCA;  // CALL instruction token
 
   calcBasicLineAddress(&dummy);

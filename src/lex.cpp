@@ -372,10 +372,13 @@ bool LexerLine::evaluate() {
           lexeme->value = "\'";
           lexeme->name = lexeme->value;
           lexemes.push_back(lexeme);
-          if (line[i + 1] == '#') {  // if xbasic special commands...
-            char s[255];
-            strlcpy(s, &line[i + 1], sizeof(s));
-            s[strnlen(s, sizeof(s)) - 1] = 0;
+          /// if xbasic special commands...
+          if (line[i + 1] == '#') {
+            string s = line.substr(i + 1);
+            /// Remove trailing character (like newline) if present
+            if (!s.empty()) {
+              s.pop_back();
+            }
             lexeme = new Lexeme(Lexeme::type_comment, Lexeme::subtype_any, s);
             lexemes.push_back(lexeme);
           }

@@ -633,7 +633,7 @@ int Tokenizer::writeTokenOperator(Lexeme *lexeme, unsigned char *s,
 }
 
 int Tokenizer::writeTokenText(Lexeme *lexeme, unsigned char *s, int maxlen) {
-  strlcpy((char *)s, lexeme->value.c_str(), maxlen);
+  strncpy((char *)s, lexeme->value.c_str(), maxlen);
   return lexeme->value.size();
 }
 
