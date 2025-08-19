@@ -531,12 +531,11 @@ void Rom::buildMapAndResources() {
             "Resources total size = %i byte(s)\nResources exceeded valid ROM "
             "page size limit (%i)\nDifference = %i byte(s)",
             rscLen, max_resource_size, rscLen - max_resource_size);
-    if (!opts->megaROM) {
-      strncat(s,
-              "\nTry compiling it in MegaROM format by adding the -x parameter",
-              sizeof(s) - 1);
-    }
     errorMessage = s;
+    if (!opts->megaROM) {
+      errorMessage +=
+          "\nTry compiling it in MegaROM format by adding the -x parameter";
+    }
     errorFound = true;
   }
 }
