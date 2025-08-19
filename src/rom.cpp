@@ -532,9 +532,9 @@ void Rom::buildMapAndResources() {
             "page size limit (%i)\nDifference = %i byte(s)",
             rscLen, max_resource_size, rscLen - max_resource_size);
     if (!opts->megaROM) {
-      strlcat(s,
+      strncat(s,
               "\nTry compiling it in MegaROM format by adding the -x parameter",
-              sizeof(s));
+              sizeof(s) - 1);
     }
     errorMessage = s;
     errorFound = true;
