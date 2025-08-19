@@ -36,4 +36,4 @@
 
 Run command below for a complete list:
 
-    msxbas2rom --ver
+    msxbas2rom --history
