@@ -13,4 +13,4 @@ We also draw inspiration from the [Scrum Values](https://www.scrum.org/resources
 - **Focus**: focus on creating value and what’s currently most important to be done;
 - **Commitment**: commitment and dedication to delivering value and quality;
 - **Respect**: respect each other as skilled professionals, respecting each other's differing expertise and perspectives, always being respectful when they disagree;
-- **Openness**: be open about all of the work and the challenges with performing the work, sharing feedback and learn from each other.
+- **Openness**: be open about all of the work and the challenges with performing the work, sharing feedback and learning from each other.
