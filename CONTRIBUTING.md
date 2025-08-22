@@ -17,9 +17,9 @@ You don’t need to be a developer to help improve **MSXBAS2ROM**! Here are some
   - **[Feature]**: Request for a new feature;
   - **[Bug]**: Problem report;
   - **[Improvement]**: Enhancement of existing behavior;
-  - **[Question]** or **[Discussion]**: Clarification or open-ended talk.
+  - **[Question]** or **[Discussion]**: Clarification or open-ended talk;
   - **[Asset]**: For new assets to be added to the project (ex: images, demos, games);
-  - **[Task]**: General to-do or implementation detail;
+  - **[Task]**: General to-do or implementation detail.
 - **Improve the documentation** by editing or adding pages in the [Wiki](https://github.com/amaurycarvalho/msxbas2rom/wiki);
 - **[Make a donation](https://github.com/amaurycarvalho/msxbas2rom/wiki#%EF%B8%8F-support-the-project)** to support ongoing development and maintenance.
 
