@@ -12,7 +12,13 @@ This guide explains how you can contribute and what rules apply for code submiss
 
 You don’t need to be a developer to help improve **MSXBAS2ROM**! Here are some valuable ways you can contribute:
 
-- **Report bugs or request features** by creating an [Issue](https://github.com/amaurycarvalho/msxbas2rom/issues);
+- **Report bugs or request features** by creating an [Issue](https://github.com/amaurycarvalho/msxbas2rom/issues);  
+  Use following prefixes on the issue description:
+  - **[Feature]**: Request for a new feature;
+  - **[Bug]**: Problem report;
+  - **[Task]**: General to-do or implementation detail;
+  - **[Improvement]**: Enhancement of existing behavior;
+  - **[Question]** or **[Discussion]**: Clarification or open-ended talk.
 - **Improve the documentation** by editing or adding pages in the [Wiki](https://github.com/amaurycarvalho/msxbas2rom/wiki);
 - **[Make a donation](https://github.com/amaurycarvalho/msxbas2rom/wiki#%EF%B8%8F-support-the-project)** to support ongoing development and maintenance.
 
@@ -35,10 +41,10 @@ Also, we use [Doxygen notation](https://en.wikipedia.org/wiki/Doxygen) for inlin
 
 #### 2️⃣ [Inner Source](https://en.wikipedia.org/wiki/Inner_source) Principles in Action
 
-- Transparency: All discussions, reviews, and design decisions happen in the open via GitHub PRs and Issues;
-- Autonomy: You can contribute directly without waiting for “permission,” as long as you follow the rules;
-- Quality Gates: Automated builds and tests ensure changes are safe;
-- Documentation First: Every new feature or change must be documented before merge.
+- **Transparency**: All discussions, reviews, and design decisions happen in the open via GitHub PRs and Issues;
+- **Autonomy**: You can contribute directly without waiting for “permission,” as long as you follow the rules;
+- **Quality Gates**: Automated builds and tests ensure changes are safe;
+- **Documentation First**: Every new feature or change must be documented before merge.
 
 ---
 
