@@ -151,13 +151,13 @@ git commit -am "change: Description of my changes"
 git push msxbas2rom your-branch-name
 ```
 
-Follow [Conventional](https://www.conventionalcommits.org/) commits:
+Follow [Conventional prefixes](https://www.conventionalcommits.org/) for commits descriptions:
 
-- feat: for new features;
-- fix: for bug fixes;
-- docs: for documentation changes;
-- test: for adding/modifying tests;
-- refactor: for code improvements without feature changes.
+- **feat**: for new features;
+- **fix**: for bug fixes;
+- **docs**: for documentation changes;
+- **test**: for adding/modifying tests;
+- **refactor**: for code improvements without feature changes.
 
 Example:
 
