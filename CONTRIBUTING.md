@@ -29,7 +29,7 @@ You don’t need to be a developer to help improve **MSXBAS2ROM**! Here are some
 
 If you want to contribute code, please follow the **Inner Source** principles:
 
-- All changes must be submitted via **Pull Request (PR)**;
+- All changes must be submitted via **[Pull Request (PR)](https://github.com/amaurycarvalho/msxbas2rom/wiki/Contributing#-developer-quick-start-guide)**;
 - PRs should be linked to an existing [issue](https://github.com/amaurycarvalho/msxbas2rom/issues) (or include a clear explanation of the change);
 - Code should follow the project’s style guidelines and be tested before submission;
 - PRs will be reviewed before merging into the `master` branch.
