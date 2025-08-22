@@ -2,10 +2,10 @@
 
 We adopt the [Inner Source](https://en.wikipedia.org/wiki/Inner_source) following principles:
 
-- Transparency: All discussions, reviews, and design decisions happen in the open via GitHub PRs and Issues;
-- Autonomy: You can contribute directly without waiting for “permission,” as long as you follow the rules;
-- Quality Gates: Automated builds and tests ensure changes are safe;
-- Documentation First: Every new feature or change must be documented before merge.
+- **Transparency**: All discussions, reviews, and design decisions happen in the open via GitHub PRs and Issues;
+- **Autonomy**: You can contribute directly without waiting for “permission,” as long as you follow the rules;
+- **Quality Gates**: Automated builds and tests ensure changes are safe;
+- **Documentation First**: Every new feature or change must be documented before merge.
 
 We also draw inspiration from the [Scrum Values](https://www.scrum.org/resources/scrum-values) as a guide:
 
