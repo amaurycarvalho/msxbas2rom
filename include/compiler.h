@@ -23,6 +23,8 @@
 #include "fswrapper.h"
 #include "parse.h"
 #include "pletter.h"
+#include "resources.h"
+#include "symbols.h"
 #include "z80.h"
 
 #define COMPILE_MAX_PAGES (16 * 4)
