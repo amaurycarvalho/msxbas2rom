@@ -41,22 +41,6 @@
  */
 int main(int argc, char *argv[]);
 
-/***
- * @brief Write symbols file to use with OpenMSX
- * @param compiler compiler object
- * @param code_start code start position on RAM memory
- * @note https://github.com/openMSX/debugger/blob/master/src/SymbolTable.cpp
- */
-bool saveSymbolFile(BuildOptions *opts, Compiler *compiler, int code_start);
-
-/***
- * @brief Write symbols file to use with OpenMSX
- * @deprecated Deprecated
- * @param compiler compiler object for PT3 support (deprecated)
- * @param code_start code start position on RAM memory
- */
-bool saveSymbolFile(BuildOptions *opts, CompilerPT3 *compiler, int code_start);
-
 //! @brief Print header
 void printHeader();
 

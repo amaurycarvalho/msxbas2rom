@@ -215,7 +215,8 @@ int main(int argc, char *argv[]) {
       }
 
       if (opts.symbols) {
-        saveSymbolFile(&opts, &compilerPT3, rom.code_start);
+        compilerPT3.resourceManager.saveSymbolFile(&opts, rom.code_start,
+                                                   compilerPT3.ram_page);
       }
 
     } else {
@@ -226,7 +227,8 @@ int main(int argc, char *argv[]) {
       }
 
       if (opts.symbols) {
-        saveSymbolFile(&opts, &compiler, rom.code_start);
+        compiler.resourceManager.saveSymbolFile(&opts, rom.code_start,
+                                                compiler.ram_page);
       }
     }
 
@@ -234,18 +236,19 @@ int main(int argc, char *argv[]) {
 
     if (!opts.quiet) {
       if (parser.has_pt3) {
-        if (compilerPT3.fileList.size()) {
-          int i, t = compilerPT3.fileList.size(), len1 = 0, len2 = 0;
+        if (compilerPT3.resourceManager.fileList.size()) {
+          int i, t = compilerPT3.resourceManager.fileList.size(), len1 = 0,
+                 len2 = 0;
           for (i = 0; i < t; i++) {
-            len1 += compilerPT3.fileList[i]->length;
-            len2 += compilerPT3.fileList[i]->packed_length;
+            len1 += compilerPT3.resourceManager.fileList[i]->length;
+            len2 += compilerPT3.resourceManager.fileList[i]->packed_length;
           }
           printf("%i file(s) attached into ROM = %i byte(s) [%i unpacked]\n", t,
                  len2, len1);
         }
-        if (compilerPT3.resourceList.size()) {
+        if (compilerPT3.resourceManager.resourceList.size()) {
           printf("%i resource(s) found\n",
-                 (int)compilerPT3.resourceList.size());
+                 (int)compilerPT3.resourceManager.resourceList.size());
         }
         if (compilerPT3.font) {
           printf("Built-In fonts included as resources\n");
@@ -288,17 +291,19 @@ int main(int argc, char *argv[]) {
         printFooter();
 
       } else {
-        if (compiler.fileList.size()) {
-          int i, t = compiler.fileList.size(), len1 = 0, len2 = 0;
+        if (compiler.resourceManager.fileList.size()) {
+          int i, t = compiler.resourceManager.fileList.size(), len1 = 0,
+                 len2 = 0;
           for (i = 0; i < t; i++) {
-            len1 += compiler.fileList[i]->length;
-            len2 += compiler.fileList[i]->packed_length;
+            len1 += compiler.resourceManager.fileList[i]->length;
+            len2 += compiler.resourceManager.fileList[i]->packed_length;
           }
           printf("%i file(s) attached into ROM = %i byte(s) [%i unpacked]\n", t,
                  len2, len1);
         }
-        if (compiler.resourceList.size()) {
-          printf("%i resource(s) found\n", (int)compiler.resourceList.size());
+        if (compiler.resourceManager.resourceList.size()) {
+          printf("%i resource(s) found\n",
+                 (int)compiler.resourceManager.resourceList.size());
         }
         if (compiler.font) {
           printf("Built-In fonts included as resources\n");
@@ -313,7 +318,7 @@ int main(int argc, char *argv[]) {
             printf("Extended memory scheme mode activated (ASCII8 mapper).\n");
           printf("MegaROM size = %ikb (%.1f%% free)\n", rom.rom_size / 1024,
                  100.0 - rom.stdMemoryPerc - rom.rscMemoryPerc);
-          if (compiler.resourceList.size()) {
+          if (compiler.resourceManager.resourceList.size()) {
             printf("Resources occupied %.1f%% of MegaROM space\n",
                    rom.rscMemoryPerc);
           }
@@ -321,7 +326,7 @@ int main(int argc, char *argv[]) {
                  rom.stdMemoryPerc);
         } else {
           printf("Standard memory scheme mode activated.\n");
-          if (compiler.resourceList.size()) {
+          if (compiler.resourceManager.resourceList.size()) {
             printf("Resources occupied %.1f%% of avaliable space\n",
                    rom.rscMemoryPerc);
           }
@@ -446,112 +451,6 @@ int main(int argc, char *argv[]) {
   }
 
   return 0;
-}
-
-bool saveSymbolFile(BuildOptions *opts, Compiler *compiler, int code_start) {
-  FILE *file;
-  CodeNode *codeItem;
-  int i, t, segm, segm2, addr;
-  char s[255];
-
-  if ((file = fopen(opts->symbolFilename.c_str(), "w"))) {
-    strcpy(s, "LOADER EQU 04010H\t\t; jump\n");
-    fwrite(s, 1, strlen(s), file);
-
-    if (opts->megaROM) {
-      strcpy(s, "CURSEGM EQU 0C023H\t\t; variable\n");
-      fwrite(s, 1, strlen(s), file);
-      strcpy(s, "MR_CALL EQU 041C8H\t\t; jump\n");
-      fwrite(s, 1, strlen(s), file);
-      strcpy(s, "MR_CALL_TRAP EQU 041CBH\t\t; jump\n");
-      fwrite(s, 1, strlen(s), file);
-      strcpy(s, "MR_CHANGE_SGM EQU 041CEH\t\t; jump\n");
-      fwrite(s, 1, strlen(s), file);
-      strcpy(s, "MR_GET_BYTE EQU 041D1H\t\t; jump\n");
-      fwrite(s, 1, strlen(s), file);
-      strcpy(s, "MR_GET_DATA EQU 041D4H\t\t; jump\n");
-      fwrite(s, 1, strlen(s), file);
-      strcpy(s, "MR_JUMP EQU 041D7H\t\t; jump\n");
-      fwrite(s, 1, strlen(s), file);
-    }
-
-    /// lines symbols
-
-    t = compiler->codeList.size();
-
-    for (i = 0; i < t; i++) {
-      codeItem = compiler->codeList[i];
-      if (codeItem->debug) {
-        addr = code_start;
-        if (opts->megaROM) {
-          segm = codeItem->start / 0x2000 + 2;
-          segm2 = codeItem->start / 0x4000;
-          addr += (codeItem->start - (segm2 * 0x4000));
-          sprintf(s, "%s_S%3i EQU 0%XH\t\t; jump\n", codeItem->name.c_str(),
-                  segm, addr);
-        } else {
-          addr += codeItem->start;
-          sprintf(s, "%s EQU 0%XH\t\t; jump\n", codeItem->name.c_str(), addr);
-        }
-        fwrite(s, 1, strlen(s), file);
-      }
-    }
-
-    /// variables symbols
-
-    t = compiler->dataList.size();
-
-    for (i = 0; i < t; i++) {
-      codeItem = compiler->dataList[i];
-      if (codeItem->debug) {
-        sprintf(s, "%s EQU 0%XH\t\t; variable\n", codeItem->name.c_str(),
-                codeItem->start + compiler->ram_page);
-        fwrite(s, 1, strlen(s), file);
-      }
-    }
-
-    fclose(file);
-    return true;
-  }
-  return false;
-}
-
-bool saveSymbolFile(BuildOptions *opts, CompilerPT3 *compiler, int code_start) {
-  FILE *file;
-  CodeNode *codeItem;
-  int i, t;
-  char s[255];
-
-  if ((file = fopen(opts->symbolFilename.c_str(), "w"))) {
-    strcpy(s, "LOADER EQU 04010H\n");
-    fwrite(s, 1, strlen(s), file);
-
-    t = compiler->codeList.size();
-
-    for (i = 0; i < t; i++) {
-      codeItem = compiler->codeList[i];
-      if (codeItem->debug) {
-        sprintf(s, "%s EQU 0%XH\n", codeItem->name.c_str(),
-                codeItem->start + code_start);
-        fwrite(s, 1, strlen(s), file);
-      }
-    }
-
-    t = compiler->dataList.size();
-
-    for (i = 0; i < t; i++) {
-      codeItem = compiler->dataList[i];
-      if (codeItem->debug) {
-        sprintf(s, "%s EQU 0%XH\n", codeItem->name.c_str(),
-                codeItem->start + code_start);
-        fwrite(s, 1, strlen(s), file);
-      }
-    }
-
-    fclose(file);
-    return true;
-  }
-  return false;
 }
 
 void printHeader() {
