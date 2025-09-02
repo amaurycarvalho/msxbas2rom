@@ -61,7 +61,7 @@ bool ResourceManager::saveSymbolFile(BuildOptions *opts, int code_start,
           segm = codeItem->start / 0x2000 + 2;
           segm2 = codeItem->start / 0x4000;
           addr += (codeItem->start - (segm2 * 0x4000));
-          sprintf(s, "%s_S%3i EQU 0%XH\n", codeItem->name.c_str(), segm, addr);
+          sprintf(s, "S%i_%s EQU 0%XH\n", segm, codeItem->name.c_str(), addr);
         } else {
           addr += codeItem->start;
           sprintf(s, "%s EQU 0%XH\n", codeItem->name.c_str(), addr);
