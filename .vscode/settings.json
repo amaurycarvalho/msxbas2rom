@@ -43,7 +43,8 @@
     "new": "cpp",
     "ostream": "cpp",
     "sstream": "cpp",
-    "stdexcept": "cpp"
+    "stdexcept": "cpp",
+    "system_error": "cpp"
   },
   "C_Cpp.codeAnalysis.clangTidy.enabled": true
 }

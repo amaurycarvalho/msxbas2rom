@@ -34,110 +34,6 @@
 extern unsigned char bin_header_bin[];
 
 /***
- * @class SymbolNode
- * @brief Symbol address for a tag node
- */
-class SymbolNode {
- public:
-  Lexeme* lexeme;
-  TagNode* tag;
-  int address;
-};
-
-/***
- * @class FixNode
- * @brief Symbol address to be calculated during linking phase
- */
-class FixNode {
- public:
-  SymbolNode* symbol;
-  int address;
-  int step;
-};
-
-/***
- * @class ForNextNode
- * @brief FOR/NEXT address to be calculated during linking phase
- */
-class ForNextNode {
- public:
-  int index;
-  TagNode* tag;
-  Lexeme *for_var, *for_to, *for_step;
-  FixNode* for_end_mark;
-  SymbolNode* for_step_mark;
-  ActionNode *for_to_action, *for_step_action;
-};
-
-/***
- * @class CodeNode
- * @brief Compiled code for a tag node
- */
-class CodeNode {
- public:
-  string name;
-  int start;
-  int length;
-  bool is_code;
-  bool debug;
-};
-
-/***
- * @class FileNode
- * @brief File wrapper for the file system
- */
-class FileNode {
- private:
-  unsigned char* s;
-  FILE* handle;
-  Pletter pletter;
-  bool first;
-  int bytes;
-  unsigned char buf_plain[255], buf_packed[1024];
-
- public:
-  string name;
-  int length;
-  bool packed;
-  int packed_length;
-  int blocks;
-  Lexeme* current_lexeme;
-  Lexeme* first_lexeme;
-  unsigned char* buffer;
-
-  unsigned char file_header[255];
-
-  ~FileNode();
-
-  bool create();
-  bool open();
-  bool eof();
-  int read(unsigned char* data, int max_length);
-  void write(unsigned char* data, int data_length);
-  void close();
-  void clear();
-
-  int read();
-  int readAsLexeme();
-  int readAsLexeme(unsigned char* data, int data_length);
-
-  /// @brief strips quotes from a string
-  string stripQuotes(const string& text);
-  /// @brief string to uppercase
-  string toUpper(const string& input);
-  /// @brief get file extension in uppercase
-  string getFileExt(string filename);
-  string getFileExt();
-
-  bool writeToFile(string filename, unsigned char* data, int data_length);
-  int readFromFile(string filename, unsigned char* data, int maxlen);
-  int ParseTinySpriteFile(string filename, unsigned char* data, int maxlen);
-
-  void fixAKM(unsigned char* data, int address, int length);
-  void fixAKX(unsigned char* data, int address, int length);
-};
-
-/***
  * @class Compiler
  * @brief Compiler class for semantic analysis,
  * specialized as a Z80 code builder for MSX system
@@ -358,10 +254,7 @@ class Compiler : public IZ80 {
   bool has_open_grp;
   bool has_tiny_sprite;
 
-  vector<Lexeme*> resourceList;
-  vector<FileNode*> fileList;
-  vector<CodeNode*> codeList;
-  vector<CodeNode*> dataList;
+  ResourceManager resourceManager;
 
   int code_start, ram_start, ram_page;
   int ram_size;

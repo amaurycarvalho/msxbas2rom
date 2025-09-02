@@ -23,6 +23,7 @@
 #include "fswrapper.h"
 #include "lex.h"
 #include "options.h"
+#include "resources.h"
 #include "tokenizer.h"
 
 #define ROM_DATA_SIZE COMPILE_CODE_SIZE

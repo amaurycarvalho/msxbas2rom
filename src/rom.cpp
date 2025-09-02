@@ -113,7 +113,7 @@ bool Rom::build(Compiler *compiler) {
 
   // build resource data
 
-  if (compiler->resourceList.size()) {
+  if (compiler->resourceManager.resourceList.size()) {
     buildMapAndResources();
     if (errorFound) return false;
     if (!opts->megaROM) {
@@ -171,10 +171,10 @@ bool Rom::build(CompilerPT3 *compiler) {
 
   buildCompilerRoutinesPT3();
 
-  buildMap(&compiler->resourceList, false);
+  buildMap(&compiler->resourceManager.resourceList, false);
 
-  if (compiler->resourceList.size()) {
-    buildResources(&compiler->resourceList);
+  if (compiler->resourceManager.resourceList.size()) {
+    buildResources(&compiler->resourceManager.resourceList);
     if ((txtLen + filLen) > 15500) {
       errorMessage = "Resources exceeded valid size limit (15,5kb)";
       errorFound = true;
@@ -479,7 +479,7 @@ void Rom::buildMapAndResources() {
   txtInd = txtAddr;
   filInd = filAddr;
 
-  t = compiler->resourceList.size();
+  t = compiler->resourceManager.resourceList.size();
 
   //! @warning max resource map length
   if (t > 48) {
@@ -497,7 +497,7 @@ void Rom::buildMapAndResources() {
   for (i = 0; i < t; i++) {
     filInd = txtInd;
 
-    lexeme = compiler->resourceList[i];
+    lexeme = compiler->resourceManager.resourceList[i];
 
     if (lexeme->name == "TEXT") {
       buildMapAndResourcesText(lexeme);

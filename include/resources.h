@@ -8,4 +8,20 @@
 #ifndef RESOURCES_H_INCLUDED
 #define RESOURCES_H_INCLUDED
 
+#include "symbols.h"
+
+/***
+ * @class ResourceManager
+ * @brief Resource manager
+ */
+class ResourceManager {
+ public:
+  vector<Lexeme*> resourceList;
+  vector<FileNode*> fileList;
+  vector<CodeNode*> codeList;
+  vector<CodeNode*> dataList;
+
+  void clear();
+};
+
 #endif  // RESOURCES_H_INCLUDED

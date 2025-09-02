@@ -6,3 +6,10 @@
  */
 
 #include "resources.h"
+
+void ResourceManager::clear() {
+  resourceList.clear();
+  codeList.clear();
+  fileList.clear();
+  dataList.clear();
+}

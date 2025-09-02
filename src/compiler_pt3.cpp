@@ -66,7 +66,7 @@ bool CompilerPT3::build(Parser *parser) {
   codeItem->length = code_pointer - codeItem->start;
   codeItem->is_code = true;
   codeItem->debug = true;
-  codeList.push_back(codeItem);
+  resourceManager.codeList.push_back(codeItem);
   if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
   if (codeItem->length >= 0x4000) {
     syntax_error("Maximum of start of program code per ROM reached (16k)");
@@ -118,7 +118,7 @@ bool CompilerPT3::build(Parser *parser) {
       codeItem->length = code_pointer - codeItem->start;
       codeItem->is_code = true;
       codeItem->debug = true;
-      codeList.push_back(codeItem);
+      resourceManager.codeList.push_back(codeItem);
 
       if (opts->debug) printf("/%i", codeItem->length);
 
@@ -151,7 +151,7 @@ bool CompilerPT3::build(Parser *parser) {
     codeItem->length = code_pointer - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = true;
-    codeList.push_back(codeItem);
+    resourceManager.codeList.push_back(codeItem);
     if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
     if (codeItem->length >= 0x4000) {
       syntax_error("Maximum of end of program code per ROM reached (16k)");
@@ -166,7 +166,7 @@ bool CompilerPT3::build(Parser *parser) {
     codeItem->length = code_pointer - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = false;
-    codeList.push_back(codeItem);
+    resourceManager.codeList.push_back(codeItem);
     if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
     if (codeItem->length >= 0x4000) {
       syntax_error("Maximum of support code per ROM reached (16k)");
@@ -226,10 +226,7 @@ void CompilerPT3::clear_symbols() {
   symbols.clear();
   fixes.clear();
 
-  resourceList.clear();
-  codeList.clear();
-  fileList.clear();
-  dataList.clear();
+  resourceManager.clear();
 
   while (!forNextStack.empty()) forNextStack.pop();
 
@@ -257,7 +254,7 @@ void CompilerPT3::data_symbols() {
     lexeme = new Lexeme();
     lexeme->name = "_DATA_";
     lexeme->value = lexeme->name;
-    resourceList.push_back(lexeme);
+    resourceManager.resourceList.push_back(lexeme);
   }
 }
 
@@ -319,7 +316,7 @@ int CompilerPT3::save_symbols() {
             codeItem->length = code_pointer - codeItem->start;
             codeItem->is_code = false;
             codeItem->debug = true;
-            codeList.push_back(codeItem);
+            resourceManager.codeList.push_back(codeItem);
 
             length += codeItem->length;
           }
@@ -330,7 +327,7 @@ int CompilerPT3::save_symbols() {
           codeItem->start = ram_pointer;
           codeItem->is_code = false;
           codeItem->debug = true;
-          dataList.push_back(codeItem);
+          resourceManager.dataList.push_back(codeItem);
 
           var_size = 0;
 
@@ -602,7 +599,7 @@ int CompilerPT3::write(unsigned char *dest, int start_address) {
   if (opts->megaROM) {
     skips.clear();
 
-    t = codeList.size();
+    t = resourceManager.codeList.size();
     segm_last = 2;   // last ROM segment starts at segment 2
     segm_total = 4;  // 4 segments of 8kb (0, 1, 2, 3)
     length = (start_address - 0x8000);
@@ -610,7 +607,7 @@ int CompilerPT3::write(unsigned char *dest, int start_address) {
     d = dest;
 
     for (i = 0; i < t; i++) {
-      codeItem = codeList[i];
+      codeItem = resourceManager.codeList[i];
 
       // printf("%i address %i size %i\n", i, codeItem->start,
       // codeItem->length);
@@ -5269,7 +5266,7 @@ void CompilerPT3::cmd_bload() {
             file->packed = true;
 
             if (file->open()) {
-              fileList.push_back(file);
+              resourceManager.fileList.push_back(file);
 
               while (!file->eof()) {
                 bytes = file->readAsLexeme();
@@ -8875,7 +8872,7 @@ void CompilerPT3::cmd_file() {
     if (lexeme->type == Lexeme::type_literal &&
         lexeme->subtype == Lexeme::subtype_string) {
       lexeme->name = "FILE";
-      resourceList.push_back(lexeme);
+      resourceManager.resourceList.push_back(lexeme);
     } else {
       error_message = "Invalid parameter in FILE keyword";
     }
@@ -8897,7 +8894,7 @@ void CompilerPT3::cmd_text() {
     if (lexeme->type == Lexeme::type_literal &&
         lexeme->subtype == Lexeme::subtype_string) {
       lexeme->name = "TEXT";
-      resourceList.push_back(lexeme);
+      resourceManager.resourceList.push_back(lexeme);
     } else {
       error_message = "Invalid parameter in TEXT keyword";
     }

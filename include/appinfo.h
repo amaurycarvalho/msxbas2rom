@@ -14,7 +14,7 @@
  * @note Run the code below to create a new release on github:
  * git tag -a v0.0.0.0 -m "Release 0.0.0.0" && git push msxbas2rom --tags
  */
-#define app_version "0.3.3.0"
+#define app_version "0.3.3.1"
 
 //! @brief Header information
 const char *info_header = R"(MSXBAS2ROM - MSX BASIC TO ROM COMPILER
@@ -75,6 +75,8 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char *info_history = R"(
 Version history
 
+0.3.3.1 – (2025/09/03) Symbols/resources refactoring and minor 
+                       bug fixes;
 0.3.3.0 – (2025/08/18) New -i and -o parameters;
 0.3.2.9 – (2025/07/22) MegaROM emulation detection bug fix;
 0.3.2.8 – (2025/07/21) ASCII8 MegaROM format support;
