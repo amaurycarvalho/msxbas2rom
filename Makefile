@@ -68,13 +68,15 @@ OUT_RELEASE = $(BINDIR_RELEASE)/msxbas2rom
 OBJ_DEBUG = $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/lex.o $(OBJDIR_DEBUG)/tokenizer.o \
 			$(OBJDIR_DEBUG)/rom.o $(OBJDIR_DEBUG)/z80.o $(OBJDIR_DEBUG)/compiler.o \
 			$(OBJDIR_DEBUG)/compiler_pt3.o $(OBJDIR_DEBUG)/parse.o $(OBJDIR_DEBUG)/pletter.o \
-			$(OBJDIR_DEBUG)/cliparser.o $(OBJDIR_DEBUG)/options.o $(OBJDIR_DEBUG)/fswrapper.o 
+			$(OBJDIR_DEBUG)/cliparser.o $(OBJDIR_DEBUG)/options.o $(OBJDIR_DEBUG)/fswrapper.o \
+			$(OBJDIR_DEBUG)/symbols.o $(OBJDIR_DEBUG)/resources.o  
 
 OBJ_RELEASE = $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/lex.o $(OBJDIR_RELEASE)/tokenizer.o \
  			  $(OBJDIR_RELEASE)/rom.o $(OBJDIR_RELEASE)/z80.o $(OBJDIR_RELEASE)/compiler.o \
 			  $(OBJDIR_RELEASE)/compiler_pt3.o $(OBJDIR_RELEASE)/parse.o \
 			  $(OBJDIR_RELEASE)/pletter.o $(OBJDIR_RELEASE)/cliparser.o \
-			  $(OBJDIR_RELEASE)/options.o $(OBJDIR_RELEASE)/fswrapper.o
+			  $(OBJDIR_RELEASE)/options.o $(OBJDIR_RELEASE)/fswrapper.o \
+  			  $(OBJDIR_RELEASE)/symbols.o $(OBJDIR_RELEASE)/resources.o  
 
 DIST_DIR = dist
 DEB_DIR = ..
@@ -140,6 +142,12 @@ $(OBJDIR_DEBUG)/parse.o: $(SRC)/parse.cpp $(INC_DEBUG)/parse.h
 $(OBJDIR_DEBUG)/options.o: $(SRC)/options.cpp $(INC_DEBUG)/options.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/options.cpp -o $(OBJDIR_DEBUG)/options.o 
 
+$(OBJDIR_DEBUG)/symbols.o: $(SRC)/symbols.cpp $(INC_DEBUG)/symbols.h
+	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/symbols.cpp -o $(OBJDIR_DEBUG)/symbols.o 
+
+$(OBJDIR_DEBUG)/resources.o: $(SRC)/resources.cpp $(INC_DEBUG)/resources.h
+	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/resources.cpp -o $(OBJDIR_DEBUG)/resources.o 
+
 $(OBJDIR_DEBUG)/pletter.o: $(SRC)/pletter.cpp $(INC_DEBUG)/pletter.h
 	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/pletter.cpp -o $(OBJDIR_DEBUG)/pletter.o 
 
@@ -198,6 +206,12 @@ $(OBJDIR_RELEASE)/parse.o: $(SRC)/parse.cpp $(INC_RELEASE)/parse.h
 
 $(OBJDIR_RELEASE)/options.o: $(SRC)/options.cpp $(INC_RELEASE)/options.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/options.cpp -o $(OBJDIR_RELEASE)/options.o 
+
+$(OBJDIR_RELEASE)/symbols.o: $(SRC)/symbols.cpp $(INC_RELEASE)/symbols.h
+	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/symbols.cpp -o $(OBJDIR_RELEASE)/symbols.o 
+
+$(OBJDIR_RELEASE)/resources.o: $(SRC)/resources.cpp $(INC_RELEASE)/resources.h
+	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/resources.cpp -o $(OBJDIR_RELEASE)/resources.o 
 
 $(OBJDIR_RELEASE)/pletter.o: $(SRC)/pletter.cpp $(INC_RELEASE)/pletter.h
 	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/pletter.cpp -o $(OBJDIR_RELEASE)/pletter.o 

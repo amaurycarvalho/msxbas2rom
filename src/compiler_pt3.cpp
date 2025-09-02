@@ -2786,7 +2786,7 @@ int CompilerPT3::evalFunction(ActionNode *action) {
             //     dec e
             addByte(0x1D);
             //   jr nz,$-8
-            addWord(0x20, (char)(0xFF - 7));
+            addWord(0x20, (unsigned char)(0xFF - 7));
             // pop hl
             addByte(0xE1);
 
@@ -5978,8 +5978,7 @@ void CompilerPT3::cmd_for() {
     addSymbol(forNext->for_to);
 
     forNext->for_step = new Lexeme();
-    forNext->for_step->name = "FOR_STEP_";
-    forNext->for_step->name += for_count;
+    forNext->for_step->name = "FOR_STEP_" + to_string(for_count);
     forNext->for_step->value = forNext->for_step->name;
     forNext->for_step->type = Lexeme::type_identifier;
     forNext->for_step_action = new ActionNode();

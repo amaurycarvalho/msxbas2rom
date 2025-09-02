@@ -1331,6 +1331,7 @@ bool Compiler::evalAction(ActionNode* action) {
       } else if (lexeme->name == "REM" || lexeme->name == "'") {
         return true;
       } else if (lexeme->name == "CLEAR") {
+        /// @todo issue #11
         return true;
       } else if (lexeme->name == "DEF" || lexeme->name == "DEFINT" ||
                  lexeme->name == "DEFSNG" || lexeme->name == "DEFDBL" ||
@@ -3492,7 +3493,7 @@ int Compiler::evalFunction(ActionNode* action) {
             //     dec e
             addDecE();
             //   jr nz,$-8
-            addJrNZ(0xFF - 7);
+            addJrNZ((unsigned char)(0xFF - 7));
             // pop hl
             addPopHL();
 

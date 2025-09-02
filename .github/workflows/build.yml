@@ -80,7 +80,7 @@ jobs:
         with:
           platform: x64
           version: 12.2.0.3042023
-      - name: Building artifacts (32 bits)
+      - name: Building artifacts (64 bits)
         run: |
           make PARMS=-m64 clean release
       - name: Uploading artifact (64bits)

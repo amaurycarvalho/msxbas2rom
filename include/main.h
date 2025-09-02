@@ -45,6 +45,7 @@ int main(int argc, char *argv[]);
  * @brief Write symbols file to use with OpenMSX
  * @param compiler compiler object
  * @param code_start code start position on RAM memory
+ * @note https://github.com/openMSX/debugger/blob/master/src/SymbolTable.cpp
  */
 bool saveSymbolFile(BuildOptions *opts, Compiler *compiler, int code_start);
 

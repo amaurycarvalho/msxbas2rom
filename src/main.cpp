@@ -451,12 +451,29 @@ int main(int argc, char *argv[]) {
 bool saveSymbolFile(BuildOptions *opts, Compiler *compiler, int code_start) {
   FILE *file;
   CodeNode *codeItem;
-  int i, t;
+  int i, t, segm, segm2, addr;
   char s[255];
 
   if ((file = fopen(opts->symbolFilename.c_str(), "w"))) {
-    strcpy(s, "LOADER EQU 04010H\n");
+    strcpy(s, "LOADER EQU 04010H\t\t; jump\n");
     fwrite(s, 1, strlen(s), file);
+
+    if (opts->megaROM) {
+      strcpy(s, "CURSEGM EQU 0C023H\t\t; variable\n");
+      fwrite(s, 1, strlen(s), file);
+      strcpy(s, "MR_CALL EQU 041C8H\t\t; jump\n");
+      fwrite(s, 1, strlen(s), file);
+      strcpy(s, "MR_CALL_TRAP EQU 041CBH\t\t; jump\n");
+      fwrite(s, 1, strlen(s), file);
+      strcpy(s, "MR_CHANGE_SGM EQU 041CEH\t\t; jump\n");
+      fwrite(s, 1, strlen(s), file);
+      strcpy(s, "MR_GET_BYTE EQU 041D1H\t\t; jump\n");
+      fwrite(s, 1, strlen(s), file);
+      strcpy(s, "MR_GET_DATA EQU 041D4H\t\t; jump\n");
+      fwrite(s, 1, strlen(s), file);
+      strcpy(s, "MR_JUMP EQU 041D7H\t\t; jump\n");
+      fwrite(s, 1, strlen(s), file);
+    }
 
     /// lines symbols
 
@@ -465,8 +482,17 @@ bool saveSymbolFile(BuildOptions *opts, Compiler *compiler, int code_start) {
     for (i = 0; i < t; i++) {
       codeItem = compiler->codeList[i];
       if (codeItem->debug) {
-        sprintf(s, "%s EQU 0%XH\n", codeItem->name.c_str(),
-                codeItem->start + code_start);
+        addr = code_start;
+        if (opts->megaROM) {
+          segm = codeItem->start / 0x2000 + 2;
+          segm2 = codeItem->start / 0x4000;
+          addr += (codeItem->start - (segm2 * 0x4000));
+          sprintf(s, "%s_S%3i EQU 0%XH\t\t; jump\n", codeItem->name.c_str(),
+                  segm, addr);
+        } else {
+          addr += codeItem->start;
+          sprintf(s, "%s EQU 0%XH\t\t; jump\n", codeItem->name.c_str(), addr);
+        }
         fwrite(s, 1, strlen(s), file);
       }
     }
@@ -478,7 +504,7 @@ bool saveSymbolFile(BuildOptions *opts, Compiler *compiler, int code_start) {
     for (i = 0; i < t; i++) {
       codeItem = compiler->dataList[i];
       if (codeItem->debug) {
-        sprintf(s, "%s EQU 0%XH\n", codeItem->name.c_str(),
+        sprintf(s, "%s EQU 0%XH\t\t; variable\n", codeItem->name.c_str(),
                 codeItem->start + compiler->ram_page);
         fwrite(s, 1, strlen(s), file);
       }

@@ -125,4 +125,4 @@ class Rom {
   void error();
 };
 
-#endif  // ASSEMBLY_H_INCLUDED
+#endif  // ROM_H_INCLUDED
