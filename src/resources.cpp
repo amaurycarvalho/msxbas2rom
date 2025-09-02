@@ -14,6 +14,13 @@ void ResourceManager::clear() {
   dataList.clear();
 }
 
+void ResourceManager::addDataResource() {
+  Lexeme *lexeme = new Lexeme();
+  lexeme->name = "_DATA_";
+  lexeme->value = lexeme->name;
+  resourceList.push_back(lexeme);
+}
+
 bool ResourceManager::saveSymbolFile(BuildOptions *opts, int code_start,
                                      int ram_page) {
   FILE *file;

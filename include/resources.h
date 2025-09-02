@@ -34,6 +34,11 @@ class ResourceManager {
    * @note https://github.com/openMSX/debugger/blob/master/src/SymbolTable.cpp
    */
   bool saveSymbolFile(BuildOptions *opts, int code_start, int ram_page);
+
+  /***
+   * @brief Add DATA statement resource to the resource list
+   */
+  void addDataResource();
 };
 
 #endif  // RESOURCES_H_INCLUDED

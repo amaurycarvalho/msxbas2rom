@@ -173,9 +173,12 @@ bool CompilerPT3::build(Parser *parser) {
       return false;
     }
 
-    if (opts->debug) printf("Registering symbols..");
+    if (parser->has_data) {
+      if (opts->debug) printf("Registering data resource...");
+      resourceManager.addDataResource();
+    }
 
-    data_symbols();
+    if (opts->debug) printf("Registering symbols..");
 
     if (opts->debug) printf(".");
 
@@ -245,17 +248,6 @@ void CompilerPT3::clear_symbols() {
   heap_mark->lexeme->type = Lexeme::type_identifier;
   heap_mark->lexeme->subtype = Lexeme::subtype_numeric;
   heap_mark->lexeme->isAbstract = true;
-}
-
-void CompilerPT3::data_symbols() {
-  Lexeme *lexeme;
-
-  if (parser->has_data) {
-    lexeme = new Lexeme();
-    lexeme->name = "_DATA_";
-    lexeme->value = lexeme->name;
-    resourceManager.resourceList.push_back(lexeme);
-  }
 }
 
 int CompilerPT3::save_symbols() {

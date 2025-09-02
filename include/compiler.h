@@ -79,7 +79,6 @@ class Compiler : public IZ80 {
 
   void func_symbols();
   void clear_symbols();
-  void data_symbols();
   int save_symbols();
   void do_fix();
 

@@ -58,7 +58,6 @@ class CompilerPT3 : public Compiler {
 
   void func_symbols();
   void clear_symbols();
-  void data_symbols();
   int save_symbols();
   void do_fix();
 
