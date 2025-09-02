@@ -29,23 +29,23 @@ bool ResourceManager::saveSymbolFile(BuildOptions *opts, int code_start,
   char s[255];
 
   if ((file = fopen(opts->symbolFilename.c_str(), "w"))) {
-    strcpy(s, "LOADER EQU 04010H\t\t; jump\n");
+    strcpy(s, "LOADER EQU 04010H\n");
     fwrite(s, 1, strlen(s), file);
 
     if (opts->megaROM) {
-      strcpy(s, "CURSEGM EQU 0C023H\t\t; variable\n");
+      strcpy(s, "CURSEGM EQU 0C023H\n");
       fwrite(s, 1, strlen(s), file);
-      strcpy(s, "MR_CALL EQU 041C8H\t\t; jump\n");
+      strcpy(s, "MR_CALL EQU 041C8H\n");
       fwrite(s, 1, strlen(s), file);
-      strcpy(s, "MR_CALL_TRAP EQU 041CBH\t\t; jump\n");
+      strcpy(s, "MR_CALL_TRAP EQU 041CBH\n");
       fwrite(s, 1, strlen(s), file);
-      strcpy(s, "MR_CHANGE_SGM EQU 041CEH\t\t; jump\n");
+      strcpy(s, "MR_CHANGE_SGM EQU 041CEH\n");
       fwrite(s, 1, strlen(s), file);
-      strcpy(s, "MR_GET_BYTE EQU 041D1H\t\t; jump\n");
+      strcpy(s, "MR_GET_BYTE EQU 041D1H\n");
       fwrite(s, 1, strlen(s), file);
-      strcpy(s, "MR_GET_DATA EQU 041D4H\t\t; jump\n");
+      strcpy(s, "MR_GET_DATA EQU 041D4H\n");
       fwrite(s, 1, strlen(s), file);
-      strcpy(s, "MR_JUMP EQU 041D7H\t\t; jump\n");
+      strcpy(s, "MR_JUMP EQU 041D7H\n");
       fwrite(s, 1, strlen(s), file);
     }
 
@@ -61,11 +61,10 @@ bool ResourceManager::saveSymbolFile(BuildOptions *opts, int code_start,
           segm = codeItem->start / 0x2000 + 2;
           segm2 = codeItem->start / 0x4000;
           addr += (codeItem->start - (segm2 * 0x4000));
-          sprintf(s, "%s_S%3i EQU 0%XH\t\t; jump\n", codeItem->name.c_str(),
-                  segm, addr);
+          sprintf(s, "%s_S%3i EQU 0%XH\n", codeItem->name.c_str(), segm, addr);
         } else {
           addr += codeItem->start;
-          sprintf(s, "%s EQU 0%XH\t\t; jump\n", codeItem->name.c_str(), addr);
+          sprintf(s, "%s EQU 0%XH\n", codeItem->name.c_str(), addr);
         }
         fwrite(s, 1, strlen(s), file);
       }
@@ -78,7 +77,7 @@ bool ResourceManager::saveSymbolFile(BuildOptions *opts, int code_start,
     for (i = 0; i < t; i++) {
       codeItem = dataList[i];
       if (codeItem->debug) {
-        sprintf(s, "%s EQU 0%XH\t\t; variable\n", codeItem->name.c_str(),
+        sprintf(s, "%s EQU 0%XH\n", codeItem->name.c_str(),
                 codeItem->start + ram_page);
         fwrite(s, 1, strlen(s), file);
       }
