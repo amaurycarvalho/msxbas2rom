@@ -215,8 +215,7 @@ int main(int argc, char *argv[]) {
       }
 
       if (opts.symbols) {
-        compilerPT3.resourceManager.saveSymbolFile(&opts, rom.code_start,
-                                                   compilerPT3.ram_page);
+        compilerPT3.resourceManager.saveSymbolFile(&opts);
       }
 
     } else {
@@ -227,8 +226,8 @@ int main(int argc, char *argv[]) {
       }
 
       if (opts.symbols) {
-        compiler.resourceManager.saveSymbolFile(&opts, rom.code_start,
-                                                compiler.ram_page);
+        compiler.resourceManager.saveSymbolFile(&opts);
+        compiler.resourceManager.saveOmdsFile(&opts);
       }
     }
 

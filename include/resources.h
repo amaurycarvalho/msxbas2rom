@@ -29,11 +29,20 @@ class ResourceManager {
   /***
    * @brief Write symbols file to use with OpenMSX
    * @param opts compiler options
-   * @param code_start code start position on RAM memory
-   * @param ram_page data start position on RAM memory
    * @note https://github.com/openMSX/debugger/blob/master/src/SymbolTable.cpp
+   * @remark depends on compile->write and compile->save_symbols methods to
+   * show the correct symbol addresses
    */
-  bool saveSymbolFile(BuildOptions *opts, int code_start, int ram_page);
+  bool saveSymbolFile(BuildOptions *opts);
+
+  /***
+   * @brief Write OMDS file to use with OpenMSX Debugger
+   * @param opts compiler options
+   * @note https://github.com/openMSX/debugger/blob/master/src/SymbolTable.cpp
+   * @remark depends on compile->write and compile->save_symbols methods to
+   * show the correct symbol addresses
+   */
+  bool saveOmdsFile(BuildOptions *opts);
 
   /***
    * @brief Add DATA statement resource to the resource list

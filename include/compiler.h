@@ -129,7 +129,7 @@ class Compiler : public IZ80 {
    */
 
   void cmd_start();
-  void cmd_end(bool last);
+  void cmd_end(bool doCodeRegistering);
   void cmd_cls();
   void cmd_print();
   void cmd_input(bool question);

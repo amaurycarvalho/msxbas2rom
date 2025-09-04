@@ -559,8 +559,7 @@ bool LexerLine::evaluate() {
     }
     lexemes.push_back(lexeme);
   } else {
-    //! NOLINTNEXTLINE(clang-analyzer-unix.MismatchedDeallocator)
-    free(lexeme);
+    delete lexeme;
   }
 
   return true;

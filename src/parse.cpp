@@ -398,6 +398,8 @@ bool Parser::eval_assignment(LexerLine* assignment) {
 
       if (add_let_action) {
         action = new ActionNode("LET");
+        /// @note "lexLet" value really needs to be updated?
+        /// NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
         // lexLet = action->lexeme;
         pushActionRoot(action);
       }

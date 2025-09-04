@@ -108,6 +108,7 @@ void BuildOptions::setInputFilename(string filename) {
     }
 
     symbolFilename = outputFilename + ".symbol";
+    omdsFilename = outputFilename + ".omds";
     outputFilename += ".rom";
   }
 }

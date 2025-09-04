@@ -62,6 +62,8 @@ class CodeNode {
   string name;
   int start;
   int length;
+  int segm;
+  int addr_within_segm;
   bool is_code;
   bool debug;
 };

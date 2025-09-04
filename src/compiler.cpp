@@ -70,6 +70,10 @@ bool Compiler::build(Parser* parser) {
   ram_size = 0;
   for (i = 0; i < 5; i++) last_code[i] = &code[code_pointer];
 
+  /// @todo transfer end of program to here
+  /// @remark end of program when MegaROM mode needs to reset the current
+  /// segment to initial settings
+
   if (opts->debug) printf("Registering start of program...");
 
   codeItem = new CodeNode();
@@ -155,6 +159,7 @@ bool Compiler::build(Parser* parser) {
   if (compiled) {
     current_tag = 0;
 
+    /// @todo transfer end of program to before start of program
     if (opts->debug) printf("Registering end of program...");
 
     codeItem = new CodeNode();
@@ -326,6 +331,7 @@ int Compiler::save_symbols() {
           codeItem = new CodeNode();
           codeItem->name = "VAR_" + lexeme->value;
           codeItem->start = ram_pointer;
+          codeItem->addr_within_segm = ram_page + ram_pointer;
           codeItem->is_code = false;
           codeItem->debug = true;
           resourceManager.dataList.push_back(codeItem);
@@ -789,7 +795,8 @@ int Compiler::write(unsigned char* dest, int start_address) {
   unsigned int i, t;
   unsigned int k, tt = 0, step;
   unsigned char *d, *s;
-  int address, new_address, length, segm_from, segm_to;
+  int address, new_address, addr_within_segm;
+  int segm_from, segm_to, length;
   FixNode *fix, *skip;
   CodeNode* codeItem;
   vector<FixNode*> skips;
@@ -797,10 +804,12 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
   // copy compiled code to final destination
 
+  t = resourceManager.codeList.size();
+  addr_within_segm = start_address;
+
   if (opts->megaROM) {
     skips.clear();
 
-    t = resourceManager.codeList.size();
     segm_last = 2;   // last ROM segment starts at segment 2
     segm_total = 4;  // 4 segments of 8kb (0, 1, 2, 3)
     length = (start_address - 0x8000);
@@ -825,6 +834,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
         if (tt >= 0x4000) {
           segm_last += 2;  // konami segments size are 8kb (0/1, 2/3...)
+          addr_within_segm = 0x8000;
 
           if (codeItem->is_code) {
             // code to skip a segment to another
@@ -870,8 +880,17 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
         memcpy(d, s, codeItem->length);
 
+        codeItem->addr_within_segm = addr_within_segm;
+        codeItem->segm = segm_last;
+        if (codeItem->addr_within_segm >= (0xA000)) codeItem->segm++;
+
         d += codeItem->length;
         length += codeItem->length;
+        addr_within_segm += codeItem->length;
+      } else {
+        codeItem->addr_within_segm = addr_within_segm;
+        codeItem->segm = segm_last;
+        if (codeItem->addr_within_segm >= (0xA000)) codeItem->segm++;
       }
     }
 
@@ -882,6 +901,13 @@ int Compiler::write(unsigned char* dest, int start_address) {
     tt = skips.size();
 
   } else {
+    for (i = 0; i < t; i++) {
+      codeItem = resourceManager.codeList[i];
+      codeItem->segm = 0;
+      codeItem->addr_within_segm = addr_within_segm;
+      addr_within_segm += codeItem->length;
+    }
+
     memcpy(dest, code, code_size);
   }
 
@@ -4647,8 +4673,9 @@ void Compiler::cmd_start() {
   addEI();
 }
 
-void Compiler::cmd_end(bool last) {
-  if (last) {
+void Compiler::cmd_end(bool doCodeRegistering) {
+  if (doCodeRegistering) {
+    /// @todo skip to the start code
     if (end_mark) end_mark->symbol->address = code_pointer;
 
     if (parser->has_akm) {
