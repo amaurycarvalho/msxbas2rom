@@ -175,7 +175,7 @@ bool CompilerPT3::build(Parser *parser) {
 
     if (parser->has_data) {
       if (opts->debug) printf("Registering data resource...");
-      resourceManager.addDataResource();
+      resourceManager.addDataResource(parser);
     }
 
     if (opts->debug) printf("Registering symbols..");

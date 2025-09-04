@@ -14,11 +14,26 @@ void ResourceManager::clear() {
   dataList.clear();
 }
 
-void ResourceManager::addDataResource() {
+void ResourceManager::addDataResource(Parser *parser) {
   Lexeme *lexeme = new Lexeme();
   lexeme->name = "_DATA_";
   lexeme->value = lexeme->name;
   resourceList.push_back(lexeme);
+
+  ResourceDataReader *resourceReader = new ResourceDataReader(parser);
+  if (resourceReader) {
+    resourceReaderList.push_back(resourceReader);
+    resourceReader->load();
+  }
+}
+
+bool ResourceManager::add(string filename) {
+  ResourceReader *resourceReader = ResourceReader::create(filename);
+  if (resourceReader) {
+    resourceReaderList.push_back(resourceReader);
+    return resourceReader->load();
+  }
+  return false;
 }
 
 bool ResourceManager::saveSymbolFile(BuildOptions *opts) {
@@ -144,5 +159,117 @@ bool ResourceManager::saveOmdsFile(BuildOptions *opts) {
     fclose(file);
     return true;
   }
+  return false;
+}
+
+///-------------------------------------------------------------------------------
+
+ResourceReader::ResourceReader(string filename) {
+  this->filename = filename;
+};
+
+bool ResourceReader::isValid(string fileext) {
+  return false;
+}
+
+bool ResourceReader::load() {
+  return false;
+}
+
+ResourceReader *ResourceReader::create(string filename) {
+  if (fileExists(filename)) {
+    string fileext = getFileExtension(filename);
+    if (ResourceTxtReader::isValid(fileext)) {
+      return new ResourceTxtReader(filename);
+    }
+    if (ResourceCsvReader::isValid(fileext)) {
+      return new ResourceCsvReader(filename);
+    }
+    if (ResourceScrReader::isValid(fileext)) {
+      return new ResourceScrReader(filename);
+    }
+    if (ResourceSprReader::isValid(fileext)) {
+      return new ResourceSprReader(filename);
+    }
+    if (ResourceBlobReader::isValid(fileext)) {
+      return new ResourceBlobReader(filename);
+    }
+  }
+  return nullptr;
+}
+
+ResourceBlobReader::ResourceBlobReader(string filename)
+    : ResourceReader(filename) {};
+
+bool ResourceBlobReader::isValid(string fileext) {
+  return true;
+}
+
+bool ResourceBlobReader::load() {
+  return false;
+}
+
+ResourceTxtReader::ResourceTxtReader(string filename)
+    : ResourceReader(filename) {};
+
+bool ResourceTxtReader::isValid(string fileext) {
+  return (strcasecmp(fileext.c_str(), ".TXT") == 0);
+}
+
+bool ResourceTxtReader::load() {
+  return false;
+}
+
+ResourceCsvReader::ResourceCsvReader(string filename)
+    : ResourceReader(filename) {};
+
+bool ResourceCsvReader::isValid(string fileext) {
+  return (strcasecmp(fileext.c_str(), ".CSV") == 0);
+}
+
+bool ResourceCsvReader::load() {
+  return false;
+}
+
+ResourceScrReader::ResourceScrReader(string filename)
+    : ResourceReader(filename) {};
+
+bool ResourceScrReader::isValid(string fileext) {
+  return (strcasecmp(fileext.c_str(), ".SC0") == 0 ||
+          strcasecmp(fileext.c_str(), ".SC1") == 0 ||
+          strcasecmp(fileext.c_str(), ".SC2") == 0 ||
+          strcasecmp(fileext.c_str(), ".SC3") == 0 ||
+          strcasecmp(fileext.c_str(), ".SC4") == 0 ||
+          strcasecmp(fileext.c_str(), ".SC5") == 0 ||
+          strcasecmp(fileext.c_str(), ".SC6") == 0 ||
+          strcasecmp(fileext.c_str(), ".SC7") == 0 ||
+          strcasecmp(fileext.c_str(), ".SC8") == 0 ||
+          strcasecmp(fileext.c_str(), ".SC9") == 0 ||
+          strcasecmp(fileext.c_str(), ".S10") == 0 ||
+          strcasecmp(fileext.c_str(), ".S11") == 0 ||
+          strcasecmp(fileext.c_str(), ".S12") == 0);
+}
+
+bool ResourceScrReader::load() {
+  return false;
+}
+
+ResourceSprReader::ResourceSprReader(string filename)
+    : ResourceReader(filename) {};
+
+bool ResourceSprReader::isValid(string fileext) {
+  return (strcasecmp(fileext.c_str(), ".SPR") == 0);
+}
+
+bool ResourceSprReader::load() {
+  return false;
+}
+
+ResourceDataReader::ResourceDataReader(Parser *parser)
+    : ResourceReader(string("_DATA_")) {
+  this->parser = parser;
+};
+
+bool ResourceDataReader::load() {
   return false;
 }

@@ -54,7 +54,7 @@ string getFileName(const string& filepath);
 /***
  * @brief Return the extension of the file
  * @param filepath File to extract the extension
- * @return File extension
+ * @return File extension (e.g: .txt)
  */
 string getFileExtension(const string& filepath);
 

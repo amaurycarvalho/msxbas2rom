@@ -31,7 +31,6 @@ string getFileName(const string& filepath) {
 }
 
 /***
- * @brief get file extension
  * @example .txt
  */
 string getFileExtension(const string& filepath) {
