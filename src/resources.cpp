@@ -191,6 +191,15 @@ ResourceReader *ResourceReader::create(string filename) {
     if (ResourceSprReader::isValid(fileext)) {
       return new ResourceSprReader(filename);
     }
+    if (ResourceAkmReader::isValid(fileext)) {
+      return new ResourceAkmReader(filename);
+    }
+    if (ResourceAkxReader::isValid(fileext)) {
+      return new ResourceAkxReader(filename);
+    }
+    if (ResourceMtfReader::isValid(fileext)) {
+      return new ResourceMtfReader(filename);
+    }
     if (ResourceBlobReader::isValid(fileext)) {
       return new ResourceBlobReader(filename);
     }
@@ -262,6 +271,55 @@ bool ResourceSprReader::isValid(string fileext) {
 }
 
 bool ResourceSprReader::load() {
+  return false;
+}
+
+ResourceAkmReader::ResourceAkmReader(string filename)
+    : ResourceBlobReader(filename) {};
+
+bool ResourceAkmReader::isValid(string fileext) {
+  return (strcasecmp(fileext.c_str(), ".AKM") == 0);
+}
+
+bool ResourceAkmReader::load() {
+  if (ResourceBlobReader::load()) {
+    fix();
+    return true;
+  }
+  return false;
+}
+
+void ResourceAkmReader::fix() {
+  return;
+}
+
+ResourceAkxReader::ResourceAkxReader(string filename)
+    : ResourceBlobReader(filename) {};
+
+bool ResourceAkxReader::isValid(string fileext) {
+  return (strcasecmp(fileext.c_str(), ".AKX") == 0);
+}
+
+bool ResourceAkxReader::load() {
+  if (ResourceBlobReader::load()) {
+    fix();
+    return true;
+  }
+  return false;
+}
+
+void ResourceAkxReader::fix() {
+  return;
+}
+
+ResourceMtfReader::ResourceMtfReader(string filename)
+    : ResourceBlobReader(filename) {};
+
+bool ResourceMtfReader::isValid(string fileext) {
+  return (strcasecmp(fileext.c_str(), ".MTF.JSON") == 0);
+}
+
+bool ResourceMtfReader::load() {
   return false;
 }
 

@@ -59,7 +59,8 @@ class ResourceCsvReader : public ResourceReader {
 
 /***
  * @class ResourceScrReader
- * @brief Resource reader for SCn files (binary screens)
+ * @brief Resource reader for SCn files (BLOAD binary screens)
+ * @note https://msx.jannone.org/conv/
  */
 class ResourceScrReader : public ResourceReader {
  public:
@@ -71,12 +72,55 @@ class ResourceScrReader : public ResourceReader {
 /***
  * @class ResourceSprReader
  * @brief Resource reader for SPR files (TinySprite plain text files)
+ * @note https://msx.jannone.org/tinysprite/tinysprite.html
  */
 class ResourceSprReader : public ResourceReader {
  public:
   static bool isValid(string fileext);
   bool load();
   ResourceSprReader(string filename);
+};
+
+/***
+ * @class ResourceAkmReader
+ * @brief Resource reader for Arkos Tracker minimalist player music files (.AKM)
+ * @note https://julien-nevo.com/at3test/index.php/download/
+ */
+class ResourceAkmReader : public ResourceBlobReader {
+ private:
+  void fix();
+
+ public:
+  static bool isValid(string fileext);
+  bool load();
+  ResourceAkmReader(string filename);
+};
+
+/***
+ * @class ResourceAkxReader
+ * @brief Resource reader for Arkos Tracker sound effects files (.AKX)
+ * @note https://julien-nevo.com/at3test/index.php/download/
+ */
+class ResourceAkxReader : public ResourceBlobReader {
+ private:
+  void fix();
+
+ public:
+  static bool isValid(string fileext);
+  bool load();
+  ResourceAkxReader(string filename);
+};
+
+/***
+ * @class ResourceMtfReader
+ * @brief Resource reader for MSX Tile Forge projects (.mtf.json)
+ * @note https://github.com/DamnedAngel/msx-tile-forge
+ */
+class ResourceMtfReader : public ResourceBlobReader {
+ public:
+  static bool isValid(string fileext);
+  bool load();
+  ResourceMtfReader(string filename);
 };
 
 /***

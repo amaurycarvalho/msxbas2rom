@@ -175,6 +175,7 @@ string FileNode::getFileExt() {
   return getFileExt(name);
 }
 
+/// @todo move to ResourceAkmReader in resources.cpp
 void FileNode::fixAKM(unsigned char* data, int address, int length) {
   int t, i, k, w, current, previous, start, tracks, linker;
   int instrumentIndexTable, arpeggioIndexTable, pitchIndexTable;
@@ -222,8 +223,10 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
         if (previous) {                          // before first subsong
           previous -= start;
           previous += address;
-          data[subsongIndexTable - 2] = previous & 0xFF;
-          data[subsongIndexTable - 1] = (previous >> 8) & 0xFF;
+          if (subsongIndexTable > 1 && subsongIndexTable < length) {
+            data[subsongIndexTable - 2] = previous & 0xFF;
+            data[subsongIndexTable - 1] = (previous >> 8) & 0xFF;
+          }
         }
       }
 
@@ -232,8 +235,10 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
       if (noteBlockIndexTable) {
         noteBlockIndexTable -= start;
         noteBlockIndexTable += address;
-        data[subsongIndexTable] = noteBlockIndexTable & 0xFF;
-        data[subsongIndexTable + 1] = (noteBlockIndexTable >> 8) & 0xFF;
+        if (subsongIndexTable >= 0 && subsongIndexTable < (length - 1)) {
+          data[subsongIndexTable] = noteBlockIndexTable & 0xFF;
+          data[subsongIndexTable + 1] = (noteBlockIndexTable >> 8) & 0xFF;
+        }
       }
 
       trackIndexTable =
@@ -259,8 +264,10 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
             current = data[k] | (data[k + 1] << 8);
             current -= start;
             current += address;
-            data[k] = current & 0xFF;
-            data[k + 1] = (current >> 8) & 0xFF;
+            if (k >= 0 && k < (length - 1)) {
+              data[k] = current & 0xFF;
+              data[k + 1] = (current >> 8) & 0xFF;
+            }
             k += 2;  //! ...skip loop address
                      // printf("   end of song\n");
           } else {
@@ -309,20 +316,26 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
             if (current) {
               current -= start;
               current += address;
-              data[k] = current & 0xFF;
-              data[k + 1] = (current >> 8) & 0xFF;
+              if (k >= 0 && k < (length - 1)) {
+                data[k] = current & 0xFF;
+                data[k + 1] = (current >> 8) & 0xFF;
+              }
             }
           }
         }
 
         trackIndexTable += address;
-        data[subsongIndexTable + 2] = trackIndexTable & 0xFF;
-        data[subsongIndexTable + 3] = (trackIndexTable >> 8) & 0xFF;
+        if (subsongIndexTable >= 0 && subsongIndexTable < (length - 3)) {
+          data[subsongIndexTable + 2] = trackIndexTable & 0xFF;
+          data[subsongIndexTable + 3] = (trackIndexTable >> 8) & 0xFF;
+        }
       }
 
       subsongIndexTable += address;
-      data[i] = subsongIndexTable & 0xFF;
-      data[i + 1] = (subsongIndexTable >> 8) & 0xFF;
+      if (i >= 0 && i < (length - 1)) {
+        data[i] = subsongIndexTable & 0xFF;
+        data[i + 1] = (subsongIndexTable >> 8) & 0xFF;
+      }
     }
   }
 
@@ -345,14 +358,18 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
         if (previous) {
           previous -= start;
           previous += address;
-          data[current - 2] = previous & 0xFF;
-          data[current - 1] = (previous >> 8) & 0xFF;
+          if (current > 1 && current < length) {
+            data[current - 2] = previous & 0xFF;
+            data[current - 1] = (previous >> 8) & 0xFF;
+          }
         }
       }
 
       current += address;
-      data[i] = current & 0xFF;
-      data[i + 1] = (current >> 8) & 0xFF;
+      if (i >= 0 && i < (length - 1)) {
+        data[i] = current & 0xFF;
+        data[i + 1] = (current >> 8) & 0xFF;
+      }
     }
   }
 
@@ -360,11 +377,13 @@ void FileNode::fixAKM(unsigned char* data, int address, int length) {
   data[0] = instrumentIndexTable & 0xFF;
   data[1] = (instrumentIndexTable >> 8) & 0xFF;
 
+  /// @note debugging helper code
   // FileNode *file = new FileNode();
   // file->writeToFile((char *) "song.dat", data, length);
   // delete file;
 }
 
+/// @todo move to ResourceAkxReader in resources.cpp
 void FileNode::fixAKX(unsigned char* data, int address, int length) {
   int t = length;
   int i = 0, current, start = 0;
@@ -383,13 +402,16 @@ void FileNode::fixAKX(unsigned char* data, int address, int length) {
 
       current = current - start + address;
 
-      data[i] = current & 0xFF;
-      data[i + 1] = (current >> 8) & 0xFF;
+      if (i >= 0 && i < (length - 1)) {
+        data[i] = current & 0xFF;
+        data[i + 1] = (current >> 8) & 0xFF;
+      }
     }
 
     i += 2;
   }
 
+  /// @note debugging helper code
   // FileNode *file = new FileNode();
   // file->writeToFile((char *) "effect.dat", data, length);
   // delete file;
