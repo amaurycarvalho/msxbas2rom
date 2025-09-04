@@ -2076,7 +2076,8 @@ int Compiler::evalOperator(ActionNode* action) {
           // pop de
           addByteOptimized(0xD1);
 
-          // math optimization when second parameter is a integer constant
+          /// @remark math optimization when second parameter is a integer
+          /// constant
           if (opts->megaROM)
             s = last_code[1];
           else
@@ -2087,17 +2088,18 @@ int Compiler::evalOperator(ActionNode* action) {
           if (action->actions[0]->lexeme->type == Lexeme::type_literal &&
               i <= 256) {
             if (opts->megaROM) {
-              code_pointer -= 5;
+              code_pointer -= 5;  //! @todo verify if 5 or 6
               code_size -= 5;
             } else {
               code_pointer -= 4;
               code_size -= 4;
-            }
-            if (action->actions[1]->lexeme->type == Lexeme::type_literal) {
-              code_pointer += 1;
-              code_size += 1;
-              s = &code[code_pointer - 3];
-              if (s[0] == 0x11) s[0] = 0x21;  // change "ld de,n" to "ld hl,n"
+
+              if (action->actions[1]->lexeme->type == Lexeme::type_literal) {
+                code_pointer += 1;
+                code_size += 1;
+                s = &code[code_pointer - 3];
+                if (s[0] == 0x11) s[0] = 0x21;  // change "ld de,n" to "ld hl,n"
+              }
             }
 
             switch (i) {
