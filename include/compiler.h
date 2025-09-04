@@ -134,6 +134,9 @@ class Compiler : public IZ80 {
   void cmd_print();
   void cmd_input(bool question);
   void cmd_beep();
+  //! @brief CLEAR statement
+  //! @note https://www.msx.org/wiki/CLEAR
+  void cmd_clear();
   void cmd_goto();
   void cmd_gosub();
   void cmd_return();

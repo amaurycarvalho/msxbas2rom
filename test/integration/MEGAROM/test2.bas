@@ -32,6 +32,10 @@
 62 READ A$ : PRINT A$,
 63 READ A$ : PRINT A$
 
-70 END
+70 CLEAR
+71 PRINT A$, ma%(4,2)
+72 PRINT X%, Y%, K%
+
+80 END
 
 

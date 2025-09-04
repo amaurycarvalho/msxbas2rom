@@ -1354,8 +1354,8 @@ bool Compiler::evalAction(ActionNode* action) {
       } else if (lexeme->name == "REM" || lexeme->name == "'") {
         return true;
       } else if (lexeme->name == "CLEAR") {
-        /// @todo issue #11
-        return true;
+        /// @remark issue #11
+        cmd_clear();
       } else if (lexeme->name == "DEF" || lexeme->name == "DEFINT" ||
                  lexeme->name == "DEFSNG" || lexeme->name == "DEFDBL" ||
                  lexeme->name == "DEFSTR") {
@@ -4726,6 +4726,21 @@ void Compiler::cmd_end(bool doCodeRegistering) {
 
 void Compiler::cmd_cls() {
   addCall(def_XBASIC_CLS);  // call cls
+}
+
+void Compiler::cmd_clear() {
+  /// clear variables workarea
+  addXorA();                //! A = 0
+  addLdHLii(def_HEAPSTR);   //! HL = heap start address
+  addLdDE(def_RAM_BOTTOM);  //! DE = variables start address
+  addSbcHLDE();             //! HL -= DE
+  addLdCL();
+  addLdBH();  //! BC = HL (variables workarea size)
+  addLdLE();
+  addLdHD();    //! HL = DE
+  addIncDE();   //! DE = HL + 1
+  addLdiHLA();  //! (HL) = A
+  addLDIR();    //! (DE++) = (HL++), until BC-- = 0
 }
 
 void Compiler::cmd_beep() {

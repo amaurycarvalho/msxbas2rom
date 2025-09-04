@@ -20,7 +20,9 @@
 
 //! @warning
 //! BASMEM must to be adjusted if any change in
-//! compiler internal variables workspace size
+//! compiler internal variables workspace size,
+//! so search for BASMEM in header.symbols.asm
+//! to get the correct value.
 #define def_BASMEM 0xC038
 
 /***************************************************************

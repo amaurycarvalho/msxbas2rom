@@ -594,6 +594,13 @@ class IZ80 {
   void addLdLC();
 
   /***
+   * @brief LD L, E loads the contents of register E into register L.
+   * @note [LD r, r'](http://z80-heaven.wikidot.com/instructions-set:ld)
+   * @result opcode size: 1 byte; clock cycles: 4 t-states
+   */
+  void addLdLE();
+
+  /***
    * @brief LD L, H loads the contents of register H into register L.
    * @note [LD r, r'](http://z80-heaven.wikidot.com/instructions-set:ld)
    * @result opcode size: 1 byte; clock cycles: 4 t-states
@@ -621,6 +628,13 @@ class IZ80 {
    * @result opcode size: 1 byte; clock cycles: 4 t-states
    */
   void addLdHC();
+
+  /***
+   * @brief LD H, D loads the contents of register D into register H.
+   * @note [LD r, r'](http://z80-heaven.wikidot.com/instructions-set:ld)
+   * @result opcode size: 1 byte; clock cycles: 4 t-states
+   */
+  void addLdHD();
 
   /***
    * @brief LD H, L loads the contents of register L into register H.

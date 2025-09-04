@@ -518,8 +518,16 @@ void IZ80::addLdHB() {
   addByte(0x60);
 }
 
+void IZ80::addLdHD() {
+  addByte(0x62);
+}
+
 void IZ80::addLdLC() {
   addByte(0x69);
+}
+
+void IZ80::addLdLE() {
+  addByte(0x6B);
 }
 
 void IZ80::addLdLH() {
