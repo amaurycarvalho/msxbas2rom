@@ -70,9 +70,18 @@ bool Compiler::build(Parser* parser) {
   ram_size = 0;
   for (i = 0; i < 5; i++) last_code[i] = &code[code_pointer];
 
-  /// @todo transfer end of program to here
-  /// @remark end of program when MegaROM mode needs to reset the current
-  /// segment to initial settings
+  /// @remark END statement needs to be here (first segment) for MegaROM support
+  if (opts->debug) printf("Registering END statement...");
+
+  codeItem = new CodeNode();
+  codeItem->name = "END_STMT";
+  codeItem->start = code_pointer;
+  cmd_end(true);  //! write END statement code
+  codeItem->length = code_pointer - codeItem->start;
+  codeItem->is_code = true;
+  codeItem->debug = true;
+  resourceManager.codeList.push_back(codeItem);
+  if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
 
   if (opts->debug) printf("Registering start of program...");
 
@@ -159,13 +168,13 @@ bool Compiler::build(Parser* parser) {
   if (compiled) {
     current_tag = 0;
 
-    /// @todo transfer end of program to before start of program
+    /// @remark END is always the last statement of the program
     if (opts->debug) printf("Registering end of program...");
 
     codeItem = new CodeNode();
     codeItem->name = "END_PGM";
     codeItem->start = code_pointer;
-    cmd_end(true);
+    cmd_end(false);  //! jump to the real END statement
     codeItem->length = code_pointer - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = true;
@@ -1341,7 +1350,7 @@ bool Compiler::evalAction(ActionNode* action) {
     if (lexeme->type == Lexeme::type_keyword) {
       if (lexeme->name == "END") {
         traps_checked = addCheckTraps();
-        cmd_end(false);
+        cmd_end(false);  //! jump to the real END statement
       } else if (lexeme->name == "REM" || lexeme->name == "'") {
         return true;
       } else if (lexeme->name == "CLEAR") {
@@ -4675,9 +4684,17 @@ void Compiler::cmd_start() {
 
 void Compiler::cmd_end(bool doCodeRegistering) {
   if (doCodeRegistering) {
-    /// @todo skip to the start code
-    if (end_mark) end_mark->symbol->address = code_pointer;
+    /// @remark first instruction needs to be a skip to the program start code
+    if (parser->has_akm) {
+      addJr(1 + 3 + 10);
+    } else
+      addJr(1 + 10);
 
+    /// mark the END statement start code
+    end_mark = addPreMark();
+    end_mark->address = code_pointer;
+
+    /// write the END statement code
     if (parser->has_akm) {
       // disable AKM player
       addCall(def_player_unhook);
@@ -4692,32 +4709,16 @@ void Compiler::cmd_end(bool doCodeRegistering) {
     // ld hl, fake empty line
     addLdHL(def_ENDPRG);
 
-    if (opts->megaROM) {
-      // ld a, 2
-      addLdA(0x02);
-      // ld iy, (SLTSTR-1)
-      addLdIYii(def_SLTSTR - 1);
-      // ld ix, MR_CHANGE_SGM
-      addLdIX(def_MR_CHANGE_SGM);
-      // call CALSLT
-      addCall(def_CALSLT);
-      // ei
-      addEI();
-      // ret               ; return to basic
-      addRet();
-
-    } else {
-      // ret               ; return to basic
-      addRet();
-    }
+    // ret               ; return to basic
+    addRet();
 
   } else {
+    /// jump to the real END statement
     // jp end_mark
-    if (end_mark)
-      addFix(end_mark->symbol);
-    else
-      end_mark = addMark();
-    addJp(0x0000);
+    if (end_mark) {
+      addFix(end_mark);
+      addJp(0x0000);
+    }
   }
 }
 
@@ -10286,7 +10287,7 @@ void Compiler::cmd_stop() {
     }
 
   } else if (t == 0) {
-    cmd_end(false);
+    cmd_end(false);  //! jump to the real END statement
   } else {
     syntax_error("Wrong number of parameters in STOP");
   }

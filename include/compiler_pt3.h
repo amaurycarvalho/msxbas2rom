@@ -56,6 +56,8 @@ class CompilerPT3 : public Compiler {
   SymbolNode *addPreMark();
   FixNode *addMark();
 
+  FixNode *end_mark2;
+
   void func_symbols();
   void clear_symbols();
   int save_symbols();

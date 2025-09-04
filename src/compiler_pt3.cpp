@@ -3958,7 +3958,7 @@ void CompilerPT3::cmd_start() {
 
 void CompilerPT3::cmd_end(bool last) {
   if (last) {
-    if (end_mark) end_mark->symbol->address = code_pointer;
+    if (end_mark2) end_mark2->symbol->address = code_pointer;
 
     // call unhook.pt3
     addCmd(0xCD, def_unhook_pt3);
@@ -3998,10 +3998,10 @@ void CompilerPT3::cmd_end(bool last) {
 
   } else {
     // jp end_mark
-    if (end_mark)
-      addFix(end_mark->symbol);
+    if (end_mark2)
+      addFix(end_mark2->symbol);
     else
-      end_mark = addMark();
+      end_mark2 = addMark();
     addCmd(0xC3, 0x0000);
   }
 }

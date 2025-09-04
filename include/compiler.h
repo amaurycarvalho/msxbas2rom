@@ -273,7 +273,7 @@ class Compiler : public IZ80 {
   int mark_count, for_count;
 
   SymbolNode *heap_mark, *temp_str_mark;
-  FixNode* end_mark;
+  SymbolNode* end_mark;
   FixNode *enable_basic_mark, *disable_basic_mark;
   FixNode* draw_mark;
   FixNode *io_redirect_mark, *io_screen_mark;
