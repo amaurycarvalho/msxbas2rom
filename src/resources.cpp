@@ -28,6 +28,12 @@ void ResourceManager::addDataResource(Parser *parser) {
 }
 
 bool ResourceManager::add(string filename) {
+  /// @todo implement inputPath alternative search
+  // if file not found, try search it at input path
+  // if (!fileExists(filename)) {
+  //  filename = pathJoin(opts->inputPath, filename);
+  //}
+
   ResourceReader *resourceReader = ResourceFactory::create(filename);
   if (resourceReader) {
     resourceReaderList.push_back(resourceReader);
@@ -79,8 +85,14 @@ ResourceReader::ResourceReader(string filename) {
   this->filename = filename;
 };
 
+///-------------------------------------------------------------------------------
+
 ResourceBlobReader::ResourceBlobReader(string filename)
     : ResourceReader(filename) {};
+
+bool ResourceBlobReader::populateBuffer() {
+  return false;
+}
 
 bool ResourceBlobReader::isIt(string fileext) {
   return true;
@@ -90,30 +102,218 @@ bool ResourceBlobReader::load() {
   return false;
 }
 
+///-------------------------------------------------------------------------------
+
+ResourceBlobPackedReader::ResourceBlobPackedReader(string filename)
+    : ResourceBlobReader(filename) {};
+
+bool ResourceBlobPackedReader::isIt(string fileext) {
+  return true;
+}
+
+bool ResourceBlobPackedReader::load() {
+  return false;
+}
+
+///-------------------------------------------------------------------------------
+
+ResourceBlobChunkPackedReader::ResourceBlobChunkPackedReader(string filename)
+    : ResourceBlobPackedReader(filename) {};
+
+bool ResourceBlobChunkPackedReader::isIt(string fileext) {
+  return true;
+}
+
+bool ResourceBlobChunkPackedReader::load() {
+  return false;
+}
+
+///-------------------------------------------------------------------------------
+
 ResourceTxtReader::ResourceTxtReader(string filename)
     : ResourceReader(filename) {};
+
+bool ResourceTxtReader::populateLines() {
+  FILE *file;
+  char line[2048];  //! 1 line = 2k of data
+  int size, i;
+
+  lines.clear();
+
+  if ((file = fopen(filename.c_str(), "r"))) {
+    while (fgets(line, sizeof(line), file)) {
+      size = strlen(line);
+      for (i = 0; i < size; i++) {
+        if (line[i] < 32 || line[i] > 127) line[i] = 32;
+      }
+      lines.push_back(line);
+    }
+
+    fclose(file);
+
+    return true;
+  }
+
+  return false;
+}
 
 bool ResourceTxtReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".TXT") == 0);
 }
 
 bool ResourceTxtReader::load() {
+  int i, n, lineCount, lineSize;
+  data.clear();
+  if (populateLines()) {
+    lineCount = lines.size();
+    data.resize(lineCount + 1);
+    data[0].push_back(2);  //! TXT data resource
+    for (i = 0, n = 1; i < lineCount; i++, n++) {
+      /// string maximum size = 255 chars
+      lineSize = (lines[i].size() & 0xFF);
+      /// set string size
+      data[n].resize(lineSize + 1);
+      data[n][0] = lineSize;
+      /// copy string text (max = 255 chars)
+      memcpy(data[n].data() + 1, lines[i].data(), lineSize);
+    }
+    return true;
+  }
   return false;
 }
 
+///-------------------------------------------------------------------------------
+
 ResourceCsvReader::ResourceCsvReader(string filename)
-    : ResourceReader(filename) {};
+    : ResourceTxtReader(filename) {};
+
+bool ResourceCsvReader::parseFields(string line) {
+  int i, lineSize, state;
+  string field;
+
+  fields.clear();
+  field.clear();
+
+  lineSize = line.size();
+  state = 0;
+
+  for (i = 0; i < lineSize; i++) {
+    switch (state) {
+      case 0: {
+        if (line[i] == '"') {
+          state = 1;
+        } else if (line[i] == ',' || line[i] == ';' || line[i] == 8) {
+          fields.push_back(fixField(field));
+          field.clear();
+        } else if (line[i] == ' ' && field.size() == 0) {
+        } else {
+          field.push_back(line[i]);
+        }
+      } break;
+      case 1: {
+        if (line[i] == '"') {
+          state = 2;
+        } else {
+          field.push_back(line[i]);
+        }
+      } break;
+      case 2: {
+        if (line[i] == ',' || line[i] == ';' || line[i] == 8) {
+          state = 0;
+          fields.push_back(fixField(field));
+          field.clear();
+        }
+      }
+    }
+  }
+
+  if (!field.empty()) {
+    fields.push_back(fixField(field));
+  }
+
+  return true;
+}
+
+string ResourceCsvReader::fixField(string field) {
+  string s = field;
+  int k;
+
+  if (!s.empty()) {
+    // Remove leading quote
+    if (s.front() == '"') {
+      s.erase(s.begin());
+      if (s.empty()) return s;
+    }
+
+    // Remove trailing quote
+    if (s.back() == '"') {
+      s.pop_back();
+      if (s.empty()) return s;
+    }
+
+    /// convert non base 10 numbers to base 10
+    if (s.front() == '&') {
+      try {
+        if (s[1] == 'h' || s[1] == 'H')
+          k = stoi(s.substr(2), 0, 16);
+        else if (s[1] == 'o' || s[1] == 'O')
+          k = stoi(s.substr(2), 0, 8);
+        else if (s[1] == 'b' || s[1] == 'B')
+          k = stoi(s.substr(2), 0, 2);
+        else
+          k = 0;
+      } catch (exception &e) {
+        k = 0;
+      }
+      s = to_string(k);
+    }
+  }
+
+  return s;
+}
 
 bool ResourceCsvReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".CSV") == 0);
 }
 
 bool ResourceCsvReader::load() {
+  int i, n, k, lineCount, fieldCount, fieldSize;
+  data.clear();
+  if (populateLines()) {
+    lineCount = lines.size() & 0xFFFF;
+    data.resize(1);
+    /// CSV data resource type
+    data[0].push_back(1);
+    /// line count
+    data[0].push_back(lineCount & 0xFF);
+    data[0].push_back((lineCount >> 8) & 0xFF);
+    for (i = 0, n = data.size(); i < lineCount; i++) {
+      if (parseFields(lines[i])) {
+        /// lines fields map
+        fieldCount = fields.size() & 0xFF;
+        data[0].push_back(fieldCount);
+        /// lines data
+        data.resize(n + fieldCount);
+        for (k = 0; k < fieldCount; k++, n++) {
+          /// field maximum size = 255 chars
+          fieldSize = (fields[k].size() & 0xFF);
+          /// set field size
+          data[n].resize(fieldSize + 1);
+          data[n][0] = fieldSize;
+          /// copy string text (max = 255 chars)
+          memcpy(data[n].data() + 1, fields[k].data(), fieldSize);
+        }
+      }
+    }
+    return true;
+  }
   return false;
 }
 
+///-------------------------------------------------------------------------------
+
 ResourceScrReader::ResourceScrReader(string filename)
-    : ResourceReader(filename) {};
+    : ResourceBlobChunkPackedReader(filename) {};
 
 bool ResourceScrReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".SC0") == 0 ||
@@ -131,12 +331,20 @@ bool ResourceScrReader::isIt(string fileext) {
           strcasecmp(fileext.c_str(), ".S12") == 0);
 }
 
+/* inherited from base class
 bool ResourceScrReader::load() {
   return false;
 }
+*/
+
+///-------------------------------------------------------------------------------
 
 ResourceSprReader::ResourceSprReader(string filename)
-    : ResourceReader(filename) {};
+    : ResourceBlobPackedReader(filename) {};
+
+bool ResourceSprReader::parseTinySpriteFile() {
+  return false;
+}
 
 bool ResourceSprReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".SPR") == 0);
@@ -353,6 +561,8 @@ int ResourceSprReader::ParseTinySpriteFile(string filename, unsigned char *data,
     return -1;
   }
 }
+
+///-------------------------------------------------------------------------------
 
 ResourceAkmReader::ResourceAkmReader(string filename)
     : ResourceBlobReader(filename) {};
@@ -580,6 +790,8 @@ void ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
   // delete file;
 }
 
+///-------------------------------------------------------------------------------
+
 ResourceAkxReader::ResourceAkxReader(string filename)
     : ResourceBlobReader(filename) {};
 
@@ -632,6 +844,8 @@ void ResourceAkxReader::fixAKX(unsigned char *data, int address, int length) {
   // delete file;
 }
 
+///-------------------------------------------------------------------------------
+
 ResourceMtfReader::ResourceMtfReader(string filename)
     : ResourceBlobReader(filename) {};
 
@@ -643,11 +857,35 @@ bool ResourceMtfReader::load() {
   return false;
 }
 
+///-------------------------------------------------------------------------------
+
+ResourceStringReader::ResourceStringReader(string text)
+    : ResourceReader(text) {};
+
+bool ResourceStringReader::load() {
+  int lineSize;
+
+  data.clear();
+  data.resize(1);
+  /// string maximum size = 255 chars
+  lineSize = filename.size();
+  /// set string size
+  data[0].resize(lineSize + 1);
+  /// copy string text (max = 255 chars)
+  memcpy(data[0].data(), filename.c_str(), lineSize);
+  data[0][lineSize] = 0;
+
+  return true;
+}
+
+///-------------------------------------------------------------------------------
+
 ResourceDataReader::ResourceDataReader(Parser *parser)
-    : ResourceReader(string("_DATA_")) {
+    : ResourceCsvReader(string("_DATA_")) {
   this->parser = parser;
 };
 
 bool ResourceDataReader::load() {
+  // parseLine()
   return false;
 }
