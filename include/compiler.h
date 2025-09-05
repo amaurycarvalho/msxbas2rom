@@ -256,6 +256,7 @@ class Compiler : public IZ80 {
   bool has_open_grp;
   bool has_tiny_sprite;
 
+  SymbolManager symbolManager;
   ResourceManager resourceManager;
 
   int code_start, ram_start, ram_page;

@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
       }
 
       if (opts.symbols) {
-        compilerPT3.resourceManager.saveSymbolFile(&opts);
+        compilerPT3.symbolManager.saveSymbolFile(&opts);
       }
 
     } else {
@@ -226,8 +226,9 @@ int main(int argc, char *argv[]) {
       }
 
       if (opts.symbols) {
-        compiler.resourceManager.saveSymbolFile(&opts);
-        compiler.resourceManager.saveOmdsFile(&opts);
+        compiler.symbolManager.saveSymbolFile(&opts);
+        compiler.symbolManager.saveOmdsFile(&opts);
+        compiler.symbolManager.saveNoIceFile(&opts);
       }
     }
 

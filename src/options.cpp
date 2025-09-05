@@ -109,6 +109,7 @@ void BuildOptions::setInputFilename(string filename) {
 
     symbolFilename = outputFilename + ".symbol";
     omdsFilename = outputFilename + ".omds";
+    noiceFilename = outputFilename + ".noi";
     outputFilename += ".rom";
   }
 }

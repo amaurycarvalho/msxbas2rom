@@ -117,10 +117,69 @@ class FileNode {
 
   bool writeToFile(string filename, unsigned char* data, int data_length);
   int readFromFile(string filename, unsigned char* data, int maxlen);
-  int ParseTinySpriteFile(string filename, unsigned char* data, int maxlen);
+};
 
-  void fixAKM(unsigned char* data, int address, int length);
-  void fixAKX(unsigned char* data, int address, int length);
+/***
+ * @class SymbolManager
+ * @brief Symbol manager
+ */
+class SymbolManager {
+ private:
+  vector<vector<string>> getKernelSymbolAddresses();
+
+ public:
+  vector<CodeNode*> codeList;
+  vector<CodeNode*> dataList;
+
+  /***
+   * @brief clear all symbol lists
+   */
+  void clear();
+
+  /***
+   * @brief Write symbols file (*.symbol) to use with old/new OpenMSX Debugger
+   * @param opts compiler options
+   * @note
+   * [old
+   * debugger](https://github.com/openMSX/debugger/blob/master/src/SymbolTable.cpp)
+   * ; [new
+   * debugger](https://github.com/openMSX/openMSX/blob/master/src/debugger/SymbolManager.cc)
+   * ; [new debugger unit
+   * test](https://github.com/openMSX/openMSX/blob/master/src/unittest/SymbolManager_test.cc)
+   * @remark depends on compile->write and compile->save_symbols methods to
+   * show the correct symbol addresses
+   */
+  bool saveSymbolFile(BuildOptions* opts);
+
+  /***
+   * @brief Write NoICE file (*.noi) to use with new OpenMSX Debugger
+   * @param opts compiler options
+   * @note
+   * [old
+   * debugger](https://github.com/openMSX/debugger/blob/master/src/SymbolTable.cpp)
+   * ; [new
+   * debugger](https://github.com/openMSX/openMSX/blob/master/src/debugger/SymbolManager.cc)
+   * ; [new debugger unit
+   * test](https://github.com/openMSX/openMSX/blob/master/src/unittest/SymbolManager_test.cc)
+   * @remark depends on compile->write and compile->save_symbols methods to
+   * show the correct symbol addresses
+   */
+  bool saveNoIceFile(BuildOptions* opts);
+
+  /***
+   * @brief Write OMDS file (*.omds) to use with old OpenMSX Debugger
+   * @param opts compiler options
+   * @note
+   * [old
+   * debugger](https://github.com/openMSX/debugger/blob/master/src/SymbolTable.cpp)
+   * ; [new
+   * debugger](https://github.com/openMSX/openMSX/blob/master/src/debugger/SymbolManager.cc)
+   * ; [new debugger unit
+   * test](https://github.com/openMSX/openMSX/blob/master/src/unittest/SymbolManager_test.cc)
+   * @remark depends on compile->write and compile->save_symbols methods to
+   * show the correct symbol addresses
+   */
+  bool saveOmdsFile(BuildOptions* opts);
 };
 
 #endif  // SYMBOLS_H_INCLUDED

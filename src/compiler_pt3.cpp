@@ -66,7 +66,7 @@ bool CompilerPT3::build(Parser *parser) {
   codeItem->length = code_pointer - codeItem->start;
   codeItem->is_code = true;
   codeItem->debug = true;
-  resourceManager.codeList.push_back(codeItem);
+  symbolManager.codeList.push_back(codeItem);
   if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
   if (codeItem->length >= 0x4000) {
     syntax_error("Maximum of start of program code per ROM reached (16k)");
@@ -118,7 +118,7 @@ bool CompilerPT3::build(Parser *parser) {
       codeItem->length = code_pointer - codeItem->start;
       codeItem->is_code = true;
       codeItem->debug = true;
-      resourceManager.codeList.push_back(codeItem);
+      symbolManager.codeList.push_back(codeItem);
 
       if (opts->debug) printf("/%i", codeItem->length);
 
@@ -151,7 +151,7 @@ bool CompilerPT3::build(Parser *parser) {
     codeItem->length = code_pointer - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = true;
-    resourceManager.codeList.push_back(codeItem);
+    symbolManager.codeList.push_back(codeItem);
     if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
     if (codeItem->length >= 0x4000) {
       syntax_error("Maximum of end of program code per ROM reached (16k)");
@@ -166,7 +166,7 @@ bool CompilerPT3::build(Parser *parser) {
     codeItem->length = code_pointer - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = false;
-    resourceManager.codeList.push_back(codeItem);
+    symbolManager.codeList.push_back(codeItem);
     if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
     if (codeItem->length >= 0x4000) {
       syntax_error("Maximum of support code per ROM reached (16k)");
@@ -229,6 +229,7 @@ void CompilerPT3::clear_symbols() {
   symbols.clear();
   fixes.clear();
 
+  symbolManager.clear();
   resourceManager.clear();
 
   while (!forNextStack.empty()) forNextStack.pop();
@@ -308,7 +309,7 @@ int CompilerPT3::save_symbols() {
             codeItem->length = code_pointer - codeItem->start;
             codeItem->is_code = false;
             codeItem->debug = true;
-            resourceManager.codeList.push_back(codeItem);
+            symbolManager.codeList.push_back(codeItem);
 
             length += codeItem->length;
           }
@@ -319,7 +320,7 @@ int CompilerPT3::save_symbols() {
           codeItem->start = ram_pointer;
           codeItem->is_code = false;
           codeItem->debug = true;
-          resourceManager.dataList.push_back(codeItem);
+          symbolManager.dataList.push_back(codeItem);
 
           var_size = 0;
 
@@ -591,7 +592,7 @@ int CompilerPT3::write(unsigned char *dest, int start_address) {
   if (opts->megaROM) {
     skips.clear();
 
-    t = resourceManager.codeList.size();
+    t = symbolManager.codeList.size();
     segm_last = 2;   // last ROM segment starts at segment 2
     segm_total = 4;  // 4 segments of 8kb (0, 1, 2, 3)
     length = (start_address - 0x8000);
@@ -599,7 +600,7 @@ int CompilerPT3::write(unsigned char *dest, int start_address) {
     d = dest;
 
     for (i = 0; i < t; i++) {
-      codeItem = resourceManager.codeList[i];
+      codeItem = symbolManager.codeList[i];
 
       // printf("%i address %i size %i\n", i, codeItem->start,
       // codeItem->length);

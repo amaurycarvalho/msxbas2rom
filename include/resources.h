@@ -79,6 +79,10 @@ class ResourceSprReader : public ResourceReader {
   static bool isValid(string fileext);
   bool load();
   ResourceSprReader(string filename);
+
+  /// @todo transfer it to load() method
+  static int ParseTinySpriteFile(string filename, unsigned char *data,
+                                 int maxlen);
 };
 
 /***
@@ -94,6 +98,9 @@ class ResourceAkmReader : public ResourceBlobReader {
   static bool isValid(string fileext);
   bool load();
   ResourceAkmReader(string filename);
+
+  /// @todo transfer it to fix() method
+  static void fixAKM(unsigned char *data, int address, int length);
 };
 
 /***
@@ -109,6 +116,9 @@ class ResourceAkxReader : public ResourceBlobReader {
   static bool isValid(string fileext);
   bool load();
   ResourceAkxReader(string filename);
+
+  /// @todo transfer it to fix() method
+  static void fixAKX(unsigned char *data, int address, int length);
 };
 
 /***
@@ -147,8 +157,6 @@ class ResourceManager {
  public:
   vector<Lexeme *> resourceList;
   vector<FileNode *> fileList;
-  vector<CodeNode *> codeList;
-  vector<CodeNode *> dataList;
 
   /***
    * @brief clear all resources
@@ -164,24 +172,6 @@ class ResourceManager {
    * @brief Add DATA statement resource to the resource list
    */
   void addDataResource(Parser *parser);
-
-  /***
-   * @brief Write symbols file to use with OpenMSX
-   * @param opts compiler options
-   * @note https://github.com/openMSX/debugger/blob/master/src/SymbolTable.cpp
-   * @remark depends on compile->write and compile->save_symbols methods to
-   * show the correct symbol addresses
-   */
-  bool saveSymbolFile(BuildOptions *opts);
-
-  /***
-   * @brief Write OMDS file to use with OpenMSX Debugger
-   * @param opts compiler options
-   * @note https://github.com/openMSX/debugger/blob/master/src/SymbolTable.cpp
-   * @remark depends on compile->write and compile->save_symbols methods to
-   * show the correct symbol addresses
-   */
-  bool saveOmdsFile(BuildOptions *opts);
 };
 
 #endif  // RESOURCES_H_INCLUDED

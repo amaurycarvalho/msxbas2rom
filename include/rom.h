@@ -53,24 +53,12 @@ class Rom {
 
   vector<unsigned char *> lines;
 
-  // void buildInit(vector<Lexeme*> *resourceList);
   void buildInit();
   void buildHeader();
   void buildRoutines();
   void buildCompilerRoutines();
   void buildCompilerRoutinesPT3();
-  void buildMap(vector<Lexeme *> *resourceList, bool font);
-  void buildResources(vector<Lexeme *> *resourceList);
-  void buildMapAndResources();
-  void buildMapAndResourcesText(Lexeme *lexeme);
-  void buildMapAndResourcesData(Parser *parser);
-  void buildMapAndResourcesFile(Lexeme *lexeme);
-  void buildMapAndResourcesFileTXT(string filename);
-  void buildMapAndResourcesFileCSV(string filename);
-  void buildMapAndResourcesFileSPR(string filename);
-  void buildMapAndResourcesFileSCR(string filename);
-  void buildMapAndResourcesFileBIN(string filename, string fileext);
-  void addResourceToMap(int offset, int length, int filler);
+
   void buildXBASIC();
   void buildPT3TOOLS();
   void buildFontResources();
@@ -87,6 +75,21 @@ class Rom {
   void buildHeaderAdjust();
 
   void writeRom(string filename);
+
+  /// @todo move to resources.cpp
+  void buildMap(vector<Lexeme *> *resourceList, bool font);
+  void buildResources(vector<Lexeme *> *resourceList);
+  void buildMapAndResources();
+  void buildMapAndResourcesText(Lexeme *lexeme);
+  void buildMapAndResourcesData(Parser *parser);
+  void buildMapAndResourcesFile(Lexeme *lexeme);
+  void buildMapAndResourcesFileTXT(string filename);
+  void buildMapAndResourcesFileCSV(string filename);
+  void buildMapAndResourcesFileSPR(string filename);
+  void buildMapAndResourcesFileSCR(string filename);
+  void buildMapAndResourcesFileBIN(string filename, string fileext);
+  void addResourceToMap(int offset, int length, int filler);
+  /// ---------
 
  public:
   int code_start, rom_size;

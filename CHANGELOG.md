@@ -1,6 +1,7 @@
 # Version history
 
-- 0.3.3.1 – (2025/09/03) Symbols/resources refactoring, OMDS support, CLEAR statement and minor bug fixes;
+- 0.3.3.2 – (2025/##/##) Symbols/resources refactoring and NoICE OpenMSX Debugger support;
+- 0.3.3.1 – (2025/09/04) Symbols/resources refactoring, OMDS support, CLEAR statement and minor bug fixes;
 - 0.3.3.0 – (2025/08/18) New -i and -o parameters;
 - #.#.#.# – (2025/08/14) GitHub CI/CD and RPM/DEB packaging refactoring;
 - #.#.#.# – (2025/08/01) Source code ported from Code::Blocks to VSCode;

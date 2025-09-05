@@ -29,8 +29,8 @@ class BuildOptions {
   enum class CompileMode { Plain, ASCII8, KonamiSCC, Pcoded } compileMode;
 
   //! @brief File names (input, output and symbol)
-  string inputFilename, outputFilename, symbolFilename, omdsFilename,
-      appFileName;
+  string inputFilename, outputFilename, appFileName;
+  string symbolFilename, omdsFilename, noiceFilename;
 
   //! @brief Options flags
   bool help, debug, quiet, error, version, history, doc;

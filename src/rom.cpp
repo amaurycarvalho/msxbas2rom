@@ -1089,7 +1089,8 @@ void Rom::buildMapAndResourcesFileSCR(string filename) {
 
 void Rom::buildMapAndResourcesFileSPR(string filename) {
   unsigned char *buffer = (unsigned char *)malloc(0x4000);
-  int size_read = file.ParseTinySpriteFile(filename, buffer, 0x4000);
+  int size_read =
+      ResourceSprReader::ParseTinySpriteFile(filename, buffer, 0x4000);
   int next_segment = ((filInd / 0x4000) + 1) * 0x4000;
   int filler = 0;
   Pletter pletter;
@@ -1151,9 +1152,9 @@ void Rom::buildMapAndResourcesFileBIN(string filename, string fileext) {
       address = filInd;
 
     if (strcasecmp(fileext.c_str(), ".AKM") == 0) {
-      file.fixAKM(&data[filInd], address, size_read);
+      ResourceAkmReader::fixAKM(&data[filInd], address, size_read);
     } else if (strcasecmp(fileext.c_str(), ".AKX") == 0) {
-      file.fixAKX(&data[filInd], address, size_read);
+      ResourceAkxReader::fixAKX(&data[filInd], address, size_read);
     }
 
     addResourceToMap(filInd, size_read, filler);
