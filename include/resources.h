@@ -12,16 +12,26 @@
 
 /***
  * @class ResourceReader
- * @brief Resource reader factory
+ * @brief Resource reader base class
  */
 class ResourceReader {
- public:
+ protected:
   string filename;
+
+ public:
   vector<vector<unsigned char>> data;
-  static ResourceReader *create(string filename);
-  static bool isValid(string fileext);
-  bool load();
+  string getFilename();
+  virtual bool load() = 0;
   ResourceReader(string filename);
+};
+
+/***
+ * @class ResourceFactory
+ * @brief Resource factory
+ */
+class ResourceFactory {
+ public:
+  static ResourceReader *create(string filename);
 };
 
 /***
@@ -30,7 +40,7 @@ class ResourceReader {
  */
 class ResourceBlobReader : public ResourceReader {
  public:
-  static bool isValid(string fileext);
+  static bool isIt(string fileext);
   bool load();
   ResourceBlobReader(string filename);
 };
@@ -41,7 +51,7 @@ class ResourceBlobReader : public ResourceReader {
  */
 class ResourceTxtReader : public ResourceReader {
  public:
-  static bool isValid(string fileext);
+  static bool isIt(string fileext);
   bool load();
   ResourceTxtReader(string filename);
 };
@@ -52,7 +62,7 @@ class ResourceTxtReader : public ResourceReader {
  */
 class ResourceCsvReader : public ResourceReader {
  public:
-  static bool isValid(string fileext);
+  static bool isIt(string fileext);
   bool load();
   ResourceCsvReader(string filename);
 };
@@ -64,7 +74,7 @@ class ResourceCsvReader : public ResourceReader {
  */
 class ResourceScrReader : public ResourceReader {
  public:
-  static bool isValid(string fileext);
+  static bool isIt(string fileext);
   bool load();
   ResourceScrReader(string filename);
 };
@@ -76,7 +86,7 @@ class ResourceScrReader : public ResourceReader {
  */
 class ResourceSprReader : public ResourceReader {
  public:
-  static bool isValid(string fileext);
+  static bool isIt(string fileext);
   bool load();
   ResourceSprReader(string filename);
 
@@ -87,7 +97,8 @@ class ResourceSprReader : public ResourceReader {
 
 /***
  * @class ResourceAkmReader
- * @brief Resource reader for Arkos Tracker minimalist player music files (.AKM)
+ * @brief Resource reader for Arkos Tracker minimalist player music files
+ * (.AKM)
  * @note https://julien-nevo.com/at3test/index.php/download/
  */
 class ResourceAkmReader : public ResourceBlobReader {
@@ -95,7 +106,7 @@ class ResourceAkmReader : public ResourceBlobReader {
   void fix();
 
  public:
-  static bool isValid(string fileext);
+  static bool isIt(string fileext);
   bool load();
   ResourceAkmReader(string filename);
 
@@ -113,7 +124,7 @@ class ResourceAkxReader : public ResourceBlobReader {
   void fix();
 
  public:
-  static bool isValid(string fileext);
+  static bool isIt(string fileext);
   bool load();
   ResourceAkxReader(string filename);
 
@@ -128,7 +139,7 @@ class ResourceAkxReader : public ResourceBlobReader {
  */
 class ResourceMtfReader : public ResourceBlobReader {
  public:
-  static bool isValid(string fileext);
+  static bool isIt(string fileext);
   bool load();
   ResourceMtfReader(string filename);
 };

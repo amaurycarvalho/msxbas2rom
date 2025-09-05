@@ -7,6 +7,8 @@
 
 #include "resources.h"
 
+///-------------------------------------------------------------------------------
+
 void ResourceManager::clear() {
   resourceList.clear();
   fileList.clear();
@@ -26,7 +28,7 @@ void ResourceManager::addDataResource(Parser *parser) {
 }
 
 bool ResourceManager::add(string filename) {
-  ResourceReader *resourceReader = ResourceReader::create(filename);
+  ResourceReader *resourceReader = ResourceFactory::create(filename);
   if (resourceReader) {
     resourceReaderList.push_back(resourceReader);
     return resourceReader->load();
@@ -36,53 +38,51 @@ bool ResourceManager::add(string filename) {
 
 ///-------------------------------------------------------------------------------
 
-ResourceReader::ResourceReader(string filename) {
-  this->filename = filename;
-};
-
-bool ResourceReader::isValid(string fileext) {
-  return false;
-}
-
-bool ResourceReader::load() {
-  return false;
-}
-
-ResourceReader *ResourceReader::create(string filename) {
+ResourceReader *ResourceFactory::create(string filename) {
   if (fileExists(filename)) {
     string fileext = getFileExtension(filename);
-    if (ResourceTxtReader::isValid(fileext)) {
+    if (ResourceTxtReader::isIt(fileext)) {
       return new ResourceTxtReader(filename);
     }
-    if (ResourceCsvReader::isValid(fileext)) {
+    if (ResourceCsvReader::isIt(fileext)) {
       return new ResourceCsvReader(filename);
     }
-    if (ResourceScrReader::isValid(fileext)) {
+    if (ResourceScrReader::isIt(fileext)) {
       return new ResourceScrReader(filename);
     }
-    if (ResourceSprReader::isValid(fileext)) {
+    if (ResourceSprReader::isIt(fileext)) {
       return new ResourceSprReader(filename);
     }
-    if (ResourceAkmReader::isValid(fileext)) {
+    if (ResourceAkmReader::isIt(fileext)) {
       return new ResourceAkmReader(filename);
     }
-    if (ResourceAkxReader::isValid(fileext)) {
+    if (ResourceAkxReader::isIt(fileext)) {
       return new ResourceAkxReader(filename);
     }
-    if (ResourceMtfReader::isValid(fileext)) {
+    if (ResourceMtfReader::isIt(fileext)) {
       return new ResourceMtfReader(filename);
     }
-    if (ResourceBlobReader::isValid(fileext)) {
+    if (ResourceBlobReader::isIt(fileext)) {
       return new ResourceBlobReader(filename);
     }
   }
   return nullptr;
 }
 
+///-------------------------------------------------------------------------------
+
+string ResourceReader::getFilename() {
+  return filename;
+};
+
+ResourceReader::ResourceReader(string filename) {
+  this->filename = filename;
+};
+
 ResourceBlobReader::ResourceBlobReader(string filename)
     : ResourceReader(filename) {};
 
-bool ResourceBlobReader::isValid(string fileext) {
+bool ResourceBlobReader::isIt(string fileext) {
   return true;
 }
 
@@ -93,7 +93,7 @@ bool ResourceBlobReader::load() {
 ResourceTxtReader::ResourceTxtReader(string filename)
     : ResourceReader(filename) {};
 
-bool ResourceTxtReader::isValid(string fileext) {
+bool ResourceTxtReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".TXT") == 0);
 }
 
@@ -104,7 +104,7 @@ bool ResourceTxtReader::load() {
 ResourceCsvReader::ResourceCsvReader(string filename)
     : ResourceReader(filename) {};
 
-bool ResourceCsvReader::isValid(string fileext) {
+bool ResourceCsvReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".CSV") == 0);
 }
 
@@ -115,7 +115,7 @@ bool ResourceCsvReader::load() {
 ResourceScrReader::ResourceScrReader(string filename)
     : ResourceReader(filename) {};
 
-bool ResourceScrReader::isValid(string fileext) {
+bool ResourceScrReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".SC0") == 0 ||
           strcasecmp(fileext.c_str(), ".SC1") == 0 ||
           strcasecmp(fileext.c_str(), ".SC2") == 0 ||
@@ -138,7 +138,7 @@ bool ResourceScrReader::load() {
 ResourceSprReader::ResourceSprReader(string filename)
     : ResourceReader(filename) {};
 
-bool ResourceSprReader::isValid(string fileext) {
+bool ResourceSprReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".SPR") == 0);
 }
 
@@ -357,7 +357,7 @@ int ResourceSprReader::ParseTinySpriteFile(string filename, unsigned char *data,
 ResourceAkmReader::ResourceAkmReader(string filename)
     : ResourceBlobReader(filename) {};
 
-bool ResourceAkmReader::isValid(string fileext) {
+bool ResourceAkmReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".AKM") == 0);
 }
 
@@ -583,7 +583,7 @@ void ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
 ResourceAkxReader::ResourceAkxReader(string filename)
     : ResourceBlobReader(filename) {};
 
-bool ResourceAkxReader::isValid(string fileext) {
+bool ResourceAkxReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".AKX") == 0);
 }
 
@@ -635,7 +635,7 @@ void ResourceAkxReader::fixAKX(unsigned char *data, int address, int length) {
 ResourceMtfReader::ResourceMtfReader(string filename)
     : ResourceBlobReader(filename) {};
 
-bool ResourceMtfReader::isValid(string fileext) {
+bool ResourceMtfReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".MTF.JSON") == 0);
 }
 
