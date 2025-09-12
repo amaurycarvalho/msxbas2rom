@@ -213,8 +213,23 @@ int main(int argc, char *argv[]) {
   /// finish process
 
   if (!opts.quiet) {
+    if (opts.megaROM) {
+      if (opts.compileMode == BuildOptions::CompileMode::KonamiSCC) {
+        printf(
+            "MegaROM mode activated (Konami with SCC "
+            "mapper).\n");
+      } else
+        printf("    MegaROM mode activated (ASCII8 mapper).\n");
+    } else {
+      printf("    Plain ROM mode activated.\n");
+    }
+    printf("    ROM size = %.1fkb (%.1f%% free)\n", rom.romSize / 1024.0,
+           100.0 - rom.codeShare - rom.resourcesShare - rom.kernelShare);
+
     if (compiler.resourceManager.resources.size()) {
-      printf("%i resource(s) found (%.1fkb size",
+      printf("    Resources occupied %.1f%% of avaliable space\n",
+             rom.resourcesShare);
+      printf("      %i resource(s) found (%.1fkb size",
              (int)compiler.resourceManager.resources.size(),
              compiler.resourceManager.resourcesPackedSize / 1024.0);
       if (compiler.resourceManager.resourcesPackedSize <
@@ -224,34 +239,20 @@ int main(int argc, char *argv[]) {
       printf(")\n");
       if (opts.debug) compiler.resourceManager.print();
     }
+
+    printf("    Kernel code occupied %.1f%% of avaliable space\n",
+           rom.kernelShare);
     if (compiler.font) {
-      printf("Built-In fonts included as resources\n");
+      printf("        Built-In fonts included in the kernel\n");
     }
+    printf("    Compiled code occupied %.1f%% of avaliable space\n",
+           rom.codeShare);
 
-    if (opts.megaROM) {
-      if (opts.compileMode == BuildOptions::CompileMode::KonamiSCC) {
-        printf(
-            "MegaROM mode activated (Konami with SCC "
-            "mapper).\n");
-      } else
-        printf("MegaROM mode activated (ASCII8 mapper).\n");
-    } else {
-      printf("Plain ROM mode activated.\n");
-    }
-    printf("ROM size = %.1fkb (%.1f%% free)\n", rom.romSize / 1024.0,
-           100.0 - rom.codeShare - rom.resourcesShare - rom.kernelShare);
-    if (compiler.resourceManager.resources.size()) {
-      printf("Resources occupied %.1f%% of avaliable space\n",
-             rom.resourcesShare);
-    }
-    printf("Kernel code occupied %.1f%% of avaliable space\n", rom.kernelShare);
-    printf("Compiled code occupied %.1f%% of avaliable space\n", rom.codeShare);
-
-    printf("RAM usage will be %.1f%% of avaliable capacity\n",
+    printf("    RAM usage will be %.1f%% of avaliable capacity\n",
            compiler.ramMemoryPerc);
 
     if (opts.symbols) {
-      printf("Symbols file created for use on OpenMSX debugger\n");
+      printf("    Symbols file created for use on OpenMSX debugger\n");
     }
 
     printf("Compilation finished with success.\n");

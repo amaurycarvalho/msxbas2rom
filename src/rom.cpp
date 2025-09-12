@@ -31,25 +31,37 @@ bool Rom::build(Compiler *compiler) {
   this->opts = compiler->opts;
   this->resourceManager = &compiler->resourceManager;
 
+  if (opts->debug) printf("Initializing build...\n");
+
   buildInit();
 
   /// add kernel page
+
+  if (opts->debug) printf("Adding kernel data...\n");
 
   if (!addKernel()) return false;
 
   /// add code page
 
+  if (opts->debug) printf("Adding compiled code...\n");
+
   if (!addCompiledCode()) return false;
 
   // add resources pages
+
+  if (opts->debug) printf("Adding resources...\n");
 
   if (!addResources()) return false;
 
   // save ROM file
 
+  if (opts->debug) printf("Writing ROM file...\n");
+
   if (!writeRom(opts->outputFilename)) return false;
 
   // calculate shares
+
+  if (opts->debug) printf("Calculating ROM statistics...\n");
 
   romSizeFloat = romSize;
   kernelShare = (0x4000 / romSizeFloat) * 100;
@@ -93,6 +105,9 @@ bool Rom::addKernel() {
 
 bool Rom::addResources() {
   int baseAddress;
+
+  if (opts->debug) printf("--> Calculating resource map base address...\n");
+
   if (opts->megaROM) {
     baseAddress = 0x8000;
     resourceSegment = pages.size() * 2;  //! resource map segment (128kb rom)
@@ -101,6 +116,8 @@ bool Rom::addResources() {
     resourceSegment = 0;  //! resource map segment (48kb rom)
   }
   resourceAddress = baseAddress + 0x0010;  //! resource map start address
+
+  if (opts->debug) printf("--> Building resource map...\n");
 
   if (!resourceManager->buildMap(resourceSegment, baseAddress)) {
     errorMessage = resourceManager->getErrorMessage();
@@ -111,6 +128,8 @@ bool Rom::addResources() {
   resourcesSize = resourceManager->resourcesPackedSize;
 
   /// adjust resource map start address
+
+  if (opts->debug) printf("--> Adjusting resource map start address...\n");
 
   setResourceMapStartAddress();
 

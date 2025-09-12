@@ -17,4 +17,25 @@ FILE "test70.txt"
 
 100 END
 
+' PRINT RESULT:
+' Quamobrem cum vitiorum ista vis non sit
+'  ut causam
+' alferant mortis voluntariae, perspicuum
+'  est etiam
+' stultorum qui iideni miseri sint offici
+' um esse manere
+' in vita, si sint in maiore parte earum
+' rerura quas
+' secundum naturam esse dicimus, Et quoni
+' am exce-
+' dens e vita et manens aeque miser est,
+' nee diutumttas
+' magis ei vitam fugiendam facit, non sin
+' e causa dicitur
+' iis qui pluribus naturalibus frui possi
+' nt esse in vita
+' manendum.
+' Lorem ipsum dolor sit amet, consectetur
+'
+' manendum.
 

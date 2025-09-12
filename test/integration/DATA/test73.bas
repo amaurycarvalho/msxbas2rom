@@ -17,3 +17,8 @@ FILE "data3.bin"
 80 IREAD A%, B% 
 90 PRINT A%, B%
 
+' PRINT RESULT:
+'  1       2
+'  6       7
+'  11      12
+

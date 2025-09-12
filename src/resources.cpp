@@ -395,7 +395,10 @@ bool ResourceTxtReader::load() {
 ///-------------------------------------------------------------------------------
 
 ResourceCsvReader::ResourceCsvReader(string filename)
-    : ResourceTxtReader(filename) {};
+    : ResourceTxtReader(filename) {
+  resourceType = 1;  //! CSV resource type
+  isIntegerData = false;
+};
 
 void ResourceCsvReader::addFields(string line) {
   enum class State { Normal, Quoted, QuoteInQuoted };
@@ -493,8 +496,6 @@ string ResourceCsvReader::fixFieldValue(string field) {
 
 bool ResourceCsvReader::populateFields() {
   int lineCount, i;
-  /// CSV resource type
-  resourceType = 1;
   /// CSV resource data
   lineFields.clear();
   lineNumbers.clear();
@@ -511,14 +512,15 @@ bool ResourceCsvReader::populateFields() {
 
 /// @todo fix 1st block segment disalignment bug
 bool ResourceCsvReader::populateData() {
-  int i, k, lineCount, fieldCount, fieldSize, fieldValue;
-  bool isIntegerData = (resourceType == 3);  //! IDATA resource type
+  int i, k, lineCount;
+  int fieldCount, fieldSize, fieldValue;
+  /// initialize
   data.clear();
-  unpackedSize = 3;
-  packedSize = 3;
-  /// Resource type
+  /// resource type
   data.emplace_back(3);
   data.back()[0] = resourceType;
+  unpackedSize = 3;
+  packedSize = 3;
   /// line count
   lineCount = lineFields.size();
   data.back()[1] = (lineCount & 0xFF);
@@ -540,7 +542,11 @@ bool ResourceCsvReader::populateData() {
     /// lines data
     for (k = 0; k < fieldCount; k++) {
       if (isIntegerData) {
-        fieldValue = stoi(lineFields[i][k]);
+        try {
+          fieldValue = stoi(lineFields[i][k]);
+        } catch (...) {
+          fieldValue = 0;
+        }
         data.emplace_back(2);
         data.back()[0] = (fieldValue & 0xFF);
         data.back()[1] = ((fieldValue >> 8) & 0xFF);
@@ -1465,7 +1471,7 @@ bool ResourceStringReader::load() {
 ResourceDataReader::ResourceDataReader(Parser *parser)
     : ResourceCsvReader(string("_DATA_")) {
   this->parser = parser;
-  isIntegerData = false;
+  resourceType = 0;  //! DATA resource type
 };
 
 bool ResourceDataReader::load() {
@@ -1479,9 +1485,7 @@ bool ResourceDataReader::populateFields() {
   int fieldCount = parser->datas.size(), i;
   Lexeme *lexeme;
   string lineNumber;
-  /// DATA resource type
-  resourceType = 0;
-  /// DATA resource data
+  /// DATA/IDATA resource data
   lineFields.clear();
   lineNumbers.clear();
   for (i = 0; i < fieldCount; i++) {  // DATA/IDATA items values
@@ -1510,6 +1514,7 @@ bool ResourceDataReader::populateFields() {
 
 ResourceIDataReader::ResourceIDataReader(Parser *parser)
     : ResourceDataReader(parser) {
-  isIntegerData = true;
   filename = "_IDATA_";
+  resourceType = 3;  //! IDATA resource type
+  isIntegerData = true;
 };

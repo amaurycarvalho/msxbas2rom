@@ -132,6 +132,7 @@ class ResourceTxtReader : public ResourceReader {
 class ResourceCsvReader : public ResourceTxtReader {
  protected:
   int resourceType;
+  bool isIntegerData;
   vector<int> lineNumbers;
   vector<vector<string>> lineFields;
 
@@ -292,9 +293,6 @@ class ResourceStringReader : public ResourceReader {
  *         fieldData C(fieldSize)
  */
 class ResourceDataReader : public ResourceCsvReader {
- protected:
-  bool isIntegerData;
-
  private:
   Parser *parser;
   bool populateFields();

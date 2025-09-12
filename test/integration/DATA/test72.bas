@@ -11,4 +11,9 @@
 40 RESTORE 
 41 IREAD A%, B#, C : PRINT A%, B#, C
 
+' PRINT RESULT:
+'   32767   1E+04   9999
+'  0       10      20
+'  0       10      20
+'  32767   1E+04   9999
 

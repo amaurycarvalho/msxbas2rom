@@ -22,3 +22,15 @@ FILE "test70.txt"
 
 120 END
 
+' PRINT RESULT:
+' VALUE A  1
+' VALUE B  2
+' VALUE C  3
+' VALUE D          4
+' VALUE E          5
+' VALUE F  6
+'  32      .1415
+' VALUE A
+'  5
+' incididunt ut labore et dolore magna
+

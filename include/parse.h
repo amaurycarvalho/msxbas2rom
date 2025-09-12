@@ -180,7 +180,7 @@ class Parser {
   TagNode* tag;
   ActionNode* actionRoot;
   LexerLine* error_line;
-  Lexeme *lex_null, *lex_index;
+  Lexeme *lex_null, *lex_index, *lex_empty_string;
 
   stack<ActionNode*> actionStack;
   stack<Lexeme*> expressionList;
@@ -228,6 +228,7 @@ class Parser {
    * builder
    */
   Parser();
+  ~Parser();
 };
 
 #endif  // PARSE_H_INCLUDED

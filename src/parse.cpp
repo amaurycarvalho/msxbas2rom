@@ -48,8 +48,17 @@ Parser::Parser() {
 
   lex_null = new Lexeme(Lexeme::type_literal, Lexeme::subtype_null, "NULL");
 
+  lex_empty_string =
+      new Lexeme(Lexeme::type_literal, Lexeme::subtype_string, "");
+
   lex_index =
       new Lexeme(Lexeme::type_keyword, Lexeme::subtype_numeric, "INDEX");
+}
+
+Parser::~Parser() {
+  if (lex_null) delete lex_null;
+  if (lex_empty_string) delete lex_empty_string;
+  if (lex_index) delete lex_index;
 }
 
 bool Parser::evaluate(Lexer* lexer) {
@@ -854,7 +863,7 @@ bool Parser::eval_cmd_generic(LexerLine* statement) {
 
 bool Parser::eval_cmd_data(LexerLine* statement,
                            Lexeme::LexemeSubType subtype) {
-  Lexeme* next_lexeme;
+  Lexeme *next_lexeme, *lexeme;
   string stext = "", sname;
   int i, itext;
   char* s;
@@ -874,8 +883,14 @@ bool Parser::eval_cmd_data(LexerLine* statement,
     if (next_lexeme->type == Lexeme::type_separator &&
         (next_lexeme->value == "," || next_lexeme->value == ";")) {
       if (lastWasSeparator) {
-        pushActionFromLexeme(lex_null);
-        datas.push_back(lex_null);
+        i = datas.size() + 1;
+        lexeme = new Lexeme(Lexeme::type_literal, Lexeme::subtype_string,
+                            sname + to_string(i), "");
+        if (lexeme) {
+          lexeme->tag = tag->name;
+          pushActionFromLexeme(lexeme);
+          datas.push_back(lexeme);
+        }
 
       } else if (stext.size()) {
         i = datas.size() + 1;
@@ -925,8 +940,14 @@ bool Parser::eval_cmd_data(LexerLine* statement,
   }
 
   if (lastWasSeparator) {
-    pushActionFromLexeme(lex_null);
-    datas.push_back(lex_null);
+    i = datas.size() + 1;
+    lexeme = new Lexeme(Lexeme::type_literal, Lexeme::subtype_string,
+                        sname + to_string(i), "");
+    if (lexeme) {
+      lexeme->tag = tag->name;
+      pushActionFromLexeme(lexeme);
+      datas.push_back(lexeme);
+    }
   }
 
   if (stext.size()) {
