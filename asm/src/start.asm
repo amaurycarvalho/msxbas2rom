@@ -6,7 +6,7 @@
 ;   xxd -i init.bin init.h
 ; ------------------------------------------------------------------------------------------------------
 
-  org 0x8010
+  org 0x8000
 
 ENASLT:	       equ 0024h
 EXPTBL:        equ 0xFCC1   ; Expanded Slot Table
@@ -29,6 +29,12 @@ NEWSTT:        equ 0x4601   ; execute a text (hl=text pointer; text must start w
 CHGET:         equ 0x009F
 
 XBASIC_SCREEN: equ 0x7369
+
+header_filler:
+  db 0,0,0,0,0,0,0,0,0,0,0
+  dw 0x0000  ; resource map start address
+  db 0x00    ; resource map segment
+  dw msx_basic_pcode_startup
 
 initialize:
   ld a, 39
@@ -63,5 +69,20 @@ start_basic:
 
   jp NEWSTT                  ; execute next line
 
-  
+; dummy DEF USR into code to run compiled code
+msx_basic_pcode_startup:
+  ; filler
+  db 0x00
+  ; next MSX BASIC statement
+  dw msx_basic_startup_end
+  ; current MSX BASIC line number
+  dw 0x0000
+  ; DEFUSR9=&H0000:X=USR9(0)
+  db 0x97, 0xDD, 0x1A, 0xEF, 0x0C
+  dw compiled_start_code 
+  db 0x3A, 0x58, 0xEF, 0xDD, 0x1A
+  db 0x28, 0x11, 0x29, 0x00
+msx_basic_startup_end:
+  dw 0x0000
 
+compiled_start_code:

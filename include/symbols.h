@@ -69,57 +69,6 @@ class CodeNode {
 };
 
 /***
- * @class FileNode
- * @brief File wrapper for the file system
- */
-class FileNode {
- private:
-  unsigned char* s;
-  FILE* handle;
-  Pletter pletter;
-  bool first;
-  int bytes;
-  unsigned char buf_plain[255], buf_packed[1024];
-
- public:
-  string name;
-  int length;
-  bool packed;
-  int packed_length;
-  int blocks;
-  Lexeme* current_lexeme;
-  Lexeme* first_lexeme;
-  unsigned char* buffer;
-
-  unsigned char file_header[255];
-
-  ~FileNode();
-
-  bool create();
-  bool open();
-  bool eof();
-  int read(unsigned char* data, int max_length);
-  void write(unsigned char* data, int data_length);
-  void close();
-  void clear();
-
-  int read();
-  int readAsLexeme();
-  int readAsLexeme(unsigned char* data, int data_length);
-
-  /// @brief strips quotes from a string
-  string stripQuotes(const string& text);
-  /// @brief string to uppercase
-  string toUpper(const string& input);
-  /// @brief get file extension in uppercase
-  string getFileExt(string filename);
-  string getFileExt();
-
-  bool writeToFile(string filename, unsigned char* data, int data_length);
-  int readFromFile(string filename, unsigned char* data, int maxlen);
-};
-
-/***
  * @class SymbolManager
  * @brief Symbol manager
  */

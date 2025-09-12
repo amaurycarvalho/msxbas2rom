@@ -356,10 +356,10 @@ ENDM
 
 	db "AB"		    ; ID for auto-executable ROM
 	dw INIT1	    ; Main program execution address.
-    dw 0x0000	    ; STATEMENT
-	dw 0		    ; DEVICE
-	dw 0		    ; TEXT
-    db 'MSXB2R'     ; MSXBAS2ROM signature
+  dw 0x0000	    ; STATEMENT
+	dw 0		      ; DEVICE
+	dw 0		      ; TEXT
+  db 'MSXB2R'   ; MSXBAS2ROM signature
 	;dw 0,0,0	    ; Reserved
 
 INIT1:	                    ; Program code entry point label - 'c' has rom slot id

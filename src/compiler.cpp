@@ -59,7 +59,7 @@ bool Compiler::build(Parser* parser) {
   this->parser = parser;
   this->opts = parser->opts;
 
-  clear_symbols();
+  clearSymbols();
 
   t = parser->tags.size();
   compiled = (t > 0);
@@ -95,7 +95,7 @@ bool Compiler::build(Parser* parser) {
   symbolManager.codeList.push_back(codeItem);
   if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
   if (codeItem->length >= 0x4000) {
-    syntax_error("Maximum of start of program code per ROM reached (16k)");
+    syntaxError("Maximum of start of program code per ROM reached (16k)");
     return false;
   }
 
@@ -123,7 +123,7 @@ bool Compiler::build(Parser* parser) {
           if (symbol->address) {
             if (opts->debug) printf(" error\n");
             current_tag = tag;
-            syntax_error("Line number already declared");
+            syntaxError("Line number already declared");
             break;
           }
         } else
@@ -150,7 +150,7 @@ bool Compiler::build(Parser* parser) {
 
       if (codeItem->length >= 0x4000) {
         if (opts->debug) printf(" error\n");
-        syntax_error("Maximum of code per line per ROM reached (16k)");
+        syntaxError("Maximum of code per line per ROM reached (16k)");
         return false;
       }
     }
@@ -161,7 +161,7 @@ bool Compiler::build(Parser* parser) {
   if (compiled) {
     if (forNextStack.size()) {
       current_tag = forNextStack.top()->tag;
-      syntax_error("FOR without a NEXT");
+      syntaxError("FOR without a NEXT");
     }
   }
 
@@ -181,7 +181,7 @@ bool Compiler::build(Parser* parser) {
     symbolManager.codeList.push_back(codeItem);
     if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
     if (codeItem->length >= 0x4000) {
-      syntax_error("Maximum of end of program code per ROM reached (16k)");
+      syntaxError("Maximum of end of program code per ROM reached (16k)");
       return false;
     }
 
@@ -189,19 +189,24 @@ bool Compiler::build(Parser* parser) {
 
     codeItem = new CodeNode();
     codeItem->start = code_pointer;
-    func_symbols();
+    addSupportSymbols();
     codeItem->length = code_pointer - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = false;
     symbolManager.codeList.push_back(codeItem);
     if (opts->debug) printf(" %i byte(s)\n", codeItem->length);
     if (codeItem->length >= 0x4000) {
-      syntax_error("Maximum of support code per ROM reached (16k)");
+      syntaxError("Maximum of support code per ROM reached (16k)");
       return false;
     }
 
+    if (parser->has_idata) {
+      if (opts->debug) printf("Registering IDATA resource...");
+      resourceManager.addIDataResource(parser);
+    }
+
     if (parser->has_data) {
-      if (opts->debug) printf("Registering data resource...");
+      if (opts->debug) printf("Registering DATA resource...");
       resourceManager.addDataResource(parser);
     }
 
@@ -209,13 +214,13 @@ bool Compiler::build(Parser* parser) {
 
     if (opts->debug) printf(".");
 
-    i = save_symbols();
+    i = saveSymbols();
 
     if (opts->debug) printf(" %i byte(s)\n", i);
 
     if (opts->debug) printf("Adjusting code/data memory address...\n");
 
-    do_fix();
+    doFix();
 
     ramMemoryPerc = (ram_size * 100.0) / def_RAM_SIZE;
   }
@@ -223,7 +228,7 @@ bool Compiler::build(Parser* parser) {
   return compiled;
 }
 
-void Compiler::clear_symbols() {
+void Compiler::clearSymbols() {
   code_size = 0;
   code_start = 0;
   code_pointer = code_start;
@@ -274,7 +279,7 @@ void Compiler::clear_symbols() {
   heap_mark->lexeme->isAbstract = true;
 }
 
-int Compiler::save_symbols() {
+int Compiler::saveSymbols() {
   unsigned int i, t = symbols.size();
   SymbolNode* symbol;
   CodeNode* codeItem;
@@ -370,8 +375,8 @@ int Compiler::save_symbols() {
           if (lexeme->isArray) {
             var_size = lexeme->array_size;
             if (!var_size) {
-              syntax_error("Array [" + lexeme->value +
-                           "] declaration is missing");
+              syntaxError("Array [" + lexeme->value +
+                          "] declaration is missing");
             }
           }
 
@@ -381,8 +386,8 @@ int Compiler::save_symbols() {
           ram_pointer += var_size;
 
           if (ram_size > def_RAM_SIZE) {
-            syntax_error("Not enough memory to variables [" +
-                         to_string(ram_size) + "bytes occupied from RAM]");
+            syntaxError("Not enough memory to variables [" +
+                        to_string(ram_size) + "bytes occupied from RAM]");
           }
         }
       }
@@ -405,7 +410,7 @@ int Compiler::save_symbols() {
   return length;
 }
 
-void Compiler::do_fix() {
+void Compiler::doFix() {
   unsigned int i, t = fixes.size(), address;
   FixNode* fix;
   SymbolNode* symbol;
@@ -418,13 +423,13 @@ void Compiler::do_fix() {
     if (!address) {
       if (symbol->lexeme) {
         symbol->lexeme->print();
-        syntax_error("Symbol reference not found: variable or constant");
+        syntaxError("Symbol reference not found: variable or constant");
       } else if (symbol->tag) {
         current_tag = symbol->tag;
-        syntax_error(
+        syntaxError(
             "Symbol reference not found: line number in GOTO/GOSUB/RETURN");
       } else
-        syntax_error("Symbol reference not found");
+        syntaxError("Symbol reference not found");
       break;
     }
 
@@ -1487,7 +1492,7 @@ bool Compiler::evalAction(ActionNode* action) {
       } else if (lexeme->name == "BLOAD") {
         cmd_bload();
       } else {
-        syntax_error();
+        syntaxError();
         return false;
       }
 
@@ -1496,12 +1501,12 @@ bool Compiler::evalAction(ActionNode* action) {
       }
 
     } else {
-      syntax_error();
+      syntaxError();
       return false;
     }
 
   } else {
-    syntax_error();
+    syntaxError();
     return false;
   }
 
@@ -1521,7 +1526,7 @@ int Compiler::evalExpression(ActionNode* action) {
       if (lexeme->isArray || result == Lexeme::subtype_string) {
         if (!addVarAddress(action)) {
           if (!lexeme->isArray && action->actions.size()) {
-            syntax_error("Undeclared array or unknown function");
+            syntaxError("Undeclared array or unknown function");
           } else
             result = Lexeme::subtype_unknown;
         } else {
@@ -1552,7 +1557,7 @@ int Compiler::evalExpression(ActionNode* action) {
         }
       } else {
         if (action->actions.size()) {
-          syntax_error("Undeclared array or unknown function");
+          syntaxError("Undeclared array or unknown function");
           return result;
         }
 
@@ -1582,7 +1587,7 @@ int Compiler::evalExpression(ActionNode* action) {
       result = evalOperator(action);
 
     } else if (lexeme->type == Lexeme::type_separator) {
-      syntax_error("Invalid separator on expression");
+      syntaxError("Invalid separator on expression");
       result = Lexeme::subtype_numeric;
 
     } else if (lexeme->type == Lexeme::type_literal) {
@@ -4300,7 +4305,7 @@ bool Compiler::addVarAddress(ActionNode* action) {
   if (lexeme->isArray) {
     switch (t) {
       case 0: {
-        syntax_error("Array index is missing");
+        syntaxError("Array index is missing");
         return false;
       } break;
 
@@ -4325,7 +4330,7 @@ bool Compiler::addVarAddress(ActionNode* action) {
             addLdHL(0x0000);
 
           } else {
-            syntax_error("Invalid array index type");
+            syntaxError("Invalid array index type");
           }
 
         } else {
@@ -4404,11 +4409,11 @@ bool Compiler::addVarAddress(ActionNode* action) {
               addLdHL(0x0000);
 
             } else {
-              syntax_error("Invalid array 2nd index type");
+              syntaxError("Invalid array 2nd index type");
             }
 
           } else {
-            syntax_error("Invalid array 1st index type");
+            syntaxError("Invalid array 1st index type");
           }
 
         } else {
@@ -4526,14 +4531,14 @@ bool Compiler::addVarAddress(ActionNode* action) {
       } break;
 
       default: {
-        syntax_error("Wrong array parameters count");
+        syntaxError("Wrong array parameters count");
         return false;
       }
     }
 
   } else {
     if (t) {
-      syntax_error("Undeclared array or unknown function");
+      syntaxError("Undeclared array or unknown function");
       return false;
     } else {
       // ld hl, variable
@@ -4603,7 +4608,7 @@ void Compiler::addCast(int from, int to) {
       }
 
     } else {
-      syntax_error("Unknown type to cast");
+      syntaxError("Unknown type to cast");
     }
   }
 }
@@ -4667,7 +4672,7 @@ void Compiler::cmd_start() {
     addCall(def_MR_CHANGE_SGM);
   }
 
-  if (parser->has_data) {
+  if (parser->has_data || parser->has_idata) {
     // ld hl, data resource number
     addLdHL(parser->resourceCount);
     // ld (DAC), hl
@@ -4781,7 +4786,7 @@ void Compiler::cmd_goto() {
     }
   }
 
-  syntax_error("Invalid GOTO parameters");
+  syntaxError("Invalid GOTO parameters");
 }
 
 void Compiler::cmd_gosub() {
@@ -4805,7 +4810,7 @@ void Compiler::cmd_gosub() {
     }
   }
 
-  syntax_error("Invalid GOSUB parameters");
+  syntaxError("Invalid GOSUB parameters");
 }
 
 void Compiler::cmd_return() {
@@ -4895,7 +4900,7 @@ void Compiler::cmd_return() {
     }
   }
 
-  syntax_error("Invalid RETURN parameters");
+  syntaxError("Invalid RETURN parameters");
 }
 
 void Compiler::cmd_print() {
@@ -4934,7 +4939,7 @@ void Compiler::cmd_print() {
 
             continue;
           } else {
-            syntax_error("Invalid PRINT parameter separator");
+            syntaxError("Invalid PRINT parameter separator");
             return;
           }
         } else {
@@ -4951,7 +4956,7 @@ void Compiler::cmd_print() {
             addCall(def_XBASIC_PRINT_FLOAT);  // call print_float
 
           } else {
-            syntax_error("Invalid PRINT parameter");
+            syntaxError("Invalid PRINT parameter");
             return;
           }
         }
@@ -5011,7 +5016,7 @@ void Compiler::cmd_input(bool question) {
 
             continue;
           } else {
-            syntax_error("Invalid INPUT parameter separator");
+            syntaxError("Invalid INPUT parameter separator");
             return;
           }
         } else {
@@ -5044,7 +5049,7 @@ void Compiler::cmd_input(bool question) {
               addCall(def_XBASIC_PRINT_FLOAT);  // call print_float
 
             } else {
-              syntax_error("Invalid INPUT parameter");
+              syntaxError("Invalid INPUT parameter");
               return;
             }
           }
@@ -5062,7 +5067,7 @@ void Compiler::cmd_input(bool question) {
     }
 
   } else {
-    syntax_error();
+    syntaxError();
   }
 }
 
@@ -5091,7 +5096,7 @@ void Compiler::cmd_line() {
       switch (state) {
         case 0: {
           if (action->actions.size() != 2) {
-            syntax_error("Coordenates parameters error on LINE");
+            syntaxError("Coordenates parameters error on LINE");
             return;
           } else if (action->lexeme->value == "COORD") {
             sub_action = action->actions[0];
@@ -5288,7 +5293,7 @@ void Compiler::cmd_line() {
             }
 
           } else {
-            syntax_error("Invalid coordenates on LINE");
+            syntaxError("Invalid coordenates on LINE");
             return;
           }
 
@@ -5325,7 +5330,7 @@ void Compiler::cmd_line() {
               line_type = 0;
             }
           } else {
-            syntax_error("Invalid shape parameter");
+            syntaxError("Invalid shape parameter");
           }
 
           has_line_type = true;
@@ -5349,7 +5354,7 @@ void Compiler::cmd_line() {
         } break;
 
         default: {
-          syntax_error("LINE parameters not supported");
+          syntaxError("LINE parameters not supported");
           return;
         }
       }
@@ -5412,7 +5417,7 @@ void Compiler::cmd_line() {
     }
 
   } else {
-    syntax_error("LINE with empty parameters");
+    syntaxError("LINE with empty parameters");
   }
 }
 
@@ -5440,7 +5445,7 @@ void Compiler::cmd_copy() {
             return cmd_copy_screen();
           } else if (action->lexeme->value == "COORD") {
             if (action->actions.size() != 2) {
-              syntax_error("Coordenates parameters error on COPY");
+              syntaxError("Coordenates parameters error on COPY");
               return;
             }
 
@@ -5623,7 +5628,7 @@ void Compiler::cmd_copy() {
             if (result_subtype == Lexeme::subtype_null ||
                 result_subtype == Lexeme::subtype_single_decimal ||
                 result_subtype == Lexeme::subtype_double_decimal) {
-              syntax_error("Invalid address in COPY");
+              syntaxError("Invalid address in COPY");
               return;
             }
 
@@ -5707,7 +5712,7 @@ void Compiler::cmd_copy() {
             if (result_subtype == Lexeme::subtype_null ||
                 result_subtype == Lexeme::subtype_single_decimal ||
                 result_subtype == Lexeme::subtype_double_decimal) {
-              syntax_error("Invalid address in COPY");
+              syntaxError("Invalid address in COPY");
               return;
             }
 
@@ -5752,7 +5757,7 @@ void Compiler::cmd_copy() {
         } break;
 
         default: {
-          syntax_error("COPY parameters not supported");
+          syntaxError("COPY parameters not supported");
           return;
         }
       }
@@ -5951,7 +5956,7 @@ void Compiler::cmd_copy() {
     }
 
   } else {
-    syntax_error("COPY with empty parameters");
+    syntaxError("COPY with empty parameters");
   }
 }
 
@@ -5959,7 +5964,7 @@ void Compiler::cmd_copy_screen() {
   int t = current_action->actions.size();
 
   if (t > 1) {
-    syntax_error("Invalid COPY SCREEN parameters");
+    syntaxError("Invalid COPY SCREEN parameters");
   } else {
     if (t == 0) {
       // xor a
@@ -6061,7 +6066,7 @@ void Compiler::cmd_sound() {
     }
 
   } else {
-    syntax_error("Invalid SOUND parameters");
+    syntaxError("Invalid SOUND parameters");
   }
 }
 
@@ -6069,7 +6074,6 @@ void Compiler::cmd_bload() {
   Lexeme* lexeme;
   ActionNode* action;
   unsigned int t = current_action->actions.size();
-  FileNode* file;
   bool isTinySprite;
   int resource_number;
   string filename, fileext;
@@ -6086,9 +6090,15 @@ void Compiler::cmd_bload() {
               lexeme->subtype == Lexeme::subtype_string) {
             // add to resource list
 
-            resource_number = resourceManager.resourceList.size();
+            // verify file type (screen or sprite)
+
+            filename = removeQuotes(lexeme->value);
+            fileext = getFileExtension(filename);
+            isTinySprite = (strcasecmp((char*)fileext.c_str(), ".SPR") == 0);
+
+            resource_number = resourceManager.resources.size();
             lexeme->name = "FILE";
-            resourceManager.resourceList.push_back(lexeme);
+            resourceManager.addFile(filename, opts->inputPath);
 
             // execute a resource screen load
 
@@ -6097,14 +6107,6 @@ void Compiler::cmd_bload() {
 
             // ld (DAC), hl
             addLdiiHL(def_DAC);
-
-            // verify file type (screen or sprite)
-
-            file = new FileNode();
-            filename = file->stripQuotes(lexeme->value);
-            fileext = file->getFileExt(filename);
-            isTinySprite = (strcasecmp((char*)fileext.c_str(), ".SPR") == 0);
-            delete file;
 
             if (isTinySprite) {
               // call cmd_wrtspr                    ; tiny sprite loader
@@ -6115,23 +6117,23 @@ void Compiler::cmd_bload() {
             }
 
           } else {
-            syntax_error("BLOAD 1st parameter must be a string constant");
+            syntaxError("BLOAD 1st parameter must be a string constant");
           }
 
         } else {
-          syntax_error("BLOAD 1st parameter error");
+          syntaxError("BLOAD 1st parameter error");
         }
 
       } else {
-        syntax_error("BLOAD valid only to screen");
+        syntaxError("BLOAD valid only to screen");
       }
 
     } else {
-      syntax_error("BLOAD 2nd parameter error");
+      syntaxError("BLOAD 2nd parameter error");
     }
 
   } else {
-    syntax_error("Invalid BLOAD parameters count");
+    syntaxError("Invalid BLOAD parameters count");
   }
 }
 
@@ -6147,7 +6149,7 @@ void Compiler::cmd_play() {
         action = current_action->actions[i];
         result_subtype = evalExpression(action);
         if (result_subtype != Lexeme::subtype_string) {
-          syntax_error("Invalid PLAY parameter");
+          syntaxError("Invalid PLAY parameter");
           return;
         }
         // push hl
@@ -6173,7 +6175,7 @@ void Compiler::cmd_play() {
     addCall(def_XBASIC_PLAY);
 
   } else {
-    syntax_error("Invalid PLAY parameters");
+    syntaxError("Invalid PLAY parameters");
   }
 }
 
@@ -6199,13 +6201,13 @@ void Compiler::cmd_draw() {
         addCall(0x0000);
 
       } else {
-        syntax_error("Invalid DRAW parameter");
+        syntaxError("Invalid DRAW parameter");
         return;
       }
     }
 
   } else {
-    syntax_error("Invalid DRAW parameters");
+    syntaxError("Invalid DRAW parameters");
   }
 }
 
@@ -6216,7 +6218,7 @@ void Compiler::cmd_dim() {
   int new_size;
 
   if (!t) {
-    syntax_error("DIM parameters is missing");
+    syntaxError("DIM parameters is missing");
   } else {
     for (i = 0; i < t; i++) {
       action = current_action->actions[i];
@@ -6256,12 +6258,11 @@ void Compiler::cmd_dim() {
               lexeme->x_size = 0;
             }
             if (!lexeme->x_size) {
-              syntax_error("Array 1st dimension index cannot be zero");
+              syntaxError("Array 1st dimension index cannot be zero");
               break;
             }
           } else {
-            syntax_error(
-                "Array 1st dimension index must be a integer constant");
+            syntaxError("Array 1st dimension index must be a integer constant");
             break;
           }
 
@@ -6277,11 +6278,11 @@ void Compiler::cmd_dim() {
                 lexeme->y_size = 0;
               }
               if (!lexeme->y_size) {
-                syntax_error("Array 2nd dimension index cannot be zero");
+                syntaxError("Array 2nd dimension index cannot be zero");
                 break;
               }
             } else {
-              syntax_error(
+              syntaxError(
                   "Array 2nd dimension index must be a integer constant");
               break;
             }
@@ -6293,12 +6294,12 @@ void Compiler::cmd_dim() {
 
           if (lexeme->array_size < new_size) lexeme->array_size = new_size;
         } else {
-          syntax_error("Arrays with more than 2 dimensions isn't supported");
+          syntaxError("Arrays with more than 2 dimensions isn't supported");
           break;
         }
 
       } else {
-        syntax_error("Invalid DIM parameter");
+        syntaxError("Invalid DIM parameter");
         break;
       }
     }
@@ -6316,7 +6317,7 @@ void Compiler::cmd_let() {
   int result_subtype, result[3];
 
   if (t != 2) {
-    syntax_error("Invalid LET parameters count");
+    syntaxError("Invalid LET parameters count");
     return;
   }
 
@@ -6340,12 +6341,12 @@ void Compiler::cmd_let() {
     t = lex_action->actions.size();
 
     if (t < 2 || t > 3) {
-      syntax_error("Invalid MID$ assignment parameters count");
+      syntaxError("Invalid MID$ assignment parameters count");
       return;
     }
 
     if (!evalOperatorParms(lex_action, t)) {
-      syntax_error("Invalid MID$ assignment parameters");
+      syntaxError("Invalid MID$ assignment parameters");
       return;
     }
 
@@ -6431,7 +6432,7 @@ void Compiler::cmd_let() {
       }
     }
 
-    syntax_error("Invalid MID$ assignment type");
+    syntaxError("Invalid MID$ assignment type");
 
   } else if (lexeme->value == "VDP") {
     // cast
@@ -6443,12 +6444,12 @@ void Compiler::cmd_let() {
     t = lex_action->actions.size();
 
     if (t != 1) {
-      syntax_error("Invalid VDP assignment parameters count");
+      syntaxError("Invalid VDP assignment parameters count");
       return;
     }
 
     if (!evalOperatorParms(lex_action, t)) {
-      syntax_error("Invalid VDP assignment parameters");
+      syntaxError("Invalid VDP assignment parameters");
       return;
     }
 
@@ -6474,12 +6475,12 @@ void Compiler::cmd_let() {
     t = lex_action->actions.size();
 
     if (t != 1) {
-      syntax_error("Invalid SPRITE$ assignment parameters count");
+      syntaxError("Invalid SPRITE$ assignment parameters count");
       return;
     }
 
     if (!evalOperatorParms(lex_action, t)) {
-      syntax_error("Invalid SPRITE$ assignment parameters");
+      syntaxError("Invalid SPRITE$ assignment parameters");
       return;
     }
 
@@ -6526,7 +6527,7 @@ bool Compiler::addAssignment(ActionNode* action) {
       addEI();
 
     } else {
-      syntax_error("Invalid KEYWORD/FUNCTION assignment");
+      syntaxError("Invalid KEYWORD/FUNCTION assignment");
     }
 
   } else if (action->lexeme->type == Lexeme::type_identifier) {
@@ -6581,7 +6582,7 @@ bool Compiler::addAssignment(ActionNode* action) {
         addLdiHLD();
 
       } else {
-        syntax_error("Invalid assignment");
+        syntaxError("Invalid assignment");
         return false;
       }
 
@@ -6605,13 +6606,13 @@ bool Compiler::addAssignment(ActionNode* action) {
         addLdiiHL(0x0000);
 
       } else {
-        syntax_error("Invalid assignment");
+        syntaxError("Invalid assignment");
         return false;
       }
     }
 
   } else {
-    syntax_error("Invalid constant/expression assignment");
+    syntaxError("Invalid constant/expression assignment");
     return false;
   }
 
@@ -6627,7 +6628,7 @@ void Compiler::cmd_if() {
   bool isLastActionGoto = false, isElseLikeEndif = true;
 
   if (!t) {
-    syntax_error("IF parameters is missing");
+    syntaxError("IF parameters is missing");
   } else {
     for (i = 0; i < t; i++) {
       action = saved_action->actions[i];
@@ -6649,7 +6650,7 @@ void Compiler::cmd_if() {
             addJpZ(0x0000);
 
           } else {
-            syntax_error("Invalid condition expression");
+            syntaxError("Invalid condition expression");
             break;
           }
 
@@ -6701,10 +6702,10 @@ void Compiler::cmd_if() {
               if (mark_else) {
                 mark_else->symbol = addSymbol(last_lexeme->value);
               } else {
-                syntax_error("ELSE parameter is missing");
+                syntaxError("ELSE parameter is missing");
               }
             } else {
-              syntax_error("Invalid GOTO parameter");
+              syntaxError("Invalid GOTO parameter");
             }
 
           } else {
@@ -6715,12 +6716,12 @@ void Compiler::cmd_if() {
           }
 
         } else {
-          syntax_error("Invalid IF syntax");
+          syntaxError("Invalid IF syntax");
           break;
         }
 
       } else {
-        syntax_error("Invalid IF parameter type");
+        syntaxError("Invalid IF parameter type");
         break;
       }
     }
@@ -6742,7 +6743,7 @@ void Compiler::cmd_for() {
   bool has_let = false, has_to = false, has_step = false;
 
   if (!t) {
-    syntax_error("FOR parameters is missing");
+    syntaxError("FOR parameters is missing");
   } else {
     for_count++;
 
@@ -6778,18 +6779,18 @@ void Compiler::cmd_for() {
             forNext->for_to->subtype = lex_var->subtype;
             forNext->for_step->subtype = lex_var->subtype;
           } else {
-            syntax_error("Invalid FOR expression (variable assignment)");
+            syntaxError("Invalid FOR expression (variable assignment)");
             return;
           }
 
           if (lex_var->type != Lexeme::type_identifier) {
-            syntax_error("Invalid FOR expression (variable is missing)");
+            syntaxError("Invalid FOR expression (variable is missing)");
             return;
           } else {
             if (lex_var->subtype != Lexeme::subtype_numeric &&
                 lex_var->subtype != Lexeme::subtype_single_decimal &&
                 lex_var->subtype != Lexeme::subtype_double_decimal) {
-              syntax_error("Invalid FOR expression (wrong data type)");
+              syntaxError("Invalid FOR expression (wrong data type)");
               return;
             }
           }
@@ -6813,7 +6814,7 @@ void Compiler::cmd_for() {
             has_to = true;
 
           } else {
-            syntax_error("Invalid TO expression (wrong data type)");
+            syntaxError("Invalid TO expression (wrong data type)");
             return;
           }
 
@@ -6832,17 +6833,17 @@ void Compiler::cmd_for() {
             has_step = true;
 
           } else {
-            syntax_error("Invalid STEP expression (wrong data type)");
+            syntaxError("Invalid STEP expression (wrong data type)");
             return;
           }
 
         } else {
-          syntax_error("Invalid FOR syntax");
+          syntaxError("Invalid FOR syntax");
           return;
         }
 
       } else {
-        syntax_error("Invalid FOR parameter type");
+        syntaxError("Invalid FOR parameter type");
         return;
       }
     }
@@ -7021,7 +7022,7 @@ void Compiler::cmd_for() {
       }
 
     } else {
-      syntax_error("Incomplete FOR syntax");
+      syntaxError("Incomplete FOR syntax");
     }
   }
 }
@@ -7041,7 +7042,7 @@ void Compiler::cmd_next() {
       forNext->for_end_mark->symbol->address = code_pointer;
 
   } else {
-    syntax_error("NEXT without a FOR");
+    syntaxError("NEXT without a FOR");
   }
 }
 
@@ -7051,7 +7052,7 @@ void Compiler::cmd_locate() {
   int result_subtype;
 
   if (t != 2) {
-    syntax_error("LOCATE without enough parameters");
+    syntaxError("LOCATE without enough parameters");
   } else {
     action = current_action->actions[0];
     result_subtype = evalExpression(action);
@@ -7212,14 +7213,14 @@ void Compiler::cmd_screen() {
         } break;
 
         default: {
-          syntax_error("SCREEN parameters not supported");
+          syntaxError("SCREEN parameters not supported");
           return;
         }
       }
     }
 
   } else {
-    syntax_error("SCREEN with empty parameters");
+    syntaxError("SCREEN with empty parameters");
   }
 }
 
@@ -7231,7 +7232,7 @@ void Compiler::cmd_screen_copy() {
 
   if (t) {
     if (t > 2) {
-      syntax_error("SCREEN COPY with excess of parameters");
+      syntaxError("SCREEN COPY with excess of parameters");
       return;
     }
 
@@ -7272,7 +7273,7 @@ void Compiler::cmd_screen_copy() {
     addCall(def_cmd_screen_copy);
 
   } else {
-    syntax_error("SCREEN COPY with empty parameters");
+    syntaxError("SCREEN COPY with empty parameters");
   }
 }
 
@@ -7284,7 +7285,7 @@ void Compiler::cmd_screen_paste() {
 
   if (t) {
     if (t > 1) {
-      syntax_error("SCREEN PASTE with excess of parameters");
+      syntaxError("SCREEN PASTE with excess of parameters");
       return;
     }
 
@@ -7307,7 +7308,7 @@ void Compiler::cmd_screen_paste() {
     addCall(def_cmd_screen_paste);
 
   } else {
-    syntax_error("SCREEN PASTE with empty parameters");
+    syntaxError("SCREEN PASTE with empty parameters");
   }
 }
 
@@ -7318,7 +7319,7 @@ void Compiler::cmd_screen_scroll() {
 
   if (t) {
     if (t > 1) {
-      syntax_error("SCREEN SCROLL with excess of parameters");
+      syntaxError("SCREEN SCROLL with excess of parameters");
       return;
     }
 
@@ -7347,7 +7348,7 @@ void Compiler::cmd_screen_scroll() {
     }
 
   } else {
-    syntax_error("SCREEN SCROLL with empty parameters");
+    syntaxError("SCREEN SCROLL with empty parameters");
   }
 }
 
@@ -7370,7 +7371,7 @@ void Compiler::cmd_screen_load() {
     }
 
   } else {
-    syntax_error("SCREEN LOAD with empty parameters");
+    syntaxError("SCREEN LOAD with empty parameters");
   }
 }
 
@@ -7399,7 +7400,7 @@ void Compiler::cmd_width() {
     addCall(def_XBASIC_WIDTH);
 
   } else {
-    syntax_error("WIDTH syntax error");
+    syntaxError("WIDTH syntax error");
   }
 }
 
@@ -7448,7 +7449,7 @@ void Compiler::cmd_color() {
         t = action->actions.size();
 
         if (t != 2) {
-          syntax_error("Invalid COLOR SPRITE parameters count");
+          syntaxError("Invalid COLOR SPRITE parameters count");
           return;
         }
 
@@ -7478,7 +7479,7 @@ void Compiler::cmd_color() {
         t = action->actions.size();
 
         if (t != 2) {
-          syntax_error("Invalid COLOR SPRITE$ parameters count");
+          syntaxError("Invalid COLOR SPRITE$ parameters count");
           return;
         }
 
@@ -7505,7 +7506,7 @@ void Compiler::cmd_color() {
         t = action->actions.size();
 
         if (t < 2 || t > 4) {
-          syntax_error("Invalid COLOR RGB parameters count");
+          syntaxError("Invalid COLOR RGB parameters count");
           return;
         }
 
@@ -7550,7 +7551,7 @@ void Compiler::cmd_color() {
         addCall(def_XBASIC_COLOR_RGB);
 
       } else {
-        syntax_error("Invalid COLOR parameters");
+        syntaxError("Invalid COLOR parameters");
       }
 
     } else {
@@ -7584,7 +7585,7 @@ void Compiler::cmd_color() {
           } break;
 
           default: {
-            syntax_error("COLOR parameters not supported");
+            syntaxError("COLOR parameters not supported");
             return;
           }
         }
@@ -7598,7 +7599,7 @@ void Compiler::cmd_color() {
     }
 
   } else {
-    syntax_error("COLOR with empty parameters");
+    syntaxError("COLOR with empty parameters");
   }
 }
 
@@ -7617,9 +7618,9 @@ void Compiler::cmd_pset(bool forecolor) {
         case 0: {
           if (action->actions.size() != 2) {
             if (forecolor)
-              syntax_error("Coordenates parameters error on PSET");
+              syntaxError("Coordenates parameters error on PSET");
             else
-              syntax_error("Coordenates parameters error on PRESET");
+              syntaxError("Coordenates parameters error on PRESET");
             return;
           } else if (action->lexeme->value == "COORD") {
             sub_action = action->actions[0];
@@ -7696,9 +7697,9 @@ void Compiler::cmd_pset(bool forecolor) {
 
           } else {
             if (forecolor)
-              syntax_error("Invalid coordenates on PSET");
+              syntaxError("Invalid coordenates on PSET");
             else
-              syntax_error("Invalid coordenates on PRESET");
+              syntaxError("Invalid coordenates on PRESET");
             return;
           }
 
@@ -7741,9 +7742,9 @@ void Compiler::cmd_pset(bool forecolor) {
 
         default: {
           if (forecolor)
-            syntax_error("PSET parameters not supported");
+            syntaxError("PSET parameters not supported");
           else
-            syntax_error("PRESET parameters not supported");
+            syntaxError("PRESET parameters not supported");
           return;
         }
       }
@@ -7791,9 +7792,9 @@ void Compiler::cmd_pset(bool forecolor) {
 
   } else {
     if (forecolor)
-      syntax_error("PSET with empty parameters");
+      syntaxError("PSET with empty parameters");
     else
-      syntax_error("PRESET with empty parameters");
+      syntaxError("PRESET with empty parameters");
   }
 }
 
@@ -7811,7 +7812,7 @@ void Compiler::cmd_paint() {
       switch (i) {
         case 0: {
           if (action->actions.size() != 2) {
-            syntax_error("Coordenates parameters error on PAINT");
+            syntaxError("Coordenates parameters error on PAINT");
             return;
           } else if (action->lexeme->value == "COORD") {
             sub_action = action->actions[0];
@@ -7887,7 +7888,7 @@ void Compiler::cmd_paint() {
             }
 
           } else {
-            syntax_error("Invalid coordenates on PAINT");
+            syntaxError("Invalid coordenates on PAINT");
             return;
           }
 
@@ -7924,7 +7925,7 @@ void Compiler::cmd_paint() {
         } break;
 
         default: {
-          syntax_error("PAINT parameters not supported");
+          syntaxError("PAINT parameters not supported");
           return;
         }
       }
@@ -7976,7 +7977,7 @@ void Compiler::cmd_paint() {
     addCall(def_XBASIC_PAINT);
 
   } else {
-    syntax_error("PAINT with empty parameters");
+    syntaxError("PAINT with empty parameters");
   }
 }
 
@@ -7996,7 +7997,7 @@ void Compiler::cmd_circle() {
         // coord
         case 0: {
           if (action->actions.size() != 2) {
-            syntax_error("Coordenates parameters error on CIRCLE");
+            syntaxError("Coordenates parameters error on CIRCLE");
             return;
           } else if (action->lexeme->value == "COORD") {
             sub_action = action->actions[0];
@@ -8063,7 +8064,7 @@ void Compiler::cmd_circle() {
             }
 
           } else {
-            syntax_error("Invalid coordenates on CIRCLE");
+            syntaxError("Invalid coordenates on CIRCLE");
             return;
           }
 
@@ -8241,7 +8242,7 @@ void Compiler::cmd_circle() {
         } break;
 
         default: {
-          syntax_error("Invalid CIRCLE parameters");
+          syntaxError("Invalid CIRCLE parameters");
           return;
         }
       }
@@ -8288,7 +8289,7 @@ void Compiler::cmd_circle() {
     }
 
   } else {
-    syntax_error("CIRCLE with empty parameters");
+    syntaxError("CIRCLE with empty parameters");
   }
 }
 
@@ -8309,11 +8310,11 @@ void Compiler::cmd_put() {
       current_action = action;
       cmd_put_tile();
     } else {
-      syntax_error("Invalid PUT statement");
+      syntaxError("Invalid PUT statement");
     }
 
   } else {
-    syntax_error("Empty PUT statement");
+    syntaxError("Empty PUT statement");
   }
 }
 
@@ -8347,7 +8348,7 @@ void Compiler::cmd_put_sprite() {
 
         case 1: {
           if (action->actions.size() != 2) {
-            syntax_error("Coordenates parameters error on PUT SPRITE");
+            syntaxError("Coordenates parameters error on PUT SPRITE");
             return;
           } else if (action->lexeme->value == "COORD") {
             sub_action = action->actions[0];
@@ -8426,7 +8427,7 @@ void Compiler::cmd_put_sprite() {
             }
 
           } else {
-            syntax_error("Invalid coordenates on PUT SPRITE");
+            syntaxError("Invalid coordenates on PUT SPRITE");
             return;
           }
 
@@ -8465,7 +8466,7 @@ void Compiler::cmd_put_sprite() {
         } break;
 
         default: {
-          syntax_error("PUT SPRITE parameters not supported");
+          syntaxError("PUT SPRITE parameters not supported");
           return;
         }
       }
@@ -8523,7 +8524,7 @@ void Compiler::cmd_put_sprite() {
     addCall(def_XBASIC_PUT_SPRITE);
 
   } else {
-    syntax_error("PUT SPRITE with empty parameters");
+    syntaxError("PUT SPRITE with empty parameters");
   }
 }
 
@@ -8556,7 +8557,7 @@ void Compiler::cmd_put_tile() {
 
         case 1: {
           if (action->actions.size() != 2) {
-            syntax_error("Coordenates parameters error on PUT TILE");
+            syntaxError("Coordenates parameters error on PUT TILE");
             return;
           } else if (action->lexeme->value == "COORD") {
             sub_action = action->actions[0];
@@ -8635,14 +8636,14 @@ void Compiler::cmd_put_tile() {
             }
 
           } else {
-            syntax_error("Invalid coordenates on PUT TILE");
+            syntaxError("Invalid coordenates on PUT TILE");
             return;
           }
 
         } break;
 
         default: {
-          syntax_error("PUT TILE parameters not supported");
+          syntaxError("PUT TILE parameters not supported");
           return;
         }
       }
@@ -8689,7 +8690,7 @@ void Compiler::cmd_put_tile() {
     addCall(def_XBASIC_VPOKE);
 
   } else {
-    syntax_error("PUT TILE with empty parameters");
+    syntaxError("PUT TILE with empty parameters");
   }
 }
 
@@ -8738,7 +8739,7 @@ void Compiler::cmd_set() {
       cmd_set_page();
     } else if (next_lexeme->type == Lexeme::type_keyword &&
                next_lexeme->value == "PASSWORD") {
-      syntax_error("SET PASSWORD will not be supported for end-user security");
+      syntaxError("SET PASSWORD will not be supported for end-user security");
     } else if (next_lexeme->type == Lexeme::type_keyword &&
                next_lexeme->value == "PROMPT") {
       cmd_set_prompt();
@@ -8758,13 +8759,13 @@ void Compiler::cmd_set() {
                next_lexeme->value == "VIDEO") {
       cmd_set_video();
     } else {
-      syntax_error("Invalid SET statement");
+      syntaxError("Invalid SET statement");
     }
 
     mark->symbol->address = code_pointer;
 
   } else {
-    syntax_error("Wrong SET parameters count");
+    syntaxError("Wrong SET parameters count");
   }
 }
 
@@ -8829,7 +8830,7 @@ void Compiler::cmd_set_video() {
 
   if (t) {
     if (t > 7) {
-      syntax_error("Invalid SET VIDEO parameters");
+      syntaxError("Invalid SET VIDEO parameters");
       return;
     }
 
@@ -8876,7 +8877,7 @@ void Compiler::cmd_set_video() {
     endBasicSetStmt();
 
   } else {
-    syntax_error("SET VIDEO with empty parameters");
+    syntaxError("SET VIDEO with empty parameters");
   }
 }
 
@@ -8942,7 +8943,7 @@ void Compiler::cmd_set_adjust() {
     endBasicSetStmt();
 
   } else {
-    syntax_error("Wrong parameters count on SET ADJUST statement");
+    syntaxError("Wrong parameters count on SET ADJUST statement");
   }
 }
 
@@ -8959,7 +8960,7 @@ void Compiler::cmd_set_screen() {
     endBasicSetStmt();
 
   } else {
-    syntax_error("Wrong parameters count on SET SCREEN statement");
+    syntaxError("Wrong parameters count on SET SCREEN statement");
   }
 }
 
@@ -9012,7 +9013,7 @@ void Compiler::cmd_set_beep() {
     endBasicSetStmt();
 
   } else {
-    syntax_error("Wrong parameters count on SET BEEP statement");
+    syntaxError("Wrong parameters count on SET BEEP statement");
   }
 }
 
@@ -9080,7 +9081,7 @@ void Compiler::cmd_set_title() {
     endBasicSetStmt();
 
   } else {
-    syntax_error("Wrong parameters count on SET TITLE statement");
+    syntaxError("Wrong parameters count on SET TITLE statement");
   }
 }
 
@@ -9124,7 +9125,7 @@ void Compiler::cmd_set_prompt() {
     endBasicSetStmt();
 
   } else {
-    syntax_error("Wrong parameters count on SET PROMPT statement");
+    syntaxError("Wrong parameters count on SET PROMPT statement");
   }
 }
 
@@ -9163,7 +9164,7 @@ void Compiler::cmd_set_page() {
     }
 
   } else {
-    syntax_error("Wrong parameters count on SET PAGE statement");
+    syntaxError("Wrong parameters count on SET PAGE statement");
   }
 }
 
@@ -9228,7 +9229,7 @@ void Compiler::cmd_set_scroll() {
     addCall(def_XBASIC_SET_SCROLL);
 
   } else {
-    syntax_error("Wrong parameters count on SET SCROLL statement");
+    syntaxError("Wrong parameters count on SET SCROLL statement");
   }
 }
 
@@ -9295,7 +9296,7 @@ void Compiler::cmd_set_tile() {
         addCall(def_set_tile_flip);
 
       } else {
-        syntax_error("Wrong parameters count on SET TILE FLIP statement");
+        syntaxError("Wrong parameters count on SET TILE FLIP statement");
       }
 
     } else if (lexeme->value == "ROTATE") {
@@ -9319,7 +9320,7 @@ void Compiler::cmd_set_tile() {
         addCall(def_set_tile_rotate);
 
       } else {
-        syntax_error("Wrong parameters count on SET TILE ROTATE statement");
+        syntaxError("Wrong parameters count on SET TILE ROTATE statement");
       }
 
     } else if (lexeme->value == "PATTERN") {
@@ -9383,11 +9384,11 @@ void Compiler::cmd_set_tile() {
           }
 
         } else {
-          syntax_error("Wrong pattern parameter on SET TILE PATTERN statement");
+          syntaxError("Wrong pattern parameter on SET TILE PATTERN statement");
         }
 
       } else {
-        syntax_error("Wrong parameters count on SET TILE PATTERN statement");
+        syntaxError("Wrong parameters count on SET TILE PATTERN statement");
       }
 
     } else if (lexeme->value == "COLOR") {
@@ -9452,7 +9453,7 @@ void Compiler::cmd_set_tile() {
                 sub_sub_action = action->actions[2];
                 lexeme = sub_sub_action->lexeme;
                 if (lexeme->value != "ARRAY") {
-                  syntax_error(
+                  syntaxError(
                       "Syntax not supported on SET TILE COLOR statement");
                   return;
                 }
@@ -9511,7 +9512,7 @@ void Compiler::cmd_set_tile() {
             sub_sub_action = action->actions[2];
             lexeme = sub_sub_action->lexeme;
             if (lexeme->value == "ARRAY") {
-              syntax_error("Syntax not supported on SET TILE COLOR statement");
+              syntaxError("Syntax not supported on SET TILE COLOR statement");
               return;
             }
             // push af
@@ -9540,15 +9541,15 @@ void Compiler::cmd_set_tile() {
         }
 
       } else {
-        syntax_error("Wrong parameters count on SET TILE COLOR statement");
+        syntaxError("Wrong parameters count on SET TILE COLOR statement");
       }
 
     } else {
-      syntax_error("Invalid syntax on SET TILE statement");
+      syntaxError("Invalid syntax on SET TILE statement");
     }
 
   } else {
-    syntax_error("Missing parameters on SET TILE statement");
+    syntaxError("Missing parameters on SET TILE statement");
   }
 }
 
@@ -9596,11 +9597,11 @@ void Compiler::cmd_set_font() {
       addCall(def_cmd_setfnt);
 
     } else {
-      syntax_error("Wrong number of parameters on SET FONT");
+      syntaxError("Wrong number of parameters on SET FONT");
     }
 
   } else {
-    syntax_error("SET FONT syntax error");
+    syntaxError("SET FONT syntax error");
   }
 }
 
@@ -9637,7 +9638,7 @@ void Compiler::cmd_set_sprite() {
         addCall(def_set_sprite_flip);
 
       } else {
-        syntax_error("Wrong parameters count on SET SPRITE FLIP statement");
+        syntaxError("Wrong parameters count on SET SPRITE FLIP statement");
       }
 
     } else if (lexeme->value == "ROTATE") {
@@ -9661,7 +9662,7 @@ void Compiler::cmd_set_sprite() {
         addCall(def_set_sprite_rotate);
 
       } else {
-        syntax_error("Wrong parameters count on SET SPRITE ROTATE statement");
+        syntaxError("Wrong parameters count on SET SPRITE ROTATE statement");
       }
 
     } else if (lexeme->value == "PATTERN") {
@@ -9725,12 +9726,12 @@ void Compiler::cmd_set_sprite() {
           }
 
         } else {
-          syntax_error(
+          syntaxError(
               "Wrong pattern parameter on SET SPRITE PATTERN statement");
         }
 
       } else {
-        syntax_error("Wrong parameters count on SET SPRITE PATTERN statement");
+        syntaxError("Wrong parameters count on SET SPRITE PATTERN statement");
       }
 
     } else if (lexeme->value == "COLOR") {
@@ -9795,7 +9796,7 @@ void Compiler::cmd_set_sprite() {
                 sub_sub_action = action->actions[2];
                 lexeme = sub_sub_action->lexeme;
                 if (lexeme->value != "ARRAY") {
-                  syntax_error(
+                  syntaxError(
                       "Syntax not supported on SET SPRITE COLOR statement");
                   return;
                 }
@@ -9854,8 +9855,7 @@ void Compiler::cmd_set_sprite() {
             sub_sub_action = action->actions[2];
             lexeme = sub_sub_action->lexeme;
             if (lexeme->value == "ARRAY") {
-              syntax_error(
-                  "Syntax not supported on SET SPRITE COLOR statement");
+              syntaxError("Syntax not supported on SET SPRITE COLOR statement");
               return;
             }
             // push af
@@ -9884,15 +9884,15 @@ void Compiler::cmd_set_sprite() {
         }
 
       } else {
-        syntax_error("Wrong parameters count on SET SPRITE COLOR statement");
+        syntaxError("Wrong parameters count on SET SPRITE COLOR statement");
       }
 
     } else {
-      syntax_error("Invalid syntax on SET SPRITE statement");
+      syntaxError("Invalid syntax on SET SPRITE statement");
     }
 
   } else {
-    syntax_error("Missing parameters on SET SPRITE statement");
+    syntaxError("Missing parameters on SET SPRITE statement");
   }
 }
 
@@ -9930,7 +9930,7 @@ void Compiler::cmd_set_date() {
     addCall(def_set_date);
 
   } else {
-    syntax_error(
+    syntaxError(
         "Wrong SET DATE parameters count.\nTry: SET DATE iYear, iMonth, iDay");
   }
 }
@@ -9970,7 +9970,7 @@ void Compiler::cmd_set_time() {
     addCall(def_set_time);
 
   } else {
-    syntax_error(
+    syntaxError(
         "Wrong SET TIME parameters count.\nTry: SET TIME iHour, iMinute, "
         "iSecond");
   }
@@ -9991,14 +9991,14 @@ void Compiler::cmd_get() {
       } else if (next_lexeme->value == "TIME") {
         cmd_get_time();
       } else {
-        syntax_error("Invalid GET statement");
+        syntaxError("Invalid GET statement");
       }
     } else {
-      syntax_error("Invalid GET statement");
+      syntaxError("Invalid GET statement");
     }
 
   } else {
-    syntax_error("Wrong GET parameters count");
+    syntaxError("Wrong GET parameters count");
   }
 }
 
@@ -10040,7 +10040,7 @@ void Compiler::cmd_get_date() {
             addLdiHLD();
 
           } else {
-            syntax_error(
+            syntaxError(
                 "Invalid GET DATE parameter type.\nTry: GET DATE iYear, "
                 "iMonth, iDay, iWeek, "
                 "iDateFmt");
@@ -10048,7 +10048,7 @@ void Compiler::cmd_get_date() {
           }
 
         } else {
-          syntax_error(
+          syntaxError(
               "Invalid GET DATE parameter: it must be an integer variable.");
           return;
         }
@@ -10056,7 +10056,7 @@ void Compiler::cmd_get_date() {
     }
 
   } else {
-    syntax_error(
+    syntaxError(
         "Wrong GET DATE parameters count.\nTry: GET DATE iYear, iMonth, iDay, "
         "iWeek, iDateFmt");
   }
@@ -10090,14 +10090,14 @@ void Compiler::cmd_get_time() {
             addLdiHLD();
 
           } else {
-            syntax_error(
+            syntaxError(
                 "Invalid GET TIME parameter type.\nTry: GET TIME iHour, "
                 "iMinute, iSecond");
             return;
           }
 
         } else {
-          syntax_error(
+          syntaxError(
               "Invalid GET TIME parameter: it must be an integer variable.");
           return;
         }
@@ -10105,7 +10105,7 @@ void Compiler::cmd_get_time() {
     }
 
   } else {
-    syntax_error(
+    syntaxError(
         "Wrong GET TIME parameters count.\nTry: GET TIME iHour, iMinute, "
         "iSecond");
   }
@@ -10142,16 +10142,16 @@ void Compiler::cmd_on() {
                next_lexeme->value == "INDEX") {
       cmd_on_goto_gosub();
     } else {
-      syntax_error("Invalid ON statement");
+      syntaxError("Invalid ON statement");
     }
 
   } else {
-    syntax_error("Empty ON statement");
+    syntaxError("Empty ON statement");
   }
 }
 
 void Compiler::cmd_on_error() {
-  syntax_error("Not implemented yet");
+  syntaxError("Not implemented yet");
 }
 
 void Compiler::cmd_on_interval() {
@@ -10169,11 +10169,11 @@ void Compiler::cmd_on_interval() {
     sub_action = action->actions[0];
     lexeme = sub_action->lexeme;
     if (lexeme->value != "INDEX") {
-      syntax_error("Interval index is missing in ON INTERVAL");
+      syntaxError("Interval index is missing in ON INTERVAL");
       return;
     }
     if (sub_action->actions.size() != 1) {
-      syntax_error("Wrong parameter count in interval index from ON INTERVAL");
+      syntaxError("Wrong parameter count in interval index from ON INTERVAL");
       return;
     }
 
@@ -10203,11 +10203,11 @@ void Compiler::cmd_on_interval() {
     sub_action = action->actions[1];
     lexeme = sub_action->lexeme;
     if (lexeme->value != "GOSUB") {
-      syntax_error("GOSUB is missing in ON INTERVAL");
+      syntaxError("GOSUB is missing in ON INTERVAL");
       return;
     }
     if (sub_action->actions.size() != 1) {
-      syntax_error("Wrong parameter count in GOSUB from ON INTERVAL");
+      syntaxError("Wrong parameter count in GOSUB from ON INTERVAL");
       return;
     }
 
@@ -10234,12 +10234,12 @@ void Compiler::cmd_on_interval() {
       }
 
     } else {
-      syntax_error("Invalid GOSUB parameter in ON INTERVAL");
+      syntaxError("Invalid GOSUB parameter in ON INTERVAL");
       return;
     }
 
   } else {
-    syntax_error("ON INTERVAL with empty parameters");
+    syntaxError("ON INTERVAL with empty parameters");
   }
 }
 
@@ -10268,11 +10268,11 @@ void Compiler::cmd_interval() {
       // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_STOP);
     } else {
-      syntax_error("Invalid INTERVAL statement");
+      syntaxError("Invalid INTERVAL statement");
     }
 
   } else {
-    syntax_error("Empty INTERVAL statement");
+    syntaxError("Empty INTERVAL statement");
   }
 }
 
@@ -10301,13 +10301,13 @@ void Compiler::cmd_stop() {
       // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_STOP);
     } else {
-      syntax_error("Invalid STOP statement");
+      syntaxError("Invalid STOP statement");
     }
 
   } else if (t == 0) {
     cmd_end(false);  //! jump to the real END statement
   } else {
-    syntax_error("Wrong number of parameters in STOP");
+    syntaxError("Wrong number of parameters in STOP");
   }
 }
 
@@ -10342,11 +10342,11 @@ void Compiler::cmd_sprite() {
       // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_STOP);
     } else {
-      syntax_error("Invalid SPRITE statement");
+      syntaxError("Invalid SPRITE statement");
     }
 
   } else {
-    syntax_error("Empty SPRITE statement");
+    syntaxError("Empty SPRITE statement");
   }
 }
 
@@ -10357,7 +10357,7 @@ void Compiler::cmd_sprite_load() {
 
   if (t) {
     if (t > 1) {
-      syntax_error("SPRITE LOAD with excess of parameters");
+      syntaxError("SPRITE LOAD with excess of parameters");
       return;
     }
 
@@ -10373,7 +10373,7 @@ void Compiler::cmd_sprite_load() {
     }
 
   } else {
-    syntax_error("SPRITE LOAD with empty parameters");
+    syntaxError("SPRITE LOAD with empty parameters");
   }
 }
 
@@ -10396,7 +10396,7 @@ void Compiler::cmd_key() {
       // call 0x00CC   ; ERAFNK
       addCall(0x00CC);
     } else {
-      syntax_error("Invalid KEY statement");
+      syntaxError("Invalid KEY statement");
     }
 
   } else if (t == 2) {
@@ -10502,12 +10502,12 @@ void Compiler::cmd_key() {
         // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
         addCall(def_XBASIC_TRAP_STOP);
       } else {
-        syntax_error("Invalid KEY statement");
+        syntaxError("Invalid KEY statement");
       }
     }
 
   } else {
-    syntax_error("Empty KEY statement");
+    syntaxError("Empty KEY statement");
   }
 }
 
@@ -10557,11 +10557,11 @@ void Compiler::cmd_strig() {
       // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
       addCall(def_XBASIC_TRAP_STOP);
     } else {
-      syntax_error("Invalid STRIG statement");
+      syntaxError("Invalid STRIG statement");
     }
 
   } else {
-    syntax_error("Wrong number of parameters in STRIG statement");
+    syntaxError("Wrong number of parameters in STRIG statement");
   }
 }
 
@@ -10581,14 +10581,14 @@ void Compiler::cmd_on_key() {
 
   action = current_action->actions[0];
   if (action->actions.size() != 1) {
-    syntax_error("Wrong parameters in ON KEY");
+    syntaxError("Wrong parameters in ON KEY");
     return;
   }
 
   action = action->actions[0];
   lexeme = action->lexeme;
   if (lexeme->value != "GOSUB") {
-    syntax_error("GOSUB parameters is missing in ON KEY");
+    syntaxError("GOSUB parameters is missing in ON KEY");
     return;
   }
   t = action->actions.size();
@@ -10642,7 +10642,7 @@ void Compiler::cmd_on_key() {
     }
 
   } else {
-    syntax_error("ON KEY with empty parameters");
+    syntaxError("ON KEY with empty parameters");
   }
 }
 
@@ -10653,14 +10653,14 @@ void Compiler::cmd_on_sprite() {
 
   action = current_action->actions[0];
   if (action->actions.size() != 1) {
-    syntax_error("Wrong parameters in ON SPRITE");
+    syntaxError("Wrong parameters in ON SPRITE");
     return;
   }
 
   action = action->actions[0];
   lexeme = action->lexeme;
   if (lexeme->value != "GOSUB") {
-    syntax_error("GOSUB parameters is missing in ON SPRITE");
+    syntaxError("GOSUB parameters is missing in ON SPRITE");
     return;
   }
   t = action->actions.size();
@@ -10701,7 +10701,7 @@ void Compiler::cmd_on_sprite() {
     addLdiiHL(0xFC6E);
 
   } else {
-    syntax_error("ON SPRITE with wrong count of parameters");
+    syntaxError("ON SPRITE with wrong count of parameters");
   }
 }
 
@@ -10712,14 +10712,14 @@ void Compiler::cmd_on_stop() {
 
   action = current_action->actions[0];
   if (action->actions.size() != 1) {
-    syntax_error("Wrong parameters in ON STOP");
+    syntaxError("Wrong parameters in ON STOP");
     return;
   }
 
   action = action->actions[0];
   lexeme = action->lexeme;
   if (lexeme->value != "GOSUB") {
-    syntax_error("GOSUB parameters is missing in ON STOP");
+    syntaxError("GOSUB parameters is missing in ON STOP");
     return;
   }
   t = action->actions.size();
@@ -10760,7 +10760,7 @@ void Compiler::cmd_on_stop() {
     addLdiiHL(0xfc6B);
 
   } else {
-    syntax_error("ON STOP with wrong count of parameters");
+    syntaxError("ON STOP with wrong count of parameters");
   }
 }
 
@@ -10771,14 +10771,14 @@ void Compiler::cmd_on_strig() {
 
   action = current_action->actions[0];
   if (action->actions.size() != 1) {
-    syntax_error("Wrong parameters in ON STRIG");
+    syntaxError("Wrong parameters in ON STRIG");
     return;
   }
 
   action = action->actions[0];
   lexeme = action->lexeme;
   if (lexeme->value != "GOSUB") {
-    syntax_error("GOSUB parameters is missing in ON STRIG");
+    syntaxError("GOSUB parameters is missing in ON STRIG");
     return;
   }
   t = action->actions.size();
@@ -10832,7 +10832,7 @@ void Compiler::cmd_on_strig() {
     }
 
   } else {
-    syntax_error("ON STRIG with empty parameters");
+    syntaxError("ON STRIG with empty parameters");
   }
 }
 
@@ -10849,7 +10849,7 @@ void Compiler::cmd_on_goto_gosub() {
 
     action = current_action->actions[0];
     if (action->actions.size() == 0) {
-      syntax_error("Empty parameter in ON GOTO/GOSUB");
+      syntaxError("Empty parameter in ON GOTO/GOSUB");
       return;
     }
 
@@ -10957,7 +10957,7 @@ void Compiler::cmd_on_goto_gosub() {
     mark->symbol->address = code_pointer;
 
   } else {
-    syntax_error("ON GOTO/GOSUB with empty parameters");
+    syntaxError("ON GOTO/GOSUB with empty parameters");
   }
 }
 
@@ -10970,14 +10970,14 @@ void Compiler::cmd_swap() {
     action1 = current_action->actions[0];
     lexeme1 = action1->lexeme;
     if (lexeme1->type != Lexeme::type_identifier) {
-      syntax_error("Invalid parameter type in SWAP (1st)");
+      syntaxError("Invalid parameter type in SWAP (1st)");
       return;
     }
 
     action2 = current_action->actions[1];
     lexeme2 = action2->lexeme;
     if (lexeme2->type != Lexeme::type_identifier) {
-      syntax_error("Invalid parameter type in SWAP (2nd)");
+      syntaxError("Invalid parameter type in SWAP (2nd)");
       return;
     }
 
@@ -11003,11 +11003,11 @@ void Compiler::cmd_swap() {
       }
 
     } else {
-      syntax_error("Parameters type mismatch in SWAP");
+      syntaxError("Parameters type mismatch in SWAP");
     }
 
   } else {
-    syntax_error("Invalid SWAP parameters");
+    syntaxError("Invalid SWAP parameters");
   }
 }
 
@@ -11076,19 +11076,19 @@ void Compiler::cmd_wait() {
     }
 
   } else {
-    syntax_error("Invalid WAIT parameters");
+    syntaxError("Invalid WAIT parameters");
   }
 }
 
 void Compiler::cmd_data() {
   if (!current_action->actions.size()) {
-    syntax_error("DATA with empty parameters");
+    syntaxError("DATA with empty parameters");
   }
 }
 
 void Compiler::cmd_idata() {
   if (!current_action->actions.size()) {
-    syntax_error("IDATA with empty parameters");
+    syntaxError("IDATA with empty parameters");
   }
 }
 
@@ -11103,7 +11103,7 @@ void Compiler::cmd_read() {
       lexeme = action->lexeme;
 
       if (lexeme->type != Lexeme::type_identifier) {
-        syntax_error("Invalid READ parameter type");
+        syntaxError("Invalid READ parameter type");
         return;
       }
 
@@ -11118,7 +11118,7 @@ void Compiler::cmd_read() {
     }
 
   } else {
-    syntax_error("READ with empty parameters");
+    syntaxError("READ with empty parameters");
   }
 }
 
@@ -11133,7 +11133,7 @@ void Compiler::cmd_iread() {
       lexeme = action->lexeme;
 
       if (lexeme->type != Lexeme::type_identifier) {
-        syntax_error("Invalid IREAD parameter type");
+        syntaxError("Invalid IREAD parameter type");
         return;
       }
 
@@ -11148,12 +11148,12 @@ void Compiler::cmd_iread() {
     }
 
   } else {
-    syntax_error("IREAD with empty parameters");
+    syntaxError("IREAD with empty parameters");
   }
 }
 
 void Compiler::cmd_resume() {
-  syntax_error("RESUME statement not supported in compiled mode");
+  syntaxError("RESUME statement not supported in compiled mode");
 }
 
 void Compiler::cmd_restore() {
@@ -11183,7 +11183,7 @@ void Compiler::cmd_restore() {
     }
 
   } else {
-    syntax_error("RESTORE with wrong number of parameters");
+    syntaxError("RESTORE with wrong number of parameters");
   }
 }
 
@@ -11220,7 +11220,7 @@ void Compiler::cmd_irestore() {
     }
 
   } else {
-    syntax_error("IRESTORE with wrong number of parameters");
+    syntaxError("IRESTORE with wrong number of parameters");
   }
 }
 
@@ -11253,7 +11253,7 @@ void Compiler::cmd_out() {
     }
 
   } else {
-    syntax_error("Invalid OUT parameters");
+    syntaxError("Invalid OUT parameters");
   }
 }
 
@@ -11288,7 +11288,7 @@ void Compiler::cmd_poke() {
     }
 
   } else {
-    syntax_error("Invalid POKE parameters");
+    syntaxError("Invalid POKE parameters");
   }
 }
 
@@ -11327,7 +11327,7 @@ void Compiler::cmd_ipoke() {
     }
 
   } else {
-    syntax_error("Invalid IPOKE parameters");
+    syntaxError("Invalid IPOKE parameters");
   }
 }
 
@@ -11362,7 +11362,7 @@ void Compiler::cmd_vpoke() {
     }
 
   } else {
-    syntax_error("Invalid VPOKE parameters");
+    syntaxError("Invalid VPOKE parameters");
   }
 }
 
@@ -11370,6 +11370,7 @@ void Compiler::cmd_file() {
   Lexeme* lexeme;
   ActionNode* action;
   unsigned int t = current_action->actions.size();
+  string filename;
 
   if (t == 1) {
     action = current_action->actions[0];
@@ -11378,13 +11379,14 @@ void Compiler::cmd_file() {
     if (lexeme->type == Lexeme::type_literal &&
         lexeme->subtype == Lexeme::subtype_string) {
       lexeme->name = "FILE";
-      resourceManager.resourceList.push_back(lexeme);
+      filename = removeQuotes(lexeme->value);
+      resourceManager.addFile(filename, opts->inputPath);
     } else {
       error_message = "Invalid parameter in FILE keyword";
     }
 
   } else {
-    syntax_error("Wrong FILE parameters count");
+    syntaxError("Wrong FILE parameters count");
   }
 }
 
@@ -11400,13 +11402,13 @@ void Compiler::cmd_text() {
     if (lexeme->type == Lexeme::type_literal &&
         lexeme->subtype == Lexeme::subtype_string) {
       lexeme->name = "TEXT";
-      resourceManager.resourceList.push_back(lexeme);
+      resourceManager.addText(lexeme->value);
     } else {
       error_message = "Invalid parameter in TEXT keyword";
     }
 
   } else {
-    syntax_error("Wrong TEXT parameters count");
+    syntaxError("Wrong TEXT parameters count");
   }
 }
 
@@ -11438,13 +11440,13 @@ void Compiler::cmd_call() {
       } else {
         // todo: concatenate CALL statement  into a literal string
         //       and run it with BASIC like above
-        syntax_error("CALL statement invalid");
+        syntaxError("CALL statement invalid");
         return;
       }
     }
 
   } else {
-    syntax_error("CALL with empty parameters");
+    syntaxError("CALL with empty parameters");
   }
 }
 
@@ -11531,7 +11533,7 @@ void Compiler::cmd_maxfiles() {
     mark->symbol->address = code_pointer;
 
   } else {
-    syntax_error("Empty MAXFILES assignment");
+    syntaxError("Empty MAXFILES assignment");
   }
 }
 
@@ -11699,7 +11701,7 @@ void Compiler::cmd_open() {
     addDisableBasicSlot();
 
   } else {
-    syntax_error("Empty OPEN statement");
+    syntaxError("Empty OPEN statement");
   }
 }
 
@@ -11791,7 +11793,7 @@ void Compiler::cmd_def() {
         addLdiHLD();
 
       } else {
-        syntax_error("Wrong DEF USR parameters count");
+        syntaxError("Wrong DEF USR parameters count");
       }
     }
   }
@@ -11820,11 +11822,11 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_runasm);
 
         } else {
-          syntax_error("CMD RUNASM syntax error");
+          syntaxError("CMD RUNASM syntax error");
         }
 
       } else if (lexeme->value == "RUNBAS") {
-        syntax_error("CMD RUNBAS not implemented yet");
+        syntaxError("CMD RUNBAS not implemented yet");
 
       } else if (lexeme->value == "WRTVRAM") {
         if (action->actions.size() == 2) {
@@ -11846,7 +11848,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_wrtvram);
 
         } else {
-          syntax_error("CMD WRTVRAM syntax error");
+          syntaxError("CMD WRTVRAM syntax error");
         }
 
       } else if (lexeme->value == "WRTFNT") {
@@ -11861,7 +11863,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_wrtfnt);
 
         } else {
-          syntax_error("CMD WRTFNT syntax error");
+          syntaxError("CMD WRTFNT syntax error");
         }
 
       } else if (lexeme->value == "WRTCHR") {
@@ -11876,7 +11878,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_wrtchr);
 
         } else {
-          syntax_error("CMD WRTCHR syntax error");
+          syntaxError("CMD WRTCHR syntax error");
         }
 
       } else if (lexeme->value == "WRTCLR") {
@@ -11891,7 +11893,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_wrtclr);
 
         } else {
-          syntax_error("CMD WRTCLR syntax error");
+          syntaxError("CMD WRTCLR syntax error");
         }
 
       } else if (lexeme->value == "WRTSCR") {
@@ -11906,7 +11908,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_wrtscr);
 
         } else {
-          syntax_error("CMD WRTSCR syntax error");
+          syntaxError("CMD WRTSCR syntax error");
         }
 
       } else if (lexeme->value == "WRTSPR") {
@@ -11921,7 +11923,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_wrtspr);
 
         } else {
-          syntax_error("CMD WRTSPR syntax error");
+          syntaxError("CMD WRTSPR syntax error");
         }
 
       } else if (lexeme->value == "WRTSPRPAT") {
@@ -11936,7 +11938,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_wrtsprpat);
 
         } else {
-          syntax_error("CMD WRTSPRPAT syntax error");
+          syntaxError("CMD WRTSPRPAT syntax error");
         }
 
       } else if (lexeme->value == "WRTSPRCLR") {
@@ -11951,7 +11953,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_wrtsprclr);
 
         } else {
-          syntax_error("CMD WRTSPRCLR syntax error");
+          syntaxError("CMD WRTSPRCLR syntax error");
         }
 
       } else if (lexeme->value == "WRTSPRATR") {
@@ -11966,7 +11968,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_wrtspratr);
 
         } else {
-          syntax_error("CMD WRTSPRATR syntax error");
+          syntaxError("CMD WRTSPRATR syntax error");
         }
 
       } else if (lexeme->value == "RAMTOVRAM") {
@@ -11996,7 +11998,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_ramtovram);
 
         } else {
-          syntax_error("CMD RAMTOVRAM syntax error");
+          syntaxError("CMD RAMTOVRAM syntax error");
         }
 
       } else if (lexeme->value == "VRAMTORAM") {
@@ -12026,7 +12028,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_vramtoram);
 
         } else {
-          syntax_error("CMD VRAMTORAM syntax error");
+          syntaxError("CMD VRAMTORAM syntax error");
         }
 
       } else if (lexeme->value == "DISSCR") {
@@ -12081,7 +12083,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_play);
 
         } else {
-          syntax_error("CMD PLAY syntax error");
+          syntaxError("CMD PLAY syntax error");
         }
 
       } else if (lexeme->value == "DRAW") {
@@ -12096,28 +12098,28 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_draw);
 
         } else {
-          syntax_error("CMD DRAW syntax error");
+          syntaxError("CMD DRAW syntax error");
         }
 
       } else if (lexeme->value == "PT3LOAD") {
         pt3 = true;
-        syntax_error("Arkos Tracker not permitted with PT3 player");
+        syntaxError("Arkos Tracker not permitted with PT3 player");
 
       } else if (lexeme->value == "PT3PLAY") {
         pt3 = true;
-        syntax_error("Arkos Tracker not permitted with PT3 player");
+        syntaxError("Arkos Tracker not permitted with PT3 player");
 
       } else if (lexeme->value == "PT3MUTE") {
         pt3 = true;
-        syntax_error("Arkos Tracker not permitted with PT3 player");
+        syntaxError("Arkos Tracker not permitted with PT3 player");
 
       } else if (lexeme->value == "PT3LOOP") {
         pt3 = true;
-        syntax_error("Arkos Tracker not permitted with PT3 player");
+        syntaxError("Arkos Tracker not permitted with PT3 player");
 
       } else if (lexeme->value == "PT3REPLAY") {
         pt3 = true;
-        syntax_error("Arkos Tracker not permitted with PT3 player");
+        syntaxError("Arkos Tracker not permitted with PT3 player");
 
       } else if (lexeme->value == "PLYLOAD") {
         akm = true;
@@ -12140,7 +12142,7 @@ void Compiler::cmd_cmd() {
           addLdiiHL(def_ARG);
 
         } else {
-          syntax_error("CMD PLYLOAD syntax error");
+          syntaxError("CMD PLYLOAD syntax error");
         }
 
         // call cmd_plyload
@@ -12158,7 +12160,7 @@ void Compiler::cmd_cmd() {
           addLdiiHL(def_DAC);
 
         } else {
-          syntax_error("CMD PLYSONG syntax error");
+          syntaxError("CMD PLYSONG syntax error");
         }
 
         // call cmd_plysong
@@ -12190,7 +12192,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_plyloop);
 
         } else {
-          syntax_error("CMD PLYLOOP syntax error");
+          syntaxError("CMD PLYLOOP syntax error");
         }
 
       } else if (lexeme->value == "PLYREPLAY") {
@@ -12233,7 +12235,7 @@ void Compiler::cmd_cmd() {
           addLdiiHL(def_ARG + 2);
 
         } else {
-          syntax_error("CMD PLYSOUND syntax error");
+          syntaxError("CMD PLYSOUND syntax error");
         }
 
         // call cmd_plysound
@@ -12277,7 +12279,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_setfnt);
 
         } else {
-          syntax_error("CMD SETFNT syntax error");
+          syntaxError("CMD SETFNT syntax error");
         }
 
       } else if (lexeme->value == "UPDFNTCLR") {
@@ -12315,7 +12317,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_ramtoram);
 
         } else {
-          syntax_error("CMD RAMTORAM syntax error");
+          syntaxError("CMD RAMTORAM syntax error");
         }
 
       } else if (lexeme->value == "RSCTORAM") {
@@ -12358,7 +12360,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_rsctoram);
 
         } else {
-          syntax_error("CMD RSCTORAM syntax error");
+          syntaxError("CMD RSCTORAM syntax error");
         }
 
       } else if (lexeme->value == "CLRKEY") {
@@ -12385,7 +12387,7 @@ void Compiler::cmd_cmd() {
           addWord(0xCB, 0xE6);
 
         } else {
-          syntax_error("CMD CLIP syntax error");
+          syntaxError("CMD CLIP syntax error");
         }
 
       } else if (lexeme->value == "TURBO") {
@@ -12400,7 +12402,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_turbo);
 
         } else {
-          syntax_error("CMD TURBO syntax error");
+          syntaxError("CMD TURBO syntax error");
         }
 
       } else if (lexeme->value == "RESTORE") {
@@ -12416,7 +12418,7 @@ void Compiler::cmd_cmd() {
           addCall(def_cmd_restore);  // MSXBAS2ROM resource RESTORE statement
 
         } else {
-          syntax_error("CMD RESTORE syntax error");
+          syntaxError("CMD RESTORE syntax error");
         }
 
       } else if (lexeme->value == "PAGE") {
@@ -12480,20 +12482,20 @@ void Compiler::cmd_cmd() {
           addPopBC();
 
         } else {
-          syntax_error("CMD PAGE syntax error");
+          syntaxError("CMD PAGE syntax error");
         }
 
         // call cmd_page (l = mode, e = delay #1, c = delay #2)
         addCall(def_cmd_page);
 
       } else {
-        syntax_error("CMD statement invalid");
+        syntaxError("CMD statement invalid");
         return;
       }
     }
 
   } else {
-    syntax_error("CMD with empty parameters");
+    syntaxError("CMD with empty parameters");
   }
 }
 
@@ -12538,7 +12540,7 @@ void Compiler::addDisableBasicSlot() {
   }
 }
 
-void Compiler::func_symbols() {
+void Compiler::addSupportSymbols() {
   // IO REDIRECT FUNCTION
   if (io_redirect_mark) {
     io_redirect_mark->symbol->address = code_pointer;
@@ -12653,11 +12655,11 @@ void Compiler::func_symbols() {
 
 //-------------------------------------------------------------------------------------------
 
-void Compiler::syntax_error() {
-  syntax_error("Syntax error");
+void Compiler::syntaxError() {
+  syntaxError("Syntax error");
 }
 
-void Compiler::syntax_error(string msg) {
+void Compiler::syntaxError(string msg) {
   compiled = false;
   error_message = msg;
   if (current_tag) error_message += " (line=" + current_tag->value + ")";

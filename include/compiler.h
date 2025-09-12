@@ -77,10 +77,10 @@ class Compiler : public IZ80 {
   SymbolNode* addPreMark();
   FixNode* addMark();
 
-  void func_symbols();
-  void clear_symbols();
-  int save_symbols();
-  void do_fix();
+  void addSupportSymbols();
+  void clearSymbols();
+  int saveSymbols();
+  void doFix();
 
   /***
    * @brief Convert a double to MSX float point math pack library format
@@ -236,8 +236,8 @@ class Compiler : public IZ80 {
   void endBasicSetStmt();
   void addBasicChar(char c);
 
-  void syntax_error();
-  void syntax_error(string msg);
+  void syntaxError();
+  void syntaxError(string msg);
 
  public:
   Compiler();

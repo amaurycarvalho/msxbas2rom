@@ -17,10 +17,7 @@ INC_DIR = ../include
 
 # Targets
 all: $(INC_DIR)/header.h \
-     $(INC_DIR)/header_pt3.h \
-     $(INC_DIR)/routines.h \
-     $(INC_DIR)/start.h \
-     $(INC_DIR)/pt3.h
+     $(INC_DIR)/start.h 
 
 # Rule: header.asm → header.bin → header.h
 $(BIN_DIR)/header.bin: $(SRC_DIR)/header.asm
@@ -29,35 +26,11 @@ $(BIN_DIR)/header.bin: $(SRC_DIR)/header.asm
 $(INC_DIR)/header.h: $(BIN_DIR)/header.bin
 	$(XXD) $< > $@
 
-# Rule: routines.asm → routines.bin → routines.h
-$(BIN_DIR)/routines.bin: $(SRC_DIR)/routines.asm
-	$(PASMO) $< $@
-
-$(INC_DIR)/routines.h: $(BIN_DIR)/routines.bin
-	$(XXD) $< > $@
-
 # Rule: start.asm → start.bin → start.h
 $(BIN_DIR)/start.bin: $(SRC_DIR)/start.asm
 	$(PASMO) $< $@
 
 $(INC_DIR)/start.h: $(BIN_DIR)/start.bin
-	$(XXD) $< > $@
-
-# Rule: header_pt3.asm → header_pt3.bin → header_pt3.h
-$(BIN_DIR)/header_pt3.bin: $(SRC_DIR)/header_pt3.asm
-	$(PASMO) $< $@ $(SRC_DIR)/header_pt3.symbols.asm
-
-$(INC_DIR)/header_pt3.h: $(BIN_DIR)/header_pt3.bin
-	$(XXD) $< > $@
-
-# Rule: pt3.asm → pt3.bin → pt3.bin.plet5 → pt3.h
-$(BIN_DIR)/pt3.bin: $(SRC_DIR)/pt3.asm
-	$(PASMO) $< $@
-
-$(BIN_DIR)/pt3.bin.plet5: $(BIN_DIR)/pt3.bin
-	$(PLETTER) $<
-
-$(INC_DIR)/pt3.h: $(BIN_DIR)/pt3.bin.plet5
 	$(XXD) $< > $@
 
 # Clean up

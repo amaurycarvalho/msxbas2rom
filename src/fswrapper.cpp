@@ -7,6 +7,8 @@
 
 #include "fswrapper.h"
 
+#include <cmath>
+
 using namespace std;
 
 bool fileExists(const string& filename) {
@@ -61,4 +63,25 @@ string pathJoin(const string& base, const string& relative) {
   if (!r.empty() && r.front() == fsFolderSeparator) r.erase(0, 1);
 
   return b + fsFolderSeparator + r;
+}
+
+string removeQuotes(const string& text) {
+  string s = text;
+
+  // Remove leading quote
+  if (!s.empty() && s.front() == '"') {
+    s.erase(s.begin());
+  }
+
+  // Remove trailing quote
+  if (!s.empty() && s.back() == '"') {
+    s.pop_back();
+  }
+
+  return s;
+}
+
+float roundTo(float value, int decimals) {
+  float factor = pow(10.0f, decimals);
+  return round(value * factor) / factor;
 }

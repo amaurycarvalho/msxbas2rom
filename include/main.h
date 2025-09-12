@@ -26,7 +26,6 @@
 #include "appinfo.h"
 #include "cliparser.h"
 #include "compiler.h"
-#include "compiler_pt3.h"
 #include "fswrapper.h"
 #include "lex.h"
 #include "options.h"

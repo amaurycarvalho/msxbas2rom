@@ -73,4 +73,9 @@ string getFileNameWithoutExtension(const string& filepath);
  */
 string pathJoin(const string& base, const string& relative);
 
+/***
+ * @brief Remove quotes character in the begin and end of a string
+ */
+string removeQuotes(const string& text);
+
 #endif  // FSWRAPPER_H_INCLUDED

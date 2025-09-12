@@ -29,6 +29,7 @@ Parser::Parser() {
   has_traps = false;
   has_defusr = false;
   has_data = false;
+  has_idata = false;
   has_play = false;
   has_input = false;
   has_font = false;
@@ -854,12 +855,18 @@ bool Parser::eval_cmd_generic(LexerLine* statement) {
 bool Parser::eval_cmd_data(LexerLine* statement,
                            Lexeme::LexemeSubType subtype) {
   Lexeme* next_lexeme;
-  string stext = "";
+  string stext = "", sname;
   int i, itext;
   char* s;
   bool lastWasSeparator = true;
 
-  has_data = true;
+  if (subtype == Lexeme::subtype_integer_data) {
+    has_idata = true;
+    sname = "_IDATA_";
+  } else {
+    has_data = true;
+    sname = "_DATA_";
+  }
 
   while ((next_lexeme = statement->getNextLexeme())) {
     next_lexeme = coalesceSymbols(next_lexeme);
@@ -873,7 +880,7 @@ bool Parser::eval_cmd_data(LexerLine* statement,
       } else if (stext.size()) {
         i = datas.size() + 1;
         next_lexeme = new Lexeme(Lexeme::type_literal, subtype,
-                                 "_DATA_" + to_string(i), stext);
+                                 sname + to_string(i), stext);
         next_lexeme->tag = tag->name;
 
         s = (char*)stext.c_str();

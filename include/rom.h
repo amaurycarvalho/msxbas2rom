@@ -19,14 +19,10 @@
 #include <vector>
 
 #include "compiler.h"
-#include "compiler_pt3.h"
 #include "fswrapper.h"
 #include "lex.h"
 #include "options.h"
 #include "resources.h"
-#include "tokenizer.h"
-
-#define ROM_DATA_SIZE COMPILE_CODE_SIZE
 
 using namespace std;
 
@@ -36,76 +32,47 @@ using namespace std;
  */
 class Rom {
  private:
-  Tokenizer *tokenizer;
   Compiler *compiler;
   BuildOptions *opts;
+  ResourceManager *resourceManager;
 
+  int resourceAddress, resourceSegment;
+
+  /// @brief ROM pages
+  vector<vector<unsigned char>> pages;
+
+  /// @brief Error management
   string errorMessage;
   bool errorFound;
-  int xbcAddr, pt3Addr;
-  int hdrAddr, rtnAddr, mapAddr, txtAddr, filAddr, basAddr, rscAddr;
-  int mapInd, txtInd, filInd, basInd;
-  int hdrLen, rtnLen, mapLen, txtLen, filLen, pt3Len, basLen;
-  int rscSgm, rscLen, codeSgm;
 
-  unsigned char *data;  // [ROM_DATA_SIZE];
-  bool writePage[COMPILE_MAX_PAGES];
-
-  vector<unsigned char *> lines;
-
+  /// @brief Initialize data
   void buildInit();
-  void buildHeader();
-  void buildRoutines();
-  void buildCompilerRoutines();
-  void buildCompilerRoutinesPT3();
 
-  void buildXBASIC();
-  void buildPT3TOOLS();
-  void buildFontResources();
+  /// @brief Add kernel code
+  bool addKernel();
 
-  void buildBasicCode();
-  void buildCompiledCode();
+  /// @brief Fix kernel if Konami SCC format
+  bool fixIfKonamiSCC();
 
-  void calcBasicLineAddress(TokenLine *line);
-  int getBasicLineAddress(int number);
-  void buildBasicLine(TokenLine *line);
-  void buildTurboLine();
-  void buildFilesLine();
-  void buildAssemblyLine();
-  void buildHeaderAdjust();
+  /// @brief Add compiled code
+  bool addCompiledCode();
 
-  void writeRom(string filename);
+  /// @brief Add resources
+  bool addResources();
 
-  /// @todo move to resources.cpp
-  void buildMap(vector<Lexeme *> *resourceList, bool font);
-  void buildResources(vector<Lexeme *> *resourceList);
-  void buildMapAndResources();
-  void buildMapAndResourcesText(Lexeme *lexeme);
-  void buildMapAndResourcesData(Parser *parser);
-  void buildMapAndResourcesFile(Lexeme *lexeme);
-  void buildMapAndResourcesFileTXT(string filename);
-  void buildMapAndResourcesFileCSV(string filename);
-  void buildMapAndResourcesFileSPR(string filename);
-  void buildMapAndResourcesFileSCR(string filename);
-  void buildMapAndResourcesFileBIN(string filename, string fileext);
-  void addResourceToMap(int offset, int length, int filler);
-  /// ---------
+  /// @brief Set resource map start address
+  void setResourceMapStartAddress();
+
+  /// @brief Write pages to ROM file
+  bool writeRom(string filename);
 
  public:
-  int code_start, rom_size;
-  double stdMemoryPerc, rscMemoryPerc;
-
-  FileNode file;
+  int romSize;
+  int codeSize, resourcesSize;
+  double codeShare, resourcesShare, kernelShare;
 
   Rom();
   ~Rom();
-
-  /***
-   * @brief Creates a MSX BASIC ROM based on a pcoded source code
-   * @param tokenizer Tokenized source code
-   * @return True, if success
-   */
-  bool build(Tokenizer *tokenizer);
 
   /***
    * @brief Creates a MSX BASIC ROM based on a compiled source code
@@ -113,15 +80,6 @@ class Rom {
    * @return True, if success
    */
   bool build(Compiler *compiler);
-
-  /***
-   * @brief Creates a MSX BASIC ROM based on a compiled source code usind PT3
-   * player
-   * @param compiler Compiled PT3 source code
-   * @return True, if success
-   * @deprecated PT3 is not supported anymore
-   */
-  bool build(CompilerPT3 *compiler);
 
   /***
    * @brief Print to the terminal the invalid source code
