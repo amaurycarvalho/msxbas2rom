@@ -249,6 +249,26 @@ bool Rom::writeRom(string filename) {
   }
 
   /// write code pages
+  if (!pages.size()) {
+    errorMessage =
+        "Code is empty!!!\nTry to write some code in your program....";
+    errorFound = true;
+    file.close();
+    remove(filename.c_str());
+    return false;
+  }
+  if (!opts->megaROM) {
+    if (pages.size() > 1) {
+      errorMessage =
+          "Code exceeded 16k plain ROM limit\n"
+          "Try to compile it in MegaROM format by adding the -x parameter";
+      errorFound = true;
+      file.close();
+      remove(filename.c_str());
+      return false;
+    }
+  }
+
   for (i = 0; i < (int)pages.size(); i++) {
     file.write((char *)pages[i].data(), pages[i].size());
     romSize += pages[i].size();

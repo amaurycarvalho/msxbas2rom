@@ -216,20 +216,20 @@ int main(int argc, char *argv[]) {
     if (opts.megaROM) {
       if (opts.compileMode == BuildOptions::CompileMode::KonamiSCC) {
         printf(
-            "MegaROM mode activated (Konami with SCC "
+            "    MegaROM mode activated (Konami with SCC "
             "mapper).\n");
       } else
         printf("    MegaROM mode activated (ASCII8 mapper).\n");
     } else {
       printf("    Plain ROM mode activated.\n");
     }
-    printf("    ROM size = %.1fkb (%.1f%% free)\n", rom.romSize / 1024.0,
+    printf("    ROM size = %.0fK (%.1f%% free)\n", rom.romSize / 1024.0,
            100.0 - rom.codeShare - rom.resourcesShare - rom.kernelShare);
 
     if (compiler.resourceManager.resources.size()) {
       printf("    Resources occupied %.1f%% of avaliable space\n",
              rom.resourcesShare);
-      printf("      %i resource(s) found (%.1fkb size",
+      printf("      %i resource(s) found (%.1fK size",
              (int)compiler.resourceManager.resources.size(),
              compiler.resourceManager.resourcesPackedSize / 1024.0);
       if (compiler.resourceManager.resourcesPackedSize <

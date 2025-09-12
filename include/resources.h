@@ -10,6 +10,7 @@
 
 #include <fstream>
 
+#include "pletter.h"
 #include "symbols.h"
 
 /***
@@ -25,6 +26,7 @@ class ResourceReader {
   vector<vector<unsigned char>> data;
   int unpackedSize;
   int packedSize;
+  bool isPacked;
   const string getErrorMessage();
   const string getFilename();
   bool remapTo(int index, int mappedSegm, int mappedAddress);
@@ -66,6 +68,7 @@ class ResourceBlobReader : public ResourceReader {
  */
 class ResourceBlobPackedReader : public ResourceBlobReader {
  protected:
+  Pletter pletter;
   bool pack();
 
  public:
@@ -182,10 +185,6 @@ class ResourceSprReader : public ResourceBlobPackedReader {
   static bool isIt(string fileext);
   bool load();
   ResourceSprReader(string filename);
-
-  /// @todo remove this old piece of code (deprecated)
-  static int ParseTinySpriteFile(string filename, unsigned char *data,
-                                 int maxlen);
 };
 
 /***
