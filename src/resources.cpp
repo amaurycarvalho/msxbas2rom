@@ -16,7 +16,7 @@ void ResourceManager::clear() {
 
 void ResourceManager::print() {
   for (int i = 0; i < (int)resources.size(); i++) {
-    printf("Resource #%i: %s (", i, resources[i]->getFilename().c_str());
+    printf("      Resource #%i: %s (", i, resources[i]->getFilename().c_str());
     if (resources[i]->isPacked)
       printf("%.1fK packed, ", resources[i]->packedSize / 1024.0);
     printf("%.1fK unpacked)\n", resources[i]->unpackedSize / 1024.0);

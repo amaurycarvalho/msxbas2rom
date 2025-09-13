@@ -1198,6 +1198,10 @@ XBASIC_READ.cont:
   ret
 
 XBASIC_IREAD:
+  ld a, (DORES)                 ; DATA current segment
+  or a
+  jp nz, XBASIC_IREAD_MR
+XBASIC_IREAD.cont:
   di
     call resource.open
       ld hl, (DATPTR)          ; DATA current pointer
@@ -1410,6 +1414,21 @@ XBASIC_READ_MR.cont:
       ld (DATPTR), hl
     pop hl
   pop af
+  jp MR_CHANGE_SGM
+
+XBASIC_IREAD_MR:
+  ld a, (SGMADR)            ; save current segment
+  push af
+    ld a, (DORES)           ; change to DATA segment
+    call MR_CHANGE_SGM
+    ld hl, (DATPTR)         ; get DATA current pointer
+    ld e, (hl)
+    inc hl
+    ld d, (hl)
+    inc hl
+    ld (DATPTR), hl
+    ex de,hl
+  pop af                    ; restore to last segment
   jp MR_CHANGE_SGM
 
 XBASIC_INPUT_2:
