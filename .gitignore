@@ -40,6 +40,9 @@ obj/
 
 # Testing objects
 test/**/*.rom
+test/**/*.noi
+test/**/*.omds
+test/**/*.symbol
 
 # Deploys
 dist/
