@@ -107,13 +107,10 @@ class ResourceBlobChunkPackedReader : public ResourceBlobPackedReader {
  *       lineData C(lineSize)
  */
 class ResourceTxtReader : public ResourceReader {
- protected:
-  vector<string> lines;
-
  public:
+  vector<string> lines;
   static bool isIt(string fileext);
   bool populateLines();
-  const vector<string> getLines();
   bool load();
   ResourceTxtReader(string filename);
 };

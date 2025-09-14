@@ -67,21 +67,23 @@ void ResourceManager::addIDataResource(Parser *parser) {
 bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
   ResourceReader *resourceReader;
   int mapAddress = 0x0010;
-  int resourceSegment = baseSegment;
-  int resourceAddress = mapAddress + 2 + resources.size() * 5;
-  int resourceOffset;
-  int resourceSize, resourceItemSize;
-  int i, k;
+  int mapSize = mapAddress + 2 + resources.size() * 5;
+  int resourceItemIndex, resourceItemCount, resourceItemSize;
+  int resourceBlockSegment = baseSegment;
+  int resourceBlockAddress = mapSize;
+  int resourceBlockIndex, resourceBlockCount, resourceBlockSize;
+  int resourceBlockOffset, resourceBlockNextAddress;
 
-  resourcesUnpackedSize = resourceAddress;  //! include resource map size
-  resourcesPackedSize = resourceAddress;
+  resourcesUnpackedSize = mapSize;  //! include resource map size
+  resourcesPackedSize = mapSize;
 
   pages.clear();
 
   if (resources.size()) {
-    if (resourceAddress > 0x4000) {
-      errorMessage =
-          "Resources maximum limit exceeded: " + to_string(resources.size());
+    /// check resource map size limit
+    if (mapSize > 0x4000) {
+      errorMessage = "Resource count maximum limit exceeded: " +
+                     to_string(resources.size());
       return false;
     }
 
@@ -93,53 +95,66 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
     pages[0][mapAddress++] = ((resources.size() >> 8) & 0xFF);
 
     /// write resources to pages
-    for (i = 0; i < (int)resources.size(); i++) {
+    resourceItemCount = resources.size();
+    for (resourceItemIndex = 0; resourceItemIndex < resourceItemCount;
+         resourceItemIndex++) {
       /// next resource item
-      resourceReader = resources[i];
+      resourceReader = resources[resourceItemIndex];
       if (!resourceReader->load()) {
         errorMessage = resourceReader->getErrorMessage();
         return false;
       }
 
       /// add resource data
-      resourceSize = 0;
-      for (k = 0; k < (int)resourceReader->data.size(); k++) {
-        resourceItemSize = resourceReader->data[k].size();
-        if (resourceItemSize > 0x4000) {
+      resourceItemSize = 0;
+      resourceBlockCount = resourceReader->data.size();
+      for (resourceBlockIndex = 0; resourceBlockIndex < resourceBlockCount;
+           resourceBlockIndex++) {
+        /// resource block size check
+        resourceBlockSize = resourceReader->data[resourceBlockIndex].size();
+        if (resourceBlockSize > 0x4000) {
           errorMessage = "Resource file size exceeds maximum limit (16k): " +
                          resourceReader->getFilename();
           return false;
         }
-        if ((resourceAddress + resourceItemSize) > 0x4000) {
+        /// end of segment check
+        resourceBlockNextAddress = (resourceBlockAddress + resourceBlockSize);
+        if (resourceItemIndex == 0 && resourceBlockCount > 1) {
+          /// 1st block segment disalignment bug mitigation
+          /// @todo refactor to use a block linked list
+          resourceBlockNextAddress += resourceReader->data[1].size();
+        }
+        if (resourceBlockNextAddress > 0x4000) {
           pages.emplace_back(0x4000, 0xFF);  //! add a new page
-          resourceSegment += 2;
-          resourceAddress = 0;
+          resourceBlockSegment += 2;
+          resourceBlockAddress = 0;
         }
         // remap resource address
-        if (!resourceReader->remapTo(k, resourceSegment,
-                                     baseAddress + resourceAddress)) {
+        resourceBlockOffset = (resourceBlockAddress + baseAddress);
+        if (!resourceReader->remapTo(resourceBlockIndex, resourceBlockSegment,
+                                     resourceBlockOffset)) {
           errorMessage = resourceReader->getErrorMessage();
           return false;
         }
-        if (k == 0) {
+        if (resourceBlockIndex == 0) {
           /// add resource map item
-          resourceOffset = (resourceAddress + baseAddress);
-          pages[0][mapAddress++] = resourceOffset & 0xFF;
-          pages[0][mapAddress++] = (resourceOffset >> 8) & 0xFF;
-          pages[0][mapAddress++] = resourceSegment & 0xFF;
+          pages[0][mapAddress++] = resourceBlockOffset & 0xFF;
+          pages[0][mapAddress++] = (resourceBlockOffset >> 8) & 0xFF;
+          pages[0][mapAddress++] = resourceBlockSegment & 0xFF;
         }
         /// copy resource data
-        memcpy(pages.back().data() + resourceAddress,
-               resourceReader->data[k].data(), resourceItemSize);
-        resourceSize += resourceItemSize;
-        resourceAddress += resourceItemSize;
+        memcpy(pages.back().data() + resourceBlockAddress,
+               resourceReader->data[resourceBlockIndex].data(),
+               resourceBlockSize);
+        resourceItemSize += resourceBlockSize;
+        resourceBlockAddress += resourceBlockSize;
       }
       /// resource map item size
-      resourcesPackedSize += resourceSize;
+      resourcesPackedSize += resourceItemSize;
       resourcesUnpackedSize += resourceReader->unpackedSize;
-      resourceSize = min(resourceSize, 0xFFFF);
-      pages[0][mapAddress++] = resourceSize & 0xFF;
-      pages[0][mapAddress++] = (resourceSize >> 8) & 0xFF;
+      resourceItemSize = min(resourceItemSize, 0xFFFF);
+      pages[0][mapAddress++] = resourceItemSize & 0xFF;
+      pages[0][mapAddress++] = (resourceItemSize >> 8) & 0xFF;
     }
     if (resourcesUnpackedSize) {
       packedRate = resourcesPackedSize;
@@ -305,6 +320,7 @@ bool ResourceBlobChunkPackedReader::isIt(string fileext) {
 }
 
 /// @todo fix 1st block segment disalignment bug
+/// implementing resource block linked list
 bool ResourceBlobChunkPackedReader::load() {
   unsigned char buffer[1024];
   unsigned char *srcBuf;
@@ -352,8 +368,8 @@ ResourceTxtReader::ResourceTxtReader(string filename)
     : ResourceReader(filename) {};
 
 bool ResourceTxtReader::populateLines() {
-  ifstream fileStream(filename);
-  if (!fileStream) {
+  ifstream file(filename);
+  if (!file) {
     errorMessage = "Resource file not found: " + filename;
     return false;
   }
@@ -361,10 +377,14 @@ bool ResourceTxtReader::populateLines() {
   lines.clear();
   string line;
 
-  while (getline(fileStream, line)) {
-    // Replace non-printable / non-ASCII characters with spaces
+  while (getline(file, line)) {
+    // remove any CR/LF from the end of string
+    while (!line.empty() && (line.back() == '\r' || line.back() == '\n')) {
+      line.pop_back();
+    }
+    // replace non-printable / non-ASCII characters with spaces
     for (char &ch : line) {
-      if (ch < 32 || ch > 127) {
+      if (ch < 32) {
         ch = ' ';
       }
     }
@@ -378,11 +398,8 @@ bool ResourceTxtReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".TXT") == 0);
 }
 
-const vector<string> ResourceTxtReader::getLines() {
-  return lines;
-}
-
 /// @todo fix 1st block segment disalignment bug
+/// implementing resource block linked list
 bool ResourceTxtReader::load() {
   int i, lineCount, lineSize;
   data.clear();
@@ -527,6 +544,7 @@ bool ResourceCsvReader::populateFields() {
 }
 
 /// @todo fix 1st block segment disalignment bug
+/// implementing resource block linked list
 bool ResourceCsvReader::populateData() {
   int i, k, lineCount;
   int fieldCount, fieldSize, fieldValue;
@@ -670,8 +688,11 @@ bool ResourceSprReader::parseTinySpriteFile() {
     memset(spriteAttr, 0, 64);
     ok = true;
 
-    for (string line : txtReader.getLines()) {
+    for (string line : txtReader.lines) {
       length = (int)line.size();
+
+      /// debug:
+      /// printf("---> %s...\n", line.c_str());
 
       if (length) {
         switch (state) {
@@ -830,7 +851,11 @@ bool ResourceSprReader::parseTinySpriteFile() {
         return true;
       }
     }
+  } else {
+    errorMessage = txtReader.getErrorMessage();
+    return false;
   }
+
   errorMessage = "Error while parsing Tiny Sprite resource: " + filename;
   return false;
 }
@@ -988,7 +1013,7 @@ bool ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
                   /// @remark
                   /// "current" value needs to be calculated to keep
                   /// the state machine loop consistency
-                  // NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
+                  /// NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
                   current = (current << 8) | data[k];
                   k++;
                   /// debug:
@@ -1080,10 +1105,17 @@ bool ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
   return true;
 }
 
+/***
+ * @remarks
+ * https://bitbucket.org/JulienNevo/arkostracker3/src/master/doc/export/AKM.md
+ */
 int ResourceAkmReader::guessBaseAddress(unsigned char *data, int length) {
   int i, baseAddress;
-  int instrumentIndexTable, instrumentIndexFixed;
-  int subsongIndexTable, subsongIndexFixed;
+  int instrumentIndexTable, instrumentIndexItem;
+  int subsongIndexTable, subsongIndexHeader;
+  unsigned char areEffectsPresent;
+  const int areEffectsPresentHeaderPosition = 12;
+  const int subsongHeaderSize = 13;
   bool found = false;
 
   /// AKM header
@@ -1097,18 +1129,19 @@ int ResourceAkmReader::guessBaseAddress(unsigned char *data, int length) {
 
   /// guessing loop
   while (baseAddress < instrumentIndexTable) {
-    instrumentIndexFixed = instrumentIndexTable - baseAddress;
-    if (instrumentIndexFixed < 8) break;
+    instrumentIndexItem = instrumentIndexTable - baseAddress;
+    if (instrumentIndexItem < 8) break;
     found = true;
-    for (i = 6; i < instrumentIndexFixed; i += 2) {
+    for (i = 6; i < instrumentIndexItem; i += 2) {
       subsongIndexTable = data[i] | (data[i + 1] << 8);
-      subsongIndexFixed = subsongIndexTable - baseAddress;
-      if (subsongIndexFixed >= length) {
+      subsongIndexHeader = subsongIndexTable - baseAddress;
+      if (subsongIndexHeader > (length - subsongHeaderSize)) {
         found = false;
         break;
       }
-      if (data[instrumentIndexFixed] != 12 &&
-          data[instrumentIndexFixed] != 13) {
+      areEffectsPresent =
+          data[subsongIndexHeader + areEffectsPresentHeaderPosition];
+      if (areEffectsPresent != 0x0C && areEffectsPresent != 0x0D) {
         found = false;
         break;
       }
@@ -1181,10 +1214,14 @@ bool ResourceAkxReader::fixAKX(unsigned char *data, int address, int length) {
   return true;
 }
 
+/***
+ * @remarks
+ * https://bitbucket.org/JulienNevo/arkostracker3/src/master/doc/export/SoundEffects.md
+ */
 int ResourceAkxReader::guessBaseAddress(unsigned char *data, int length) {
   int baseAddress, i;
-  int firstSoundEffectAddress, firstSoundEffectFixed;
-  int soundEffectAddress, soundEffectFixed;
+  int firstSoundEffectAddress, firstSoundEffectItem;
+  int soundEffectAddress, soundEffectItem;
   int previousSoundEffect;
   bool found = false;
 
@@ -1199,18 +1236,17 @@ int ResourceAkxReader::guessBaseAddress(unsigned char *data, int length) {
 
   /// guessing loop
   while (baseAddress < firstSoundEffectAddress) {
-    firstSoundEffectFixed = firstSoundEffectAddress - baseAddress;
-    previousSoundEffect = firstSoundEffectFixed;
+    firstSoundEffectItem = firstSoundEffectAddress - baseAddress;
+    previousSoundEffect = firstSoundEffectItem;
     found = true;
-    for (i = 0; i < firstSoundEffectFixed; i += 2) {
+    for (i = 0; i < firstSoundEffectItem; i += 2) {
       soundEffectAddress = data[i] | (data[i + 1] << 8);
-      soundEffectFixed = soundEffectAddress - baseAddress;
-      if (soundEffectFixed >= length ||
-          soundEffectFixed < previousSoundEffect) {
+      soundEffectItem = soundEffectAddress - baseAddress;
+      if (soundEffectItem >= length || soundEffectItem < previousSoundEffect) {
         found = false;
         break;
       }
-      previousSoundEffect = soundEffectFixed;
+      previousSoundEffect = soundEffectItem;
     }
     if (found) break;
     baseAddress++;
