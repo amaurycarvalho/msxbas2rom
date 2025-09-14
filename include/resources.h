@@ -29,7 +29,7 @@ class ResourceReader {
   bool isPacked;
   const string getErrorMessage();
   const string getFilename();
-  bool remapTo(int index, int mappedSegm, int mappedAddress);
+  virtual bool remapTo(int index, int mappedSegm, int mappedAddress);
   virtual bool load() = 0;
   ResourceReader(string filename);
 };
@@ -142,7 +142,7 @@ class ResourceCsvReader : public ResourceTxtReader {
   void addFields(string line);
   string fixFieldValue(string field);
 
-  bool populateFields();
+  virtual bool populateFields();
   bool populateData();
 
  public:
@@ -165,7 +165,6 @@ class ResourceCsvReader : public ResourceTxtReader {
 class ResourceScrReader : public ResourceBlobChunkPackedReader {
  public:
   static bool isIt(string fileext);
-  // bool load(); <- inherited from base class
   ResourceScrReader(string filename);
 };
 
@@ -191,33 +190,39 @@ class ResourceSprReader : public ResourceBlobPackedReader {
  * @class ResourceAkmReader
  * @brief Resource reader for Arkos Tracker minimalist player music files
  * (.AKM)
- * @note https://julien-nevo.com/at3test/index.php/download/
- * @todo fixAKM function refactoring
+ * @remarks
+ * https://www.julien-nevo.com/arkostracker/
+ * https://bitbucket.org/JulienNevo/arkostracker3/src/master/
+ * https://bitbucket.org/JulienNevo/arkostracker3/src/master/doc/export/AKM.md
  */
 class ResourceAkmReader : public ResourceBlobReader {
+ private:
+  bool fixAKM(unsigned char *data, int address, int length);
+  int guessBaseAddress(unsigned char *data, int length);
+
  public:
   static bool isIt(string fileext);
   bool remapTo(int index, int mappedSegm, int mappedAddress);
   ResourceAkmReader(string filename);
-
-  /// @todo tranform it from static function to a private method
-  static void fixAKM(unsigned char *data, int address, int length);
 };
 
 /***
  * @class ResourceAkxReader
  * @brief Resource reader for Arkos Tracker sound effects files (.AKX)
- * @note https://julien-nevo.com/at3test/index.php/download/
- * @todo fixAKX function refactoring
+ * @remarks
+ * https://www.julien-nevo.com/arkostracker/
+ * https://bitbucket.org/JulienNevo/arkostracker3/src/master/
+ * https://bitbucket.org/JulienNevo/arkostracker3/src/master/doc/export/SoundEffects.md
  */
 class ResourceAkxReader : public ResourceBlobReader {
+ private:
+  bool fixAKX(unsigned char *data, int address, int length);
+  int guessBaseAddress(unsigned char *data, int length);
+
  public:
   static bool isIt(string fileext);
   bool remapTo(int index, int mappedSegm, int mappedAddress);
   ResourceAkxReader(string filename);
-
-  /// @todo tranform it from static function to a private method
-  static void fixAKX(unsigned char *data, int address, int length);
 };
 
 /***
@@ -268,7 +273,6 @@ class ResourceMtfReader : public ResourceBlobReader {
  *   String resource format:
  *     string C[stringSize]
  *     endOfString N(1) = 0
- * @todo buildMapAndResourcesText substitute
  */
 class ResourceStringReader : public ResourceReader {
  public:

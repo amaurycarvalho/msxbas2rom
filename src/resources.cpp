@@ -115,13 +115,13 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
           resourceSegment += 2;
           resourceAddress = 0;
         }
+        // remap resource address
+        if (!resourceReader->remapTo(k, resourceSegment,
+                                     baseAddress + resourceAddress)) {
+          errorMessage = resourceReader->getErrorMessage();
+          return false;
+        }
         if (k == 0) {
-          // remap resource address
-          if (!resourceReader->remapTo(i, resourceSegment,
-                                       baseAddress + resourceAddress)) {
-            errorMessage = resourceReader->getErrorMessage();
-            return false;
-          }
           /// add resource map item
           resourceOffset = (resourceAddress + baseAddress);
           pages[0][mapAddress++] = resourceOffset & 0xFF;
@@ -854,12 +854,26 @@ bool ResourceAkmReader::remapTo(int index, int mappedSegm, int mappedAddress) {
   return false;
 }
 
-void ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
-  int t, i, k, w, current, previous, start, tracks, linker;
+/***
+ * @remarks
+ * https://www.julien-nevo.com/arkostracker/index.php/the-akm-player/
+ * https://bitbucket.org/JulienNevo/arkostracker3/src/master/
+ * https://bitbucket.org/JulienNevo/arkostracker3/src/master/doc/export/AKM.md
+ */
+bool ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
+  int t, i, k, w, current, previous, baseAddress, tracks, linker;
   int instrumentIndexTable, arpeggioIndexTable, pitchIndexTable;
   int subsongIndexTable;
   int noteBlockIndexTable, trackIndexTable;
   bool first, track_annotation;
+
+  baseAddress = guessBaseAddress(data, length);
+  if (baseAddress < 0) {
+    printf("WARNING: cannot guess base address of AKM file\n");
+    return false;
+  }
+  /// debug:
+  /// printf("----> akm base address: %04X\n", baseAddress);
 
   /// adjust header
 
@@ -867,17 +881,16 @@ void ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
   arpeggioIndexTable = data[2] | (data[3] << 8);
   pitchIndexTable = data[4] | (data[5] << 8);
 
-  start = instrumentIndexTable & 0xFF00;
-  instrumentIndexTable -= start;
+  instrumentIndexTable -= baseAddress;
 
   if (arpeggioIndexTable) {
-    current = arpeggioIndexTable - start + address;
+    current = arpeggioIndexTable - baseAddress + address;
     data[2] = current & 0xFF;
     data[3] = (current >> 8) & 0xFF;
   }
 
   if (pitchIndexTable) {
-    current = pitchIndexTable - start + address;
+    current = pitchIndexTable - baseAddress + address;
     data[4] = current & 0xFF;
     data[5] = (current >> 8) & 0xFF;
   }
@@ -889,9 +902,10 @@ void ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
   for (i = 6; i < instrumentIndexTable; i += 2) {
     subsongIndexTable = data[i] | (data[i + 1] << 8);
     if (subsongIndexTable) {
-      subsongIndexTable -= start;
+      subsongIndexTable -= baseAddress;
 
-      // printf("===> subsong 0x%02X\n", subsongIndexTable);
+      /// debug:
+      /// printf("===> subsong 0x%02X\n", subsongIndexTable);
 
       if (first) {
         first = false;
@@ -899,7 +913,7 @@ void ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
             data[subsongIndexTable - 2] |
             (data[subsongIndexTable - 1] << 8);  // adjust the last instrument
         if (previous) {                          // before first subsong
-          previous -= start;
+          previous -= baseAddress;
           previous += address;
           if (subsongIndexTable > 1 && subsongIndexTable < length) {
             data[subsongIndexTable - 2] = previous & 0xFF;
@@ -911,7 +925,7 @@ void ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
       noteBlockIndexTable =
           data[subsongIndexTable] | (data[subsongIndexTable + 1] << 8);
       if (noteBlockIndexTable) {
-        noteBlockIndexTable -= start;
+        noteBlockIndexTable -= baseAddress;
         noteBlockIndexTable += address;
         if (subsongIndexTable >= 0 && subsongIndexTable < (length - 1)) {
           data[subsongIndexTable] = noteBlockIndexTable & 0xFF;
@@ -922,7 +936,7 @@ void ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
       trackIndexTable =
           data[subsongIndexTable + 2] | (data[subsongIndexTable + 3] << 8);
       if (trackIndexTable) {
-        trackIndexTable -= start;
+        trackIndexTable -= baseAddress;
 
         /// read subsong linker
 
@@ -940,14 +954,15 @@ void ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
 
           if (linker == 1) {  //! if end of song...
             current = data[k] | (data[k + 1] << 8);
-            current -= start;
+            current -= baseAddress;
             current += address;
             if (k >= 0 && k < (length - 1)) {
               data[k] = current & 0xFF;
               data[k + 1] = (current >> 8) & 0xFF;
             }
             k += 2;  //! ...skip loop address
-                     // printf("   end of song\n");
+            /// debug:
+            /// printf("   end of song\n");
           } else {
             linker >>= 1;
             if (linker & 1) {  //! if line count...
@@ -967,15 +982,17 @@ void ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
                     track_annotation = true;
                     if (current > tracks) tracks = current;
                   }
-                  // printf("   track c %i: 0x%02X\n", w, current);
+                  /// debug:
+                  /// printf("   track c %i: 0x%02X\n", w, current);
                 } else {
                   /// @remark
                   /// "current" value needs to be calculated to keep
                   /// the state machine loop consistency
-                  /// NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
+                  // NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
                   current = (current << 8) | data[k];
                   k++;
-                  // printf("   track c %i: 0x%04X\n", w, current);
+                  /// debug:
+                  /// printf("   track c %i: 0x%04X\n", w, current);
                 }
               }
             }
@@ -984,7 +1001,8 @@ void ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
 
         if (track_annotation) {
           tracks = ((tracks & 3) + 1) * 2;
-          // printf("   tracks: %i\n", tracks / 2);
+          /// debug:
+          /// printf("   tracks: %i\n", tracks / 2);
 
           t = trackIndexTable + tracks;
 
@@ -992,7 +1010,7 @@ void ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
             current =
                 data[k] | (data[k + 1] << 8);  //! adjust the track address
             if (current) {
-              current -= start;
+              current -= baseAddress;
               current += address;
               if (k >= 0 && k < (length - 1)) {
                 data[k] = current & 0xFF;
@@ -1020,13 +1038,13 @@ void ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
   /// adjust instruments table
 
   t = data[instrumentIndexTable] | (data[instrumentIndexTable + 1] << 8);
-  t -= start;
+  t -= baseAddress;
   first = true;
 
   for (i = instrumentIndexTable; i < t; i += 2) {
     current = data[i] | (data[i + 1] << 8);
     if (current) {
-      current -= start;
+      current -= baseAddress;
 
       if (first)
         first = false;
@@ -1034,7 +1052,7 @@ void ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
         previous = data[current - 2] |
                    (data[current - 1] << 8);  //! adjust the previous instrument
         if (previous) {
-          previous -= start;
+          previous -= baseAddress;
           previous += address;
           if (current > 1 && current < length) {
             data[current - 2] = previous & 0xFF;
@@ -1055,10 +1073,53 @@ void ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
   data[0] = instrumentIndexTable & 0xFF;
   data[1] = (instrumentIndexTable >> 8) & 0xFF;
 
-  /// @note debugging helper code
-  // FileNode *file = new FileNode();
-  // file->writeToFile((char *) "song.dat", data, length);
-  // delete file;
+  /// debug:
+  /// ofstream file("song.dat", ios::binary);
+  /// file.write(data, length);
+  /// file.close();
+  return true;
+}
+
+int ResourceAkmReader::guessBaseAddress(unsigned char *data, int length) {
+  int i, baseAddress;
+  int instrumentIndexTable, instrumentIndexFixed;
+  int subsongIndexTable, subsongIndexFixed;
+  bool found = false;
+
+  /// AKM header
+
+  instrumentIndexTable = data[0] | (data[1] << 8);
+  subsongIndexTable = data[6] | (data[7] << 8);
+
+  /// guessing starts at address: subsong0 - AKM file size
+  baseAddress = subsongIndexTable - length;
+  while (baseAddress < 0) baseAddress++;
+
+  /// guessing loop
+  while (baseAddress < instrumentIndexTable) {
+    instrumentIndexFixed = instrumentIndexTable - baseAddress;
+    if (instrumentIndexFixed < 8) break;
+    found = true;
+    for (i = 6; i < instrumentIndexFixed; i += 2) {
+      subsongIndexTable = data[i] | (data[i + 1] << 8);
+      subsongIndexFixed = subsongIndexTable - baseAddress;
+      if (subsongIndexFixed >= length) {
+        found = false;
+        break;
+      }
+      if (data[instrumentIndexFixed] != 12 &&
+          data[instrumentIndexFixed] != 13) {
+        found = false;
+        break;
+      }
+    }
+    if (found) break;
+    baseAddress++;
+  }
+
+  if (!found) baseAddress = -1;
+
+  return baseAddress;
 }
 
 ///-------------------------------------------------------------------------------
@@ -1080,37 +1141,84 @@ bool ResourceAkxReader::remapTo(int index, int mappedSegm, int mappedAddress) {
   return false;
 }
 
-void ResourceAkxReader::fixAKX(unsigned char *data, int address, int length) {
-  int t = length;
-  int i = 0, current, start = 0;
-  bool first = true;
+/***
+ * @remarks
+ * https://www.julien-nevo.com/arkostracker/index.php/the-akm-player/
+ * https://bitbucket.org/JulienNevo/arkostracker3/src/master/
+ * https://bitbucket.org/JulienNevo/arkostracker3/src/master/doc/export/SoundEffects.md
+ */
+bool ResourceAkxReader::fixAKX(unsigned char *data, int address, int length) {
+  int i, baseAddress;
+  int firstSoundEffectAddress, firstSoundEffectFixed;
+  int soundEffectAddress, soundEffectFixed;
+
+  baseAddress = guessBaseAddress(data, length);
+  if (baseAddress < 0) {
+    printf("WARNING: cannot guess base address of AKX file\n");
+    return false;
+  }
+  /// debug:
+  /// printf("----> akx base address: %04X\n", baseAddress);
+
+  firstSoundEffectAddress = data[0] | (data[1] << 8);
+  firstSoundEffectFixed = firstSoundEffectAddress - baseAddress;
 
   // loop the effects list
+  for (i = 0; i < firstSoundEffectFixed; i += 2) {
+    soundEffectAddress = data[i] | (data[i + 1] << 8);
+    soundEffectFixed = soundEffectAddress - baseAddress + address;
 
-  while (i < t) {
-    current = data[i] | (data[i + 1] << 8);
-    if (current) {
-      if (first) {
-        start = current & 0xFF00;
-        t = current - start;
-        first = false;
-      }
-
-      current = current - start + address;
-
-      if (i < (length - 1)) {
-        data[i] = current & 0xFF;
-        data[i + 1] = (current >> 8) & 0xFF;
-      }
+    if (i < (length - 1)) {
+      data[i] = soundEffectFixed & 0xFF;
+      data[i + 1] = (soundEffectFixed >> 8) & 0xFF;
     }
-
-    i += 2;
   }
 
-  /// @note debugging helper code
-  // FileNode *file = new FileNode();
-  // file->writeToFile((char *) "effect.dat", data, length);
-  // delete file;
+  /// debug:
+  /// ofstream file("effect.dat", ios::binary);
+  /// file.write(data, length);
+  /// file.close();
+  return true;
+}
+
+int ResourceAkxReader::guessBaseAddress(unsigned char *data, int length) {
+  int baseAddress, i;
+  int firstSoundEffectAddress, firstSoundEffectFixed;
+  int soundEffectAddress, soundEffectFixed;
+  int previousSoundEffect;
+  bool found = false;
+
+  /// AKX header
+
+  firstSoundEffectAddress = data[0] | (data[1] << 8);
+
+  /// guessing starts at address: firstSoundEffectAddress - AKX file size
+
+  baseAddress = firstSoundEffectAddress - length;
+  while (baseAddress < 0) baseAddress++;
+
+  /// guessing loop
+  while (baseAddress < firstSoundEffectAddress) {
+    firstSoundEffectFixed = firstSoundEffectAddress - baseAddress;
+    previousSoundEffect = firstSoundEffectFixed;
+    found = true;
+    for (i = 0; i < firstSoundEffectFixed; i += 2) {
+      soundEffectAddress = data[i] | (data[i + 1] << 8);
+      soundEffectFixed = soundEffectAddress - baseAddress;
+      if (soundEffectFixed >= length ||
+          soundEffectFixed < previousSoundEffect) {
+        found = false;
+        break;
+      }
+      previousSoundEffect = soundEffectFixed;
+    }
+    if (found) break;
+    baseAddress++;
+  }
+
+  if (!found) baseAddress = -1;
+
+  return baseAddress;
 }
 
 ///-------------------------------------------------------------------------------
@@ -1165,24 +1273,19 @@ bool ResourceMtfReader::isIt(string fileext) {
  *      Reserved Bytes (3 bytes): Currently unused.
  *    All Pattern Data Block (Total: num_tiles * 8 bytes):
  *      Pattern data for all tiles, stored consecutively. Each tile is 8 bytes
- *      (1 byte per row). In each byte, the most significant bit is the leftmost
- *      pixel.
- *    All Color Attribute Data Block (Total: num_tiles * 8 bytes):
- *      Color attribute data for all tiles, stored consecutively. Each tile is 8
- *      bytes (1 byte per row). The high nibble (4 bits) is the foreground
+ *      (1 byte per row). In each byte, the most significant bit is the
+ * leftmost pixel. All Color Attribute Data Block (Total: num_tiles * 8
+ * bytes): Color attribute data for all tiles, stored consecutively. Each tile
+ * is 8 bytes (1 byte per row). The high nibble (4 bits) is the foreground
  * palette index, and the low nibble is the background palette index.
  * 3. Supertile Definition File (.SC4Super)
  *    Header:
  *      Supertile Count (1 or 3 bytes):
  *        If the first byte is 1-255, it's the count.
- *        If 0, the next 2 bytes (a Little-Endian unsigned short) are the count
- *        (up to 65535).
- *      Supertile Grid Dimensions (2 bytes):
- *        width (1 byte), height (1 byte).
- *      Project Supertile Limit (2 bytes, Little-Endian)):
- *        A value of 0xFFFF indicates 65535.
- *      Reserved Bytes (2 bytes):
- *        Currently unused.
+ *        If 0, the next 2 bytes (a Little-Endian unsigned short) are the
+ * count (up to 65535). Supertile Grid Dimensions (2 bytes): width (1 byte),
+ * height (1 byte). Project Supertile Limit (2 bytes, Little-Endian)): A value
+ * of 0xFFFF indicates 65535. Reserved Bytes (2 bytes): Currently unused.
  *    Supertile Definition Blocks:
  *      Each block is width * height bytes, with each byte being a tile index
  *      (0-255).
@@ -1193,9 +1296,9 @@ bool ResourceMtfReader::isIt(string fileext) {
  *      Reserved Bytes (4 bytes): Currently unused.
  *    Map Data (Variable size):
  *      A sequence of map_width * map_height supertile indices.
- *      -> Index Size: If the project's total supertile count was > 255 at save
- *      time, each index is 2 bytes (Little-Endian). Otherwise, each index is 1
- *      byte. The application detects this based on file size during loading.
+ *      -> Index Size: If the project's total supertile count was > 255 at
+ * save time, each index is 2 bytes (Little-Endian). Otherwise, each index is
+ * 1 byte. The application detects this based on file size during loading.
  */
 /// @todo NOT IMPLEMENTED YET
 bool ResourceMtfReader::load() {

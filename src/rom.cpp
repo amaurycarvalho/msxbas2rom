@@ -258,7 +258,7 @@ bool Rom::writeRom(string filename) {
     return false;
   }
   if (!opts->megaROM) {
-    if (pages.size() > 1) {
+    if (pages.size() > 2) {
       errorMessage =
           "Code exceeded 16k plain ROM limit\n"
           "Try to compile it in MegaROM format by adding the -x parameter";
