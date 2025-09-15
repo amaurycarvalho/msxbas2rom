@@ -1,5 +1,5 @@
-FILE "test83.akm"
-FILE "test83.akx"
+FILE "songs.akm"
+FILE "effects.akx"
 
 10 CMD PLYLOAD 0, 1
 20 CMD PLYSONG 0

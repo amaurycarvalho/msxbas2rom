@@ -1260,12 +1260,7 @@ int ResourceAkxReader::guessBaseAddress(unsigned char *data, int length) {
 ///-------------------------------------------------------------------------------
 
 ResourceMtfReader::ResourceMtfReader(string filename)
-    : ResourceBlobReader(filename) {
-  palleteSegment = palleteAddress = 0;
-  tilesetSegment = tilesetAddress = 0;
-  tilemapSegment = tilemapAddress = 0;
-  tilemapWidth = tilemapHeight = 0;
-};
+    : ResourceReader(filename) {};
 
 bool ResourceMtfReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".MTF") == 0);
@@ -1273,68 +1268,8 @@ bool ResourceMtfReader::isIt(string fileext) {
 
 /***
  * @remarks
- * Resource structure
- *   Resource Map
- *     BYTE palleteSegment
- *     WORD palleteAddress
- *     BYTE tilesetSegment
- *     WORD tilesetAddress
- *     BYTE tilemapSegment
- *     WORD tilemapAddress
- *   Pallete Data (.SC4Pal)
- *     Color Data
- *   Tileset Data (.SC4Tiles, formated to screen 2/4)
- *     All Pattern Data Block and All Color Attribute Data Block
- *   Tilemap Header (.SC4Super and .SC4Map)
- *     WORD tilemapWidth
- *     WORD tilemapHeight
- *     GROUP tilemapLinesAddresses[tilemapHeight]
- *       BYTE tilemapLineSegment
- *       WORD tilemapLineAddress
- *   Tilemap Line Data [tilemapHeight] (formatted to screen 2/4)
- *     BYTE tileNumber[tilemapWidth]
- *
- * Technical Description of Generated Files
- * https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
- *
- * 1. Palette File (.SC4Pal)
- *    Reserved Bytes (4 bytes): For future use.
- *    Color Data (48 bytes total):
- *      A sequence of 16 color entries (3 bytes each: R, G, B, with values 0-7
- *      per channel).
- * 2. Tileset File (.SC4Tiles)
- *    Header:
- *      num_tiles_in_file(1 byte): A value of 0 indicates 256 tiles.
- *      Project Tile Limit (1 byte): A value of 0 indicates 256 tiles.
- *      Reserved Bytes (3 bytes): Currently unused.
- *    All Pattern Data Block (Total: num_tiles * 8 bytes):
- *      Pattern data for all tiles, stored consecutively. Each tile is 8 bytes
- *      (1 byte per row). In each byte, the most significant bit is the
- * leftmost pixel. All Color Attribute Data Block (Total: num_tiles * 8
- * bytes): Color attribute data for all tiles, stored consecutively. Each tile
- * is 8 bytes (1 byte per row). The high nibble (4 bits) is the foreground
- * palette index, and the low nibble is the background palette index.
- * 3. Supertile Definition File (.SC4Super)
- *    Header:
- *      Supertile Count (1 or 3 bytes):
- *        If the first byte is 1-255, it's the count.
- *        If 0, the next 2 bytes (a Little-Endian unsigned short) are the
- * count (up to 65535). Supertile Grid Dimensions (2 bytes): width (1 byte),
- * height (1 byte). Project Supertile Limit (2 bytes, Little-Endian)): A value
- * of 0xFFFF indicates 65535. Reserved Bytes (2 bytes): Currently unused.
- *    Supertile Definition Blocks:
- *      Each block is width * height bytes, with each byte being a tile index
- *      (0-255).
- * 4. Map File (.SC4Map)
- *    Header:
- *      map_width (2 bytes, Little-Endian).
- *      map_height (2 bytes, Little-Endian).
- *      Reserved Bytes (4 bytes): Currently unused.
- *    Map Data (Variable size):
- *      A sequence of map_width * map_height supertile indices.
- *      -> Index Size: If the project's total supertile count was > 255 at
- * save time, each index is 2 bytes (Little-Endian). Otherwise, each index is
- * 1 byte. The application detects this based on file size during loading.
+ * Wrapper to ResourceMtfPalReader, ResourceMtfTilesReader and
+ * ResourceMtfMapReader
  */
 /// @todo NOT IMPLEMENTED YET
 bool ResourceMtfReader::load() {
@@ -1342,51 +1277,97 @@ bool ResourceMtfReader::load() {
   return false;
 }
 
-bool ResourceMtfReader::remapTo(int index, int mappedSegm, int mappedAddress) {
-  if (!data.size()) {
-    errorMessage = "MTF resource map is empty";
-    return false;
-  }
-  switch (index) {
-    /// Resource Map
-    case 0:
-      return true;
-    /// Pallete Data (.SC4Pal)
-    case 1: {
-      palleteSegment = mappedSegm;
-      palleteAddress = mappedAddress;
-      data[0][0] = mappedSegm;
-      data[0][1] = mappedAddress & 0xFF;
-      data[0][2] = (mappedAddress >> 8) & 0xFF;
-    } break;
-    /// Tileset Data (.SC4Tiles)
-    case 2: {
-      tilesetSegment = mappedSegm;
-      tilesetAddress = mappedAddress;
-      data[0][3] = mappedSegm;
-      data[0][4] = mappedAddress & 0xFF;
-      data[0][5] = (mappedAddress >> 8) & 0xFF;
-    } break;
-    /// Tilemap Header (.SC4Super and .SC4Map)
-    case 3: {
-      tilemapSegment = mappedSegm;
-      tilemapAddress = mappedAddress;
-      data[0][6] = mappedSegm;
-      data[0][7] = mappedAddress & 0xFF;
-      data[0][8] = (mappedAddress >> 8) & 0xFF;
-    } break;
-    /// Tilemap Line Head [tilemapHeight] (formatted to screen 2/4)
-    default: {
-      int i = (index - 4);
-      if (i < tilemapHeight) {
-        i = i * 3 + 4;
-        data[3][i++] = mappedSegm;
-        data[3][i++] = mappedAddress & 0xFF;
-        data[3][i] = (mappedAddress >> 8) & 0xFF;
-      }
-    } break;
-  }
-  return true;
+ResourceMtfPalReader::ResourceMtfPalReader(string filename)
+    : ResourceBlobPackedReader(filename) {};
+
+bool ResourceMtfPalReader::isIt(string fileext) {
+  return (strcasecmp(fileext.c_str(), ".SC4Pal") == 0);
+}
+
+/***
+ * @remarks
+ * Technical Description of Generated Files
+ *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
+ * Palette File (.SC4Pal)
+ *    Reserved Bytes (4 bytes): For future use.
+ *    Color Data (48 bytes total):
+ *      A sequence of 16 color entries (3 bytes each: R, G, B, with values 0-7
+ *      per channel).
+ */
+/// @todo NOT IMPLEMENTED YET
+bool ResourceMtfPalReader::load() {
+  errorMessage = "Not implemented yet (ResourceMtfPalReader::load)";
+  return false;
+}
+
+ResourceMtfTilesReader::ResourceMtfTilesReader(string filename)
+    : ResourceBlobPackedReader(filename) {};
+
+bool ResourceMtfTilesReader::isIt(string fileext) {
+  return (strcasecmp(fileext.c_str(), ".SC4Tiles") == 0);
+}
+
+/***
+ * @remarks
+ * Technical Description of Generated Files
+ *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
+ * Tileset File (.SC4Tiles)
+ *    Header:
+ *      num_tiles_in_file(1 byte): A value of 0 indicates 256 tiles.
+ *      Project Tile Limit (1 byte): A value of 0 indicates 256 tiles.
+ *      Reserved Bytes (3 bytes): Currently unused.
+ *    All Pattern Data Block (Total: num_tiles * 8 bytes):
+ *      Pattern data for all tiles, stored consecutively. Each tile is 8 bytes
+ *      (1 byte per row). In each byte, the most significant bit is the
+ *      leftmost pixel. All Color Attribute Data Block (Total: num_tiles * 8
+ *      bytes): Color attribute data for all tiles, stored consecutively. Each
+ *      tile is 8 bytes (1 byte per row). The high nibble (4 bits) is the
+ *      foreground palette index, and the low nibble is the background palette
+ *      index.
+ */
+/// @todo NOT IMPLEMENTED YET
+bool ResourceMtfTilesReader::load() {
+  errorMessage = "Not implemented yet (ResourceMtfTilesReader::load)";
+  return false;
+}
+
+ResourceMtfMapReader::ResourceMtfMapReader(string filename)
+    : ResourceBlobReader(filename) {};
+
+bool ResourceMtfMapReader::isIt(string fileext) {
+  return (strcasecmp(fileext.c_str(), ".SC4Map") == 0);
+}
+
+/***
+ * @remarks
+ * Technical Description of Generated Files
+ *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
+ * Supertile Definition File (.SC4Super)
+ *    Header:
+ *      Supertile Count (1 or 3 bytes):
+ *        If the first byte is 1-255, it's the count.
+ *        If 0, the next 2 bytes (a Little-Endian unsigned short) are the
+ *        count (up to 65535). Supertile Grid Dimensions (2 bytes): width (1
+ *        byte), height (1 byte). Project Supertile Limit (2 bytes,
+ *        Little-Endian)): A value of 0xFFFF indicates 65535. Reserved Bytes (2
+ *        bytes): Currently unused. Supertile Definition Blocks: Each block is
+ *        width * height bytes, with each byte being a tile index (0-255).
+ * Map File (.SC4Map)
+ *    Header:
+ *      map_width (2 bytes, Little-Endian).
+ *      map_height (2 bytes, Little-Endian).
+ *      Reserved Bytes (4 bytes): Currently unused.
+ *    Map Data (Variable size):
+ *      A sequence of map_width * map_height supertile indices.
+ *      -> Index Size: If the project's total supertile count was > 255 at
+ *      save time, each index is 2 bytes (Little-Endian). Otherwise, each index
+ *      is 1 byte. The application detects this based on file size during
+ *      loading.
+ */
+/// @todo NOT IMPLEMENTED YET
+bool ResourceMtfMapReader::load() {
+  errorMessage = "Not implemented yet (ResourceMtfMapReader::load)";
+  return false;
 }
 
 ///-------------------------------------------------------------------------------

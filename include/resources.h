@@ -227,18 +227,68 @@ class ResourceAkxReader : public ResourceBlobReader {
  * @brief Resource reader for MSX Tile Forge projects (.mtf.json)
  * @note https://github.com/DamnedAngel/msx-tile-forge
  * @remarks
+ * Wrapper to ResourceMtfPalReader, ResourceMtfTilesReader and
+ * ResourceMtfMapReader
+ * Technical Description of Generated Files
+ *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
+ */
+/// @todo NOT IMPLEMENTED YET
+class ResourceMtfReader : public ResourceReader {
+ public:
+  static bool isIt(string fileext);
+  bool load();
+  ResourceMtfReader(string filename);
+};
+
+/***
+ * @class ResourceMtfPalReader
+ * @brief Resource reader for MSX Tile Forge palette file (.SC4Pal)
+ * @note https://github.com/DamnedAngel/msx-tile-forge
+ * @remarks
  * Resource structure
- *   Resource Map
- *     BYTE palleteSegment
- *     WORD palleteAddress
- *     BYTE tilesetSegment
- *     WORD tilesetAddress
- *     BYTE tilemapSegment
- *     WORD tilemapAddress
- *   Pallete Data (.SC4Pal)
+ *   BYTE resourceType = 0
+ *   Pallete Data (.SC4Pal, packed)
  *     Color Data
- *   Tileset Data (.SC4Tiles, formated to screen 2/4)
+ * Technical Description of Generated Files
+ *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
+ */
+/// @todo NOT IMPLEMENTED YET
+class ResourceMtfPalReader : public ResourceBlobPackedReader {
+ private:
+ public:
+  static bool isIt(string fileext);
+  bool load();
+  ResourceMtfPalReader(string filename);
+};
+
+/***
+ * @class ResourceMtfTilesReader
+ * @brief Resource reader for MSX Tile Forge palette file (.SC4Tiles)
+ * @note https://github.com/DamnedAngel/msx-tile-forge
+ * @remarks
+ * Resource structure
+ *   BYTE resourceType = 1
+ *   Tileset Data (.SC4Tiles, formated to screen 2/4, packed)
  *     All Pattern Data Block and All Color Attribute Data Block
+ * Technical Description of Generated Files
+ *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
+ */
+/// @todo NOT IMPLEMENTED YET
+class ResourceMtfTilesReader : public ResourceBlobPackedReader {
+ private:
+ public:
+  static bool isIt(string fileext);
+  bool load();
+  ResourceMtfTilesReader(string filename);
+};
+
+/***
+ * @class ResourceMtfMapReader
+ * @brief Resource reader for MSX Tile Forge palette file (.SC4Map)
+ * @note https://github.com/DamnedAngel/msx-tile-forge
+ * @remarks
+ * Resource structure
+ *   BYTE resourceType = 2
  *   Tilemap Header (.SC4Super and .SC4Map)
  *     WORD tilemapWidth
  *     WORD tilemapHeight
@@ -247,20 +297,16 @@ class ResourceAkxReader : public ResourceBlobReader {
  *       WORD tilemapLineAddress
  *   Tilemap Line Data [tilemapHeight] (formatted to screen 2/4)
  *     BYTE tileNumber[tilemapWidth]
+ * Technical Description of Generated Files
+ *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
  */
 /// @todo NOT IMPLEMENTED YET
-class ResourceMtfReader : public ResourceBlobReader {
+class ResourceMtfMapReader : public ResourceBlobReader {
  private:
-  int palleteSegment, palleteAddress;
-  int tilesetSegment, tilesetAddress;
-  int tilemapSegment, tilemapAddress;
-  int tilemapWidth, tilemapHeight;
-
  public:
   static bool isIt(string fileext);
   bool load();
-  bool remapTo(int index, int mappedSegm, int mappedAddress);
-  ResourceMtfReader(string filename);
+  ResourceMtfMapReader(string filename);
 };
 
 /***
