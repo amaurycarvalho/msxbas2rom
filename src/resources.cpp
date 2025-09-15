@@ -194,6 +194,15 @@ ResourceReader *ResourceFactory::create(string filename) {
     if (ResourceMtfReader::isIt(fileext)) {
       return new ResourceMtfReader(filename);
     }
+    if (ResourceMtfPaletteReader::isIt(fileext)) {
+      return new ResourceMtfPaletteReader(filename);
+    }
+    if (ResourceMtfTilesetReader::isIt(fileext)) {
+      return new ResourceMtfTilesetReader(filename);
+    }
+    if (ResourceMtfMapReader::isIt(fileext)) {
+      return new ResourceMtfMapReader(filename);
+    }
     if (ResourceBlobReader::isIt(fileext)) {
       return new ResourceBlobReader(filename);
     }
@@ -1259,13 +1268,6 @@ int ResourceAkxReader::guessBaseAddress(unsigned char *data, int length) {
 
 ///-------------------------------------------------------------------------------
 
-ResourceMtfReader::ResourceMtfReader(string filename)
-    : ResourceReader(filename) {};
-
-bool ResourceMtfReader::isIt(string fileext) {
-  return (strcasecmp(fileext.c_str(), ".MTF") == 0);
-}
-
 /***
  * @remarks
  * Wrapper to ResourceMtfPalReader, ResourceMtfTilesReader and
@@ -1277,40 +1279,44 @@ bool ResourceMtfReader::load() {
   return false;
 }
 
-ResourceMtfPalReader::ResourceMtfPalReader(string filename)
-    : ResourceBlobPackedReader(filename) {};
+ResourceMtfReader::ResourceMtfReader(string filename)
+    : ResourceReader(filename) {};
 
-bool ResourceMtfPalReader::isIt(string fileext) {
-  return (strcasecmp(fileext.c_str(), ".SC4Pal") == 0);
+bool ResourceMtfReader::isIt(string fileext) {
+  return (strcasecmp(fileext.c_str(), ".MTF") == 0);
 }
 
 /***
  * @remarks
- * Technical Description of Generated Files
- *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
  * Palette File (.SC4Pal)
  *    Reserved Bytes (4 bytes): For future use.
  *    Color Data (48 bytes total):
  *      A sequence of 16 color entries (3 bytes each: R, G, B, with values 0-7
  *      per channel).
+ * Technical Description of Generated Files
+ *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
+ * @todo To be used with S.SETPLT EXTENDED BIOS function
  */
-/// @todo NOT IMPLEMENTED YET
-bool ResourceMtfPalReader::load() {
-  errorMessage = "Not implemented yet (ResourceMtfPalReader::load)";
+bool ResourceMtfPaletteReader::load() {
+  if (ResourceBlobReader::load()) {
+    /// resource type = 0 (palette)
+    data[0].emplace(data[0].begin(), 1);
+    data[0][0] = 0;
+    packedSize = unpackedSize = data[0].size();
+    return true;
+  }
   return false;
 }
 
-ResourceMtfTilesReader::ResourceMtfTilesReader(string filename)
-    : ResourceBlobPackedReader(filename) {};
+ResourceMtfPaletteReader::ResourceMtfPaletteReader(string filename)
+    : ResourceBlobReader(filename) {};
 
-bool ResourceMtfTilesReader::isIt(string fileext) {
-  return (strcasecmp(fileext.c_str(), ".SC4Tiles") == 0);
+bool ResourceMtfPaletteReader::isIt(string fileext) {
+  return (strcasecmp(fileext.c_str(), ".SC4Pal") == 0);
 }
 
 /***
  * @remarks
- * Technical Description of Generated Files
- *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
  * Tileset File (.SC4Tiles)
  *    Header:
  *      num_tiles_in_file(1 byte): A value of 0 indicates 256 tiles.
@@ -1319,39 +1325,49 @@ bool ResourceMtfTilesReader::isIt(string fileext) {
  *    All Pattern Data Block (Total: num_tiles * 8 bytes):
  *      Pattern data for all tiles, stored consecutively. Each tile is 8 bytes
  *      (1 byte per row). In each byte, the most significant bit is the
- *      leftmost pixel. All Color Attribute Data Block (Total: num_tiles * 8
- *      bytes): Color attribute data for all tiles, stored consecutively. Each
+ *      leftmost pixel.
+ *    All Color Attribute Data Block (Total: num_tiles * 8 bytes):
+ *      Color attribute data for all tiles, stored consecutively. Each
  *      tile is 8 bytes (1 byte per row). The high nibble (4 bits) is the
  *      foreground palette index, and the low nibble is the background palette
  *      index.
+ * Technical Description of Generated Files
+ *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
  */
-/// @todo NOT IMPLEMENTED YET
-bool ResourceMtfTilesReader::load() {
-  errorMessage = "Not implemented yet (ResourceMtfTilesReader::load)";
+bool ResourceMtfTilesetReader::load() {
+  if (ResourceBlobReader::load()) {
+    /// resource type = 1 (tileset)
+    data[0].emplace(data[0].begin(), 1);
+    data[0][0] = 1;
+    packedSize = unpackedSize = data[0].size();
+    return true;
+  }
   return false;
 }
 
-ResourceMtfMapReader::ResourceMtfMapReader(string filename)
+ResourceMtfTilesetReader::ResourceMtfTilesetReader(string filename)
     : ResourceBlobReader(filename) {};
 
-bool ResourceMtfMapReader::isIt(string fileext) {
-  return (strcasecmp(fileext.c_str(), ".SC4Map") == 0);
+bool ResourceMtfTilesetReader::isIt(string fileext) {
+  return (strcasecmp(fileext.c_str(), ".SC4Tiles") == 0);
 }
 
 /***
  * @remarks
- * Technical Description of Generated Files
- *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
  * Supertile Definition File (.SC4Super)
  *    Header:
  *      Supertile Count (1 or 3 bytes):
  *        If the first byte is 1-255, it's the count.
  *        If 0, the next 2 bytes (a Little-Endian unsigned short) are the
- *        count (up to 65535). Supertile Grid Dimensions (2 bytes): width (1
- *        byte), height (1 byte). Project Supertile Limit (2 bytes,
- *        Little-Endian)): A value of 0xFFFF indicates 65535. Reserved Bytes (2
- *        bytes): Currently unused. Supertile Definition Blocks: Each block is
- *        width * height bytes, with each byte being a tile index (0-255).
+ *        count (up to 65535).
+ *      Supertile Grid Dimensions (2 bytes):
+ *        width (1 byte), height (1 byte).
+ *      Project Supertile Limit (2 bytes, Little-Endian)):
+ *        A value of 0xFFFF indicates 65535.
+ *      Reserved Bytes (2 bytes): Currently unused.
+ *      Supertile Definition Blocks:
+ *        Each block is  width * height bytes,
+ *        with each byte being a tile index (0-255).
  * Map File (.SC4Map)
  *    Header:
  *      map_width (2 bytes, Little-Endian).
@@ -1359,15 +1375,130 @@ bool ResourceMtfMapReader::isIt(string fileext) {
  *      Reserved Bytes (4 bytes): Currently unused.
  *    Map Data (Variable size):
  *      A sequence of map_width * map_height supertile indices.
- *      -> Index Size: If the project's total supertile count was > 255 at
- *      save time, each index is 2 bytes (Little-Endian). Otherwise, each index
- *      is 1 byte. The application detects this based on file size during
- *      loading.
+ *      --> Index Size:
+ *          If the project's total supertile count was > 255 at save time,
+ *          each index is 2 bytes (Little-Endian).
+ *          Otherwise, each index is 1 byte.
+ * Technical Description of Generated Files
+ *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
  */
 /// @todo NOT IMPLEMENTED YET
 bool ResourceMtfMapReader::load() {
-  errorMessage = "Not implemented yet (ResourceMtfMapReader::load)";
+  ResourceBlobReader tilemapReader(filename);
+  ResourceBlobReader supertileReader(supertileFilename);
+  int tilemapHeightIterator, tilemapWidthIterator;
+  int supertileHeightIterator, supertileWidthIterator;
+  int tilemapIndex, tilemapBaseIndex, tilemapSaveIndex;
+  int supertileIndex, supertileBaseIndex;
+  int supertileIndexSize;
+  if (tilemapReader.load()) {
+    if (supertileReader.load()) {
+      /// supertile count
+      if (supertileReader.data[0][0]) {
+        supertileHeaderSkip = 0;
+        supertileIndexSize = 1;
+        supertileCount = supertileReader.data[0][0];
+      } else {
+        supertileHeaderSkip = 2;
+        supertileIndexSize = 2;
+        supertileCount =
+            supertileReader.data[0][1] | (supertileReader.data[0][2] << 8);
+      }
+      /// BYTE resourceType = 2 (map)
+      data.clear();
+      data.emplace_back(8);
+      data[0][0] = 2;
+      /// WORD tilemapWidth
+      supertileWidth = supertileReader.data[0][1 + supertileHeaderSkip];
+      tilemapWidth = tilemapReader.data[1][0] | (tilemapReader.data[1][1] << 8);
+      tilemapResourceWidth = tilemapWidth * supertileWidth + 31;
+      data[0][1] = tilemapResourceWidth & 0xFF;
+      data[0][2] = (tilemapResourceWidth >> 8) & 0xFF;
+      /// WORD tilemapHeight
+      supertileHeight = supertileReader.data[0][2 + supertileHeaderSkip];
+      tilemapHeight =
+          tilemapReader.data[1][2] | (tilemapReader.data[1][3] << 8);
+      tilemapResourceHeight = tilemapHeight * supertileHeight;
+      data[0][3] = tilemapResourceHeight & 0xFF;
+      data[0][4] = (tilemapResourceHeight >> 8) & 0xFF;
+      /// BYTE firstLineSegment
+      data[0][5] = 0;
+      /// WORD firstLineAddress
+      data[0][6] = 0;
+      data[0][7] = 0;
+      ///   Tilemap Line Data [tilemapHeight] <-- .SC4Super + .SC4Map
+      ///     BYTE nextLineSegment
+      ///     WORD nextLineAddress
+      ///     BYTE tilemap[tilemapWidth+31] <-- copy of first
+      ///                                       31 tiles at end
+      for (tilemapHeightIterator = 0; tilemapHeightIterator < tilemapHeight;
+           tilemapHeightIterator++) {
+        for (supertileHeightIterator = 0;
+             supertileHeightIterator < supertileHeight;
+             supertileHeightIterator++) {
+          data.emplace_back(tilemapResourceWidth + 3);
+          /// nextLineSegment
+          data.back()[0] = 0;
+          /// nextLineSegment
+          data.back()[1] = 0;
+          data.back()[2] = 0;
+          /// tilemap
+          tilemapSaveIndex = 3;
+          tilemapBaseIndex =
+              8 + tilemapHeightIterator * tilemapWidth * supertileIndexSize;
+          for (tilemapWidthIterator = 0; tilemapWidthIterator < tilemapWidth;
+               tilemapWidthIterator++) {
+            supertileIndex =
+                tilemapReader
+                    .data[0][tilemapBaseIndex +
+                             tilemapWidthIterator * supertileIndexSize];
+            supertileBaseIndex =
+                7 + supertileHeaderSkip +
+                supertileIndex * supertileWidth * supertileHeight +
+                supertileHeightIterator * supertileWidth;
+            for (supertileWidthIterator = 0;
+                 supertileWidthIterator < supertileWidth;
+                 supertileWidthIterator++) {
+              tilemapIndex =
+                  supertileReader
+                      .data[0][supertileBaseIndex + supertileWidthIterator];
+              data.back()[tilemapSaveIndex++] = tilemapIndex;
+            }
+          }
+          /// copy of first 31 tiles at end (for scroll engine use)
+          for (int i = 0; i < 31; i++)
+            data.back()[tilemapSaveIndex++] = data.back()[i + 3];
+        }
+      }
+      return true;
+    } else
+      errorMessage = supertileReader.getErrorMessage();
+  } else
+    errorMessage = tilemapReader.getErrorMessage();
   return false;
+}
+
+bool ResourceMtfMapReader::remapTo(int index, int mappedSegm,
+                                   int mappedAddress) {
+  // int firstLineSegment, firstLineAddress;
+  // int nextLineSegment, nextLineAddress;
+  if (!index) return true;
+  return false;
+}
+
+ResourceMtfMapReader::ResourceMtfMapReader(string filename)
+    : ResourceReader(filename) {
+  supertileFilename = filename;
+  if (filename.size() > 3) {
+    supertileFilename.pop_back();
+    supertileFilename.pop_back();
+    supertileFilename.pop_back();
+  }
+  supertileFilename += "Super";
+};
+
+bool ResourceMtfMapReader::isIt(string fileext) {
+  return (strcasecmp(fileext.c_str(), ".SC4Map") == 0);
 }
 
 ///-------------------------------------------------------------------------------

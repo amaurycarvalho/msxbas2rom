@@ -256,17 +256,17 @@
   0x005C  // hl = ram data address, de = vram data address, bc = length
 #define def_LDIRMV \
   0x0059  // de = ram data address, hl = vram data address, bc = length
-#define def_CHCOORD 0x0BF2   // in h=x, l=y; out hl = VDP address
-#define def_CHCOORD2 0x0B98  // same above for MSX2
-#define def_INIFNK 0x003E    // initialize function keys
-#define def_DSPFNK 0x00CF    // display function key
-#define def_INITXT 0x00D5    // initialize text screen
-#define def_WRTVDP 0x0047    // write to VDP
-#define def_CLRSPR 0x0069    // clear sprites
-
-#define def_CALL_STMT 0x39C0    // call statement address table entry
-#define def_COPY_STMT 0x39D8    // copy statement address table entry
-#define def_SET_STMT 0x39D0     // set statement address table entry
+#define def_CHCOORD 0x0BF2    // in h=x, l=y; out hl = VDP address
+#define def_CHCOORD2 0x0B98   // same above for MSX2
+#define def_INIFNK 0x003E     // initialize function keys
+#define def_DSPFNK 0x00CF     // display function key
+#define def_INITXT 0x00D5     // initialize text screen
+#define def_WRTVDP 0x0047     // write to VDP
+#define def_CLRSPR 0x0069     // clear sprites
+#define def_RSTPLT 0x0145     // Subroutine restore pallette (EXTROM->S.RSTPLT)
+#define def_CALL_STMT 0x39C0  // call statement address table entry
+#define def_COPY_STMT 0x39D8  // copy statement address table entry
+#define def_SET_STMT 0x39D0   // set statement address table entry
 #define def_CIRCLE_STMT 0x39A4  // circle statement address table entry
 
 #define def_VERSION \
@@ -327,7 +327,7 @@
 #define def_NTSC 0x002B     // bit 7 on = PAL, off = NTSC
 #define def_NTMSXP 0xF417   // printer type (0=default)
 #define def_CLIKSW \
-  0xF3DB  // key click (0=keyboard click off, 1=keyboard click on)
+  0xF3DB  //! key click (0=keyboard click off, 1=keyboard click on)
 #define def_CS1200 0xF3FC
 #define def_LOW 0xF406
 #define def_AVCSAV 0xFAF7

@@ -7438,7 +7438,7 @@ void Compiler::cmd_color() {
         // jr z, skip
         addJrZ(8);
         //   ld ix, 0x0145
-        addLdIX(0x0145);
+        addLdIX(def_RSTPLT);
         //   call EXTROM
         addCall(def_EXTROM);
         //   ei
