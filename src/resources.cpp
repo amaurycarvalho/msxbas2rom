@@ -1391,6 +1391,7 @@ bool ResourceMtfMapReader::load() {
   int tilemapIndex, tilemapBaseIndex, tilemapSaveIndex;
   int supertileIndex, supertileBaseIndex;
   int supertileIndexSize;
+  packedSize = unpackedSize = 0;
   if (tilemapReader.load()) {
     if (supertileReader.load()) {
       /// supertile count
@@ -1408,6 +1409,8 @@ bool ResourceMtfMapReader::load() {
       data.clear();
       data.emplace_back(8);
       data[0][0] = 2;
+      packedSize += data.back().size();
+      unpackedSize += data.back().size();
       /// WORD tilemapWidth
       supertileWidth = supertileReader.data[0][1 + supertileHeaderSkip];
       tilemapWidth = tilemapReader.data[1][0] | (tilemapReader.data[1][1] << 8);
@@ -1437,6 +1440,8 @@ bool ResourceMtfMapReader::load() {
              supertileHeightIterator < supertileHeight;
              supertileHeightIterator++) {
           data.emplace_back(tilemapResourceWidth + 3);
+          packedSize += data.back().size();
+          unpackedSize += data.back().size();
           /// nextLineSegment
           data.back()[0] = 0;
           /// nextLineSegment
@@ -1480,10 +1485,37 @@ bool ResourceMtfMapReader::load() {
 
 bool ResourceMtfMapReader::remapTo(int index, int mappedSegm,
                                    int mappedAddress) {
-  // int firstLineSegment, firstLineAddress;
-  // int nextLineSegment, nextLineAddress;
+  int firstLineSegment, firstLineAddress;
+
   if (!index) return true;
-  return false;
+
+  if (index == 1) {  //! first line data -> adjust header
+    /// set firstLineSegment
+    firstLineSegment = mappedSegm;
+    data[0][5] = firstLineSegment & 0xFF;
+    /// set firstLineAddress
+    firstLineAddress = mappedAddress;
+    data[0][6] = firstLineAddress & 0xFF;
+    data[0][7] = (firstLineAddress >> 8) & 0xFF;
+  } else {
+    /// get firstLineSegment
+    firstLineSegment = data[0][5];
+    /// get firstLineAddress
+    firstLineAddress = data[0][6] | (data[0][7] << 8);
+    /// set last line nextLineSegment
+    data[index - 1][0] = mappedSegm & 0xFF;
+    /// set last line nextLineAddress
+    data[index - 1][1] = mappedAddress & 0xFF;
+    data[index - 1][2] = (mappedAddress >> 8) & 0xFF;
+  }
+
+  /// set current line nextLineSegment
+  data[index][0] = firstLineSegment & 0xFF;
+  /// set current line nextLineAddress
+  data[index][1] = firstLineAddress & 0xFF;
+  data[index][2] = (firstLineAddress >> 8) & 0xFF;
+
+  return true;
 }
 
 ResourceMtfMapReader::ResourceMtfMapReader(string filename)
