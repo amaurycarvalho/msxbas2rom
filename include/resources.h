@@ -267,7 +267,7 @@ class ResourceMtfPaletteReader : public ResourceBlobReader {
  * @remarks
  * Resource structure
  *   BYTE resourceType = 1
- *   Tileset Data (.SC4Tiles, formated to screen 2/4)
+ *   Tileset Data (.SC4Tiles)
  *     All Pattern Data Block and All Color Attribute Data Block
  * Technical Description of Generated Files
  *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files

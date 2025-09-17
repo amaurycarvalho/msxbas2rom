@@ -134,7 +134,9 @@
 #define def_cmd_screen_load (def_cmd_screen_copy + 3)
 #define def_cmd_screen_paste (def_cmd_screen_load + 3)
 
-#define def_cmd_setfnt (def_cmd_screen_paste + 3)
+#define def_cmd_mtf (def_cmd_screen_paste + 3)
+
+#define def_cmd_setfnt (def_cmd_mtf + 3)
 #define def_cmd_turbo (def_cmd_setfnt + 3)
 #define def_cmd_updfntclr (def_cmd_turbo + 3)
 #define def_cmd_vramtoram (def_cmd_updfntclr + 3)

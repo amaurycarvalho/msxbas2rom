@@ -9,6 +9,7 @@
 #ifndef LEX_H_INCLUDED
 #define LEX_H_INCLUDED
 
+#include <array>
 #include <stack>
 #include <string>
 #include <vector>

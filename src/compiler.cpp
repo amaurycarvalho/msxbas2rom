@@ -12241,6 +12241,78 @@ void Compiler::cmd_cmd() {
         // call cmd_plysound
         addCall(def_cmd_plysound);
 
+      } else if (lexeme->value == "MTF") {
+        if (action->actions.size() == 1) {
+          sub_action1 = action->actions[0];
+          result_subtype = evalExpression(sub_action1);
+          addCast(result_subtype, Lexeme::subtype_numeric);
+
+          addLdDE(0);
+          addXorA();
+
+          // hl = palette/tileset/map resource number
+          // call cmd_mtf
+          addCall(def_cmd_mtf);
+
+        } else if (action->actions.size() == 2) {
+          sub_action1 = action->actions[0];
+          result_subtype = evalExpression(sub_action1);
+          addCast(result_subtype, Lexeme::subtype_numeric);
+
+          addPushHL();
+
+          sub_action2 = action->actions[1];
+          result_subtype = evalExpression(sub_action2);
+          addCast(result_subtype, Lexeme::subtype_numeric);
+
+          addExDEHL();
+
+          addPopHL();
+
+          addXorA();
+
+          // hl = map resource number
+          // de = screen number
+          // a = 0 (map normal call)
+          // call cmd_mtf
+          addCall(def_cmd_mtf);
+
+        } else if (action->actions.size() == 3) {
+          sub_action1 = action->actions[0];
+          result_subtype = evalExpression(sub_action1);
+          addCast(result_subtype, Lexeme::subtype_numeric);
+
+          addPushHL();
+
+          sub_action2 = action->actions[1];
+          result_subtype = evalExpression(sub_action2);
+          addCast(result_subtype, Lexeme::subtype_numeric);
+
+          addPushHL();
+
+          sub_action2 = action->actions[2];
+          result_subtype = evalExpression(sub_action2);
+          addCast(result_subtype, Lexeme::subtype_numeric);
+
+          addLdCL();
+          addLdBH();
+
+          addPopDE();
+          addPopHL();
+
+          addLdA(1);
+
+          // hl = map resource number
+          // de = x position
+          // bc = y position
+          // a = 1 (map xy position call)
+          // call cmd_mtf
+          addCall(def_cmd_mtf);
+
+        } else {
+          syntaxError("CMD MTF syntax error");
+        }
+
       } else if (lexeme->value == "SETFNT") {
         font = true;
 

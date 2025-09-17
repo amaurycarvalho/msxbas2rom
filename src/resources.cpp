@@ -73,11 +73,17 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
   int resourceBlockAddress = mapSize;
   int resourceBlockIndex, resourceBlockCount, resourceBlockSize;
   int resourceBlockOffset, resourceBlockNextAddress;
+  int copyIndex;
+  vector<unsigned char *> copyFrom, copyTo;
+  vector<int> copySize;
 
   resourcesUnpackedSize = mapSize;  //! include resource map size
   resourcesPackedSize = mapSize;
 
   pages.clear();
+  copyFrom.clear();
+  copyTo.clear();
+  copySize.clear();
 
   if (resources.size()) {
     /// check resource map size limit
@@ -100,6 +106,9 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
          resourceItemIndex++) {
       /// next resource item
       resourceReader = resources[resourceItemIndex];
+      /// debug:
+      /// printf("Building resource: %s\n",
+      /// resourceReader->getFilename().c_str());
       if (!resourceReader->load()) {
         errorMessage = resourceReader->getErrorMessage();
         return false;
@@ -142,10 +151,14 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
           pages[0][mapAddress++] = (resourceBlockOffset >> 8) & 0xFF;
           pages[0][mapAddress++] = resourceBlockSegment & 0xFF;
         }
-        /// copy resource data
-        memcpy(pages.back().data() + resourceBlockAddress,
-               resourceReader->data[resourceBlockIndex].data(),
-               resourceBlockSize);
+        /// copy resource block data
+        /// memcpy(pages.back().data() + resourceBlockAddress,
+        ///        resourceReader->data[resourceBlockIndex].data(),
+        ///        resourceBlockSize);
+        copyFrom.push_back(resourceReader->data[resourceBlockIndex].data());
+        copyTo.push_back(pages.back().data() + resourceBlockAddress);
+        copySize.push_back(resourceBlockSize);
+        /// update block metrics
         resourceItemSize += resourceBlockSize;
         resourceBlockAddress += resourceBlockSize;
       }
@@ -156,6 +169,11 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
       pages[0][mapAddress++] = resourceItemSize & 0xFF;
       pages[0][mapAddress++] = (resourceItemSize >> 8) & 0xFF;
     }
+    /// update pages data (after address remap calculations)
+    for (copyIndex = 0; copyIndex < (int)copyFrom.size(); copyIndex++) {
+      memcpy(copyTo[copyIndex], copyFrom[copyIndex], copySize[copyIndex]);
+    }
+    /// update metrics
     if (resourcesUnpackedSize) {
       packedRate = resourcesPackedSize;
       packedRate /= resourcesUnpackedSize;
@@ -1413,14 +1431,14 @@ bool ResourceMtfMapReader::load() {
       unpackedSize += data.back().size();
       /// WORD tilemapWidth
       supertileWidth = supertileReader.data[0][1 + supertileHeaderSkip];
-      tilemapWidth = tilemapReader.data[1][0] | (tilemapReader.data[1][1] << 8);
+      tilemapWidth = tilemapReader.data[0][0] | (tilemapReader.data[0][1] << 8);
       tilemapResourceWidth = tilemapWidth * supertileWidth + 31;
       data[0][1] = tilemapResourceWidth & 0xFF;
       data[0][2] = (tilemapResourceWidth >> 8) & 0xFF;
       /// WORD tilemapHeight
       supertileHeight = supertileReader.data[0][2 + supertileHeaderSkip];
       tilemapHeight =
-          tilemapReader.data[1][2] | (tilemapReader.data[1][3] << 8);
+          tilemapReader.data[0][2] | (tilemapReader.data[0][3] << 8);
       tilemapResourceHeight = tilemapHeight * supertileHeight;
       data[0][3] = tilemapResourceHeight & 0xFF;
       data[0][4] = (tilemapResourceHeight >> 8) & 0xFF;

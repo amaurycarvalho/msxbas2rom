@@ -12,6 +12,7 @@
 #ifndef PARSE_H_INCLUDED
 #define PARSE_H_INCLUDED
 
+#include <array>
 #include <stack>
 #include <string>
 #include <vector>

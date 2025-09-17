@@ -85,6 +85,11 @@ GSPSIZ2:      equ 0x0101 ; msx 2
 CLRSPR2:      equ 0x00F5 ; msx 2
 GRPPRT2:      equ 0x0089 ; msx 2 - a = character
 
+S.INIPLT	EQU	0141H      ; msx 2 (subrom) - initialize palette (copy from ROM to VRAM)
+S.RSTPLT	EQU	0145H      ; msx 2 (subrom) - restore palette (copy from VRAM to VDP)
+S.GETPLT	EQU	0149H      ; msx 2 (subrom) - get palette color (in: A color number, out: high B red, low B blue, low C green)
+S.SETPLT	EQU	014DH      ; msx 2 (subrom) - set palette color (in: D color number, out: high A red, low A blue, low E green)
+
 CHGCPU:       equ 0x0180 ; turbo R - a = cpu mode (0=z80, 1=R800 rom, 2=R800 dram *just only at boot time)
 GETCPU:       equ 0x0183 ; turbo R - return a with cpu mode
 
@@ -114,6 +119,7 @@ REDCLK:	      equ 0x01F5 ; Reading a register of the internal clock (RTC)
 WRTCLK:       equ 0x01F9 ; Writing in a register of the internal clock (RTC).
                          ; Entry:  C = block number (bits 5-4) and register (bits 3-0).
                          ;         A = data to write. (4 least significant bits)
+
 
 ; ------------------------------------------------------------------------------------------------------
 ; BIOS AND BASIC WORK AREA
@@ -500,6 +506,8 @@ wrapper_routines_map_start:
   jp cmd_screen_copy
   jp cmd_screen_load
   jp cmd_screen_paste
+
+  jp cmd_mtf
 
   jp cmd_setfnt
   jp cmd_turbo
@@ -3770,6 +3778,129 @@ cmd_screen_load:
   ei
   jp XBASIC_BLOAD
 
+; MSX Tile Forge - load resource
+; cmd_mtf <resource number> [, arg1 | , arg1, arg2]
+;   hl = resource number
+;   de = arg1 (screen number or X position)
+;   bc = arg2 (Y position)
+;   a = 0 for normal call, 1 for XY map
+cmd_mtf:
+  ld (DAC), hl
+  ld (DAC+2), de
+  ld (DAC+4), bc
+  ld (DAC+5), a
+cmd_mtf.check_screen_mode:
+  ld a,(SCRMOD)
+  cp 2
+  jr z, cmd_mtf.set_tiled_mode
+  cp 4
+  ret nz
+cmd_mtf.set_tiled_mode:
+  ld a, 2
+  ld (SOMODE), a     ; tiled mode activated
+cmd_mtf.load_resource:
+  di
+    call resource.open_and_get_address
+      ld a, (hl)         ; resource type 
+      inc hl             ; skip resource type
+
+cmd_mtf.check_palette:
+      or a
+      jr nz, cmd_mtf.check_tileset
+
+cmd_mtf.palette:
+      ld a, (VERSION)
+      or a
+      jp z, cmd_mtf.end   ; return if MSX 1
+      inc hl
+      inc hl
+      inc hl 
+      inc hl          ; skip header
+      ld d, 0         ; color number 
+cmd_mtf.palette_loop:
+      push de
+        ld a, (hl)    ; red 
+        sla a 
+        sla a
+        sla a
+        sla a
+        inc hl
+        ld e, (hl)    ; green
+        inc hl
+        or (hl)       ; blue
+        inc hl
+        ld ix, S.SETPLT 
+        call EXTROM
+      pop de
+      inc d
+      bit 4, d
+      jr z, cmd_mtf.palette_loop
+      jp cmd_mtf.end
+
+cmd_mtf.check_tileset:
+      dec a 
+      jr nz, cmd_mtf.map
+
+cmd_mtf.tileset:
+      ld e, (hl)      ; tiles count
+      inc hl 
+      inc hl 
+      inc hl 
+      inc hl 
+      inc hl          ; skip header
+      ld d, 0         ; calculate tiles data size
+      ld a, e  
+      or a 
+      jr nz, cmd_mtf.tileset_copy
+        ld de, 256
+cmd_mtf.tileset_copy:
+      ex de, hl 
+        add hl, hl
+        add hl, hl
+        add hl, hl    ; tiles data size = tile count * 8
+      ex de, hl 
+      ld c, e
+      ld b, d         ; bc = tiles data size
+      ld de, 0        ; tileset bank 0
+      call cmd_mtf.tileset_copy_to_vram
+      ld de, 0x800    ; tileset bank 1
+      call cmd_mtf.tileset_copy_to_vram
+      ld de, 0x1000   ; tileset bank 2
+      call cmd_mtf.tileset_copy_to_vram
+      add hl, bc      ; resource colorset 
+      ld de, 0x2000   ; colorset bank 0
+      call cmd_mtf.tileset_copy_to_vram
+      ld de, 0x2800   ; colorset bank 1
+      call cmd_mtf.tileset_copy_to_vram
+      ld de, 0x3000   ; colorset bank 2
+      call cmd_mtf.tileset_copy_to_vram
+      jp cmd_mtf.end 
+
+cmd_mtf.tileset_copy_to_vram:
+      push hl 
+      push bc 
+        call SUB_LDIRVM
+      pop bc 
+      pop hl 
+      ret 
+
+cmd_mtf.map:
+      ld a, (DAC+5)
+      or a         ; map with XY parameters?
+      jr nz, cmd_mtf.map_xy
+        ; calculate x and y parameter from screen number
+        ld de, (DAC+2)   ; screen number
+        ld bc, 0
+
+cmd_mtf.map_xy:
+      ld de, (DAC+2)   ; x
+      ld bc, (DAC+4)   ; y
+
+cmd_mtf.end:
+    call resource.close
+  ei
+  ret
+
 ; https://www.msx.org/wiki/PAD()
 ; input l = pad function parameter code (mouse, trackball...)
 ; output hl
@@ -5078,11 +5209,6 @@ GTSTCK	EQU	00D5H
 GTPAD	EQU	00DBH
 GTPDL	EQU	00DEH
 READC	EQU	011DH
-
-S.INIPLT	EQU	0141H
-S.RSTPLT	EQU	0145H
-S.GETPLT	EQU	0149H
-S.SETPLT	EQU	014DH
 
 M406F	EQU	406FH			; BASIC error
 M57F1	EQU	57F1H			; PSET
