@@ -201,7 +201,7 @@ class Parser {
   vector<Lexeme*> datas;
 
   bool has_traps, has_defusr, has_data, has_idata;
-  bool has_play, has_input, has_font;
+  bool has_play, has_input, has_font, has_mtf;
   bool has_pt3, has_akm, has_resource_restore;
   int resourceCount;
 

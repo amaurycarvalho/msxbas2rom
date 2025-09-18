@@ -3779,16 +3779,21 @@ cmd_screen_load:
   jp XBASIC_BLOAD
 
 ; MSX Tile Forge - load resource
-; cmd_mtf <resource number> [, arg1 | , arg1, arg2]
+; cmd_mtf <resource number> [, operation [, col/X [, row/Y] ] ]
 ;   hl = resource number
-;   de = arg1 (screen number or X position)
-;   bc = arg2 (Y position)
-;   a = 0 for normal call, 1 for XY map
+;   de = col/X position
+;   bc = row/Y position
+;   a = map operation (0 for relative coords, 1 for absolute coords)
+MTF_RESN_PARM equ DAC 
+MTF_COLX_PARM equ MTF_RESN_PARM+2
+MTF_ROWY_PARM equ MTF_COLX_PARM+2
+MTF_OPER_PARM equ MTF_ROWY_PARM+2
+MTF_HEAD_PARM equ MTF_OPER_PARM+1
 cmd_mtf:
-  ld (DAC), hl
-  ld (DAC+2), de
-  ld (DAC+4), bc
-  ld (DAC+5), a
+  ld (MTF_RESN_PARM), hl
+  ld (MTF_COLX_PARM), de
+  ld (MTF_ROWY_PARM), bc
+  ld (MTF_OPER_PARM), a
 cmd_mtf.check_screen_mode:
   ld a,(SCRMOD)
   cp 2
@@ -3797,12 +3802,12 @@ cmd_mtf.check_screen_mode:
   ret nz
 cmd_mtf.set_tiled_mode:
   ld a, 2
-  ld (SOMODE), a     ; tiled mode activated
+  ld (SOMODE), a                              ; tiled mode activated
 cmd_mtf.load_resource:
   di
     call resource.open_and_get_address
-      ld a, (hl)         ; resource type 
-      inc hl             ; skip resource type
+      ld a, (hl)                              ; resource type 
+      inc hl                                  ; skip resource type
 
 cmd_mtf.check_palette:
       or a
@@ -3811,23 +3816,23 @@ cmd_mtf.check_palette:
 cmd_mtf.palette:
       ld a, (VERSION)
       or a
-      jp z, cmd_mtf.end   ; return if MSX 1
+      jp z, cmd_mtf.end                       ; return if MSX 1
       inc hl
       inc hl
       inc hl 
-      inc hl          ; skip header
-      ld d, 0         ; color number 
+      inc hl                                  ; skip header
+      ld d, 0                                 ; color number 
 cmd_mtf.palette_loop:
       push de
-        ld a, (hl)    ; red 
+        ld a, (hl)                            ; red 
         sla a 
         sla a
         sla a
         sla a
         inc hl
-        ld e, (hl)    ; green
+        ld e, (hl)                            ; green
         inc hl
-        or (hl)       ; blue
+        or (hl)                               ; blue
         inc hl
         ld ix, S.SETPLT 
         call EXTROM
@@ -3842,13 +3847,13 @@ cmd_mtf.check_tileset:
       jr nz, cmd_mtf.map
 
 cmd_mtf.tileset:
-      ld e, (hl)      ; tiles count
+      ld e, (hl)                              ; tiles count
       inc hl 
       inc hl 
       inc hl 
       inc hl 
-      inc hl          ; skip header
-      ld d, 0         ; calculate tiles data size
+      inc hl                                  ; skip header
+      ld d, 0                                 ; calculate tiles data size
       ld a, e  
       or a 
       jr nz, cmd_mtf.tileset_copy
@@ -3857,22 +3862,22 @@ cmd_mtf.tileset_copy:
       ex de, hl 
         add hl, hl
         add hl, hl
-        add hl, hl    ; tiles data size = tile count * 8
+        add hl, hl                            ; tiles data size = tile count * 8
       ex de, hl 
       ld c, e
-      ld b, d         ; bc = tiles data size
-      ld de, 0        ; tileset bank 0
+      ld b, d                                 ; bc = tiles data size
+      ld de, 0                                ; tileset bank 0
       call cmd_mtf.tileset_copy_to_vram
-      ld de, 0x800    ; tileset bank 1
+      ld de, 0x800                            ; tileset bank 1
       call cmd_mtf.tileset_copy_to_vram
-      ld de, 0x1000   ; tileset bank 2
+      ld de, 0x1000                           ; tileset bank 2
       call cmd_mtf.tileset_copy_to_vram
-      add hl, bc      ; resource colorset 
-      ld de, 0x2000   ; colorset bank 0
+      add hl, bc                              ; resource colorset 
+      ld de, 0x2000                           ; colorset bank 0
       call cmd_mtf.tileset_copy_to_vram
-      ld de, 0x2800   ; colorset bank 1
+      ld de, 0x2800                           ; colorset bank 1
       call cmd_mtf.tileset_copy_to_vram
-      ld de, 0x3000   ; colorset bank 2
+      ld de, 0x3000                           ; colorset bank 2
       call cmd_mtf.tileset_copy_to_vram
       jp cmd_mtf.end 
 
@@ -3885,21 +3890,105 @@ cmd_mtf.tileset_copy_to_vram:
       ret 
 
 cmd_mtf.map:
-      ld a, (DAC+5)
-      or a         ; map with XY parameters?
+      ld de, (MTF_COLX_PARM)                  ; col/x parameter
+      ld bc, (MTF_ROWY_PARM)                  ; row/y parameter
+      ld a, (MTF_OPER_PARM)                   ; map operation
+      or a                                    ; absolute coords?
       jr nz, cmd_mtf.map_xy
-        ; calculate x and y parameter from screen number
-        ld de, (DAC+2)   ; screen number
-        ld bc, 0
-
+        ; calculate x and y coords from col/row coords
+        push hl                               ; resource header
+          ex de,hl
+          add hl, hl
+          add hl, hl
+          add hl, hl
+          add hl, hl
+          add hl, hl    
+          ex de, hl                           ; x = col * 32 = col * 2^5
+          ld l, c 
+          ld h, b  
+          add hl, hl
+          add hl, hl
+          add hl, hl                          ; row * 2^3
+          ld c, l 
+          ld b, h  
+          add hl, hl                          ; row * 2^4
+          add hl, bc 
+          ld c, l 
+          ld b, h                             ; y = row * 24 = row * 2^3 + row * 2^4        
+        pop hl                                ; resource header
 cmd_mtf.map_xy:
-      ld de, (DAC+2)   ; x
-      ld bc, (DAC+4)   ; y
+      ; x = x % tilemapWidth
+      push bc 
+        push de
+          ld e, (hl) 
+          inc hl 
+          ld d, (hl) 
+          inc hl 
+          ld (MTF_HEAD_PARM), hl  ; resource header 
+        pop hl 
+        call XBASIC_DIVIDE_INTEGERS
+      pop bc 
+      ld (MTF_COLX_PARM), de   ; col/x parameter
+      ld (MTF_ROWY_PARM), bc   ; row/y parameter
+cmd_mtf.map_xy.search_first_row:
+      ; search for first y screen row
+      ld hl, (MTF_HEAD_PARM)   ; resource header
+      inc hl 
+      inc hl 
+cmd_mtf.map_xy.search_first_row.loop:
+      call cmd_mtf.map_xy.go_to_next_row
+      ld a, b
+      or c 
+      jr z, cmd_mtf.map_xy.copy_to_buffer
+      dec bc 
+      jr cmd_mtf.map_xy.search_first_row.loop
+cmd_mtf.map_xy.copy_to_buffer:
+      ; copy to screen RAM buffer 32 cols of 24 screen rows 
+      ld bc, 24
+      ld de, (FONTADDR)
+      ld (MTF_HEAD_PARM), de
+cmd_mtf.map_xy.copy_to_buffer.loop:
+      push bc                    ; rows to copy 
+        push hl                  ; current row address 
+          inc hl 
+          inc hl 
+          inc hl                 ; row data start
+          ld de, (MTF_COLX_PARM)
+          add hl, de
+          ld de, (MTF_HEAD_PARM)
+          ld bc, 32
+          ldir 
+          ld (MTF_HEAD_PARM), de
+        pop hl 
+      pop bc 
+      dec bc 
+      ld a, b
+      or c 
+      jr z, cmd_mtf.map_xy.copy_to_vram
+      call cmd_mtf.map_xy.go_to_next_row
+      jr cmd_mtf.map_xy.copy_to_buffer.loop
+ 
+cmd_mtf.map_xy.copy_to_vram:
+      ; copy screen RAM buffer to VRAM
+      ld hl, (FONTADDR)
+      ld de, 0x1800
+      ld bc, 768
+      call SUB_LDIRVM
 
 cmd_mtf.end:
     call resource.close
   ei
   ret
+
+cmd_mtf.map_xy.go_to_next_row:
+  ld a, (hl)       ; next row segment 
+  call MR_CHANGE_SGM
+  inc hl 
+  ld e, (hl) 
+  inc hl 
+  ld d, (hl)       ; next row address
+  ex de, hl 
+  ret 
 
 ; https://www.msx.org/wiki/PAD()
 ; input l = pad function parameter code (mouse, trackball...)

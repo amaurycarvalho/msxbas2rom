@@ -12242,77 +12242,76 @@ void Compiler::cmd_cmd() {
         addCall(def_cmd_plysound);
 
       } else if (lexeme->value == "MTF") {
-        if (action->actions.size() == 1) {
-          sub_action1 = action->actions[0];
-          result_subtype = evalExpression(sub_action1);
-          addCast(result_subtype, Lexeme::subtype_numeric);
-
-          addLdDE(0);
-          addXorA();
-
-          // hl = palette/tileset/map resource number
-          // call cmd_mtf
-          addCall(def_cmd_mtf);
-
-        } else if (action->actions.size() == 2) {
-          sub_action1 = action->actions[0];
-          result_subtype = evalExpression(sub_action1);
-          addCast(result_subtype, Lexeme::subtype_numeric);
-
-          addPushHL();
-
-          sub_action2 = action->actions[1];
-          result_subtype = evalExpression(sub_action2);
-          addCast(result_subtype, Lexeme::subtype_numeric);
-
-          addExDEHL();
-
-          addPopHL();
-
-          addXorA();
-
-          // hl = map resource number
-          // de = screen number
-          // a = 0 (map normal call)
-          // call cmd_mtf
-          addCall(def_cmd_mtf);
-
-        } else if (action->actions.size() == 3) {
-          sub_action1 = action->actions[0];
-          result_subtype = evalExpression(sub_action1);
-          addCast(result_subtype, Lexeme::subtype_numeric);
-
-          addPushHL();
-
-          sub_action2 = action->actions[1];
-          result_subtype = evalExpression(sub_action2);
-          addCast(result_subtype, Lexeme::subtype_numeric);
-
-          addPushHL();
-
-          sub_action2 = action->actions[2];
-          result_subtype = evalExpression(sub_action2);
-          addCast(result_subtype, Lexeme::subtype_numeric);
-
-          addLdCL();
-          addLdBH();
-
-          addPopDE();
-          addPopHL();
-
-          addLdA(1);
-
-          // hl = map resource number
-          // de = x position
-          // bc = y position
-          // a = 1 (map xy position call)
-          // call cmd_mtf
-          addCall(def_cmd_mtf);
-
-        } else {
+        if (!action->actions.size()) {
+          syntaxError("CMD MTF parameters is missing");
+        } else if (action->actions.size() > 4) {
           syntaxError("CMD MTF syntax error");
-        }
+        } else {
+          // resource number parameter
+          sub_action1 = action->actions[0];
+          result_subtype = evalExpression(sub_action1);
+          addCast(result_subtype, Lexeme::subtype_numeric);
 
+          if (action->actions.size() > 1) {
+            addPushHL();
+
+            // map operation parameter
+            sub_action2 = action->actions[1];
+            result_subtype = evalExpression(sub_action2);
+            addCast(result_subtype, Lexeme::subtype_numeric);
+
+            if (action->actions.size() > 2) {
+              addLdHL();
+              addPushHL();
+
+              // col/x parameter
+              sub_action2 = action->actions[2];
+              result_subtype = evalExpression(sub_action2);
+              addCast(result_subtype, Lexeme::subtype_numeric);
+
+              if (action->actions.size() > 3) {
+                addPushHL();
+
+                // row/y parameter
+                sub_action2 = action->actions[3];
+                result_subtype = evalExpression(sub_action2);
+                addCast(result_subtype, Lexeme::subtype_numeric);
+
+                addLdCL();
+                addLdBH();   //! row/y
+                addPopDE();  //! col/x
+                addPopAF();  //! map operation
+                addPopHL();  //! resource number
+              } else {
+                addExDEHL();  //! col/x
+                addLdBC(0);   //! row/y
+                addPopAF();   //! map operation
+                addPopHL();   //! resource number
+              }
+            } else {
+              addXorA();
+              addLdEA();
+              addLdDA();  //! col/x
+              addLdCA();
+              addLdBA();   //! row/y
+              addLdAL();   //! map operation
+              addPopHL();  //! resource number
+            }
+          } else {
+            addXorA();  //! map operation
+            addLdEA();
+            addLdDA();  //! col/x
+            addLdCA();
+            addLdBA();  //! row/y
+          }
+
+          // hl = resource number
+          // de = col/x position
+          // bc = row/y position
+          // a = map operation
+          // call cmd_mtf
+          addCall(def_cmd_mtf);
+        }
       } else if (lexeme->value == "SETFNT") {
         font = true;
 
@@ -12353,15 +12352,12 @@ void Compiler::cmd_cmd() {
         } else {
           syntaxError("CMD SETFNT syntax error");
         }
-
       } else if (lexeme->value == "UPDFNTCLR") {
         // call cmd_disscr
         addCall(def_cmd_updfntclr);
-
       } else if (lexeme->value == "CLRSCR") {
         // call cmd_clrscr
         addCall(def_cmd_clrscr);
-
       } else if (lexeme->value == "RAMTORAM") {
         if (action->actions.size() == 3) {
           sub_action1 = action->actions[0];
@@ -12391,7 +12387,6 @@ void Compiler::cmd_cmd() {
         } else {
           syntaxError("CMD RAMTORAM syntax error");
         }
-
       } else if (lexeme->value == "RSCTORAM") {
         if (action->actions.size() == 2 || action->actions.size() == 3) {
           sub_action1 = action->actions[0];  // resource number
@@ -12434,11 +12429,9 @@ void Compiler::cmd_cmd() {
         } else {
           syntaxError("CMD RSCTORAM syntax error");
         }
-
       } else if (lexeme->value == "CLRKEY") {
         // call cmd_clrkey
         addCall(def_cmd_clrkey);
-
       } else if (lexeme->value == "CLIP") {
         if (action->actions.size() == 1) {
           sub_action1 = action->actions[0];
@@ -12461,7 +12454,6 @@ void Compiler::cmd_cmd() {
         } else {
           syntaxError("CMD CLIP syntax error");
         }
-
       } else if (lexeme->value == "TURBO") {
         if (action->actions.size() == 1) {
           sub_action1 = action->actions[0];
@@ -12476,7 +12468,6 @@ void Compiler::cmd_cmd() {
         } else {
           syntaxError("CMD TURBO syntax error");
         }
-
       } else if (lexeme->value == "RESTORE") {
         if (action->actions.size() == 1) {
           sub_action1 = action->actions[0];
@@ -12492,7 +12483,6 @@ void Compiler::cmd_cmd() {
         } else {
           syntaxError("CMD RESTORE syntax error");
         }
-
       } else if (lexeme->value == "PAGE") {
         if (action->actions.size() == 1) {
           sub_action1 = action->actions[0];
@@ -12559,13 +12549,11 @@ void Compiler::cmd_cmd() {
 
         // call cmd_page (l = mode, e = delay #1, c = delay #2)
         addCall(def_cmd_page);
-
       } else {
         syntaxError("CMD statement invalid");
         return;
       }
     }
-
   } else {
     syntaxError("CMD with empty parameters");
   }

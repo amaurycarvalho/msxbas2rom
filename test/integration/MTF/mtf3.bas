@@ -1,5 +1,9 @@
-' MSX TILE FORGE
-' TEST SCREEN SCROLL
+' ----------------------------------------------------------------------------
+' MSX TILE FORGE - TEST SCREEN SCROLL
+' ----------------------------------------------------------------------------
+' CMD MTF <resource number> [, <map operation> [, <x|col> [, <y|row>] ] ]
+'   map operation: 0=col/row screen relative coords, 1=x/y map absolute coords 
+' ----------------------------------------------------------------------------
 
 FILE "mtf.SC4Pal"           ' 0
 FILE "mtf.SC4Tiles"         ' 1
@@ -11,7 +15,7 @@ FILE "mtf.SC4Map"           ' 2 (.SC4Super it's also included automatically)
 
 40 X% = 0 : Y% = 0
 
-50 CMD MTF 2, X%, Y%        ' load screen located at x,y in the map coords 
+50 CMD MTF 2, 1, X%, Y%     ' load screen started at x,y with map absolute coords (operation=1)
 
 60 K% = STICK(0) OR STICK(1)
 61 IF INKEY = 27 THEN END

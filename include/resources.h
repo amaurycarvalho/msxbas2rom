@@ -298,7 +298,6 @@ class ResourceMtfTilesetReader : public ResourceBlobReader {
  * Technical Description of Generated Files
  *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
  */
-/// @todo NOT IMPLEMENTED YET
 class ResourceMtfMapReader : public ResourceReader {
  private:
   string supertileFilename;

@@ -35,6 +35,7 @@ Parser::Parser() {
   has_font = false;
   has_pt3 = false;
   has_akm = false;
+  has_mtf = false;
   has_resource_restore = false;
   error_message = "";
 
@@ -4412,6 +4413,8 @@ bool Parser::eval_cmd_cmd(LexerLine* statement) {
   if (lexeme->value == "PLYLOAD" || lexeme->value == "PLYPLAY" ||
       lexeme->value == "PLYSONG")
     has_akm = true;
+
+  if (lexeme->value == "MTF") has_mtf = true;
 
   if (lexeme->value == "RESTORE") has_resource_restore = true;
 

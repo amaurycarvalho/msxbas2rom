@@ -1400,7 +1400,6 @@ bool ResourceMtfTilesetReader::isIt(string fileext) {
  * Technical Description of Generated Files
  *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
  */
-/// @todo NOT IMPLEMENTED YET
 bool ResourceMtfMapReader::load() {
   ResourceBlobReader tilemapReader(filename);
   ResourceBlobReader supertileReader(supertileFilename);
@@ -1432,7 +1431,7 @@ bool ResourceMtfMapReader::load() {
       /// WORD tilemapWidth
       supertileWidth = supertileReader.data[0][1 + supertileHeaderSkip];
       tilemapWidth = tilemapReader.data[0][0] | (tilemapReader.data[0][1] << 8);
-      tilemapResourceWidth = tilemapWidth * supertileWidth + 31;
+      tilemapResourceWidth = tilemapWidth * supertileWidth;  // + 31;
       data[0][1] = tilemapResourceWidth & 0xFF;
       data[0][2] = (tilemapResourceWidth >> 8) & 0xFF;
       /// WORD tilemapHeight
@@ -1457,7 +1456,7 @@ bool ResourceMtfMapReader::load() {
         for (supertileHeightIterator = 0;
              supertileHeightIterator < supertileHeight;
              supertileHeightIterator++) {
-          data.emplace_back(tilemapResourceWidth + 3);
+          data.emplace_back(tilemapResourceWidth + 31 + 3);
           packedSize += data.back().size();
           unpackedSize += data.back().size();
           /// nextLineSegment
