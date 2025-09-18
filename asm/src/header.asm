@@ -3779,10 +3779,10 @@ cmd_screen_load:
   jp XBASIC_BLOAD
 
 ; MSX Tile Forge - load resource
-; cmd_mtf <resource number> [, operation [, col/X [, row/Y] ] ]
+; cmd_mtf <resource number> [, operation [, col|X [, row|Y] ] ]
 ;   hl = resource number
-;   de = col/X position
-;   bc = row/Y position
+;   de = col_x position
+;   bc = row_y position
 ;   a = map operation (0 for relative coords, 1 for absolute coords)
 MTF_RESN_PARM equ DAC 
 MTF_COLX_PARM equ MTF_RESN_PARM+2
@@ -3913,8 +3913,8 @@ cmd_mtf.copy.to_vram:
   jp LDIRVM
 
 cmd_mtf.map:
-      ld de, (MTF_COLX_PARM)                  ; col/x parameter
-      ld bc, (MTF_ROWY_PARM)                  ; row/y parameter
+      ld de, (MTF_COLX_PARM)                  ; col_x parameter
+      ld bc, (MTF_ROWY_PARM)                  ; row_y parameter
       ld a, (MTF_OPER_PARM)                   ; map operation
       or a                                    ; absolute coords?
       jr nz, cmd_mtf.map_xy
@@ -3938,7 +3938,7 @@ cmd_mtf.map:
           add hl, bc 
           ld c, l 
           ld b, h                             ; y = row * 24 = row * 2^3 + row * 2^4        
-          ld (MTF_ROWY_PARM), bc              ; row/y parameter
+          ld (MTF_ROWY_PARM), bc              ; row_y parameter
         pop hl                                ; resource header
 cmd_mtf.map_xy:
       push de 
@@ -3967,7 +3967,7 @@ cmd_mtf.map_xy.adjust_if_y_negative.loop:
         jr nz, cmd_mtf.map_xy.adjust_if_y_negative.loop
           ld c, l 
           ld b, h
-          ld (MTF_ROWY_PARM), bc              ; row/y parameter
+          ld (MTF_ROWY_PARM), bc              ; row_y parameter
 cmd_mtf.map_xy.adjust_if_x_negative:
       ; adjust if x negative 
       bit 7, d
@@ -3981,13 +3981,25 @@ cmd_mtf.map_xy.adjust_if_x_negative.loop:
           ex de, hl 
 cmd_mtf.map_xy.adjust_if_x_gt_tilemap_width:
       ; adjust if x > tilemapWidth
-      ; x = x % tilemapWidth
+      ; so: x = x % tilemapWidth
       push bc 
-        ex de, hl                             ; hl = col/x
+        ex de, hl                             ; hl = col_x
         ld de, (MTF_MAP_WIDTH)                ; de = map width
         call XBASIC_DIVIDE_INTEGERS
       pop bc 
-      ld (MTF_COLX_PARM), de                  ; col/x parameter
+      ld (MTF_COLX_PARM), de                  ; col_x parameter
+cmd_mtf.map_xy.adjust_if_y_gt_tilemap_height:
+      ; adjust if y > tilemapHeight
+      ; so: y = y % tilemapHeight
+      push de 
+        ld l, c                               ; hl = row_y
+        ld h, b 
+        ld de, (MTF_MAP_HEIGHT)               ; de = map height
+        call XBASIC_DIVIDE_INTEGERS
+        ld c, e 
+        ld b, d
+      pop de
+      ld (MTF_ROWY_PARM), bc                  ; row_y parameter
 cmd_mtf.map_xy.search_first_row:
       ; search for first y screen row
       ld hl, (MTF_MAP_1ST_ROW)                ; map 1st row address
