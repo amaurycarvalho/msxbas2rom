@@ -3788,7 +3788,11 @@ MTF_RESN_PARM equ DAC
 MTF_COLX_PARM equ MTF_RESN_PARM+2
 MTF_ROWY_PARM equ MTF_COLX_PARM+2
 MTF_OPER_PARM equ MTF_ROWY_PARM+2
-MTF_HEAD_PARM equ MTF_OPER_PARM+1
+MTF_MAP_1ST_ROW equ ARG
+MTF_MAP_WIDTH equ MTF_MAP_1ST_ROW+2
+MTF_MAP_HEIGHT equ MTF_MAP_WIDTH+2
+MTF_SCR_BUF equ MTF_MAP_HEIGHT+2
+MTF_SCR_SIZE equ MTF_SCR_BUF+2
 cmd_mtf:
   ld (MTF_RESN_PARM), hl
   ld (MTF_COLX_PARM), de
@@ -3816,78 +3820,97 @@ cmd_mtf.check_palette:
 cmd_mtf.palette:
       ld a, (VERSION)
       or a
-      jp z, cmd_mtf.end                       ; return if MSX 1
+      jr nz, cmd_mtf.palette.copy.to_buffer
+        call resource.close                   ; return if MSX 1
+        ei
+        ret
+cmd_mtf.palette.copy.to_buffer:
       inc hl
       inc hl
       inc hl 
-      inc hl                                  ; skip header
-      ld d, 0                                 ; color number 
-cmd_mtf.palette_loop:
-      push de
-        ld a, (hl)                            ; red 
-        sla a 
-        sla a
-        sla a
-        sla a
-        inc hl
-        ld e, (hl)                            ; green
-        inc hl
-        or (hl)                               ; blue
-        inc hl
-        ld ix, S.SETPLT 
-        call EXTROM
-      pop de
-      inc d
-      bit 4, d
-      jr z, cmd_mtf.palette_loop
-      jp cmd_mtf.end
+      inc hl                                  ; point to palette data start address
+      ld de, (FONTADDR)                       ; screen buffer address 
+      ld bc, 16*3
+      ldir                                    ; copy to screen buffer
+    call resource.close
+  ei
+cmd_mtf.palette.copy.to_vram:
+  ld hl, (FONTADDR)
+  ld d, 0                                     ; color number 
+cmd_mtf.palette.copy.to_vram.loop:
+  push de
+    ld a, (hl)                                ; red 
+    sla a 
+    sla a
+    sla a
+    sla a
+    inc hl
+    ld e, (hl)                                ; green
+    inc hl
+    or (hl)                                   ; blue
+    inc hl
+    ld ix, S.SETPLT 
+    call EXTROM
+    ;ei
+  pop de
+  inc d
+  bit 4, d
+  jr z, cmd_mtf.palette.copy.to_vram.loop
+  ret
 
 cmd_mtf.check_tileset:
       dec a 
       jr nz, cmd_mtf.map
 
 cmd_mtf.tileset:
+      ld d, 0                                 ; calculate tileset data size
       ld e, (hl)                              ; tiles count
       inc hl 
       inc hl 
       inc hl 
       inc hl 
-      inc hl                                  ; skip header
-      ld d, 0                                 ; calculate tiles data size
+      inc hl                                  ; skip header to point to tileset data address
       ld a, e  
       or a 
-      jr nz, cmd_mtf.tileset_copy
-        ld de, 256
-cmd_mtf.tileset_copy:
-      ex de, hl 
+      jr nz, cmd_mtf.tileset.copy.to_buffer
+        ld de, 256                            ; correct tiles count
+cmd_mtf.tileset.copy.to_buffer:
+      ex de, hl                               ; hl=tile count, de=tileset+colorset data address
         add hl, hl
         add hl, hl
-        add hl, hl                            ; tiles data size = tile count * 8
-      ex de, hl 
-      ld c, e
-      ld b, d                                 ; bc = tiles data size
-      ld de, 0                                ; tileset bank 0
-      call cmd_mtf.tileset_copy_to_vram
-      ld de, 0x800                            ; tileset bank 1
-      call cmd_mtf.tileset_copy_to_vram
-      ld de, 0x1000                           ; tileset bank 2
-      call cmd_mtf.tileset_copy_to_vram
-      add hl, bc                              ; resource colorset 
-      ld de, 0x2000                           ; colorset bank 0
-      call cmd_mtf.tileset_copy_to_vram
-      ld de, 0x2800                           ; colorset bank 1
-      call cmd_mtf.tileset_copy_to_vram
-      ld de, 0x3000                           ; colorset bank 2
-      call cmd_mtf.tileset_copy_to_vram
-      jp cmd_mtf.end 
+        add hl, hl                            ; tileset data size = tiles count * 8
+        ld (MTF_SCR_SIZE), hl
+        add hl, hl                            ; tileset data size + colorset data size
+        ld c, l
+        ld b, h                               ; bc = tileset data  + colorset data size
+      ex de, hl                               ; hl=header address, de=tiles data size
+      ld de, (FONTADDR)
+      ld (MTF_SCR_BUF), de
+      ldir                                    ; copy to buffer
+    call resource.close
+  ei
 
-cmd_mtf.tileset_copy_to_vram:
-      push hl 
-      push bc 
-        call SUB_LDIRVM
-      pop bc 
-      pop hl 
-      ret 
+cmd_mtf.tileset.copy.to_vram:
+  ld de, 0                                    ; tileset bank 0
+  call cmd_mtf.copy.to_vram
+  ld de, 0x800                                ; tileset bank 1
+  call cmd_mtf.copy.to_vram
+  ld de, 0x1000                               ; tileset bank 2
+  call cmd_mtf.copy.to_vram
+  ld hl, (MTF_SCR_BUF)
+  ld bc, (MTF_SCR_SIZE)
+  add hl, bc                                  ; colorset buffer address
+  ld (MTF_SCR_BUF), hl  
+  ld de, 0x2000                               ; colorset bank 0
+  call cmd_mtf.copy.to_vram
+  ld de, 0x2800                               ; colorset bank 1
+  call cmd_mtf.copy.to_vram
+  ld de, 0x3000                               ; colorset bank 2
+
+cmd_mtf.copy.to_vram:
+  ld hl, (MTF_SCR_BUF)
+  ld bc, (MTF_SCR_SIZE)
+  jp LDIRVM
 
 cmd_mtf.map:
       ld de, (MTF_COLX_PARM)                  ; col/x parameter
@@ -3915,26 +3938,59 @@ cmd_mtf.map:
           add hl, bc 
           ld c, l 
           ld b, h                             ; y = row * 24 = row * 2^3 + row * 2^4        
+          ld (MTF_ROWY_PARM), bc              ; row/y parameter
         pop hl                                ; resource header
 cmd_mtf.map_xy:
+      push de 
+        ld e, (hl) 
+        inc hl 
+        ld d, (hl) 
+        inc hl
+        ld (MTF_MAP_WIDTH), de                ; map width
+        ld e, (hl) 
+        inc hl 
+        ld d, (hl) 
+        inc hl
+        ld (MTF_MAP_HEIGHT), de               ; map height
+        ld (MTF_MAP_1ST_ROW), hl              ; map 1st row address 
+      pop de 
+cmd_mtf.map_xy.adjust_if_y_negative:
+      ; adjust if y negative
+      bit 7, b
+      jr z, cmd_mtf.map_xy.adjust_if_x_negative
+        ld l, c 
+        ld h, b
+        ld bc, (MTF_MAP_HEIGHT)
+cmd_mtf.map_xy.adjust_if_y_negative.loop:
+        add hl, bc 
+        bit 7, h 
+        jr nz, cmd_mtf.map_xy.adjust_if_y_negative.loop
+          ld c, l 
+          ld b, h
+          ld (MTF_ROWY_PARM), bc              ; row/y parameter
+cmd_mtf.map_xy.adjust_if_x_negative:
+      ; adjust if x negative 
+      bit 7, d
+      jr z, cmd_mtf.map_xy.adjust_if_x_gt_tilemap_width
+        ex de, hl 
+        ld de, (MTF_MAP_WIDTH)
+cmd_mtf.map_xy.adjust_if_x_negative.loop:
+        add hl, de
+        bit 7, h  
+        jr nz, cmd_mtf.map_xy.adjust_if_x_negative.loop 
+          ex de, hl 
+cmd_mtf.map_xy.adjust_if_x_gt_tilemap_width:
+      ; adjust if x > tilemapWidth
       ; x = x % tilemapWidth
       push bc 
-        push de
-          ld e, (hl) 
-          inc hl 
-          ld d, (hl) 
-          inc hl 
-          ld (MTF_HEAD_PARM), hl  ; resource header 
-        pop hl 
+        ex de, hl                             ; hl = col/x
+        ld de, (MTF_MAP_WIDTH)                ; de = map width
         call XBASIC_DIVIDE_INTEGERS
       pop bc 
-      ld (MTF_COLX_PARM), de   ; col/x parameter
-      ld (MTF_ROWY_PARM), bc   ; row/y parameter
+      ld (MTF_COLX_PARM), de                  ; col/x parameter
 cmd_mtf.map_xy.search_first_row:
       ; search for first y screen row
-      ld hl, (MTF_HEAD_PARM)   ; resource header
-      inc hl 
-      inc hl 
+      ld hl, (MTF_MAP_1ST_ROW)                ; map 1st row address
 cmd_mtf.map_xy.search_first_row.loop:
       call cmd_mtf.map_xy.go_to_next_row
       ld a, b
@@ -3946,7 +4002,7 @@ cmd_mtf.map_xy.copy_to_buffer:
       ; copy to screen RAM buffer 32 cols of 24 screen rows 
       ld bc, 24
       ld de, (FONTADDR)
-      ld (MTF_HEAD_PARM), de
+      ld (MTF_SCR_BUF), de
 cmd_mtf.map_xy.copy_to_buffer.loop:
       push bc                    ; rows to copy 
         push hl                  ; current row address 
@@ -3955,30 +4011,27 @@ cmd_mtf.map_xy.copy_to_buffer.loop:
           inc hl                 ; row data start
           ld de, (MTF_COLX_PARM)
           add hl, de
-          ld de, (MTF_HEAD_PARM)
+          ld de, (MTF_SCR_BUF)
           ld bc, 32
           ldir 
-          ld (MTF_HEAD_PARM), de
+          ld (MTF_SCR_BUF), de
         pop hl 
       pop bc 
       dec bc 
       ld a, b
       or c 
       jr z, cmd_mtf.map_xy.copy_to_vram
-      call cmd_mtf.map_xy.go_to_next_row
-      jr cmd_mtf.map_xy.copy_to_buffer.loop
+        call cmd_mtf.map_xy.go_to_next_row
+        jr cmd_mtf.map_xy.copy_to_buffer.loop
  
 cmd_mtf.map_xy.copy_to_vram:
+        call resource.close
+      ei
       ; copy screen RAM buffer to VRAM
       ld hl, (FONTADDR)
       ld de, 0x1800
       ld bc, 768
-      call SUB_LDIRVM
-
-cmd_mtf.end:
-    call resource.close
-  ei
-  ret
+      jp LDIRVM 
 
 cmd_mtf.map_xy.go_to_next_row:
   ld a, (hl)       ; next row segment 
