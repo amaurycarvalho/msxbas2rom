@@ -3982,13 +3982,12 @@ cmd_mtf.end:
 
 cmd_mtf.map_xy.go_to_next_row:
   ld a, (hl)       ; next row segment 
-  call MR_CHANGE_SGM
   inc hl 
   ld e, (hl) 
   inc hl 
   ld d, (hl)       ; next row address
   ex de, hl 
-  ret 
+  jp MR_CHANGE_SGM
 
 ; https://www.msx.org/wiki/PAD()
 ; input l = pad function parameter code (mouse, trackball...)
