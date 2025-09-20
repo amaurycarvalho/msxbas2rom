@@ -1,6 +1,6 @@
 # Version history
 
-- 0.3.3.3 – (2025/09/XX) MSX Tile Forge support (CMD MTF);
+- 0.3.3.3 – (2025/09/20) MSX Tile Forge support (CMD MTF);
 - 0.3.3.2 – (2025/09/14) Resources refactoring and limit expanded (~3200), NoICE OpenMSX Debugger support and minor bug fixes;
 - 0.3.3.1 – (2025/09/04) Symbols/resources refactoring, OMDS support, CLEAR statement and minor bug fixes;
 - 0.3.3.0 – (2025/08/18) New -i and -o parameters;
