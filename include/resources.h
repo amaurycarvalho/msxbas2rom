@@ -421,13 +421,19 @@ class ResourceManager {
    * @brief build map and resources data
    * @remarks
    * Resources location on ROM:
-   *    48kb ROM - starts on page 0
-   *    128kb MEGAROM - starts on the next segment after the code
-   * Resource table starts at position 0x10 of the allocated segment
-   * So, a max of 3273 resources is possible: maxResourceCount = (0x4000 - 0x10
-   * - 2) / 5 CHAR filler[0x10] WORD resourceCount GROUP
-   * resourceTable[resourceCount] WORD offsetOnPage BYTE segmentNumber WORD
-   * resourceSize Resources data starts immediatelly following resource table
+   *    48kb ROM - starts on page 0;
+   *    128kb MEGAROM - starts on the next segment after the code.
+   * Resource table starts at position 0x10 of the allocated segment.
+   * So, a max of 3273 resources is possible:
+   *    maxResourceCount = (0x4000 - 0x10 - 2) / 5
+   * Resource table structure:
+   *    CHAR filler[0x10]
+   *    WORD resourceCount
+   *    GROUP resourceTable[resourceCount]
+   *      WORD offsetOnPage
+   *      BYTE segmentNumber
+   *      WORD resourceSize
+   * Resources data starts immediatelly following resource table.
    */
   bool buildMap(int startSegment, int startAddress);
 
