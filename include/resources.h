@@ -27,6 +27,7 @@ class ResourceReader {
   int unpackedSize;
   int packedSize;
   bool isPacked;
+  bool has1stBlockAnd2ndBlockSegmentDisalignmentBug;
   const string getErrorMessage();
   const string getFilename();
   virtual bool remapTo(int index, int mappedSegm, int mappedAddress);
@@ -289,8 +290,9 @@ class ResourceMtfTilesetReader : public ResourceBlobReader {
  *   BYTE resourceType = 2
  *   WORD tilemapWidth
  *   WORD tilemapHeight
- *   BYTE firstLineSegment
- *   WORD firstLineAddress
+ *   GROUP linesTable[tilemapHeight]
+ *     BYTE lineSegment
+ *     WORD lineAddress
  *   Tilemap Line Data [tilemapHeight] <-- .SC4Super + .SC4Map
  *     BYTE nextLineSegment
  *     WORD nextLineAddress
@@ -421,52 +423,11 @@ class ResourceManager {
    * Resources location on ROM:
    *    48kb ROM - starts on page 0
    *    128kb MEGAROM - starts on the next segment after the code
-   * Resources are structured in map and data sections
-   *    map section starts at position 0x0010 of first segment
-   *       WORD resource_count
-   *       struct resource {
-   *         WORD offset_on_page,
-   *         BYTE segment,
-   *         WORD resource_size
-   *        } [resource_count]
-   *       so, a max of 48 resources is allowed (=5 * 48 + 16 = 256 bytes)
-   *    data section starts at position 0x0100 of first segment
-   *       TEXT:
-   *         same as resource type TXT of DATA
-   *       DATA:
-   *         BYTE data_resource_type
-   *         resource type 0 - DATA
-   *            WORD resource_items_count
-   *            struct lines_map { WORD line_number, BYTE line_items_count }
-   *            [resource_items_count] struct lines_data { STRINGS
-   *            item_data[line_items_count] } [resource_items_count]
-   *         resource type 1 - CSV
-   *            WORD resource_items_count
-   *            struct lines_map { BYTE line_items_count }
-   *            [resource_items_count] struct lines_data { STRINGS
-   *            item_data[line_items_count] } [resource_items_count]
-   *         resource type 2 - TXT
-   *            STRINGS item_data[]
-   *         resource type 3 - IDATA
-   *            WORD resource_items_count
-   *            struct lines_map { WORD line_number, BYTE line_items_count }
-   *            [resource_items_count] struct lines_data { WORD
-   *            item_data[line_items_count] } [resource_items_count]
-   *       FILE:
-   *         ARKOS files - plain data, continuous on the same segment
-   *            BYTE data[]
-   *         NMSXTILES files - compressed, continuous on the same segment or
-   *         move to the next
-   *            BYTE data[]
-   *         TINYSPRITE files - compressed, continuous on the same segment or
-   *         move to the next
-   *            BYTE data[]
-   *         SCREEN IMAGE (BLOAD) files - compressed, discontinuous (blocks of
-   *         256 bytes)
-   *            WORD blocks, STRINGS data[]
-   *                         ^== each block starts with its compressed data
-   *                         length (1 byte)
-   *                             followed by the compressed data itself
+   * Resource table starts at position 0x10 of the allocated segment
+   * So, a max of 3273 resources is possible: maxResourceCount = (0x4000 - 0x10
+   * - 2) / 5 CHAR filler[0x10] WORD resourceCount GROUP
+   * resourceTable[resourceCount] WORD offsetOnPage BYTE segmentNumber WORD
+   * resourceSize Resources data starts immediatelly following resource table
    */
   bool buildMap(int startSegment, int startAddress);
 

@@ -4000,16 +4000,13 @@ cmd_mtf.map_xy.adjust_if_y_gt_tilemap_height:
         ld b, d
       pop de
       ld (MTF_ROWY_PARM), bc                  ; row_y parameter
-cmd_mtf.map_xy.search_first_row:
-      ; search for first y screen row
-      ld hl, (MTF_MAP_1ST_ROW)                ; map 1st row address
-cmd_mtf.map_xy.search_first_row.loop:
+cmd_mtf.map_xy.search_row_table:
+      ; search for y screen row
+      ld hl, (MTF_MAP_1ST_ROW)                ; 1st row address in the row table
+      add hl, bc                              ; row_y = 1stRow + 3 * row_y 
+      add hl, bc
+      add hl, bc
       call cmd_mtf.map_xy.go_to_next_row
-      ld a, b
-      or c 
-      jr z, cmd_mtf.map_xy.copy_to_buffer
-      dec bc 
-      jr cmd_mtf.map_xy.search_first_row.loop
 cmd_mtf.map_xy.copy_to_buffer:
       ; copy to screen RAM buffer 32 cols of 24 screen rows 
       ld bc, 24
@@ -4020,7 +4017,7 @@ cmd_mtf.map_xy.copy_to_buffer.loop:
         push hl                  ; current row address 
           inc hl 
           inc hl 
-          inc hl                 ; row data start
+          inc hl                 ; row data start (skip linked list header)
           ld de, (MTF_COLX_PARM)
           add hl, de
           ld de, (MTF_SCR_BUF)

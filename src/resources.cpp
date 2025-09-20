@@ -126,13 +126,15 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
                          resourceReader->getFilename();
           return false;
         }
-        /// end of segment check
+        /// calculate next block address
         resourceBlockNextAddress = (resourceBlockAddress + resourceBlockSize);
-        if (resourceItemIndex == 0 && resourceBlockCount > 1) {
-          /// 1st block segment disalignment bug mitigation
-          /// @todo refactor to use a block linked list
+        /// @brief 1st block segment disalignment bug mitigation code
+        /// @todo refactor the affected resources to use a block linked list
+        if (resourceReader->has1stBlockAnd2ndBlockSegmentDisalignmentBug &&
+            resourceItemIndex == 0 && resourceBlockCount > 1) {
           resourceBlockNextAddress += resourceReader->data[1].size();
         }
+        /// check if end of the current segment
         if (resourceBlockNextAddress > 0x4000) {
           pages.emplace_back(0x4000, 0xFF);  //! add a new page
           resourceBlockSegment += 2;
@@ -247,6 +249,8 @@ ResourceReader::ResourceReader(string filename) {
   this->packedSize = 0;
   this->unpackedSize = 0;
   this->isPacked = false;
+  /// @todo Refactor it creating linked lists in the affected resources
+  this->has1stBlockAnd2ndBlockSegmentDisalignmentBug = false;
 };
 
 ///-------------------------------------------------------------------------------
@@ -340,7 +344,10 @@ bool ResourceBlobPackedReader::load() {
 ///-------------------------------------------------------------------------------
 
 ResourceBlobChunkPackedReader::ResourceBlobChunkPackedReader(string filename)
-    : ResourceBlobPackedReader(filename) {};
+    : ResourceBlobPackedReader(filename) {
+  /// @todo Refactor it implementing resource block linked list
+  has1stBlockAnd2ndBlockSegmentDisalignmentBug = true;
+};
 
 bool ResourceBlobChunkPackedReader::isIt(string fileext) {
   return true;
@@ -392,7 +399,10 @@ bool ResourceBlobChunkPackedReader::load() {
 ///-------------------------------------------------------------------------------
 
 ResourceTxtReader::ResourceTxtReader(string filename)
-    : ResourceReader(filename) {};
+    : ResourceReader(filename) {
+  /// @todo Refactor it implementing resource block linked list
+  has1stBlockAnd2ndBlockSegmentDisalignmentBug = true;
+};
 
 bool ResourceTxtReader::populateLines() {
   ifstream file(filename);
@@ -458,6 +468,8 @@ ResourceCsvReader::ResourceCsvReader(string filename)
     : ResourceTxtReader(filename) {
   resourceType = 1;  //! CSV resource type
   isIntegerData = false;
+  /// @todo Refactor it implementing resource block linked list
+  has1stBlockAnd2ndBlockSegmentDisalignmentBug = true;
 };
 
 void ResourceCsvReader::addFields(string line) {
@@ -1313,7 +1325,6 @@ bool ResourceMtfReader::isIt(string fileext) {
  *      per channel).
  * Technical Description of Generated Files
  *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
- * @todo To be used with S.SETPLT EXTENDED BIOS function
  */
 bool ResourceMtfPaletteReader::load() {
   if (ResourceBlobReader::load()) {
@@ -1422,35 +1433,35 @@ bool ResourceMtfMapReader::load() {
         supertileCount =
             supertileReader.data[0][1] | (supertileReader.data[0][2] << 8);
       }
-      /// BYTE resourceType = 2 (map)
-      data.clear();
-      data.emplace_back(8);
-      data[0][0] = 2;
-      packedSize += data.back().size();
-      unpackedSize += data.back().size();
-      /// WORD tilemapWidth
+      /// tileset and supertile header values
       supertileWidth = supertileReader.data[0][1 + supertileHeaderSkip];
       tilemapWidth = tilemapReader.data[0][0] | (tilemapReader.data[0][1] << 8);
       tilemapResourceWidth = tilemapWidth * supertileWidth;  // + 31;
-      data[0][1] = tilemapResourceWidth & 0xFF;
-      data[0][2] = (tilemapResourceWidth >> 8) & 0xFF;
-      /// WORD tilemapHeight
       supertileHeight = supertileReader.data[0][2 + supertileHeaderSkip];
       tilemapHeight =
           tilemapReader.data[0][2] | (tilemapReader.data[0][3] << 8);
       tilemapResourceHeight = tilemapHeight * supertileHeight;
+      /// Header block allocation
+      data.clear();
+      data.emplace_back(5 + (tilemapResourceHeight * 3), 0);
+      packedSize += data.back().size();
+      unpackedSize += data.back().size();
+      /// BYTE resourceType = 2 (map)
+      data[0][0] = 2;
+      /// WORD tilemapWidth
+      data[0][1] = tilemapResourceWidth & 0xFF;
+      data[0][2] = (tilemapResourceWidth >> 8) & 0xFF;
+      /// WORD tilemapHeight
       data[0][3] = tilemapResourceHeight & 0xFF;
       data[0][4] = (tilemapResourceHeight >> 8) & 0xFF;
-      /// BYTE firstLineSegment
-      data[0][5] = 0;
-      /// WORD firstLineAddress
-      data[0][6] = 0;
-      data[0][7] = 0;
-      ///   Tilemap Line Data [tilemapHeight] <-- .SC4Super + .SC4Map
-      ///     BYTE nextLineSegment
-      ///     WORD nextLineAddress
-      ///     BYTE tilemap[tilemapWidth+31] <-- copy of first
-      ///                                       31 tiles at end
+      /// GROUP linesTable[tilemapHeight] <-- it will be filled by remapTo code
+      ///   BYTE lineSegment
+      ///   WORD lineAddress
+      /// Tilemap Line Data [tilemapHeight] <-- .SC4Super + .SC4Map
+      ///   BYTE nextLineSegment
+      ///   WORD nextLineAddress
+      ///   BYTE tilemap[tilemapWidth+31] <-- copy of first
+      ///                                     31 tiles at end
       for (tilemapHeightIterator = 0; tilemapHeightIterator < tilemapHeight;
            tilemapHeightIterator++) {
         for (supertileHeightIterator = 0;
@@ -1503,25 +1514,28 @@ bool ResourceMtfMapReader::load() {
 bool ResourceMtfMapReader::remapTo(int index, int mappedSegm,
                                    int mappedAddress) {
   int firstLineSegment, firstLineAddress;
+  int blockIndex;
 
   if (!index) return true;
 
-  if (index == 1) {  //! first line data -> adjust header
-    /// set firstLineSegment
+  /// fill header lines table
+  blockIndex = (index - 1) * 3;
+  data[0][5 + blockIndex] = mappedSegm & 0xFF;     //! lineSegment
+  data[0][6 + blockIndex] = mappedAddress & 0xFF;  //! lineAddress
+  data[0][7 + blockIndex] = (mappedAddress >> 8) & 0xFF;
+
+  /// fill previous line linked list, if necessary
+  if (index == 1) {
+    /// get firstLineSegment and firstLineAddress
     firstLineSegment = mappedSegm;
-    data[0][5] = firstLineSegment & 0xFF;
-    /// set firstLineAddress
     firstLineAddress = mappedAddress;
-    data[0][6] = firstLineAddress & 0xFF;
-    data[0][7] = (firstLineAddress >> 8) & 0xFF;
   } else {
-    /// get firstLineSegment
+    /// get firstLineSegment and firstLineAddress
     firstLineSegment = data[0][5];
-    /// get firstLineAddress
     firstLineAddress = data[0][6] | (data[0][7] << 8);
-    /// set last line nextLineSegment
+    /// set previous line nextLineSegment
     data[index - 1][0] = mappedSegm & 0xFF;
-    /// set last line nextLineAddress
+    /// set previous line nextLineAddress
     data[index - 1][1] = mappedAddress & 0xFF;
     data[index - 1][2] = (mappedAddress >> 8) & 0xFF;
   }
@@ -1538,11 +1552,17 @@ bool ResourceMtfMapReader::remapTo(int index, int mappedSegm,
 ResourceMtfMapReader::ResourceMtfMapReader(string filename)
     : ResourceReader(filename) {
   supertileFilename = filename;
+  /// remove any trailing space
+  while (!filename.empty() && filename.back() == ' ') {
+    filename.pop_back();
+  }
+  /// remove 'Map' from extension name
   if (filename.size() > 3) {
     supertileFilename.pop_back();
     supertileFilename.pop_back();
     supertileFilename.pop_back();
   }
+  /// add 'Super' into extension name
   supertileFilename += "Super";
 };
 
