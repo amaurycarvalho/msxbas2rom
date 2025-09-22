@@ -139,6 +139,11 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
           pages.emplace_back(0x4000, 0xFF);  //! add a new page
           resourceBlockSegment += 2;
           resourceBlockAddress = 0;
+          /// check MegaROM size limit
+          if (resourceBlockSegment > 255) {
+            errorMessage = "MegaROM size limit exceeded (2048K)";
+            return false;
+          }
         }
         // remap resource address
         resourceBlockOffset = (resourceBlockAddress + baseAddress);

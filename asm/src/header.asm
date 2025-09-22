@@ -3801,12 +3801,9 @@ cmd_mtf:
 cmd_mtf.check_screen_mode:
   ld a,(SCRMOD)
   cp 2
-  jr z, cmd_mtf.set_tiled_mode
+  jr z, cmd_mtf.load_resource
   cp 4
   ret nz
-cmd_mtf.set_tiled_mode:
-  ld a, 2
-  ld (SOMODE), a                              ; tiled mode activated
 cmd_mtf.load_resource:
   di
     call resource.open_and_get_address
@@ -3861,6 +3858,10 @@ cmd_mtf.palette.copy.to_vram.loop:
 cmd_mtf.check_tileset:
       dec a 
       jr nz, cmd_mtf.map
+
+cmd_mtf.set_tiled_mode:
+      ld a, 2
+      ld (SOMODE), a                          ; tiled mode activated
 
 cmd_mtf.tileset:
       ld d, 0                                 ; calculate tileset data size
