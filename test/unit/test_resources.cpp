@@ -52,7 +52,7 @@ TEST_SUITE("ResourceManager suite") {
   TEST_CASE("ResourceManager: basic test cases") {
     std::string fname = "tmp/temp_blob.bin";
 
-    SUBCASE("Loading a resource") {
+    SUBCASE("Success when loading a resource") {
       std::string fakeData = std::string(0x4000, '\xAA');
       createTempFile(fname, fakeData);
 
@@ -60,8 +60,22 @@ TEST_SUITE("ResourceManager suite") {
       resourceManager.addFile(fname, "./tmp");
       REQUIRE(resourceManager.resources.size() == 1);
 
-      SUBCASE("Building the resource map") {
+      SUBCASE("Success when building the resource address table") {
         CHECK(resourceManager.buildMap(0, 0) == true);
+      }
+
+      SUBCASE("Failing when resources count exceeds MegaROM maximum size") {
+        for(int i=0;i<128;i++) resourceManager.addFile(fname, "./tmp");
+        CHECK(resourceManager.buildMap(0, 0) == false);
+        CHECK(resourceManager.getErrorMessage().find(
+                 "MegaROM size limit exceeded (2048K)") != std::string::npos);
+      }
+
+      SUBCASE("Failing when resource address table exceeds 16K limit") {
+        for(int i=0;i<4000;i++) resourceManager.addFile(fname, "./tmp");
+        CHECK(resourceManager.buildMap(0, 0) == false);
+        CHECK(resourceManager.getErrorMessage().find(
+                "Resource count maximum limit exceeded") != std::string::npos);
       }
 
       deleteTempFile(fname);
