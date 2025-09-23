@@ -24,7 +24,8 @@ jobs:
       - name: Doing unit test scenarios
         run: |
           cd test/unit
-          ./test
+          ./bin/test
+          ./bin/test_resources
       - name: Doing integration test scenarios
         run: |
           make release

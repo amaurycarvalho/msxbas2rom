@@ -43,6 +43,9 @@ test/**/*.rom
 test/**/*.noi
 test/**/*.omds
 test/**/*.symbol
+test/unit/bin/
+test/unit/obj/
+test/unit/tmp/
 
 # Deploys
 dist/

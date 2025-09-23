@@ -3,6 +3,8 @@
 # by Amaury Carvalho (2025)                                                    #
 #------------------------------------------------------------------------------#
 
+.PHONY: all clean setup
+
 CC = gcc
 CXX = g++
 AR = ar
@@ -12,6 +14,8 @@ WINDRES = windres
 INC = ../../include
 SRC = ../../src
 OBJ = ./obj
+BIN = ./bin
+TMP = ./tmp
 CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG)
 LDFLAGS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc 
 
@@ -33,26 +37,45 @@ else
  endif
 endif
 
-all: test test_resources 
+all: setup build
 
 clean: 
-	rm -f $(OBJ)/*.o
+	@echo "🧹 Cleaning artifacts..."
+	@rm -f $(BIN)/*.o
+	@rm -f $(OBJ)/*.o
+	@rm -f $(TMP)/*.*
 
-test: test.cpp $(SRC_CPP) $(SRC_INC) 
-	$(CXX) $(CFLAGS) -I $(INC) -c test.cpp -o $(OBJ)/test.o
-	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/lex.cpp -o $(OBJ)/lex.o
-	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/parse.cpp -o $(OBJ)/parse.o
-	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/z80.cpp -o $(OBJ)/z80.o
-	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/compiler.cpp -o $(OBJ)/compiler.o
-	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/pletter.cpp -o $(OBJ)/pletter.o
-	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/options.cpp -o $(OBJ)/options.o
-	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/cliparser.cpp -o $(OBJ)/cliparser.o
-	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/fswrapper.cpp -o $(OBJ)/fswrapper.o
-	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/resources.cpp -o $(OBJ)/resources.o
-	$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/symbols.cpp -o $(OBJ)/symbols.o
-	$(LD) -o test $(OBJ)/test.o $(SRC_OBJ) $(LDFLAGS)
+setup:
+	@echo "📦 Setting up environment..."
+	@mkdir -p $(OBJ)
+	@mkdir -p $(BIN)
+	@mkdir -p $(TMP)
 
-test_resources: test_resources.cpp $(SRC_CPP) $(SRC_INC) 
-	$(CXX) $(CFLAGS) -I $(INC) -c test_resources.cpp -o $(OBJ)/test_resources.o
-	$(LD) -o test_resources $(OBJ)/test_resources.o $(SRC_OBJ) $(LDFLAGS)
+build: $(OBJ)/test.o $(BIN)/test $(OBJ)/test_resources.o $(BIN)/test_resources 
+
+$(OBJ)/test.o: test.cpp $(SRC_CPP) $(SRC_INC) 
+	@echo "📦 Compiling main unit testing..."
+	@$(CXX) $(CFLAGS) -I $(INC) -c test.cpp -o $(OBJ)/test.o
+	@$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/lex.cpp -o $(OBJ)/lex.o
+	@$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/parse.cpp -o $(OBJ)/parse.o
+	@$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/z80.cpp -o $(OBJ)/z80.o
+	@$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/compiler.cpp -o $(OBJ)/compiler.o
+	@$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/pletter.cpp -o $(OBJ)/pletter.o
+	@$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/options.cpp -o $(OBJ)/options.o
+	@$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/cliparser.cpp -o $(OBJ)/cliparser.o
+	@$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/fswrapper.cpp -o $(OBJ)/fswrapper.o
+	@$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/resources.cpp -o $(OBJ)/resources.o
+	@$(CXX) $(CFLAGS) -I $(INC) -c $(SRC)/symbols.cpp -o $(OBJ)/symbols.o
+
+$(BIN)/test: $(OBJ)/test.o $(SRC_OBJ)
+	@echo "📦 Building main unit testing..."
+	@$(LD) -o $(BIN)/test $(OBJ)/test.o $(SRC_OBJ) $(LDFLAGS)
+
+$(OBJ)/test_resources.o: test_resources.cpp $(SRC_CPP) $(SRC_INC) 
+	@echo "📦 Compiling resources unit testing..."
+	@$(CXX) $(CFLAGS) -I $(INC) -c test_resources.cpp -o $(OBJ)/test_resources.o
+
+$(BIN)/test_resources: $(OBJ)/test_resources.o $(SRC_OBJ) 
+	@echo "📦 Building resources unit testing..."
+	@$(LD) -o $(BIN)/test_resources $(OBJ)/test_resources.o $(SRC_OBJ) $(LDFLAGS)
 
