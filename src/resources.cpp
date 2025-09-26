@@ -196,41 +196,39 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
 ///-------------------------------------------------------------------------------
 
 ResourceReader *ResourceFactory::create(string filename) {
-  if (fileExists(filename)) {
-    string fileext = getFileExtension(filename);
-    if (ResourceTxtReader::isIt(fileext)) {
-      return new ResourceTxtReader(filename);
-    }
-    if (ResourceCsvReader::isIt(fileext)) {
-      return new ResourceCsvReader(filename);
-    }
-    if (ResourceScrReader::isIt(fileext)) {
-      return new ResourceScrReader(filename);
-    }
-    if (ResourceSprReader::isIt(fileext)) {
-      return new ResourceSprReader(filename);
-    }
-    if (ResourceAkmReader::isIt(fileext)) {
-      return new ResourceAkmReader(filename);
-    }
-    if (ResourceAkxReader::isIt(fileext)) {
-      return new ResourceAkxReader(filename);
-    }
-    if (ResourceMtfReader::isIt(fileext)) {
-      return new ResourceMtfReader(filename);
-    }
-    if (ResourceMtfPaletteReader::isIt(fileext)) {
-      return new ResourceMtfPaletteReader(filename);
-    }
-    if (ResourceMtfTilesetReader::isIt(fileext)) {
-      return new ResourceMtfTilesetReader(filename);
-    }
-    if (ResourceMtfMapReader::isIt(fileext)) {
-      return new ResourceMtfMapReader(filename);
-    }
-    if (ResourceBlobReader::isIt(fileext)) {
-      return new ResourceBlobReader(filename);
-    }
+  string fileext = getFileExtension(filename);
+  if (ResourceTxtReader::isIt(fileext)) {
+    return new ResourceTxtReader(filename);
+  }
+  if (ResourceCsvReader::isIt(fileext)) {
+    return new ResourceCsvReader(filename);
+  }
+  if (ResourceScrReader::isIt(fileext)) {
+    return new ResourceScrReader(filename);
+  }
+  if (ResourceSprReader::isIt(fileext)) {
+    return new ResourceSprReader(filename);
+  }
+  if (ResourceAkmReader::isIt(fileext)) {
+    return new ResourceAkmReader(filename);
+  }
+  if (ResourceAkxReader::isIt(fileext)) {
+    return new ResourceAkxReader(filename);
+  }
+  if (ResourceMtfReader::isIt(fileext)) {
+    return new ResourceMtfReader(filename);
+  }
+  if (ResourceMtfPaletteReader::isIt(fileext)) {
+    return new ResourceMtfPaletteReader(filename);
+  }
+  if (ResourceMtfTilesetReader::isIt(fileext)) {
+    return new ResourceMtfTilesetReader(filename);
+  }
+  if (ResourceMtfMapReader::isIt(fileext)) {
+    return new ResourceMtfMapReader(filename);
+  }
+  if (ResourceBlobReader::isIt(fileext)) {
+    return new ResourceBlobReader(filename);
   }
   return nullptr;
 }
