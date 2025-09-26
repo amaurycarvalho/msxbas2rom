@@ -17,7 +17,7 @@
  * git push msxbas2rom release/v0.0.0.0
  * git switch master
  */
-#define app_version "0.3.3.3"
+#define app_version "0.3.3.4"
 
 //! @brief Header information
 const char *info_header = R"(MSXBAS2ROM - MSX BASIC TO ROM COMPILER
@@ -73,6 +73,8 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char *info_history = R"(
 Version history
 
+0.3.3.4 – (2025/10/xx) MSX Tile Forge map loading optimization and 
+                       resource file check bug fix;
 0.3.3.3 – (2025/09/20) MSX Tile Forge support (CMD MTF);
 0.3.3.2 – (2025/09/14) Resources refactoring and limit expanded (~3200), 
                        NoICE OpenMSX Debugger support and minor bug fixes;
