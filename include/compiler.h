@@ -197,6 +197,8 @@ class Compiler : public IZ80 {
   void cmd_get();
   void cmd_get_date();
   void cmd_get_time();
+  void cmd_get_tile();
+  void cmd_get_sprite();
   void cmd_on();
   void cmd_on_error();
   void cmd_on_interval();

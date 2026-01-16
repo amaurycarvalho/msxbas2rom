@@ -3763,6 +3763,38 @@ bool Parser::eval_cmd_get(LexerLine* statement) {
     if (next_lexeme->type == Lexeme::type_keyword) {
       if (next_lexeme->value == "DATE" || next_lexeme->value == "TIME") {
         result = eval_cmd_generic(statement);
+      } else if (next_lexeme->value == "TILE") {
+        result = eval_cmd_get_tile(statement);
+      } else if (next_lexeme->value == "SPRITE") {
+        result = eval_cmd_get_sprite(statement);
+      }
+    }
+
+    popActionRoot();
+  }
+
+  return result;
+}
+
+bool Parser::eval_cmd_get_tile(LexerLine* statement) {
+  return eval_cmd_get_sprite(statement);
+}
+
+bool Parser::eval_cmd_get_sprite(LexerLine* statement) {
+  Lexeme* next_lexeme;
+  ActionNode* action;
+  bool result = false;
+
+  if ((next_lexeme = statement->getNextLexeme())) {
+    coalesceSymbols(next_lexeme);
+
+    next_lexeme = statement->getCurrentLexeme();
+    action = new ActionNode(next_lexeme);
+    pushActionRoot(action);
+
+    if (next_lexeme->type == Lexeme::type_keyword) {
+      if (next_lexeme->value == "COLOR" || next_lexeme->value == "PATTERN") {
+        result = eval_cmd_set_sprite_colpattra(statement);
       }
     }
 

@@ -17,20 +17,20 @@
  * git push msxbas2rom release/v0.0.0.0
  * git switch master
  */
-#define app_version "0.3.3.4"
+#define app_version "0.3.3.5"
 
 //! @brief Header information
-const char *info_header = R"(MSXBAS2ROM - MSX BASIC TO ROM COMPILER
-Created by Amaury Carvalho (2020-2025)
+const char* info_header = R"(MSXBAS2ROM - MSX BASIC TO ROM COMPILER
+Created by Amaury Carvalho (2020-2026)
 Version:)";
 
 //! @brief Footer information
-const char *info_footer = R"(
+const char* info_footer = R"(
 Help us to maintain this project, learn how:
 https://github.com/amaurycarvalho/msxbas2rom/wiki/Contributing )";
 
 //! @brief Help information (-h parameter)
-const char *info_help = R"(
+const char* info_help = R"(
 Usage: msxbas2rom [options] <filename.bas>
 
 General options:
@@ -68,11 +68,12 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
  *   0.0.0.0 – (2023/xx/xx) Disk file support;
  *   0.0.0.0 – (2023/xx/xx) Better support to double precision type (BCD);
  *   0.0.0.0 – (2023/xx/xx) SET TILE FLIP/ROTATE new command;
- *   0.0.0.0 – (2023/xx/xx) SET SPRITE COLOR/PATTERN new command;
+ *   0.3.3.5 – (2026/xx/xx) SET/GET TILE COLOR/PATTERN new commands;
  */
-const char *info_history = R"(
+const char* info_history = R"(
 Version history
 
+0.3.3.5 – (2026/01/16) SET/GET SPRITE COLOR/PATTERN new commands;
 0.3.3.4 – (2025/09/26) MSX Tile Forge map loading optimization and 
                        resource file check bug fix;
 0.3.3.3 – (2025/09/20) MSX Tile Forge support (CMD MTF);
@@ -256,7 +257,7 @@ https://github.com/amaurycarvalho/msxbas2rom
 /***
  * @brief Documentation information (--doc parameter)
  */
-const char *info_documentation = R"(
+const char* info_documentation = R"(
 See a complete reference guide on project wiki page:
 https://github.com/amaurycarvalho/msxbas2rom/wiki/Documentation
 

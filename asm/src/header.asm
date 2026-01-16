@@ -548,10 +548,14 @@ wrapper_routines_map_start:
   jp set_tile_rotate
   jp set_tile_color
   jp set_tile_pattern
+  jp get_tile_color
+  jp get_tile_pattern
   jp set_sprite_flip
   jp set_sprite_rotate
   jp set_sprite_color
   jp set_sprite_pattern
+  jp get_sprite_color
+  jp get_sprite_pattern
 
   jp usr0
   jp usr1
@@ -2217,6 +2221,16 @@ set_tile_color.multi.do:
   pop af
   ret
 
+; a = tile number
+; hl = buffer pointer to an 8 bytes buffer
+get_tile_pattern:
+  ret
+
+; a = tile number
+; hl = buffer pointer to an 8 bytes buffer
+get_tile_color:
+  ret
+
 ; de = sprite number
 ; hl = direction (0=horizontal, 1=vertical, 2=both)
 set_sprite_flip:
@@ -2383,17 +2397,75 @@ blockRotateR.loop:
   pop hl
   ret
 
-; hl = sprite number
-; de = line number
-; c = pattern data
+; a = sprite number
+; hl = buffer pointer to a 32 bytes buffer
 set_sprite_pattern:
-  ret
+  push hl 
+    call gfxCALPAT
+    ex de,hl
+  pop hl
+  ld bc, 32
+  jp LDIRVM    ; hl = ram data address, de = vram data address, bc = length (interruptions enabled)
 
-; hl = sprite number
-; de = line number (15=all)
-; c = color data (FC,BC)
+; a = sprite number
+; hl = buffer pointer to a 16 bytes buffer
 set_sprite_color:
-  ret
+  ld c, a
+    ld a, (SCRMOD)
+    cp 4
+  ld a, c 
+  jr nc, set_sprite_color.msx2
+    push hl 
+      call gfxCALATR
+      inc hl
+      inc hl
+      inc hl
+    pop de 
+    ld a, (de)
+    jp WRTVRM
+set_sprite_color.msx2:
+  push hl
+    call gfxCALCOL
+    ex de, hl
+  pop hl
+  ld bc, 16
+  jp LDIRVM      ; hl = ram data address, de = vram data address, bc = length
+
+; a = sprite number
+; hl = buffer pointer to a 32 bytes buffer
+get_sprite_pattern:
+  push hl 
+    call gfxCALPAT
+  pop de 
+  ld bc, 32
+  jp LDIRMV      ; de = ram data address, hl = vram data address, bc = length
+
+; a = sprite number
+; hl = buffer pointer to a 32 bytes buffer
+get_sprite_color:
+  ld c, a
+    ld a, (SCRMOD)
+    cp 4
+  ld a, c 
+  jr nc, get_sprite_color.msx2
+    push hl 
+      call gfxCALATR
+      inc hl
+      inc hl
+      inc hl
+      call RDVRM 
+    pop hl 
+    ld (hl), a
+    xor a 
+    inc hl 
+    ld (hl), a
+    ret 
+get_sprite_color.msx2:
+  push hl
+    call gfxCALCOL
+  pop de
+  ld bc, 16
+  jp LDIRMV      ; de = ram data address, hl = vram data address, bc = length
 
 ; l = mode: 0=swap, 1=wave
 ; e = delay #0

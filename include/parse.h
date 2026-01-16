@@ -139,6 +139,8 @@ class Parser {
   bool eval_cmd_set_sprite(LexerLine* statement);
   bool eval_cmd_set_sprite_colpattra(LexerLine* statement);
   bool eval_cmd_get(LexerLine* statement);
+  bool eval_cmd_get_tile(LexerLine* statement);
+  bool eval_cmd_get_sprite(LexerLine* statement);
   bool eval_cmd_on(LexerLine* statement);
   bool eval_cmd_on_goto_gosub(LexerLine* statement);
   bool eval_cmd_on_error(LexerLine* statement);

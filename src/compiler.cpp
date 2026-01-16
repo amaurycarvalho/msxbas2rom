@@ -9235,7 +9235,7 @@ void Compiler::cmd_set_scroll() {
 
 void Compiler::cmd_set_tile() {
   ActionNode *action = current_action->actions[0], *sub_action, *sub_sub_action;
-  Lexeme* lexeme;
+  Lexeme *lexeme, *sub_lexeme;
   unsigned int i, t, tt;
   int result_subtype;
 
@@ -9324,7 +9324,34 @@ void Compiler::cmd_set_tile() {
       }
 
     } else if (lexeme->value == "PATTERN") {
-      if (t >= 2 && t <= 3) {
+      if (t == 2) {
+        // tile number
+        sub_action = action->actions[0];
+        // ld hl, parameter value    ; tile number
+        result_subtype = evalExpression(sub_action);
+        addCast(result_subtype, Lexeme::subtype_numeric);
+        addLdAL();
+        addPushAF();
+
+        // tile buffer pointer (8 bytes)
+        sub_action = action->actions[1];
+        sub_lexeme = sub_action->lexeme;
+        if (sub_lexeme->type == Lexeme::type_identifier) {
+          // ld hl, variable
+          addFix(sub_lexeme);
+          addLdHL(0x0000);
+          result_subtype = Lexeme::subtype_numeric;
+        } else {
+          result_subtype = evalExpression(sub_action);
+        }
+        addCast(result_subtype, Lexeme::subtype_numeric);
+        addPopAF();
+
+        // call set_tile_pattern
+        //   a = tile number
+        //   hl = pointer to an 8 bytes buffer
+        addCall(def_set_tile_pattern);
+      } else if (t >= 2 && t <= 3) {
         // tile number
         sub_action = action->actions[0];
         // ld hl, parameter value    ; tile number
@@ -9377,8 +9404,8 @@ void Compiler::cmd_set_tile() {
               // ld hl, (ARG)
               addLdHLii(def_ARG);
 
-              // call set_tile_pattern ; hl = tile number, de = line number, b =
-              // bank number (3=all), c = pattern data
+              // call set_tile_pattern ; hl = tile number, de = line number, b
+              // = bank number (3=all), c = pattern data
               addCall(def_set_tile_pattern);
             }
           }
@@ -9392,7 +9419,34 @@ void Compiler::cmd_set_tile() {
       }
 
     } else if (lexeme->value == "COLOR") {
-      if (t >= 2 && t <= 4) {
+      if (t == 2) {
+        // tile number
+        sub_action = action->actions[0];
+        // ld hl, parameter value    ; tile number
+        result_subtype = evalExpression(sub_action);
+        addCast(result_subtype, Lexeme::subtype_numeric);
+        addLdAL();
+        addPushAF();
+
+        // tile buffer pointer (8 bytes)
+        sub_action = action->actions[1];
+        sub_lexeme = sub_action->lexeme;
+        if (sub_lexeme->type == Lexeme::type_identifier) {
+          // ld hl, variable
+          addFix(sub_lexeme);
+          addLdHL(0x0000);
+          result_subtype = Lexeme::subtype_numeric;
+        } else {
+          result_subtype = evalExpression(sub_action);
+        }
+        addCast(result_subtype, Lexeme::subtype_numeric);
+        addPopAF();
+
+        // call set_tile_color
+        //   a = tile number
+        //   hl = pointer to an 8 bytes buffer
+        addCall(def_set_tile_color);
+      } else if (t >= 2 && t <= 4) {
         // tile number
         sub_action = action->actions[0];
         // ld hl, parameter value    ; tile number
@@ -9535,8 +9589,8 @@ void Compiler::cmd_set_tile() {
           // ld hl, (ARG)        ; tile number
           addLdHLii(def_ARG);
 
-          // call set_tile_color ; hl = tile number, de = line number (15=all),
-          // b = bank number (3=all), c = color data (FC,BC)
+          // call set_tile_color ; hl = tile number, de = line number
+          // (15=all), b = bank number (3=all), c = color data (FC,BC)
           addCall(def_set_tile_color);
         }
 
@@ -9606,9 +9660,9 @@ void Compiler::cmd_set_font() {
 }
 
 void Compiler::cmd_set_sprite() {
-  ActionNode *action = current_action->actions[0], *sub_action, *sub_sub_action;
-  Lexeme* lexeme;
-  unsigned int i, t, tt;
+  ActionNode *action = current_action->actions[0], *sub_action;
+  Lexeme *lexeme, *sub_lexeme;
+  unsigned int t;
   int result_subtype;
 
   t = action->actions.size();
@@ -9653,6 +9707,7 @@ void Compiler::cmd_set_sprite() {
 
         // direction
         sub_action = action->actions[1];
+
         // ld hl, parameter value    ; parameter
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
@@ -9666,222 +9721,66 @@ void Compiler::cmd_set_sprite() {
       }
 
     } else if (lexeme->value == "PATTERN") {
-      if (t >= 2 && t <= 3) {
-        // tile number
+      if (t == 2) {
+        // sprite number
         sub_action = action->actions[0];
-        // ld hl, parameter value    ; tile number
+        // ld hl, parameter value    ; sprite number
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
-        // ld (ARG), hl
-        addLdiiHL(def_ARG);
+        addLdAL();
+        addPushAF();
 
-        // bank number
-        if (t == 3) {
-          sub_action = action->actions[2];
-          // ld hl, parameter value    ; tile number
-          result_subtype = evalExpression(sub_action);
-          addCast(result_subtype, Lexeme::subtype_numeric);
-          // ld h, l
-          addLdHL();
-        } else {
-          // ld h, 0x03
-          addLdH(0x03);
-        }
-        // ld (ARG2), hl
-        addLdiiHL(def_ARG2);
-
-        // pattern data
+        // sprite buffer pointer (32 bytes)
         sub_action = action->actions[1];
-        lexeme = sub_action->lexeme;
-
-        if (lexeme->value == "ARRAY") {
-          tt = sub_action->actions.size();
-
-          for (i = 0; i < tt; i++) {
-            sub_sub_action = sub_action->actions[i];
-            lexeme = sub_sub_action->lexeme;
-
-            if (lexeme->type == Lexeme::type_literal &&
-                lexeme->subtype == Lexeme::subtype_null) {
-              continue;
-
-            } else {
-              // ld hl, parameter value    ; pattern data parameter
-              result_subtype = evalExpression(sub_sub_action);
-              addCast(result_subtype, Lexeme::subtype_numeric);
-
-              // ld bc, (ARG2)
-              addLdBCii(def_ARG2);
-              // ld c, l
-              addLdCL();
-              // ld de, *i*
-              addLdDE(i);
-              // ld hl, (ARG)
-              addLdHLii(def_ARG);
-
-              // call set_tile_pattern ; hl = tile number, de = line number, b =
-              // bank number (3=all), c = pattern data
-              addCall(def_set_sprite_pattern);
-            }
-          }
-
+        sub_lexeme = sub_action->lexeme;
+        if (sub_lexeme->type == Lexeme::type_identifier) {
+          // ld hl, variable
+          addFix(sub_lexeme);
+          addLdHL(0x0000);
+          result_subtype = Lexeme::subtype_numeric;
         } else {
-          syntaxError(
-              "Wrong pattern parameter on SET SPRITE PATTERN statement");
+          result_subtype = evalExpression(sub_action);
         }
+        addCast(result_subtype, Lexeme::subtype_numeric);
+        addPopAF();
+
+        // call set_sprite_pattern
+        //   a = sprite number
+        //   hl = pointer to a 32 bytes buffer
+        addCall(def_set_sprite_pattern);
 
       } else {
         syntaxError("Wrong parameters count on SET SPRITE PATTERN statement");
       }
 
     } else if (lexeme->value == "COLOR") {
-      if (t >= 2 && t <= 4) {
-        // tile number
+      if (t == 2) {
+        // sprite number
         sub_action = action->actions[0];
-        // ld hl, parameter value    ; tile number
+        // ld hl, parameter value    ; sprite number
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
-        // ld (ARG), hl
-        addLdiiHL(def_ARG);
+        addLdAL();
+        addPushAF();
 
-        // bank number
-        if (t == 4) {
-          sub_action = action->actions[3];
-          // ld hl, parameter value    ; tile number
-          result_subtype = evalExpression(sub_action);
-          addCast(result_subtype, Lexeme::subtype_numeric);
-          // ld h, l
-          addLdHL();
-        } else {
-          // ld h, 0x03
-          addLdH(0x03);
-        }
-        // ld (ARG2), hl
-        addLdiiHL(def_ARG2);
-
-        // color data
+        // sprite buffer pointer (16 bytes)
         sub_action = action->actions[1];
-        lexeme = sub_action->lexeme;
-
-        if (lexeme->value == "ARRAY") {
-          tt = sub_action->actions.size();
-
-          for (i = 0; i < tt; i++) {
-            sub_sub_action = sub_action->actions[i];
-            lexeme = sub_sub_action->lexeme;
-
-            if (lexeme->type == Lexeme::type_literal &&
-                lexeme->subtype == Lexeme::subtype_null) {
-              continue;
-
-            } else {
-              // ld hl, parameter value    ; color FC data parameter
-              result_subtype = evalExpression(sub_sub_action);
-              addCast(result_subtype, Lexeme::subtype_numeric);
-              // ld a, l
-              addLdAL();
-              // rla
-              addRLA();
-              // rla
-              addRLA();
-              // rla
-              addRLA();
-              // rla
-              addRLA();
-              // and 0xF0
-              addAnd(0xF0);
-
-              if (t >= 3) {
-                // color data
-                sub_sub_action = action->actions[2];
-                lexeme = sub_sub_action->lexeme;
-                if (lexeme->value != "ARRAY") {
-                  syntaxError(
-                      "Syntax not supported on SET SPRITE COLOR statement");
-                  return;
-                }
-                if (i < sub_sub_action->actions.size()) {
-                  sub_sub_action = sub_sub_action->actions[i];
-                  lexeme = sub_sub_action->lexeme;
-                  if (!(lexeme->type == Lexeme::type_literal &&
-                        lexeme->subtype == Lexeme::subtype_null)) {
-                    // push af
-                    addPushAF();
-                    // ld hl, parameter value    ; color BC data parameter
-                    result_subtype = evalExpression(sub_sub_action);
-                    addCast(result_subtype, Lexeme::subtype_numeric);
-                    // pop af
-                    addPopAF();
-                    // or l
-                    addOrL();
-                  }
-                }
-              }
-
-              // ld bc, (ARG2)
-              addLdBCii(def_ARG2);
-              // ld c, a
-              addLdCA();
-              // ld de, *i*
-              addLdDE(i);
-              // ld hl, (ARG)        ; tile number
-              addLdHLii(def_ARG);
-
-              // call set_tile_color ; hl = tile number, de = line number
-              // (15=all), b = bank number (3=all), c = color data (FC,BC)
-              addCall(def_set_sprite_color);
-            }
-          }
-
+        sub_lexeme = sub_action->lexeme;
+        if (sub_lexeme->type == Lexeme::type_identifier) {
+          // ld hl, variable
+          addFix(sub_lexeme);
+          addLdHL(0x0000);
+          result_subtype = Lexeme::subtype_numeric;
         } else {
-          // ld hl, parameter value    ; color FC data parameter
           result_subtype = evalExpression(sub_action);
-          addCast(result_subtype, Lexeme::subtype_numeric);
-          // ld a, l
-          addLdAL();
-          // rla
-          addRLA();
-          // rla
-          addRLA();
-          // rla
-          addRLA();
-          // rla
-          addRLA();
-          // and 0xF0
-          addAnd(0xF0);
-
-          if (t >= 3) {
-            // color data
-            sub_sub_action = action->actions[2];
-            lexeme = sub_sub_action->lexeme;
-            if (lexeme->value == "ARRAY") {
-              syntaxError("Syntax not supported on SET SPRITE COLOR statement");
-              return;
-            }
-            // push af
-            addPushAF();
-            // ld hl, parameter value    ; color BC data parameter
-            result_subtype = evalExpression(sub_sub_action);
-            addCast(result_subtype, Lexeme::subtype_numeric);
-            // pop af
-            addPopAF();
-            // or l
-            addOrL();
-          }
-
-          // ld bc, (ARG2)
-          addLdBCii(def_ARG2);
-          // ld c, a
-          addLdCA();
-          // ld de, 0x000F         ; all lines
-          addLdDE(0x000F);
-          // ld hl, (ARG)        ; tile number
-          addLdHLii(def_ARG);
-
-          // call set_tile_color ; hl = tile number, de = line number (15=all),
-          // b = bank number (3=all), c = color data (FC,BC)
-          addCall(def_set_tile_color);
         }
+        addCast(result_subtype, Lexeme::subtype_numeric);
+        addPopAF();
+
+        // call set_sprite_color
+        //   a = sprite number
+        //   hl = pointer to a 16 bytes buffer
+        addCall(def_set_sprite_color);
 
       } else {
         syntaxError("Wrong parameters count on SET SPRITE COLOR statement");
@@ -9890,7 +9789,6 @@ void Compiler::cmd_set_sprite() {
     } else {
       syntaxError("Invalid syntax on SET SPRITE statement");
     }
-
   } else {
     syntaxError("Missing parameters on SET SPRITE statement");
   }
@@ -9990,6 +9888,10 @@ void Compiler::cmd_get() {
         cmd_get_date();
       } else if (next_lexeme->value == "TIME") {
         cmd_get_time();
+      } else if (next_lexeme->value == "TILE") {
+        cmd_get_tile();
+      } else if (next_lexeme->value == "SPRITE") {
+        cmd_get_sprite();
       } else {
         syntaxError("Invalid GET statement");
       }
@@ -10108,6 +10010,178 @@ void Compiler::cmd_get_time() {
     syntaxError(
         "Wrong GET TIME parameters count.\nTry: GET TIME iHour, iMinute, "
         "iSecond");
+  }
+}
+
+void Compiler::cmd_get_tile() {
+  ActionNode *action = current_action->actions[0], *sub_action;
+  Lexeme *lexeme, *sub_lexeme;
+  unsigned int t;
+  int result_subtype;
+
+  t = action->actions.size();
+  if (t) {
+    action = action->actions[0];
+    lexeme = action->lexeme;
+    t = action->actions.size();
+
+    if (lexeme->value == "PATTERN") {
+      if (t == 2) {
+        // tile number
+        sub_action = action->actions[0];
+        // ld hl, parameter value    ; tile number
+        result_subtype = evalExpression(sub_action);
+        addCast(result_subtype, Lexeme::subtype_numeric);
+        addLdAL();
+        addPushAF();
+
+        // tile buffer pointer (8 bytes)
+        sub_action = action->actions[1];
+        sub_lexeme = sub_action->lexeme;
+        if (sub_lexeme->type == Lexeme::type_identifier) {
+          // ld hl, variable
+          addFix(sub_lexeme);
+          addLdHL(0x0000);
+          result_subtype = Lexeme::subtype_numeric;
+        } else {
+          result_subtype = evalExpression(sub_action);
+        }
+        addCast(result_subtype, Lexeme::subtype_numeric);
+        addPopAF();
+
+        // call get_tile_pattern
+        //   a = tile number
+        //   hl = pointer to an 8 bytes buffer
+        addCall(def_get_tile_pattern);
+
+      } else {
+        syntaxError("Wrong parameters count on GET TILE PATTERN statement");
+      }
+
+    } else if (lexeme->value == "COLOR") {
+      if (t == 2) {
+        // tile number
+        sub_action = action->actions[0];
+        // ld hl, parameter value    ; tile number
+        result_subtype = evalExpression(sub_action);
+        addCast(result_subtype, Lexeme::subtype_numeric);
+        addLdAL();
+        addPushAF();
+
+        // tile buffer pointer (8 bytes)
+        sub_action = action->actions[1];
+        sub_lexeme = sub_action->lexeme;
+        if (sub_lexeme->type == Lexeme::type_identifier) {
+          // ld hl, variable
+          addFix(sub_lexeme);
+          addLdHL(0x0000);
+          result_subtype = Lexeme::subtype_numeric;
+        } else {
+          result_subtype = evalExpression(sub_action);
+        }
+        addCast(result_subtype, Lexeme::subtype_numeric);
+        addPopAF();
+
+        // call get_tile_color
+        //   a = sprite number
+        //   hl = pointer to an 8 bytes buffer
+        addCall(def_get_tile_color);
+
+      } else {
+        syntaxError("Wrong parameters count on GET TILE COLOR statement");
+      }
+
+    } else {
+      syntaxError("Invalid syntax on GET TILE statement");
+    }
+  } else {
+    syntaxError("Missing parameters on GET TILE statement");
+  }
+}
+
+void Compiler::cmd_get_sprite() {
+  ActionNode *action = current_action->actions[0], *sub_action;
+  Lexeme *lexeme, *sub_lexeme;
+  unsigned int t;
+  int result_subtype;
+
+  t = action->actions.size();
+  if (t) {
+    action = action->actions[0];
+    lexeme = action->lexeme;
+    t = action->actions.size();
+
+    if (lexeme->value == "PATTERN") {
+      if (t == 2) {
+        // sprite number
+        sub_action = action->actions[0];
+        // ld hl, parameter value    ; sprite number
+        result_subtype = evalExpression(sub_action);
+        addCast(result_subtype, Lexeme::subtype_numeric);
+        addLdAL();
+        addPushAF();
+
+        // sprite buffer pointer (32 bytes)
+        sub_action = action->actions[1];
+        sub_lexeme = sub_action->lexeme;
+        if (sub_lexeme->type == Lexeme::type_identifier) {
+          // ld hl, variable
+          addFix(sub_lexeme);
+          addLdHL(0x0000);
+          result_subtype = Lexeme::subtype_numeric;
+        } else {
+          result_subtype = evalExpression(sub_action);
+        }
+        addCast(result_subtype, Lexeme::subtype_numeric);
+        addPopAF();
+
+        // call get_sprite_pattern
+        //   a = sprite number
+        //   hl = pointer to a 32 bytes buffer
+        addCall(def_get_sprite_pattern);
+
+      } else {
+        syntaxError("Wrong parameters count on GET SPRITE PATTERN statement");
+      }
+
+    } else if (lexeme->value == "COLOR") {
+      if (t == 2) {
+        // sprite number
+        sub_action = action->actions[0];
+        // ld hl, parameter value    ; sprite number
+        result_subtype = evalExpression(sub_action);
+        addCast(result_subtype, Lexeme::subtype_numeric);
+        addLdAL();
+        addPushAF();
+
+        // sprite buffer pointer (16 bytes)
+        sub_action = action->actions[1];
+        sub_lexeme = sub_action->lexeme;
+        if (sub_lexeme->type == Lexeme::type_identifier) {
+          // ld hl, variable
+          addFix(sub_lexeme);
+          addLdHL(0x0000);
+          result_subtype = Lexeme::subtype_numeric;
+        } else {
+          result_subtype = evalExpression(sub_action);
+        }
+        addCast(result_subtype, Lexeme::subtype_numeric);
+        addPopAF();
+
+        // call get_sprite_color
+        //   a = sprite number
+        //   hl = pointer to a 16 bytes buffer
+        addCall(def_get_sprite_color);
+
+      } else {
+        syntaxError("Wrong parameters count on GET SPRITE COLOR statement");
+      }
+
+    } else {
+      syntaxError("Invalid syntax on GET SPRITE statement");
+    }
+  } else {
+    syntaxError("Missing parameters on GET SPRITE statement");
   }
 }
 
