@@ -1,5 +1,6 @@
 # Version history
 
+- 0.3.3.6 – (2026/01/28) LINE statement parameters bug fix (issue #16);
 - 0.3.3.5 – (2026/01/16) SET/GET SPRITE COLOR/PATTERN new commands;
 - 0.3.3.4 – (2025/09/26) MSX Tile Forge map loading optimization and resource file check bug fix;
 - 0.3.3.3 – (2025/09/20) MSX Tile Forge support (CMD MTF);

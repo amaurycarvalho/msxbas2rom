@@ -2701,7 +2701,7 @@ bool Parser::eval_cmd_line(LexerLine* statement) {
   LexerLine parm;
   int state = 0, sepCount = 0, parmCount = 0;
   bool startAsParm2 = false, mustPopAction = false;
-  bool sepTime = false, isKeyword = false;
+  bool sepTime = false, isSpecialParameter = false;
   string parmValue;
 
   parm.clearLexemes();
@@ -2830,21 +2830,21 @@ bool Parser::eval_cmd_line(LexerLine* statement) {
           if (parm.getLexemeCount()) {
             next_lexeme = parm.getFirstLexeme();
 
-            isKeyword = false;
+            isSpecialParameter = false;
 
             if (parmCount >= 3 && !mustPopAction) {
               if (next_lexeme->type == Lexeme::type_identifier) {
                 if (next_lexeme->value == "B") {
                   parmValue = "1";
-                  isKeyword = true;
+                  isSpecialParameter = true;
                 } else if (next_lexeme->value == "BF") {
                   parmValue = "2";
-                  isKeyword = true;
+                  isSpecialParameter = true;
                 }
               }
             }
 
-            if (isKeyword) {
+            if (isSpecialParameter) {
               next_lexeme = new Lexeme(Lexeme::type_literal,
                                        Lexeme::subtype_numeric, parmValue);
               pushActionFromLexeme(next_lexeme);
@@ -2883,35 +2883,37 @@ bool Parser::eval_cmd_line(LexerLine* statement) {
   if (parm.getLexemeCount()) {
     next_lexeme = parm.getFirstLexeme();
 
-    isKeyword = false;
+    isSpecialParameter = false;
 
     if (parmCount >= 3) {
       if (next_lexeme->type == Lexeme::type_identifier) {
         if (next_lexeme->value == "B") {
           parmValue = "1";
-          isKeyword = true;
+          isSpecialParameter = true;
         } else if (next_lexeme->value == "BF") {
           parmValue = "2";
-          isKeyword = true;
+          isSpecialParameter = true;
         }
-      } else if (next_lexeme->type == Lexeme::type_keyword ||
-                 (next_lexeme->type == Lexeme::type_operator &&
-                  next_lexeme->value != "+" && next_lexeme->value != "-")) {
-        int operatorCode = gfxOperatorCode(next_lexeme);
+      } else if (parmCount > 3) {
+        if (next_lexeme->type == Lexeme::type_keyword ||
+            (next_lexeme->type == Lexeme::type_operator &&
+             next_lexeme->value != "+" && next_lexeme->value != "-")) {
+          int operatorCode = gfxOperatorCode(next_lexeme);
 
-        isKeyword = true;
+          isSpecialParameter = true;
 
-        if (operatorCode >= 0) {
-          parmValue = to_string(operatorCode);
-        } else {
-          error_message = "Invalid operator parameter in LINE statement.";
-          eval_expr_error = true;
-          return false;
+          if (operatorCode >= 0) {
+            parmValue = to_string(operatorCode);
+          } else {
+            error_message = "Invalid operator parameter in LINE statement.";
+            eval_expr_error = true;
+            return false;
+          }
         }
       }
     }
 
-    if (isKeyword) {
+    if (isSpecialParameter) {
       next_lexeme =
           new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, parmValue);
       pushActionFromLexeme(next_lexeme);
