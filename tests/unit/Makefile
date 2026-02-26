@@ -45,9 +45,9 @@ all: setup $(TEST_BINS)
 
 clean:
 	@echo "🧹 Cleaning artifacts..."
-	@rm -f $(BIN)/*
-	@rm -f $(OBJ)/*
-	@rm -f $(TMP)/*
+	@rm -rf $(BIN)/*
+	@rm -rf $(OBJ)/*
+	@rm -rf $(TMP)/*
 
 setup:
 	@echo "📦 Setting up environment..."
