@@ -1,6 +1,0 @@
-FILE "Handel_432_6.akm"
-10 CMD PLYLOAD 0
-20 CMD PLYPLAY
-30 PRINT "Playing Handel HWV 432 part 6..."
-40 GOTO 40
-

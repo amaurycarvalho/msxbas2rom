@@ -10,7 +10,7 @@
  *     amauryspires@gmail.com
  * @note
  *   Unit testing:
- *     ./test/unit/test
+ *     ./tests/unit/test
  * @example
  *   msxbas2rom -h
  *   msxbas2rom --ver

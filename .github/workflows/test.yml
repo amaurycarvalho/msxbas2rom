@@ -19,15 +19,15 @@ jobs:
           make release
       - name: Building unit tests
         run: |
-          cd test/unit
+          cd tests/unit
           make all
       - name: Doing unit test scenarios
         run: |
-          cd test/unit
+          cd tests/unit
           ./bin/test
           ./bin/test_resources
       - name: Doing integration test scenarios
         run: |
           make release
-          cd test/integration
+          cd tests/integration
           ./test.sh

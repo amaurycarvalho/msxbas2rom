@@ -1,6 +1,0 @@
-FILE "Mozart_K545.akm"
-10 CMD PLYLOAD 0
-20 CMD PLYPLAY
-30 PRINT "Playing Mozart K545..."
-40 GOTO 40
-

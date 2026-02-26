@@ -136,7 +136,7 @@ Run in the terminal (or CTRL+SHIFT+P, "Tasks: Run Task" and "test msxbas2rom") t
 Also, run unit testing:
 
 ```bash
-cd test/unit
+cd tests/unit
 make
 ./test
 ```
@@ -144,7 +144,7 @@ make
 And run integration testing as well:
 
 ```bash
-cd test/integration
+cd tests/integration
 ./test.sh
 ```
 

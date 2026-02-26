@@ -1,7 +1,0 @@
-- CIRCLE com parametros não suportados;
-- IF com a condição incompleta (contém apenas a variavel numerica);
-- RESTORE para linha que não tem DATA;
-- DATA mal formatado (textos sem aspas);
-- COLOR sem parametros;
-- GOTO para linha inexistente;
-- Pelo tamanho do programa, só compila como megarom (ocupando 40% de 128kb).

@@ -70,9 +70,9 @@
     {
       "label": "test msxbas2rom",
       "type": "shell",
-      "command": "cd ./test/unit && make all && ./test",
+      "command": "cd ./tests/unit && make all && ./test",
       "windows": {
-        "command": "cd .\\test\\unit && make all && .\\test"
+        "command": "cd .\\tests\\unit && make all && .\\test"
       },
       "group": {
         "kind": "test",

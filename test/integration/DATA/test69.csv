@@ -1,6 +1,0 @@
-"VALUE A",1   
-"VALUE B",2, VALUE C, 3   
-"VALUE D"   , 4, "VALUE E"    
-5, "VALUE F", 6
-"*", &H20, 0.1415
-
