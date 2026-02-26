@@ -7,16 +7,19 @@
 
 #include "symbol_file_export_strategy.h"
 
-bool SymbolFileExportStrategy::save(
-    const std::vector<std::vector<std::string>>& kernelSymbols,
-    const std::vector<CodeNode*>& codeList,
-    const std::vector<CodeNode*>& dataList,
+#include "symbol_manager.h"
+
+bool SymbolFileExportStrategy::save(SymbolManager* symbolManager,
                                     BuildOptions* opts) {
   FILE* file;
   CodeNode* codeItem;
   int i, t;
   char s[255];
   const char* symbol_format[] = {"S%i_%s EQU 0%XH\n", "%s EQU 0%XH\n"};
+  std::vector<std::vector<std::string>> kernelSymbols =
+      symbolManager->getKernelSymbolAddresses();
+  std::vector<CodeNode*>& codeList = symbolManager->codeList;
+  std::vector<CodeNode*>& dataList = symbolManager->dataList;
 
   if ((file = fopen(opts->symbolFilename.c_str(), "w"))) {
     t = kernelSymbols.size();

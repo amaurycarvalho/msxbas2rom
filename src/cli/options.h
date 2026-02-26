@@ -28,16 +28,19 @@ class BuildOptions {
   //! @deprecated Pcoded
   enum class CompileMode { Plain, ASCII8, KonamiSCC, Pcoded } compileMode;
 
+  //! @brief Symbols output format
+  enum class SymbolsMode { None, NoICE, Omds, Symbol, Cdb } symbols;
+
   //! @brief File names (input, output and symbol)
   string inputFilename, outputFilename, appFileName;
-  string symbolFilename, omdsFilename, noiceFilename;
+  string symbolFilename, omdsFilename, noiceFilename, cdbFilename;
 
   //! @brief Options flags
   bool help, debug, quiet, error, version, history, doc;
 
   //! @brief Options flags
   //! @note for compiled mode only
-  bool symbols, lineNumber, megaROM;
+  bool lineNumber, megaROM;
 
   //! @brief Options flags
   //! @deprecated for pcoded mode only
@@ -50,7 +53,7 @@ class BuildOptions {
   string errorMessage;
 
   //! @brief Parse CLI
-  bool parse(int argc, char *argv[]);
+  bool parse(int argc, char* argv[]);
 
   //! @brief Set input filename
   void setInputFilename(string filename);

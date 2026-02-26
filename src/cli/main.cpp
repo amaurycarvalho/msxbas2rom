@@ -38,7 +38,7 @@
 
 using namespace std;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   BuildOptions opts;
   Lexer lexer;
   Rom rom;
@@ -204,10 +204,8 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  if (opts.symbols) {
-    compiler.symbolManager.saveSymbolFile(&opts);
-    compiler.symbolManager.saveOmdsFile(&opts);
-    compiler.symbolManager.saveNoIceFile(&opts);
+  if (opts.symbols != BuildOptions::SymbolsMode::None) {
+    compiler.symbolManager.saveSymbol(&opts);
   }
 
   /// finish process
@@ -251,9 +249,7 @@ int main(int argc, char *argv[]) {
     printf("    RAM usage will be %.1f%% of avaliable capacity\n",
            compiler.ramMemoryPerc);
 
-    if (opts.symbols) {
-      printf("    Symbols file created for use on OpenMSX debugger\n");
-    }
+    printf("    Symbols file created for debugger support\n");
 
     printf("Compilation finished with success.\n");
 

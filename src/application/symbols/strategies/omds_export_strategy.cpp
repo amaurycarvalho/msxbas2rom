@@ -7,10 +7,9 @@
 
 #include "omds_export_strategy.h"
 
-bool OmdsExportStrategy::save(
-    const std::vector<std::vector<std::string>>& kernelSymbols,
-    const std::vector<CodeNode*>& codeList,
-    const std::vector<CodeNode*>& dataList,
+#include "symbol_manager.h"
+
+bool OmdsExportStrategy::save(SymbolManager* symbolManager,
                               BuildOptions* opts) {
   FILE* file;
   CodeNode* codeItem;
@@ -28,6 +27,10 @@ bool OmdsExportStrategy::save(
       "<Symbol><type>%s</type><name>%s</name><value>%i</"
       "value><validSlots>65535</validSlots><validRegisters>3968</"
       "validRegisters><source>0</source><segments>%s</segments></Symbol>\n";
+  std::vector<std::vector<std::string>> kernelSymbols =
+      symbolManager->getKernelSymbolAddresses();
+  std::vector<CodeNode*>& codeList = symbolManager->codeList;
+  std::vector<CodeNode*>& dataList = symbolManager->dataList;
 
   if ((file = fopen(opts->omdsFilename.c_str(), "w"))) {
     fwrite(omds_header, 1, strlen(omds_header), file);

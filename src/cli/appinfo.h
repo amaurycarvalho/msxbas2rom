@@ -45,7 +45,10 @@ Compile options (optional):
     -c  = plain ROM compile mode (default)
     -x  = ASCII8 MegaROM compile mode
     -x --scc = Konami SCC MegaROM compile mode
-    -s  = generate symbols for OpenMSX debugger
+    -s or --noi or --noice = generate symbols in .noi format (default)
+    --symbol = generate symbols in .symbol format
+    --omds = generate symbols in .omds format
+    --cdb = generate symbols in .cdb format
     --lin = write the MSX BASIC line numbers in the binary code
 
 Path options (optional)

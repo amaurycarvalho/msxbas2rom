@@ -24,7 +24,8 @@ BuildOptions::BuildOptions() {
 
   /// default compile mode
   compileMode = CompileMode::Plain;
-  megaROM = symbols = lineNumber = false;
+  symbols = SymbolsMode::None;
+  megaROM = lineNumber = false;
 
   /// default pcode mode
   turbo = noStripRemLines = false;
@@ -72,11 +73,23 @@ BuildOptions::BuildOptions() {
   parser.addOption(
       "-k", "--scc", "KonamiSCC MegaROM type", false, false,
       [&](const std::string&) { compileMode = CompileMode::KonamiSCC; });
-  parser.addOption("-s", "--symbol", "Generate symbols for OpenMSX debugger",
-                   false, false, [&](const std::string&) { symbols = true; });
+  parser.addOption("", "--symbol", "Generate symbols in .symbol format", false,
+                   false,
+                   [&](const std::string&) { symbols = SymbolsMode::Symbol; });
+  parser.addOption("-s", "--noi", "Generate symbols in .noi format", false,
+                   false,
+                   [&](const std::string&) { symbols = SymbolsMode::NoICE; });
+  parser.addOption("", "--noice", "Generate symbols in .noi format", false,
+                   false,
+                   [&](const std::string&) { symbols = SymbolsMode::NoICE; });
+  parser.addOption("", "--omds", "Generate symbols in .omds format", false,
+                   false,
+                   [&](const std::string&) { symbols = SymbolsMode::Omds; });
+  parser.addOption("", "--cdb", "Generate symbols in .cdb format", false, false,
+                   [&](const std::string&) { symbols = SymbolsMode::Cdb; });
   parser.addOption("-l", "--lin",
                    "Write the MSX BASIC line numbers in the binary code", false,
-                   false, [&](const std::string&) { symbols = true; });
+                   false, [&](const std::string&) { lineNumber = true; });
 
   /// pcoded options setup (deprecated)
   parser.addOption(
@@ -110,6 +123,7 @@ void BuildOptions::setInputFilename(string filename) {
     symbolFilename = outputFilename + ".symbol";
     omdsFilename = outputFilename + ".omds";
     noiceFilename = outputFilename + ".noi";
+    cdbFilename = outputFilename + ".cdb";
     outputFilename += ".rom";
   }
 }
