@@ -164,7 +164,8 @@ Follow [Conventional prefixes](https://www.conventionalcommits.org/) for commits
 - **fix**: for bug fixes;
 - **docs**: for documentation changes;
 - **test**: for adding/modifying tests;
-- **refactor**: for code improvements without feature changes.
+- **refactor**: for code improvements without feature changes;
+- **chore**: for changes that do not modify the application's source code or tests, but rather maintain the development environment, tooling, or build process.
 
 Example:
 

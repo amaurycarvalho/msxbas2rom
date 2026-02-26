@@ -1,6 +1,6 @@
 #------------------------------------------------------------------------------#
 # MSXBAS2ROM makefile                                                          #
-# by Amaury Carvalho (2022-2025)                                               #
+# by Amaury Carvalho (2022-2026)                                               #
 #------------------------------------------------------------------------------#
 
 .PHONY: all clean debug release debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
@@ -18,6 +18,8 @@ LD = g++
 WINDRES = windres
 
 CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG)
+CPPFLAGS = -I $(INC)
+DEPFLAGS = -MMD -MP
 SRC = src
 INC = include
 RESINC = 
@@ -65,18 +67,11 @@ BINDIR_RELEASE = bin/Release
 DEP_RELEASE = 
 OUT_RELEASE = $(BINDIR_RELEASE)/msxbas2rom
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/lex.o \
-			$(OBJDIR_DEBUG)/rom.o $(OBJDIR_DEBUG)/compiler.o \
-			$(OBJDIR_DEBUG)/z80.o $(OBJDIR_DEBUG)/parse.o $(OBJDIR_DEBUG)/pletter.o \
-			$(OBJDIR_DEBUG)/cliparser.o $(OBJDIR_DEBUG)/options.o $(OBJDIR_DEBUG)/fswrapper.o \
-			$(OBJDIR_DEBUG)/symbols.o $(OBJDIR_DEBUG)/resources.o  
-
-OBJ_RELEASE = $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/lex.o \
- 			  $(OBJDIR_RELEASE)/rom.o $(OBJDIR_RELEASE)/compiler.o \
-			  $(OBJDIR_RELEASE)/z80.o $(OBJDIR_RELEASE)/parse.o \
-			  $(OBJDIR_RELEASE)/pletter.o $(OBJDIR_RELEASE)/cliparser.o \
-			  $(OBJDIR_RELEASE)/options.o $(OBJDIR_RELEASE)/fswrapper.o \
-  			  $(OBJDIR_RELEASE)/symbols.o $(OBJDIR_RELEASE)/resources.o
+MODULES = main lex rom compiler z80 parse pletter cliparser options fswrapper symbols resources
+OBJ_DEBUG = $(addprefix $(OBJDIR_DEBUG)/,$(addsuffix .o,$(MODULES)))
+OBJ_RELEASE = $(addprefix $(OBJDIR_RELEASE)/,$(addsuffix .o,$(MODULES)))
+DEP_DEBUG = $(OBJ_DEBUG:.o=.d)
+DEP_RELEASE = $(OBJ_RELEASE:.o=.d)
 
 DIST_DIR = dist
 DEB_DIR = ..
@@ -115,43 +110,10 @@ out_debug: $(OUT_DEBUG)
 after_debug: 
 	@echo "✅ Building debug finished"
 
-$(OBJDIR_DEBUG)/main.o: $(SRC)/main.cpp $(INC_DEBUG)/main.h $(INC_DEBUG)/appinfo.h $(INC_DEBUG)/options.h $(INC_DEBUG)/lex.h $(INC_DEBUG)/parse.h $(INC_DEBUG)/compiler.h $(INC_DEBUG)/rom.h 
-	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/main.cpp -o $(OBJDIR_DEBUG)/main.o 
+$(OBJDIR_DEBUG)/%.o: $(SRC)/%.cpp | $(OBJDIR_DEBUG)
+	$(CXX) $(CPPFLAGS) $(CFLAGS_DEBUG) $(DEPFLAGS) -c $< -o $@
 
-$(OBJDIR_DEBUG)/lex.o: $(SRC)/lex.cpp $(INC_DEBUG)/lex.h
-	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/lex.cpp -o $(OBJDIR_DEBUG)/lex.o 
-
-$(OBJDIR_DEBUG)/rom.o: $(SRC)/rom.cpp $(INC_DEBUG)/rom.h $(INC_DEBUG)/compiler.h $(INC_DEBUG)/compiler_hooks.h $(INC_DEBUG)/header.h $(INC_DEBUG)/start.h $(INC_DEBUG)/resources.h $(INC_DEBUG)/symbols.h
-	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/rom.cpp -o $(OBJDIR_DEBUG)/rom.o 
-
-$(OBJDIR_DEBUG)/z80.o: $(SRC)/z80.cpp $(INC_DEBUG)/z80.h
-	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/z80.cpp -o $(OBJDIR_DEBUG)/z80.o 
-
-$(OBJDIR_DEBUG)/compiler.o: $(SRC)/compiler.cpp $(INC_DEBUG)/compiler.h $(INC_DEBUG)/compiler_hooks.h $(INC_DEBUG)/z80.h $(INC_DEBUG)/header.h $(INC_DEBUG)/start.h $(INC_DEBUG)/symbols.h
-	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/compiler.cpp -o $(OBJDIR_DEBUG)/compiler.o 
-
-$(OBJDIR_DEBUG)/parse.o: $(SRC)/parse.cpp $(INC_DEBUG)/parse.h
-	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/parse.cpp -o $(OBJDIR_DEBUG)/parse.o 
-
-$(OBJDIR_DEBUG)/options.o: $(SRC)/options.cpp $(INC_DEBUG)/options.h
-	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/options.cpp -o $(OBJDIR_DEBUG)/options.o 
-
-$(OBJDIR_DEBUG)/symbols.o: $(SRC)/symbols.cpp $(INC_DEBUG)/symbols.h
-	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/symbols.cpp -o $(OBJDIR_DEBUG)/symbols.o 
-
-$(OBJDIR_DEBUG)/resources.o: $(SRC)/resources.cpp $(INC_DEBUG)/resources.h
-	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/resources.cpp -o $(OBJDIR_DEBUG)/resources.o 
-
-$(OBJDIR_DEBUG)/pletter.o: $(SRC)/pletter.cpp $(INC_DEBUG)/pletter.h
-	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/pletter.cpp -o $(OBJDIR_DEBUG)/pletter.o 
-
-$(OBJDIR_DEBUG)/cliparser.o: $(SRC)/cliparser.cpp $(INC_DEBUG)/cliparser.h
-	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/cliparser.cpp -o $(OBJDIR_DEBUG)/cliparser.o 
-
-$(OBJDIR_DEBUG)/fswrapper.o: $(SRC)/fswrapper.cpp $(INC_DEBUG)/fswrapper.h
-	$(CXX) $(CFLAGS_DEBUG) -I $(INC_DEBUG) -c $(SRC)/fswrapper.cpp -o $(OBJDIR_DEBUG)/fswrapper.o 
-
-$(OUT_DEBUG): $(OBJ_DEBUG) $(DEP_DEBUG)
+$(OUT_DEBUG): $(OBJ_DEBUG)
 	$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG)
 
 # ----------------------------
@@ -174,44 +136,16 @@ out_release: $(OUT_RELEASE)
 after_release: 
 	@echo "✅ Building release finished"
 
-$(OBJDIR_RELEASE)/main.o: $(SRC)/main.cpp $(INC_RELEASE)/main.h $(INC_RELEASE)/appinfo.h $(INC_RELEASE)/options.h $(INC_RELEASE)/lex.h $(INC_RELEASE)/parse.h $(INC_RELEASE)/compiler.h $(INC_RELEASE)/rom.h 
-	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/main.cpp -o $(OBJDIR_RELEASE)/main.o 
+$(OBJDIR_RELEASE)/%.o: $(SRC)/%.cpp | $(OBJDIR_RELEASE)
+	$(CXX) $(CPPFLAGS) $(CFLAGS_RELEASE) $(DEPFLAGS) -c $< -o $@
 
-$(OBJDIR_RELEASE)/lex.o: $(SRC)/lex.cpp $(INC_RELEASE)/lex.h
-	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/lex.cpp -o $(OBJDIR_RELEASE)/lex.o 
-
-$(OBJDIR_RELEASE)/rom.o: $(SRC)/rom.cpp $(INC_RELEASE)/rom.h $(INC_RELEASE)/compiler.h $(INC_RELEASE)/compiler_hooks.h $(INC_RELEASE)/header.h $(INC_RELEASE)/start.h $(INC_RELEASE)/resources.h $(INC_RELEASE)/symbols.h
-	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/rom.cpp -o $(OBJDIR_RELEASE)/rom.o 
-
-$(OBJDIR_RELEASE)/z80.o: $(SRC)/z80.cpp $(INC_RELEASE)/z80.h
-	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/z80.cpp -o $(OBJDIR_RELEASE)/z80.o 
-
-$(OBJDIR_RELEASE)/compiler.o: $(SRC)/compiler.cpp $(INC_RELEASE)/compiler.h $(INC_RELEASE)/compiler_hooks.h $(INC_RELEASE)/z80.h $(INC_RELEASE)/header.h $(INC_RELEASE)/start.h $(INC_RELEASE)/symbols.h
-	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/compiler.cpp -o $(OBJDIR_RELEASE)/compiler.o 
-
-$(OBJDIR_RELEASE)/parse.o: $(SRC)/parse.cpp $(INC_RELEASE)/parse.h
-	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/parse.cpp -o $(OBJDIR_RELEASE)/parse.o 
-
-$(OBJDIR_RELEASE)/options.o: $(SRC)/options.cpp $(INC_RELEASE)/options.h
-	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/options.cpp -o $(OBJDIR_RELEASE)/options.o 
-
-$(OBJDIR_RELEASE)/symbols.o: $(SRC)/symbols.cpp $(INC_RELEASE)/symbols.h
-	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/symbols.cpp -o $(OBJDIR_RELEASE)/symbols.o 
-
-$(OBJDIR_RELEASE)/resources.o: $(SRC)/resources.cpp $(INC_RELEASE)/resources.h
-	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/resources.cpp -o $(OBJDIR_RELEASE)/resources.o 
-
-$(OBJDIR_RELEASE)/pletter.o: $(SRC)/pletter.cpp $(INC_RELEASE)/pletter.h
-	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/pletter.cpp -o $(OBJDIR_RELEASE)/pletter.o 
-
-$(OBJDIR_RELEASE)/cliparser.o: $(SRC)/cliparser.cpp $(INC_RELEASE)/cliparser.h
-	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/cliparser.cpp -o $(OBJDIR_RELEASE)/cliparser.o 
-
-$(OBJDIR_RELEASE)/fswrapper.o: $(SRC)/fswrapper.cpp $(INC_RELEASE)/fswrapper.h
-	$(CXX) $(CFLAGS_RELEASE) -I $(INC_RELEASE) -c $(SRC)/fswrapper.cpp -o $(OBJDIR_RELEASE)/fswrapper.o 
-
-$(OUT_RELEASE): $(OBJ_RELEASE) $(DEP_RELEASE)
+$(OUT_RELEASE): $(OBJ_RELEASE)
 	$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE)
+
+$(OBJDIR_DEBUG) $(OBJDIR_RELEASE):
+	@mkdir -p $@
+
+-include $(DEP_DEBUG) $(DEP_RELEASE)
 
 # -----------------------------------------------
 # Debian package build
@@ -251,5 +185,3 @@ rpm:
 	@echo "🧹 Cleaning temporary files..."
 	@rm -rf $(RPM_DIR)
 	@echo "✅ RPM package saved to $(DIST_DIR)/$(RPM_PACKAGE)"
-
-
