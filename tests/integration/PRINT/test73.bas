@@ -1,0 +1,25 @@
+05 DIM A#(2)
+10 PRINT USING$("####.#", 200.5), USING$("####.#", -200.5)
+11 PRINT USING$("+###.#", 200.5), USING$("+###.#", -200.5)
+12 PRINT USING$("###.#-", 200.5), USING$("###.#-", -200.5)
+13 PRINT USING$("###.#+", 200.5), USING$("###.#+", -200.5)
+
+20 PRINT USING "###.#";123.4, 432.1
+30 M$ = "####" : PRINT USING M$;12; : PRINT "OK"
+40 PRINT USING "#####";12345, 10000
+45 PRINT USING "00000";12345, 123, 1
+50 A#(0) = 25.3 : PRINT USING "##.##";A#(0); : PRINT "OK"
+60 PRINT USING "##.##";25.345 
+70 B% = +123 : PRINT USING "###";B%; : PRINT "OK"
+80 PRINT USING "###";-123
+90 PRINT USING "+####";123,-123 
+100 PRINT USING "####+";123,-123 
+110 PRINT USING "###-";123,-123 
+120 PRINT USING "**######";123
+130 PRINT USING "**######";-234 
+140 PRINT USING "$$###" ;1234 
+150 PRINT USING "+$$###";-1234
+160 PRINT USING "###,###.##";1500.3
+170 PRINT USING "#####^^^^";10000
+200 PRINT USING "###.#"; 1, 2.2, 4
+

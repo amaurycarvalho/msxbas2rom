@@ -1,0 +1,19 @@
+10 IDATA 32767, 10000, 9999
+11 IDATA "TEST1"
+12 IDATA 10, 20
+
+20 IREAD A%, B#, C : PRINT A%, B#, C
+21 IREAD A%, B#, C : PRINT A%, B#, C
+
+30 RESTORE 11
+31 IREAD A%, B#, C : PRINT A%, B#, C
+
+40 RESTORE 
+41 IREAD A%, B#, C : PRINT A%, B#, C
+
+' PRINT RESULT:
+'   32767   1E+04   9999
+'  0       10      20
+'  0       10      20
+'  32767   1E+04   9999
+

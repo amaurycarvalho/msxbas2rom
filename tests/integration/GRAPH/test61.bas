@@ -1,0 +1,17 @@
+10 I% = 1 : X% = 10 : Y% = 10 : GOSUB 200
+20 I% = 2 : X% = 100 : Y% = 100 : GOSUB 200
+30 I% = 3 : X% = 0 : Y% = 50 : GOSUB 200
+40 I% = 5 : X% = 100 : Y% = 100 : GOSUB 200
+50 I% = 8 : X% = 100 : Y% = 100 : GOSUB 200
+60 I% = 12 : X% = 100 : Y% = 100 : GOSUB 200
+70 SCREEN 0
+80 END
+
+200 SCREEN I%
+210 LOCATE X%, Y%
+220 PRINT "SCREEN"; I%
+225 'IF I% >= 2 THEN LINE (X%, Y%-10)-(X%+60,Y%+15),8,B
+230 A$ = INPUT$(1)
+240 RETURN
+
+

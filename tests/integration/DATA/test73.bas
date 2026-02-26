@@ -1,0 +1,24 @@
+FILE "data1.bin"
+FILE "data2.bin"
+FILE "data3.bin"
+
+10 CMD RESTORE 0
+15 IRESTORE 0
+20 IREAD A%, B% 
+30 PRINT A%, B%
+
+40 CMD RESTORE 1
+45 IRESTORE 0
+50 IREAD A%, B% 
+60 PRINT A%, B%
+
+70 CMD RESTORE 2
+75 IRESTORE 0
+80 IREAD A%, B% 
+90 PRINT A%, B%
+
+' PRINT RESULT:
+'  1       2
+'  6       7
+'  11      12
+

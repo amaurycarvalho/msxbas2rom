@@ -1,0 +1,12 @@
+- Island game
+-- coconuts (as sprites) fall from the coconut tree and agregate below it into the ground (as tiles);
+-- a fish (as sprite, flipping vertical each second) appear on the side opposite from the player side;
+-- theres a hungry timer (player is dead when zero counter);
+-- player must eat the fish to add 1/2 of hungry timer, and a new fish appears on the other side of island;
+-- player must avoid the falling coconuts (sprites), or die;
+-- player can jump to skip the fallen coconuts (tiles) if theres no coconut above it;
+-- player can take a coconut to put another place or fire it into the sea;
+-- player must goes to each side of island to eat a fish;
+-- player can drink the coconut to add 1/8 of the hungry timer.
+
+

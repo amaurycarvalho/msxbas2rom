@@ -1,0 +1,54 @@
+10 CLS
+20 A = 1 > 2
+30 B = 1 < 2
+40 C = 2 = 2
+50 D = 2 >= 2
+60 E = 2 <= 2
+70 PRINT "<<<< CONDITIONALS 1 >>>>"
+80 PRINT "1 > 2: "; A
+90 PRINT "1 < 2: "; B
+100 PRINT "2 = 2: "; C
+110 PRINT "2 >= 2: "; D
+115 PRINT "2 >= 3: "; 2 >= 3
+120 PRINT "2 <= 2: "; E
+125 PRINT "2 <= 3: "; 2 <= 3
+130 PRINT "(1 > 2) = (1 < 2): "; A = B
+140 PRINT "1 <> 2: "; 1 <> 2
+150 PRINT "1 <> 1: "; 1 <> 1
+155 LINE INPUT "PRESS ENTER TO CONTINUE..."; Z$
+160 PRINT "ABC = ABC: "; "ABC" = "ABC"
+170 PRINT "ABCD = ABC: "; "ABCD" = "ABC"
+180 PRINT "ABC > ABCD: "; "ABC" > "ABCD"
+190 PRINT "ABC < ABCD: "; "ABC" < "ABCD"
+200 PRINT "ABC = ABCD: "; "ABC" = "ABCD"
+210 PRINT "ABC <> ABC: "; "ABC" <> "ABC"
+220 PRINT "ABC >= ABC: "; "ABC" >= "ABC"
+230 PRINT "ABC <= ABC: "; "ABC" <= "ABC"
+231 PRINT "ABCD <= ABC: "; "ABCD" <= "ABC"
+235 LINE INPUT "PRESS ENTER TO CONTINUE..."; Z$
+240 PRINT "3.14 < 3.15: "; 3.14 < 3.15
+250 PRINT "3.14 > 3.15: "; 3.14 > 3.15
+260 PRINT "3.14 = 3.15: "; 3.14 = 3.15
+270 PRINT "3.14 <> 3.15: "; 3.14 <> 3.15
+280 PRINT "3.14 <= 3.14: "; 3.14 <= 3.14
+290 PRINT "3.14 >= 3.14: "; 3.14 >= 3.14
+300 PRINT "3.15 >= 3.14: "; 3.15 >= 3.14
+305 LINE INPUT "PRESS ENTER TO CONTINUE..."; Z$
+310 PRINT "1 + 2 = 4 - 1: "; 1 + 2 = 4 - 1
+320 PRINT "2 * 3 < 5: "; 2 * 3 < 5
+330 PRINT "2 < 3 * 5: "; 2 < 3 * 5
+340 PRINT "2 > 1 + 5: "; 2 > 1 + 5
+345 LINE INPUT "PRESS ENTER TO CONTINUE..."; Z$
+350 PRINT "(1 < 2) AND (2 > 3): "; (1 < 2) AND (2 > 3)
+360 PRINT "2 > 1 OR 1 > 3: "; 2 > 1 OR 1 > 3
+370 PRINT "2 > 1 XOR 1 < 3: "; 2 > 1 XOR 1 < 3
+375 PRINT "NOT 2 > 1: "; NOT 2 > 1
+380 PRINT "5 EQV 13: "; 5 EQV 13
+381 PRINT "5 IMP 13: "; 5 IMP 13
+390 PRINT "1 SHL 3: "; 1 SHL 3
+395 PRINT "64 SHR 1: "; 64 SHR 1
+400 PRINT "2 SHR 0: "; 2 SHR 0
+410 PRINT "1 SHL 0: "; 1 SHL 0
+420 PRINT "16 SHR 2: "; 16 SHR 2
+
+

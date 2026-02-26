@@ -1,0 +1,17 @@
+FILE "songs.akm"
+FILE "effects.akx"
+
+10 CMD PLYLOAD 0, 1
+20 CMD PLYSONG 0
+30 CMD PLYPLAY
+40 LOCATE 1, 1 : PRINT "Playing song..."
+50 S% = PLYSTATUS()
+60 LOCATE 1, 2 : PRINT S%; "  "
+70 IF S% < 128 THEN 50
+80 T% = T% + 1
+90 LOCATE 1, 3 : PRINT "Song finished "; T%; "x"
+100 CMD PLYSOUND 1,2
+110 CMD PLYREPLAY
+120 GOTO 40
+
+

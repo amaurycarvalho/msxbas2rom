@@ -1,0 +1,41 @@
+10 A# = 1.0 : E# = -10.0
+20 B# = 10000.0
+30 rem C# = 100000000.0
+35 F# = 0.00001
+40 PRINT A#, B#, C#, E#, F#
+45 D% = INT(C# / B#) : PRINT D%
+50 D% = VARPTR(A#) : GOSUB 500
+60 D% = VARPTR(B#) : GOSUB 500
+70 D% = VARPTR(C#) : GOSUB 500
+80 D% = VARPTR(E#) : GOSUB 500
+90 D% = VARPTR(F#) : GOSUB 500
+
+100 rem A# = 9000000.0 : GOSUB 110
+101 A# = 123.456 : GOSUB 110
+102 A# = 100000.0 : GOSUB 110
+103 END
+
+110 rem D% = A# / 100000000.00 
+111 S$ = D%
+112 rem A# = A# - (D% * 100000000.00)
+
+120 D% = A# / 10000.00 
+121 S$ = S$ + D%
+122 A# = A# - (D% * 10000.00)
+
+130 D% = A# 
+131 S$ = S$ + D%
+132 A# = A# - D%
+
+140 S$ = S$ + "."
+
+150 D% = A# * 10000.00 
+151 S$ = S$ + D%
+
+160 PRINT S$
+161 RETURN
+
+
+500 PRINT HEX$(PEEK(D%)), HEX$(PEEK(D%+1)), HEX$(PEEK(D%+2))
+501 RETURN
+
