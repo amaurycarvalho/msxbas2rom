@@ -14,3 +14,11 @@ These principles are not optional.
 ## Mandatory Technical Guidelines
 
 - Consult the `specs/adr` folder for current architectural decisions.
+
+## Project Requirements
+
+- Consult the `specs/user-stories` folder for project main requirements.
+
+## Project Roadmap
+
+- Consult the `specs/plan.md` for project main roadmap and `specs/tasks.md` for the current sprint backlog.
