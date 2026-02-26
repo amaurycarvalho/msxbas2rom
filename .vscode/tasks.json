@@ -68,15 +68,26 @@
       "problemMatcher": ["$gcc"]
     },
     {
-      "label": "test msxbas2rom",
+      "label": "test unit msxbas2rom",
       "type": "shell",
-      "command": "cd ./tests/unit && make all && ./bin/test_lexer && ./bin/test_parser && ./bin/test_compiler && ./bin/test_builder",
+      "command": "make test-unit",
       "windows": {
-        "command": "cd .\\tests\\unit && make all && .\\bin\\test_lexer && .\\bin\\test_parser && .\\bin\\test_compiler && .\\bin\\test_builder"
+        "command": "make test-unit"
       },
       "group": {
         "kind": "test",
         "isDefault": true
+      }
+    },
+    {
+      "label": "test integration msxbas2rom",
+      "type": "shell",
+      "command": "make test-integration",
+      "windows": {
+        "command": "make test-integration"
+      },
+      "group": {
+        "kind": "test"
       }
     },
     {

@@ -3,7 +3,7 @@
 # by Amaury Carvalho (2022-2026)                                               #
 #------------------------------------------------------------------------------#
 
-.PHONY: all clean debug release debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
+.PHONY: all clean debug release test test-unit test-integration debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
 
 # ----------------------------
 # Variables
@@ -146,6 +146,24 @@ $(OBJDIR_DEBUG) $(OBJDIR_RELEASE):
 	@mkdir -p $@
 
 -include $(DEP_DEBUG) $(DEP_RELEASE)
+
+# ----------------------------
+# Tests
+# ----------------------------
+
+test: test-unit
+
+test-unit:
+	@$(MAKE) -C tests/unit clean all
+	@cd tests/unit && ./bin/test_lexer
+	@cd tests/unit && ./bin/test_parser
+	@cd tests/unit && ./bin/test_compiler
+	@cd tests/unit && ./bin/test_builder
+	@cd tests/unit && ./bin/test_fs
+	@cd tests/unit && ./bin/test_resources
+
+test-integration:
+	@cd tests/integration && ./test.sh
 
 # -----------------------------------------------
 # Debian package build

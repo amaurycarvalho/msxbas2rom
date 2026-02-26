@@ -22,7 +22,7 @@ LDFLAGS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc
 SRC_MODULES = lex parse z80 compiler pletter options cliparser fswrapper resources symbols rom
 SRC_OBJ = $(addprefix $(OBJ)/src_,$(addsuffix .o,$(SRC_MODULES)))
 
-TEST_MODULES = lexer parser compiler builder
+TEST_MODULES = lexer parser compiler builder fs resources
 TEST_BINS = $(addprefix $(BIN)/test_,$(TEST_MODULES))
 TEST_OBJ = $(addprefix $(OBJ)/test_,$(addsuffix .o,$(TEST_MODULES)))
 

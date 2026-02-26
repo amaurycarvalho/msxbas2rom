@@ -17,19 +17,9 @@ jobs:
       - name: Building release application
         run: |
           make release
-      - name: Building unit tests
-        run: |
-          cd tests/unit
-          make all
       - name: Doing unit test scenarios
         run: |
-          cd tests/unit
-          ./bin/test_lexer
-          ./bin/test_parser
-          ./bin/test_compiler
-          ./bin/test_builder
+          make test-unit
       - name: Doing integration test scenarios
         run: |
-          make release
-          cd tests/integration
-          ./test.sh
+          make test-integration
