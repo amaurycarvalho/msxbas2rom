@@ -156,7 +156,7 @@ $(OBJDIR_DEBUG) $(OBJDIR_RELEASE):
 test: test-unit
 
 test-unit:
-	@$(MAKE) -C tests/unit clean all
+	@$(MAKE) -C tests/unit all
 	@cd tests/unit && ./bin/test_lexer
 	@cd tests/unit && ./bin/test_parser
 	@cd tests/unit && ./bin/test_compiler

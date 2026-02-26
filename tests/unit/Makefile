@@ -12,8 +12,9 @@ LD = g++
 WINDRES = windres
 
 SRC_ROOT = ../../src
+TEST_SRC = ./src
 INC = $(shell find $(SRC_ROOT) -type d | sort)
-CPPFLAGS = $(foreach dir,$(INC),-I$(dir))
+CPPFLAGS = -I. $(foreach dir,$(INC),-I$(dir))
 OBJ = ./obj
 BIN = ./bin
 TMP = ./tmp
@@ -60,7 +61,7 @@ $(OBJ)/src_%.o: $(SRC_ROOT)/%.cpp | setup
 	@mkdir -p $(dir $@)
 	@$(CXX) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
-$(OBJ)/test_%.o: test_%.cpp | setup
+$(OBJ)/test_%.o: $(TEST_SRC)/test_%.cpp | setup
 	@echo "📦 Compiling unit test $<..."
 	@$(CXX) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
