@@ -1,11 +1,11 @@
 /***
- * @file symbols.cpp
+ * @file symbol_manager.cpp
  * @brief Symbols class implementation
  * @author Amaury Carvalho (2019-2025)
  * @note
  */
 
-#include "symbols.h"
+#include "symbol_manager.h"
 
 void SymbolManager::clear() {
   codeList.clear();
