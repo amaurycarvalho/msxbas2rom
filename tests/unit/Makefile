@@ -11,16 +11,17 @@ AR = ar
 LD = g++
 WINDRES = windres
 
-INC = ../../include
-SRC = ../../src
+SRC_ROOT = ../../src
+INC = $(shell find $(SRC_ROOT) -type d | sort)
+CPPFLAGS = $(foreach dir,$(INC),-I$(dir))
 OBJ = ./obj
 BIN = ./bin
 TMP = ./tmp
 CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG)
 LDFLAGS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc
 
-SRC_MODULES = lex parse z80 compiler pletter options cliparser fswrapper resources symbols rom
-SRC_OBJ = $(addprefix $(OBJ)/src_,$(addsuffix .o,$(SRC_MODULES)))
+SRC_FILES = $(shell find $(SRC_ROOT) -name '*.cpp' ! -path '$(SRC_ROOT)/cli/main.cpp' | sort)
+SRC_OBJ = $(patsubst $(SRC_ROOT)/%.cpp,$(OBJ)/src_%.o,$(SRC_FILES))
 
 TEST_MODULES = lexer parser compiler builder fs resources
 TEST_BINS = $(addprefix $(BIN)/test_,$(TEST_MODULES))
@@ -54,13 +55,14 @@ setup:
 	@mkdir -p $(BIN)
 	@mkdir -p $(TMP)
 
-$(OBJ)/src_%.o: $(SRC)/%.cpp | setup
+$(OBJ)/src_%.o: $(SRC_ROOT)/%.cpp | setup
 	@echo "📦 Compiling source module $<..."
-	@$(CXX) $(CFLAGS) -I $(INC) -c $< -o $@
+	@mkdir -p $(dir $@)
+	@$(CXX) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 $(OBJ)/test_%.o: test_%.cpp | setup
 	@echo "📦 Compiling unit test $<..."
-	@$(CXX) $(CFLAGS) -I $(INC) -c $< -o $@
+	@$(CXX) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 $(BIN)/test_%: $(OBJ)/test_%.o $(SRC_OBJ) | setup
 	@echo "📦 Building unit test binary $@..."

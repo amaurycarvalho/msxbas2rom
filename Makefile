@@ -18,10 +18,10 @@ LD = g++
 WINDRES = windres
 
 CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG)
-CPPFLAGS = -I $(INC)
 DEPFLAGS = -MMD -MP
 SRC = src
-INC = include
+INC = $(shell find $(SRC) -type d | sort)
+CPPFLAGS = $(foreach dir,$(INC),-I$(dir))
 RESINC = 
 LIBDIR = 
 LIB = 
@@ -67,9 +67,9 @@ BINDIR_RELEASE = bin/Release
 DEP_RELEASE = 
 OUT_RELEASE = $(BINDIR_RELEASE)/msxbas2rom
 
-MODULES = main lex rom compiler z80 parse pletter cliparser options fswrapper symbols resources
-OBJ_DEBUG = $(addprefix $(OBJDIR_DEBUG)/,$(addsuffix .o,$(MODULES)))
-OBJ_RELEASE = $(addprefix $(OBJDIR_RELEASE)/,$(addsuffix .o,$(MODULES)))
+SRC_FILES = $(shell find $(SRC) -name '*.cpp' | sort)
+OBJ_DEBUG = $(patsubst $(SRC)/%.cpp,$(OBJDIR_DEBUG)/%.o,$(SRC_FILES))
+OBJ_RELEASE = $(patsubst $(SRC)/%.cpp,$(OBJDIR_RELEASE)/%.o,$(SRC_FILES))
 DEP_DEBUG = $(OBJ_DEBUG:.o=.d)
 DEP_RELEASE = $(OBJ_RELEASE:.o=.d)
 
@@ -111,6 +111,7 @@ after_debug:
 	@echo "✅ Building debug finished"
 
 $(OBJDIR_DEBUG)/%.o: $(SRC)/%.cpp | $(OBJDIR_DEBUG)
+	@mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CFLAGS_DEBUG) $(DEPFLAGS) -c $< -o $@
 
 $(OUT_DEBUG): $(OBJ_DEBUG)
@@ -137,6 +138,7 @@ after_release:
 	@echo "✅ Building release finished"
 
 $(OBJDIR_RELEASE)/%.o: $(SRC)/%.cpp | $(OBJDIR_RELEASE)
+	@mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CFLAGS_RELEASE) $(DEPFLAGS) -c $< -o $@
 
 $(OUT_RELEASE): $(OBJ_RELEASE)

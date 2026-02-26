@@ -13,7 +13,7 @@ PLETTER = pletter
 # Directories
 SRC_DIR = src
 BIN_DIR = bin
-INC_DIR = ../include
+INC_DIR = ../src/infrastructure/kernel
 
 # Targets
 all: $(INC_DIR)/header.h \
