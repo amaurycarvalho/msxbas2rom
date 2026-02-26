@@ -62,6 +62,8 @@ Support us on Patreon, Catarse.me, PayPal or Brazilian PIX, so we can buy new re
 
 See the [Support](https://github.com/amaurycarvalho/msxbas2rom/wiki#%EF%B8%8F-support-the-project) project wiki page for more information.
 
+Follow me on [LinkedIn](https://www.linkedin.com/comm/mynetwork/discovery-see-all?usecase=PEOPLE_FOLLOWS&followMember=amaurycarvalho).
+
 ### 🚀 SUPPORTERS SPECIAL THANKS
 
 - Luciano Cadari ([iPlay](http://www.iplay.com.br));
