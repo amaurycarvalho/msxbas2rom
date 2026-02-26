@@ -1,5 +1,5 @@
 /***
- * @file lex.h
+ * @file lexer.h
  * @brief MSX BASIC lexer class header
  * @author Amaury Carvalho (2019-2025)
  * @note

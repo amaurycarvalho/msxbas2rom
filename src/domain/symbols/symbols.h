@@ -13,8 +13,8 @@
 #include <queue>
 
 #include "fswrapper.h"
-#include "lex.h"
-#include "parse.h"
+#include "lexer.h"
+#include "parser.h"
 #include "pletter.h"
 
 /***

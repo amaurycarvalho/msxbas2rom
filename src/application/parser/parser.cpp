@@ -1,5 +1,5 @@
 /***
- * @file parse.cpp
+ * @file parser.cpp
  * @brief Parser class code specialized as a MSX BASIC syntax tree builder
  * @author Amaury Carvalho (2019-2025)
  * @note
@@ -9,7 +9,7 @@
  *   https://en.wikipedia.org/wiki/Shunting-yard_algorithm
  */
 
-#include "parse.h"
+#include "parser.h"
 
 /***
  * @name Parser class code

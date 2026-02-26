@@ -12,8 +12,8 @@
 
 #include "compiler.h"
 #include "doctest/doctest.h"
-#include "lex.h"
-#include "parse.h"
+#include "lexer.h"
+#include "parser.h"
 #include "resources.h"
 #include "rom.h"
 

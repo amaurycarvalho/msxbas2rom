@@ -27,7 +27,7 @@
 #include "cliparser.h"
 #include "compiler.h"
 #include "fswrapper.h"
-#include "lex.h"
+#include "lexer.h"
 #include "options.h"
 #include "rom.h"
 

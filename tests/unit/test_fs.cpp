@@ -16,9 +16,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "compiler.h"
 #include "doctest/doctest.h"
-#include "lex.h"
+#include "lexer.h"
 #include "options.h"
-#include "parse.h"
+#include "parser.h"
 #include "pletter.h"
 
 static int COMPILE(string filename, bool megarom = false) {

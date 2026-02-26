@@ -11,7 +11,7 @@
 #include <string>
 
 #include "doctest/doctest.h"
-#include "lex.h"
+#include "lexer.h"
 
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {

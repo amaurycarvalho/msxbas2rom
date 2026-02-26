@@ -21,7 +21,7 @@
 #include <queue>
 
 #include "fswrapper.h"
-#include "parse.h"
+#include "parser.h"
 #include "pletter.h"
 #include "resources.h"
 #include "symbols.h"

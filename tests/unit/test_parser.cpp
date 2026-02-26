@@ -11,8 +11,8 @@
 #include <string>
 
 #include "doctest/doctest.h"
-#include "lex.h"
-#include "parse.h"
+#include "lexer.h"
+#include "parser.h"
 
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {

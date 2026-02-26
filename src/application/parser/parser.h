@@ -1,5 +1,5 @@
 /***
- * @file parse.h
+ * @file parser.h
  * @brief Parser class header specialized as a MSX BASIC syntax tree builder
  * @author Amaury Carvalho (2019-2025)
  * @note
@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "fswrapper.h"
-#include "lex.h"
+#include "lexer.h"
 #include "options.h"
 
 using namespace std;

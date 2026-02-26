@@ -1,12 +1,12 @@
 /***
- * @file lex.cpp
+ * @file lexer.cpp
  * @brief MSX BASIC lexer class implementation
  * @author Amaury Carvalho (2019-2025)
  * @note
  *   https://en.wikipedia.org/wiki/Lexical_analysis
  */
 
-#include "lex.h"
+#include "lexer.h"
 
 #include <stdio.h>
 #include <string.h>
