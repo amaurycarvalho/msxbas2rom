@@ -24,8 +24,10 @@ jobs:
       - name: Doing unit test scenarios
         run: |
           cd tests/unit
-          ./bin/test
-          ./bin/test_resources
+          ./bin/test_lexer
+          ./bin/test_parser
+          ./bin/test_compiler
+          ./bin/test_builder
       - name: Doing integration test scenarios
         run: |
           make release
