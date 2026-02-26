@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include <queue>
+#include <vector>
 
 #include "code_node.h"
 #include "options.h"
@@ -21,11 +22,13 @@
  */
 class SymbolManager {
  private:
-  vector<vector<string>> getKernelSymbolAddresses();
+  std::vector<std::vector<std::string>> getKernelSymbolAddresses();
+  bool saveWithStrategy(class SymbolExportStrategy* strategy,
+                        BuildOptions* opts);
 
  public:
-  vector<CodeNode*> codeList;
-  vector<CodeNode*> dataList;
+  std::vector<CodeNode*> codeList;
+  std::vector<CodeNode*> dataList;
 
   /***
    * @brief clear all symbol lists
