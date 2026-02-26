@@ -3,7 +3,7 @@
 # by Amaury Carvalho (2022-2026)                                               #
 #------------------------------------------------------------------------------#
 
-.PHONY: all clean debug release test test-unit test-integration debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
+.PHONY: all clean debug release test test-clean test-unit test-integration debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
 
 # ----------------------------
 # Variables
@@ -161,9 +161,17 @@ test-unit:
 	@cd tests/unit && ./bin/test_builder
 	@cd tests/unit && ./bin/test_fs
 	@cd tests/unit && ./bin/test_resources
+	@echo "✅ Unit testing finished"
 
 test-integration:
 	@cd tests/integration && ./test.sh
+	@echo "✅ Integration test finished"
+
+test-clean:
+	@echo "🧹 Cleaning testing files..."
+	@$(MAKE) -C tests/unit clean
+	@cd tests/integration && find . -type f -name "*.rom" -delete
+	@echo "✅ Cleaning test finished"
 
 # -----------------------------------------------
 # Debian package build

@@ -39,13 +39,13 @@ bin/
 obj/
 
 # Testing objects
-test/**/*.rom
-test/**/*.noi
-test/**/*.omds
-test/**/*.symbol
-test/unit/bin/
-test/unit/obj/
-test/unit/tmp/
+tests/**/*.rom
+tests/**/*.noi
+tests/**/*.omds
+tests/**/*.symbol
+tests/unit/bin/
+tests/unit/obj/
+tests/unit/tmp/
 
 # Deploys
 dist/
