@@ -10,9 +10,9 @@
  *     amauryspires@gmail.com
  * @note
  *   Unit testing:
- *     ./tests/unit/test
+ *     make test-unit
  *   Integration testing:
- *     ./tests/integration/test.sh
+ *     make test-integration
  * @example
  *   msxbas2rom -h
  *   msxbas2rom --ver

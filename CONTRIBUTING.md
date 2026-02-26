@@ -127,7 +127,7 @@ The compiled executable will be placed in the `bin/Release` folder.
 
 ### 6️⃣ Test Your Changes
 
-Run in the terminal (or CTRL+SHIFT+P, "Tasks: Run Task" and "test msxbas2rom") to confirm your build is working:
+Run in the terminal (or CTRL+SHIFT+P, "Tasks: Run Task" and "test unit msxbas2rom") to confirm your build is working:
 
 ```bash
 ./bin/Release/msxbas2rom -v
@@ -136,16 +136,19 @@ Run in the terminal (or CTRL+SHIFT+P, "Tasks: Run Task" and "test msxbas2rom") t
 Also, run unit testing:
 
 ```bash
-cd tests/unit
-make
-./test
+make test-unit
 ```
 
 And run integration testing as well:
 
 ```bash
-cd tests/integration
-./test.sh
+make test-integration
+```
+
+To run all tests in sequence:
+
+```bash
+make test
 ```
 
 Create new test scenarios if need.

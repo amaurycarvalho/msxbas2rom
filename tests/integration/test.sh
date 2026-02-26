@@ -11,7 +11,7 @@ APP_PATH="../../bin/Release/msxbas2rom"
 BAS_FILES=$(find . -type f -name "*.bas")
 
 # Clean old rom files
-echo "🧹 Cleaning ROM files..."
+echo "🧹 Cleaning old ROM files..."
 find . -type f -name "*.rom" -delete
 
 # Find all .bas files recursively and compiling it
@@ -21,4 +21,8 @@ for file in $BAS_FILES; do
     ${APP_PATH} -q ${file} || ${APP_PATH} -q -x ${file}
 done
 
-echo "✅ Integration test finished"
+# Clean new rom files
+echo "🧹 Cleaning new ROM files..."
+find . -type f -name "*.rom" -delete
+
+echo "✅ Integration test script finished"
