@@ -74,3 +74,24 @@ All use cases must contain:
 - Minimum coverage of 100% for medium/high criticality code.
 - Minimum coverage of 90% for low criticality code.
 
+--
+
+## Application versioning
+
+- Uses semantic versioning style;
+- App version it's mantained as a constant named `app_version` at `src/cli/appinfo.h` and replicated at `CHANGELOG.md`, `debian/changelog` and `rpmbuild/SPECS/msxbas2rom.spec` files.
+
+--
+
+## Application releases
+
+New releases needs to be tagged and registered as a new branch on repository:
+
+```
+git tag -a v0.0.0.0 -m "Release 0.0.0.0" && git push origin --tags
+git checkout -b release/v0.0.0.0
+git push origin release/v0.0.0.0
+git switch master
+```
+
+See `CONTRIBUTING.md` for more information.
