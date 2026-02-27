@@ -15,6 +15,7 @@ SRC_ROOT = ../../src
 TEST_SRC = ./src
 INC = $(shell find $(SRC_ROOT) -type d | sort)
 CPPFLAGS = -I. $(foreach dir,$(INC),-I$(dir))
+DEPFLAGS = -MMD -MP
 OBJ = ./obj
 BIN = ./bin
 TMP = ./tmp
@@ -59,11 +60,11 @@ setup:
 $(OBJ)/src_%.o: $(SRC_ROOT)/%.cpp | setup
 	@echo "📦 Compiling source module $<..."
 	@mkdir -p $(dir $@)
-	@$(CXX) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+	@$(CXX) $(CFLAGS) $(CPPFLAGS) $(DEPFLAGS) -c $< -o $@
 
 $(OBJ)/test_%.o: $(TEST_SRC)/test_%.cpp | setup
 	@echo "📦 Compiling unit test $<..."
-	@$(CXX) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+	@$(CXX) $(CFLAGS) $(CPPFLAGS) $(DEPFLAGS) -c $< -o $@
 
 $(BIN)/test_%: $(OBJ)/test_%.o $(SRC_OBJ) | setup
 	@echo "📦 Building unit test binary $@..."
