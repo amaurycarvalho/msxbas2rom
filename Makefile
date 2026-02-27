@@ -20,7 +20,8 @@ WINDRES = windres
 CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG)
 DEPFLAGS = -MMD -MP
 SRC = src
-INC = $(shell find $(SRC) -type d | sort)
+#INC = $(shell find $(SRC) -type d | sort)
+INC = $(shell find $(SRC) -type f \( -name "*.h" -o -name "*.hpp" \) -exec dirname {} + | uniq | sort)
 CPPFLAGS = $(foreach dir,$(INC),-I$(dir))
 RESINC = 
 LIBDIR = 
