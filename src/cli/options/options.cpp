@@ -20,7 +20,7 @@ BuildOptions::BuildOptions() {
   appFileName = "None";
 
   /// default options flags
-  help = debug = quiet = error = version = doc = history = false;
+  help = debug = quiet = error = version = doc = history = autoROM = false;
 
   /// default compile mode
   compileMode = CompileMode::Plain;
@@ -73,6 +73,10 @@ BuildOptions::BuildOptions() {
   parser.addOption(
       "-k", "--scc", "KonamiSCC MegaROM type", false, false,
       [&](const std::string&) { compileMode = CompileMode::KonamiSCC; });
+  parser.addOption(
+      "-a", "--auto",
+      "Auto ROM mode (fallback from Plain ROM to ASCII8 MegaROM)", false,
+      false, [&](const std::string&) { autoROM = true; });
   parser.addOption("", "--symbol", "Generate symbols in .symbol format", false,
                    false,
                    [&](const std::string&) { symbols = SymbolsMode::Symbol; });

@@ -36,7 +36,7 @@ class BuildOptions {
   string symbolFilename, omdsFilename, noiceFilename, cdbFilename;
 
   //! @brief Options flags
-  bool help, debug, quiet, error, version, history, doc;
+  bool help, debug, quiet, error, version, history, doc, autoROM;
 
   //! @brief Options flags
   //! @note for compiled mode only

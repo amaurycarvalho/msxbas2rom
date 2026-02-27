@@ -18,7 +18,7 @@ find . -type f -name "*.rom" -delete
 echo "📦 Building ROM files..."
 for file in $BAS_FILES; do
     echo "Compiling ${file}"
-    ${APP_PATH} -q ${file} || ${APP_PATH} -q -x ${file}
+    ${APP_PATH} -q -a ${file}
 done
 
 # Clean new rom files

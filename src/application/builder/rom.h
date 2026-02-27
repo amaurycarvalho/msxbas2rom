@@ -85,6 +85,9 @@ class Rom {
    * @brief Print to the terminal the invalid source code
    */
   void error();
+
+  //! @brief Return last error message
+  const string& getErrorMessage() const;
 };
 
 #endif  // ROM_H_INCLUDED

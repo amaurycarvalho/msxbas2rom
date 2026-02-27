@@ -25,7 +25,7 @@ LDFLAGS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc
 SRC_FILES = $(shell find $(SRC_ROOT) -name '*.cpp' ! -path '$(SRC_ROOT)/cli/main.cpp' | sort)
 SRC_OBJ = $(patsubst $(SRC_ROOT)/%.cpp,$(OBJ)/src_%.o,$(SRC_FILES))
 
-TEST_MODULES = lexer parser compiler builder fs resources
+TEST_MODULES = lexer parser compiler builder fs resources options
 TEST_BINS = $(addprefix $(BIN)/test_,$(TEST_MODULES))
 TEST_OBJ = $(addprefix $(OBJ)/test_,$(addsuffix .o,$(TEST_MODULES)))
 

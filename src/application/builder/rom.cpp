@@ -214,6 +214,10 @@ void Rom::error() {
   printf("%s\n", errorMessage.c_str());
 }
 
+const string& Rom::getErrorMessage() const {
+  return errorMessage;
+}
+
 //----------------------------------------------------------------------------------------------
 
 bool Rom::writeRom(string filename) {

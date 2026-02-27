@@ -43,8 +43,9 @@ General options:
 
 Compile options (optional):
     -c  = plain ROM compile mode (default)
-    -x  = ASCII8 MegaROM compile mode
-    -x --scc = Konami SCC MegaROM compile mode
+    -a or --auto = auto mode (fallback to ASCII8 when plain ROM overflows)
+    -x or -8 or --ascii8 = ASCII8 MegaROM compile mode
+    -k or --scc = Konami SCC MegaROM compile mode
     -s or --noi or --noice = generate symbols in .noi format (default)
     --symbol = generate symbols in .symbol format
     --omds = generate symbols in .omds format
