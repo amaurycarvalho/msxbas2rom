@@ -22,9 +22,9 @@ bool NoIceExportStrategy::save(SymbolManager* symbolManager,
   if ((file = fopen(opts->noiceFilename.c_str(), "w"))) {
     t = kernelSymbols.size();
     for (i = 0; i < t; i++) {
-      sprintf(s, noice_format, kernelSymbols[i][0].c_str(),
-              stoi(kernelSymbols[i][1], nullptr, 16),
-              kernelSymbols[i][2].c_str());
+      snprintf(s, sizeof(s), noice_format, kernelSymbols[i][0].c_str(),
+               stoi(kernelSymbols[i][1], nullptr, 16),
+               kernelSymbols[i][2].c_str());
       fwrite(s, 1, strlen(s), file);
     }
 
@@ -33,8 +33,8 @@ bool NoIceExportStrategy::save(SymbolManager* symbolManager,
     for (i = 0; i < t; i++) {
       codeItem = codeList[i];
       if (codeItem->debug) {
-        sprintf(s, noice_format, codeItem->name.c_str(),
-                codeItem->segm << 16 | codeItem->addr_within_segm, "jump");
+        snprintf(s, sizeof(s), noice_format, codeItem->name.c_str(),
+                 codeItem->segm << 16 | codeItem->addr_within_segm, "jump");
         fwrite(s, 1, strlen(s), file);
       }
     }
@@ -44,8 +44,8 @@ bool NoIceExportStrategy::save(SymbolManager* symbolManager,
     for (i = 0; i < t; i++) {
       codeItem = dataList[i];
       if (codeItem->debug) {
-        sprintf(s, noice_format, codeItem->name.c_str(),
-                codeItem->segm << 16 | codeItem->addr_within_segm, "variable");
+        snprintf(s, sizeof(s), noice_format, codeItem->name.c_str(),
+                 codeItem->segm << 16 | codeItem->addr_within_segm, "variable");
         fwrite(s, 1, strlen(s), file);
       }
     }

@@ -35,9 +35,9 @@ bool OmdsExportStrategy::save(SymbolManager* symbolManager,
 
     t = kernelSymbols.size();
     for (i = 0; i < t; i++) {
-      sprintf(s, omds_format, kernelSymbols[i][2].c_str(),
-              kernelSymbols[i][0].c_str(),
-              stoi(kernelSymbols[i][1].c_str(), nullptr, 16), "");
+      snprintf(s, sizeof(s), omds_format, kernelSymbols[i][2].c_str(),
+               kernelSymbols[i][0].c_str(),
+               stoi(kernelSymbols[i][1].c_str(), nullptr, 16), "");
       fwrite(s, 1, strlen(s), file);
     }
 
@@ -47,8 +47,8 @@ bool OmdsExportStrategy::save(SymbolManager* symbolManager,
       codeItem = codeList[i];
       if (codeItem->debug) {
         segmString = (opts->megaROM) ? to_string(codeItem->segm) : "";
-        sprintf(s, omds_format, "jump", codeItem->name.c_str(),
-                codeItem->addr_within_segm, segmString.c_str());
+        snprintf(s, sizeof(s), omds_format, "jump", codeItem->name.c_str(),
+                 codeItem->addr_within_segm, segmString.c_str());
         fwrite(s, 1, strlen(s), file);
       }
     }
@@ -58,8 +58,8 @@ bool OmdsExportStrategy::save(SymbolManager* symbolManager,
     for (i = 0; i < t; i++) {
       codeItem = dataList[i];
       if (codeItem->debug) {
-        sprintf(s, omds_format, "variable", codeItem->name.c_str(),
-                codeItem->addr_within_segm, "");
+        snprintf(s, sizeof(s), omds_format, "variable", codeItem->name.c_str(),
+                 codeItem->addr_within_segm, "");
         fwrite(s, 1, strlen(s), file);
       }
     }

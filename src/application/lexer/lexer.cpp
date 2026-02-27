@@ -50,11 +50,11 @@ bool Lexer::load(BuildOptions* opts) {
     }
     if (header[0] < 0x20 || header[0] > 126) {
       if (header[0] == 0xFF && header[2] == 0x80) {
-        sprintf(line,
-                "Tokenized MSX BASIC source code file detected\nSave it as a "
-                "plain text to use it "
-                "with MSXBAS2ROM:\nSAVE \"%s\",A",
-                opts->inputFilename.c_str());
+        snprintf(line, sizeof(line),
+                 "Tokenized MSX BASIC source code file detected\nSave it as a "
+                 "plain text to use it "
+                 "with MSXBAS2ROM:\nSAVE \"%s\",A",
+                 opts->inputFilename.c_str());
         errorMessage = line;
         return false;
       } else if (header[0] != 0x0D && header[0] != 0x0A &&

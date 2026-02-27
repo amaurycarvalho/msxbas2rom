@@ -22,8 +22,8 @@ bool SymbolFileExportStrategy::save(SymbolManager* symbolManager,
   if ((file = fopen(opts->symbolFilename.c_str(), "w"))) {
     t = kernelSymbols.size();
     for (i = 0; i < t; i++) {
-      sprintf(s, symbol_format[1], kernelSymbols[i][0].c_str(),
-              stoi(kernelSymbols[i][1], nullptr, 16));
+      snprintf(s, sizeof(s), symbol_format[1], kernelSymbols[i][0].c_str(),
+               stoi(kernelSymbols[i][1], nullptr, 16));
       fwrite(s, 1, strlen(s), file);
     }
 
@@ -33,11 +33,11 @@ bool SymbolFileExportStrategy::save(SymbolManager* symbolManager,
       codeItem = codeList[i];
       if (codeItem->debug) {
         if (opts->megaROM) {
-          sprintf(s, symbol_format[0], codeItem->segm, codeItem->name.c_str(),
-                  codeItem->addr_within_segm);
+          snprintf(s, sizeof(s), symbol_format[0], codeItem->segm,
+                   codeItem->name.c_str(), codeItem->addr_within_segm);
         } else {
-          sprintf(s, symbol_format[1], codeItem->name.c_str(),
-                  codeItem->addr_within_segm);
+          snprintf(s, sizeof(s), symbol_format[1], codeItem->name.c_str(),
+                   codeItem->addr_within_segm);
         }
         fwrite(s, 1, strlen(s), file);
       }
@@ -48,8 +48,8 @@ bool SymbolFileExportStrategy::save(SymbolManager* symbolManager,
     for (i = 0; i < t; i++) {
       codeItem = dataList[i];
       if (codeItem->debug) {
-        sprintf(s, symbol_format[1], codeItem->name.c_str(),
-                codeItem->addr_within_segm);
+        snprintf(s, sizeof(s), symbol_format[1], codeItem->name.c_str(),
+                 codeItem->addr_within_segm);
         fwrite(s, 1, strlen(s), file);
       }
     }
