@@ -14,8 +14,7 @@ void SymbolManager::clear() {
   dataList.clear();
 }
 
-std::vector<std::vector<std::string>>
-SymbolManager::getKernelSymbolAddresses() {
+vector<vector<string>> SymbolManager::getKernelSymbolAddresses() {
   return {
       {"LOADER", "4010", "jump"},        {"VAR_CURSEGM", "C023", "variable"},
       {"MR_CALL", "41C8", "jump"},       {"MR_CALL_TRAP", "41CB", "jump"},
@@ -24,7 +23,7 @@ SymbolManager::getKernelSymbolAddresses() {
 }
 
 bool SymbolManager::saveSymbol(BuildOptions* opts) {
-  std::unique_ptr<SymbolExportStrategy> strategy =
+  unique_ptr<SymbolExportStrategy> strategy =
       SymbolExportStrategyFactory::create(opts->symbols);
   return saveWithStrategy(strategy.get(), opts);
 }

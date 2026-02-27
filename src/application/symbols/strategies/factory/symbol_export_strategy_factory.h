@@ -15,7 +15,7 @@
 
 class SymbolExportStrategyFactory {
  public:
-  static std::unique_ptr<SymbolExportStrategy> create(
+  static unique_ptr<SymbolExportStrategy> create(
       BuildOptions::SymbolsMode mode);
 };
 

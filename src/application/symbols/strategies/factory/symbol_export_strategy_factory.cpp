@@ -12,18 +12,17 @@
 #include "omds_export_strategy.h"
 #include "symbol_file_export_strategy.h"
 
-std::unique_ptr<SymbolExportStrategy> SymbolExportStrategyFactory::create(
+unique_ptr<SymbolExportStrategy> SymbolExportStrategyFactory::create(
     BuildOptions::SymbolsMode mode) {
   switch (mode) {
     case BuildOptions::SymbolsMode::Symbol:
-      return std::unique_ptr<SymbolExportStrategy>(
-          new SymbolFileExportStrategy());
+      return unique_ptr<SymbolExportStrategy>(new SymbolFileExportStrategy());
     case BuildOptions::SymbolsMode::Omds:
-      return std::unique_ptr<SymbolExportStrategy>(new OmdsExportStrategy());
+      return unique_ptr<SymbolExportStrategy>(new OmdsExportStrategy());
     case BuildOptions::SymbolsMode::Cdb:
-      return std::unique_ptr<SymbolExportStrategy>(new CdbExportStrategy());
+      return unique_ptr<SymbolExportStrategy>(new CdbExportStrategy());
     case BuildOptions::SymbolsMode::NoICE:
-      return std::unique_ptr<SymbolExportStrategy>(new NoIceExportStrategy());
+      return unique_ptr<SymbolExportStrategy>(new NoIceExportStrategy());
     default:
       return NULL;
   }

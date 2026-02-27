@@ -9,8 +9,7 @@
 #define SYMBOL_EXPORT_STRATEGY_H_INCLUDED
 
 #include "options.h"
-
-class SymbolManager;
+#include "symbol_manager.h"
 
 class SymbolExportStrategy {
  public:

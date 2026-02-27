@@ -16,6 +16,8 @@
 #include "code_node.h"
 #include "options.h"
 
+using namespace std;
+
 /***
  * @class SymbolManager
  * @brief Symbol manager
@@ -26,9 +28,9 @@ class SymbolManager {
                         BuildOptions* opts);
 
  public:
-  std::vector<std::vector<std::string>> getKernelSymbolAddresses();
-  std::vector<CodeNode*> codeList;
-  std::vector<CodeNode*> dataList;
+  vector<vector<string>> getKernelSymbolAddresses();
+  vector<CodeNode*> codeList;
+  vector<CodeNode*> dataList;
 
   /***
    * @brief clear all symbol lists
