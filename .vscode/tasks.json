@@ -16,9 +16,9 @@
     {
       "label": "build: Z80 routines",
       "type": "shell",
-      "command": "cd ./asm && make all",
+      "command": "cd ./src/infrastructure/kernel/asm && make all",
       "windows": {
-        "command": "cd .\\asm && make all"
+        "command": "cd .\\src\\infrastructure\\kernel\\asm && make all"
       },
       "group": {
         "kind": "build"
@@ -27,7 +27,7 @@
         "$gcc",
         {
           "owner": "pasmo",
-          "fileLocation": ["relative", "${workspaceFolder}/asm"],
+          "fileLocation": ["relative", "${workspaceFolder}/src/infrastructure/kernel/asm"],
           "pattern": [
             {
               "regexp": "^ERROR on line (\\d+) of file (.+)$",

@@ -5559,7 +5559,7 @@ BASIC_KUN_START_FILLER:
     DEFS	06BF7H-34-1876-$,000H     ; 34 = J_* functions size, 1876 = arkosplayer.bin size
 
 ARKOS_PLAYER:
-    INCBIN "arkos/arkosplayer.bin"
+    INCBIN "assets/arkos/arkosplayer.bin"
 
 J_SGN_INT:
     ld a, l
@@ -9496,7 +9496,6 @@ J7FF6:	LD	A,(BC)
 
 BASIC_KUN_END_FILLER:
 	DEFS	08000H-$,0FFH
-
 
 
 
