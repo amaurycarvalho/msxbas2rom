@@ -4,5 +4,5 @@
 
 1. [ ] Project refactoring to SDD;
 2. [ ] SDCC's CDB format support;
-3. [ ] MSX Tile Forge support enhancements.
-
+3. [ ] SET/GET TILE PATTERN improved syntax;
+4. [ ] MSX Tile Forge support enhancements.
