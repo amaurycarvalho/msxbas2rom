@@ -349,6 +349,7 @@ int Compiler::saveSymbols() {
           codeItem->addr_within_segm = ram_page + ram_pointer;
           codeItem->is_code = false;
           codeItem->debug = true;
+          codeItem->lexeme = lexeme;
           symbolManager.dataList.push_back(codeItem);
 
           var_size = 0;

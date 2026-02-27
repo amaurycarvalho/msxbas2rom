@@ -13,7 +13,6 @@ WINDRES = windres
 
 SRC_ROOT = ../../src
 TEST_SRC = ./src
-#INC = $(shell find $(SRC_ROOT) -type d | sort)
 INC = $(shell find $(SRC_ROOT) -type f \( -name "*.h" -o -name "*.hpp" \) -exec dirname {} + | uniq | sort)
 CPPFLAGS = -I. $(foreach dir,$(INC),-I$(dir))
 DEPFLAGS = -MMD -MP

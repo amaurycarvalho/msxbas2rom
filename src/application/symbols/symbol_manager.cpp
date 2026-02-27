@@ -15,11 +15,14 @@ void SymbolManager::clear() {
 }
 
 vector<vector<string>> SymbolManager::getKernelSymbolAddresses() {
-  return {
-      {"LOADER", "4010", "jump"},        {"VAR_CURSEGM", "C023", "variable"},
-      {"MR_CALL", "41C8", "jump"},       {"MR_CALL_TRAP", "41CB", "jump"},
-      {"MR_CHANGE_SGM", "41CE", "jump"}, {"MR_GET_BYTE", "41D1", "jump"},
-      {"MR_GET_DATA", "41D4", "jump"},   {"MR_JUMP", "41D7", "jump"}};
+  return {{"LOADER", "4010", "jump"},
+          {"VAR_CURSEGM", "C023", "variable,integer,2"},
+          {"MR_CALL", "41C8", "jump"},
+          {"MR_CALL_TRAP", "41CB", "jump"},
+          {"MR_CHANGE_SGM", "41CE", "jump"},
+          {"MR_GET_BYTE", "41D1", "jump"},
+          {"MR_GET_DATA", "41D4", "jump"},
+          {"MR_JUMP", "41D7", "jump"}};
 }
 
 bool SymbolManager::saveSymbol(BuildOptions* opts) {

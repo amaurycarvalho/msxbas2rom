@@ -46,12 +46,21 @@ class Lexeme {
   string name, value;
   int indent;
   string tag;
-  bool isArray;
   bool isAbstract;
-  int x_size, y_size;
-  int x_factor, y_factor, array_size;
-  int parm_count;
   bool isUnary;
+  int parm_count;
+
+  bool isArray;
+  // @brief number of elements in a row (x)
+  int x_size;
+  // @brief number of rows (y)
+  int y_size;
+  // @brief size of an element in bytes
+  int x_factor;
+  // @brief size of the row in bytes (x_factor * x_size)
+  int y_factor;
+  // @brief size of the array in bytes
+  int array_size;
 
   void clear();
   Lexeme* clone();

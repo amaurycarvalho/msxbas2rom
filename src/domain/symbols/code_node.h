@@ -9,6 +9,7 @@
 #define CODE_NODE_H_INCLUDED
 
 #include "fswrapper.h"
+#include "lexeme.h"
 
 /***
  * @class CodeNode
@@ -23,6 +24,7 @@ class CodeNode {
   int addr_within_segm;
   bool is_code;
   bool debug;
+  Lexeme* lexeme;
 };
 
 #endif  // CODE_NODE_H_INCLUDED

@@ -17,7 +17,7 @@
  * git push origin release/v0.0.0.0
  * git switch master
  */
-#define app_version "0.3.3.6"
+#define app_version "0.3.3.7"
 
 //! @brief Header information
 const char* info_header = R"(MSXBAS2ROM - MSX BASIC TO ROM COMPILER
@@ -77,6 +77,7 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char* info_history = R"(
 Version history
 
+0.3.3.7 – (2026/02/27) CDB symbol export feature (issue #17);
 0.3.3.6 – (2026/01/28) LINE statement parameters bug fix (issue #16);
 0.3.3.5 – (2026/01/16) SET/GET SPRITE COLOR/PATTERN new commands;
 0.3.3.4 – (2025/09/26) MSX Tile Forge map loading optimization and 

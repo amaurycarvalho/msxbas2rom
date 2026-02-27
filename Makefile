@@ -20,7 +20,6 @@ WINDRES = windres
 CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG)
 DEPFLAGS = -MMD -MP
 SRC = src
-#INC = $(shell find $(SRC) -type d | sort)
 INC = $(shell find $(SRC) -type f \( -name "*.h" -o -name "*.hpp" \) -exec dirname {} + | uniq | sort)
 CPPFLAGS = $(foreach dir,$(INC),-I$(dir))
 RESINC = 
@@ -112,11 +111,13 @@ after_debug:
 	@echo "✅ Building debug finished"
 
 $(OBJDIR_DEBUG)/%.o: $(SRC)/%.cpp | $(OBJDIR_DEBUG)
+	@echo "📦 Compiling source module $<..."
 	@mkdir -p $(dir $@)
-	$(CXX) $(CPPFLAGS) $(CFLAGS_DEBUG) $(DEPFLAGS) -c $< -o $@
+	@$(CXX) $(CPPFLAGS) $(CFLAGS_DEBUG) $(DEPFLAGS) -c $< -o $@
 
 $(OUT_DEBUG): $(OBJ_DEBUG)
-	$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG)
+	@echo "📦 Building binary $@..."
+	@$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG)
 
 # ----------------------------
 # Release build
@@ -139,11 +140,13 @@ after_release:
 	@echo "✅ Building release finished"
 
 $(OBJDIR_RELEASE)/%.o: $(SRC)/%.cpp | $(OBJDIR_RELEASE)
+	@echo "📦 Compiling source module $<..."
 	@mkdir -p $(dir $@)
-	$(CXX) $(CPPFLAGS) $(CFLAGS_RELEASE) $(DEPFLAGS) -c $< -o $@
+	@$(CXX) $(CPPFLAGS) $(CFLAGS_RELEASE) $(DEPFLAGS) -c $< -o $@
 
 $(OUT_RELEASE): $(OBJ_RELEASE)
-	$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE)
+	@echo "📦 Building binary $@..."
+	@$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE)
 
 $(OBJDIR_DEBUG) $(OBJDIR_RELEASE):
 	@mkdir -p $@
