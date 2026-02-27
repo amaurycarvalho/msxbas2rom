@@ -25,14 +25,6 @@ class LexerLine {
   vector<Lexeme*> lexemes;
   stack<int> lexemeStack;
 
-  bool isNumeric(char c);
-  bool isDecimal(char c);
-  bool isHexDecimal(char c);
-  bool isSeparator(char c);
-  bool isOperator(char c);
-  bool isIdentifier(char c, bool start);
-  bool isComment(char c);
-
  public:
   string line;
 
