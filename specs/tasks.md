@@ -11,7 +11,7 @@
 - [x] Create tests/unit/src/ folder. Next, move tests/unit/\*.cpp files to tests/unit/src/. Finally, adjust the related Makefile according the changes;
 - [x] Refactor src/domain/symbols/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
 - [x] Move src/domain/symbols/symbol_manager.\* to src/application/symbols/. Next, refactor it implementing a Strategy pattern (tell me if another pattern applies better) with minimum code change. The individual strategy files must be saved to src/application/symbols/strategies/ folder. Finally, adjust the related Makefile and unit testings according the changes;
-- [ ] Move asm/ folder to src/infrastructure/kernel/, adjusting the related Makefile and .vscode/tasks.json according the changes;
+- [ ] Move asm/ folder to src/infrastructure/kernel/, adjusting the related Makefile and .vscode/tasks.json according the changes. Finally, check for more related dependencies;
 - [ ] Refactor src/application/lexer/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
 - [ ] Refactor src/application/parser/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
 - [ ] Refactor src/application/compiler/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
