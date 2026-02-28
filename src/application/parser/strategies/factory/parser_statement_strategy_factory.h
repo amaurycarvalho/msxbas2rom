@@ -13,6 +13,12 @@
 
 #include "alias_statement_strategy.h"
 #include "command_statement_strategy.h"
+#include "data_statement_strategy.h"
+#include "def_statement_strategy.h"
+#include "generic_statement_strategy.h"
+#include "if_statement_strategy.h"
+#include "input_statement_strategy.h"
+#include "play_statement_strategy.h"
 
 using namespace std;
 
@@ -23,18 +29,18 @@ class ParserStatementStrategyFactory {
   AliasStatementStrategy underscoreStrategy;
 
   CommandStatementStrategy noOpStrategy;
-  CommandStatementStrategy defStrategy;
-  CommandStatementStrategy defIntStrategy;
-  CommandStatementStrategy defStrStrategy;
-  CommandStatementStrategy defSngStrategy;
-  CommandStatementStrategy defDblStrategy;
-  CommandStatementStrategy genericStrategy;
+  DefStatementStrategy defStrategy;
+  DefStatementStrategy defIntStrategy;
+  DefStatementStrategy defStrStrategy;
+  DefStatementStrategy defSngStrategy;
+  DefStatementStrategy defDblStrategy;
+  GenericStatementStrategy genericStrategy;
   CommandStatementStrategy screenStrategy;
-  CommandStatementStrategy playStrategy;
+  PlayStatementStrategy playStrategy;
   CommandStatementStrategy letStrategy;
   CommandStatementStrategy dimStrategy;
   CommandStatementStrategy printStrategy;
-  CommandStatementStrategy inputStrategy;
+  InputStatementStrategy inputStrategy;
   CommandStatementStrategy spriteStrategy;
   CommandStatementStrategy baseStrategy;
   CommandStatementStrategy vdpStrategy;
@@ -48,9 +54,9 @@ class ParserStatementStrategyFactory {
   CommandStatementStrategy keyStrategy;
   CommandStatementStrategy strigStrategy;
   CommandStatementStrategy colorStrategy;
-  CommandStatementStrategy dataStrategy;
-  CommandStatementStrategy idataStrategy;
-  CommandStatementStrategy ifStrategy;
+  DataStatementStrategy dataStrategy;
+  DataStatementStrategy idataStrategy;
+  IfStatementStrategy ifStrategy;
   CommandStatementStrategy forStrategy;
   CommandStatementStrategy nextStrategy;
   CommandStatementStrategy psetStrategy;

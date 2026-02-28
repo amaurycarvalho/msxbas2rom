@@ -26,12 +26,32 @@
 
 using namespace std;
 
+class AliasStatementStrategy;
+class CommandStatementStrategy;
+class DataStatementStrategy;
+class DefStatementStrategy;
+class GenericStatementStrategy;
+class IfStatementStrategy;
+class InputStatementStrategy;
+class ParserStatementStrategyFactory;
+class PlayStatementStrategy;
+
 /***
  * @class Parser
  * @brief Parser class specialized as a MSX BASIC syntax tree builder
  */
 class Parser {
  private:
+  friend class AliasStatementStrategy;
+  friend class CommandStatementStrategy;
+  friend class DataStatementStrategy;
+  friend class DefStatementStrategy;
+  friend class GenericStatementStrategy;
+  friend class IfStatementStrategy;
+  friend class InputStatementStrategy;
+  friend class ParserStatementStrategyFactory;
+  friend class PlayStatementStrategy;
+
   bool eval_line(LexerLine* lexerLine);
   bool eval_phrase(LexerLine* phrase);
   bool eval_statement(LexerLine* statement);
@@ -163,8 +183,6 @@ class Parser {
    * @return True, if syntatic analysis success
    */
   bool evaluate(Lexer* lexer);
-  bool executeStatementCommand(ParserStatementAction action,
-                               LexerLine* statement, Lexeme* lexeme);
 
   /***
    * @brief Print to the terminal all tags and it's syntax tree

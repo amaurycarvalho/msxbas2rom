@@ -12,10 +12,10 @@
 
 class CommandStatementStrategy : public IParserStatementStrategy {
  private:
-  ParserStatementAction action;
+  bool (Parser::*handler)(LexerLine*);
 
  public:
-  explicit CommandStatementStrategy(ParserStatementAction action);
+  explicit CommandStatementStrategy(bool (Parser::*handler)(LexerLine*));
   bool handle(Parser& parser, LexerLine* statement, Lexeme* lexeme) override;
 };
 
