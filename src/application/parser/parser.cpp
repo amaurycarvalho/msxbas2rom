@@ -4560,83 +4560,47 @@ void Parser::popActionRoot() {
   }
 }
 
-void ActionNode::print() {
-  ActionNode* action;
-  unsigned int i;
+void Parser::printAction(const ActionNode* action, int indent) {
+  if (!action || !action->lexeme) return;
 
-  if (actions.size()) {
-    indent += 2;
+  if (action->actions.size()) {
+    printf("%*s(\n", indent + 2, "");
 
-    printf("%*s(\n", indent, "");
-
-    for (i = 0; i < actions.size(); i++) {
-      action = actions[i];
-      if (action) {
-        action->indent = indent;
-        action->print();
-      }
+    for (unsigned int i = 0; i < action->actions.size(); i++) {
+      printAction(action->actions[i], indent + 2);
     }
 
-    printf("%*s) ", indent, "");
-    printf("Action %s\n", lexeme->value.c_str());
-
-    indent -= 2;
+    printf("%*s) ", indent + 2, "");
+    printf("Action %s\n", action->lexeme->value.c_str());
 
   } else {
-    if (lexeme->type == Lexeme::type_keyword) {
+    if (action->lexeme->type == Lexeme::type_keyword) {
       printf("%*s", indent + 2, "");
-      printf("Action %s\n", lexeme->value.c_str());
+      printf("Action %s\n", action->lexeme->value.c_str());
     } else {
-      lexeme->indent = indent;
-      lexeme->print();
+      action->lexeme->indent = indent;
+      action->lexeme->print();
     }
   }
 }
 
-void TagNode::print() {
-  ActionNode* action;
-  unsigned int i;
+void Parser::printTag(const TagNode* tag) {
+  if (!tag) return;
 
-  printf("Tag %s\n", name.c_str());
+  printf("Tag %s\n", tag->name.c_str());
 
-  for (i = 0; i < actions.size(); i++) {
-    action = actions[i];
-    if (action) action->print();
+  for (unsigned int i = 0; i < tag->actions.size(); i++) {
+    printAction(tag->actions[i], 0);
   }
 }
 
 void Parser::print() {
-  TagNode* tag;
   for (unsigned int i = 0; i < tags.size(); i++) {
-    tag = tags[i];
-    if (tag) tag->print();
+    printTag(tags[i]);
   }
 }
 
 void Parser::error() {
   if (error_line) error_line->print();
   if (error_message.size() > 0) printf("%s\n", error_message.c_str());
-}
-
-/***
- * @name ActionNode class code
- */
-
-ActionNode::ActionNode() {
-  create((Lexeme*)0);
-}
-
-ActionNode::ActionNode(string name) {
-  create(new Lexeme(Lexeme::type_keyword, Lexeme::subtype_any, name));
-}
-
-ActionNode::ActionNode(Lexeme* plexeme) {
-  create(plexeme);
-}
-
-void ActionNode::create(Lexeme* plexeme) {
-  lexeme = plexeme;
-  indent = 0;
-  subtype = Lexeme::subtype_unknown;
-  actions.clear();
 }

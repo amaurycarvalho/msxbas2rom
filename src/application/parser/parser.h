@@ -17,68 +17,13 @@
 #include <string>
 #include <vector>
 
+#include "action_node.h"
+#include "build_options.h"
 #include "fswrapper.h"
 #include "lexer.h"
-#include "build_options.h"
+#include "tag_node.h"
 
 using namespace std;
-
-/***
- * @class ActionNode
- * @brief It represents a simple action item (statement, function etc)
- */
-class ActionNode {
- private:
-  int indent;
-  void create(Lexeme* plexeme);
-
- public:
-  int subtype;
-  Lexeme* lexeme;
-  vector<ActionNode*> actions;
-
-  /***
-   * @brief Print to the terminal the current action node
-   */
-  void print();
-
-  /***
-   * @brief ActionNode class constructor.
-   * It represents a simple action item (statement, function etc)
-   */
-  ActionNode();
-
-  /***
-   * @brief ActionNode class constructor.
-   * It represents a simple action item (statement, function etc)
-   * @param plexeme Action node lexeme item
-   */
-  ActionNode(Lexeme* plexeme);
-
-  /***
-   * @brief ActionNode class constructor.
-   * It represents a simple action item (statement, function etc)
-   * @param name Keyword name for the new lexeme to be associated with this
-   * action node
-   */
-  ActionNode(string name);
-};
-
-/***
- * @class TagNode
- * @brief It represents a tag node to an action list
- */
-class TagNode {
- public:
-  string name;
-  string value;
-  vector<ActionNode*> actions;
-
-  /***
-   * @brief Print to the terminal all actions from the current tag node
-   */
-  void print();
-};
 
 /***
  * @class Parser
@@ -220,6 +165,8 @@ class Parser {
    * @brief Print to the terminal all tags and it's syntax tree
    */
   void print();
+  void printTag(const TagNode* tag);
+  void printAction(const ActionNode* action, int indent);
 
   /***
    * @brief Print to the terminal the invalid tag node

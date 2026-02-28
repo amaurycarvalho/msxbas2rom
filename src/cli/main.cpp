@@ -186,7 +186,7 @@ int main(int argc, char* argv[]) {
 
     if (!compiler->build(parser.get())) {
       printf("Error: %s\n", compiler->error_message.c_str());
-      if (compiler->current_tag) compiler->current_tag->print();
+      if (compiler->current_tag) parser->printTag(compiler->current_tag);
       return 1;
     }
 
