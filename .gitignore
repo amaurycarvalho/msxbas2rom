@@ -43,6 +43,7 @@ tests/**/*.rom
 tests/**/*.noi
 tests/**/*.omds
 tests/**/*.symbol
+tests/deprecated/
 tests/unit/bin/
 tests/unit/obj/
 tests/unit/tmp/
