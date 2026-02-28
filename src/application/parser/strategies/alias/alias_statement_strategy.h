@@ -17,12 +17,12 @@ using namespace std;
 class AliasStatementStrategy : public IParserStatementStrategy {
  private:
   string aliasValue;
+  ParserStatementAction action;
   bool promoteToKeyword;
-  bool (Parser::*handler)(LexerLine*);
 
  public:
-  AliasStatementStrategy(string aliasValue, bool promoteToKeyword,
-                         bool (Parser::*handler)(LexerLine*));
+  AliasStatementStrategy(string aliasValue, ParserStatementAction action,
+                         bool promoteToKeyword);
   bool handle(Parser& parser, LexerLine* statement, Lexeme* lexeme) override;
 };
 

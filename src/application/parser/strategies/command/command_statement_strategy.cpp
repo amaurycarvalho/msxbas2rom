@@ -10,13 +10,11 @@
 #include "parser.h"
 
 CommandStatementStrategy::CommandStatementStrategy(
-    bool (Parser::*handler)(LexerLine*)) {
-  this->handler = handler;
+    ParserStatementAction action) {
+  this->action = action;
 }
 
 bool CommandStatementStrategy::handle(Parser& parser, LexerLine* statement,
                                       Lexeme* lexeme) {
-  (void)lexeme;
-  if (!handler) return true;
-  return (parser.*handler)(statement);
+  return parser.executeStatementCommand(action, statement, lexeme);
 }

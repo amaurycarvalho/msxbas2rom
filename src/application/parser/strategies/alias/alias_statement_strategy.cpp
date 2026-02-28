@@ -10,12 +10,11 @@
 #include "parser.h"
 
 AliasStatementStrategy::AliasStatementStrategy(string aliasValue,
-                                               bool promoteToKeyword,
-                                               bool (Parser::*handler)(
-                                                   LexerLine*)) {
+                                               ParserStatementAction action,
+                                               bool promoteToKeyword) {
   this->aliasValue = aliasValue;
+  this->action = action;
   this->promoteToKeyword = promoteToKeyword;
-  this->handler = handler;
 }
 
 bool AliasStatementStrategy::handle(Parser& parser, LexerLine* statement,
@@ -28,6 +27,5 @@ bool AliasStatementStrategy::handle(Parser& parser, LexerLine* statement,
     lexeme->value = aliasValue;
   }
 
-  if (!handler) return true;
-  return (parser.*handler)(statement);
+  return parser.executeStatementCommand(action, statement, lexeme);
 }
