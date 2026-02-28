@@ -423,8 +423,8 @@ void Compiler::doFix() {
 
     if (!address) {
       if (symbol->lexeme) {
-        symbol->lexeme->print();
-        syntaxError("Symbol reference not found: variable or constant");
+        syntaxError("Symbol reference not found: variable or constant\n" +
+                    symbol->lexeme->toString());
       } else if (symbol->tag) {
         current_tag = symbol->tag;
         syntaxError(

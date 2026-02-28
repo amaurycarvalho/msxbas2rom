@@ -29,7 +29,7 @@ class LexerLine {
   string line;
 
   bool evaluate();
-  void print();
+  string toString();
   void clearLexemes();
   void addLexeme(Lexeme* lexeme);
   Lexeme* getFirstLexeme();

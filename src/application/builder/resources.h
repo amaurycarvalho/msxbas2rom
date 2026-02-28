@@ -445,7 +445,7 @@ class ResourceManager {
   /***
    * @brief print resources names
    */
-  void print();
+  string toString();
 };
 
 #endif  // RESOURCES_H_INCLUDED

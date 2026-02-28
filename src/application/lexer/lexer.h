@@ -33,8 +33,8 @@ class Lexer {
   bool load(string filename);
   bool load(BuildOptions* opts);
   bool evaluate();
-  void print();
-  void error();
+  string toString();
+  string errorToString();
 
   Lexer();
 };

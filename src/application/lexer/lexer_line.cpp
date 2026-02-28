@@ -6,8 +6,6 @@
 
 #include "lexer_line.h"
 
-#include <stdio.h>
-
 #include "lexer_line_state_factory.h"
 
 /***
@@ -77,9 +75,12 @@ void LexerLine::popLexemeDiscarding() {
   lexemeStack.pop();
 }
 
-void LexerLine::print() {
-  printf("%s", line.c_str());
-  for (unsigned int i = 0; i < lexemes.size(); i++) lexemes[i]->print();
+string LexerLine::toString() {
+  string out = line;
+  for (unsigned int i = 0; i < lexemes.size(); i++) {
+    out += lexemes[i]->toString();
+  }
+  return out;
 }
 
 bool LexerLine::evaluate() {

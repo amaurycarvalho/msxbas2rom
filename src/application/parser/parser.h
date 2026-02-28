@@ -164,14 +164,12 @@ class Parser {
   /***
    * @brief Print to the terminal all tags and it's syntax tree
    */
-  void print();
-  void printTag(const TagNode* tag);
-  void printAction(const ActionNode* action, int indent);
+  string toString();
 
   /***
    * @brief Print to the terminal the invalid tag node
    */
-  void error();
+  string errorToString();
 
   /***
    * @brief Parse class constructor, specialized as a MSX BASIC syntax tree

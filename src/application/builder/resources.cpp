@@ -7,6 +7,9 @@
 
 #include "resources.h"
 
+#include <iomanip>
+#include <sstream>
+
 ///-------------------------------------------------------------------------------
 
 void ResourceManager::clear() {
@@ -14,13 +17,17 @@ void ResourceManager::clear() {
   pages.clear();
 }
 
-void ResourceManager::print() {
+string ResourceManager::toString() {
+  ostringstream out;
+  out << fixed << setprecision(1);
   for (int i = 0; i < (int)resources.size(); i++) {
-    printf("      Resource #%i: %s (", i, resources[i]->getFilename().c_str());
+    out << "      Resource #" << i << ": " << resources[i]->getFilename()
+        << " (";
     if (resources[i]->isPacked)
-      printf("%.1fK packed, ", resources[i]->packedSize / 1024.0);
-    printf("%.1fK unpacked)\n", resources[i]->unpackedSize / 1024.0);
+      out << (resources[i]->packedSize / 1024.0) << "K packed, ";
+    out << (resources[i]->unpackedSize / 1024.0) << "K unpacked)\n";
   }
+  return out.str();
 }
 
 const string ResourceManager::getErrorMessage() {

@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (!lexer->evaluate()) {
-      lexer->error();
+      printf("%s", lexer->errorToString().c_str());
       printf("ERROR: Lexical error at line %i\n", lexer->lineNo);
       printf("%s\n", lexer->errorMessage.c_str());
       return 1;
@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
 
     if (opts.debug) {
       printf("Displaying lexical analysis:\n");
-      lexer->print();
+      printf("%s", lexer->toString().c_str());
     }
 
     if (opts.compileMode == BuildOptions::CompileMode::Pcoded) {
@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
       if (parser->lineNo == 0)
         printf("ERROR: Cannot build the symbol tree\n");
       else {
-        parser->error();
+        printf("%s", parser->errorToString().c_str());
         printf("ERROR: Syntax error at line %i\n", parser->lineNo);
       }
       return 1;
@@ -167,7 +167,7 @@ int main(int argc, char* argv[]) {
 
     if (opts.debug) {
       printf("Displaying syntactic analysis:\n");
-      parser->print();
+      printf("%s", parser->toString().c_str());
     }
 
     /// SEMANTIC ANALYSIS
@@ -186,7 +186,8 @@ int main(int argc, char* argv[]) {
 
     if (!compiler->build(parser.get())) {
       printf("Error: %s\n", compiler->error_message.c_str());
-      if (compiler->current_tag) parser->printTag(compiler->current_tag);
+      if (compiler->current_tag)
+        printf("%s", compiler->current_tag->toString().c_str());
       return 1;
     }
 
@@ -264,7 +265,7 @@ int main(int argc, char* argv[]) {
         printf(", %.1f%% packed rate", compiler->resourceManager.packedRate);
       }
       printf(")\n");
-      if (opts.debug) compiler->resourceManager.print();
+      if (opts.debug) printf("%s", compiler->resourceManager.toString().c_str());
     }
 
     printf("    Kernel code occupied %.1f%% of avaliable space\n",

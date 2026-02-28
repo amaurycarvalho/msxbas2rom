@@ -98,15 +98,19 @@ bool Lexer::evaluate() {
   return true;
 }
 
-void Lexer::print() {
+string Lexer::toString() {
+  string out;
   LexerLine* lexerLine;
   for (unsigned int i = 0; i < lines.size(); i++) {
     lexerLine = lines[i];
-    if (lexerLine) lexerLine->print();
+    if (lexerLine) out += lexerLine->toString();
   }
+  return out;
 }
 
-void Lexer::error() {
+string Lexer::errorToString() {
+  string out;
   LexerLine* lexerLine = lines[lineNo - 1];
-  if (lexerLine) lexerLine->print();
+  if (lexerLine) out = lexerLine->toString();
+  return out;
 }

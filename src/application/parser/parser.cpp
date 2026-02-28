@@ -4560,47 +4560,20 @@ void Parser::popActionRoot() {
   }
 }
 
-void Parser::printAction(const ActionNode* action, int indent) {
-  if (!action || !action->lexeme) return;
-
-  if (action->actions.size()) {
-    printf("%*s(\n", indent + 2, "");
-
-    for (unsigned int i = 0; i < action->actions.size(); i++) {
-      printAction(action->actions[i], indent + 2);
-    }
-
-    printf("%*s) ", indent + 2, "");
-    printf("Action %s\n", action->lexeme->value.c_str());
-
-  } else {
-    if (action->lexeme->type == Lexeme::type_keyword) {
-      printf("%*s", indent + 2, "");
-      printf("Action %s\n", action->lexeme->value.c_str());
-    } else {
-      action->lexeme->indent = indent;
-      action->lexeme->print();
-    }
-  }
-}
-
-void Parser::printTag(const TagNode* tag) {
-  if (!tag) return;
-
-  printf("Tag %s\n", tag->name.c_str());
-
-  for (unsigned int i = 0; i < tag->actions.size(); i++) {
-    printAction(tag->actions[i], 0);
-  }
-}
-
-void Parser::print() {
+string Parser::toString() {
+  string out;
   for (unsigned int i = 0; i < tags.size(); i++) {
-    printTag(tags[i]);
+    if (tags[i]) out += tags[i]->toString();
   }
+  return out;
 }
 
-void Parser::error() {
-  if (error_line) error_line->print();
-  if (error_message.size() > 0) printf("%s\n", error_message.c_str());
+string Parser::errorToString() {
+  string out;
+  if (error_line) out += error_line->toString();
+  if (error_message.size() > 0) {
+    out += error_message;
+    out += "\n";
+  }
+  return out;
 }

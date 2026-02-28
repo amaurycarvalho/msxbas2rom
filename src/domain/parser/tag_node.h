@@ -24,6 +24,7 @@ class TagNode {
   string name;
   string value;
   vector<ActionNode*> actions;
+  string toString() const;
 };
 
 #endif  // TAG_NODE_H_INCLUDED

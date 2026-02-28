@@ -64,7 +64,7 @@ class Lexeme {
 
   void clear();
   Lexeme* clone();
-  void print();
+  string toString(int indentOverride = -1);
   char* getTypeName();
   char* getSubTypeName();
   bool isKeyword();

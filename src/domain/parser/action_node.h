@@ -27,6 +27,7 @@ class ActionNode {
   int subtype;
   Lexeme* lexeme;
   vector<ActionNode*> actions;
+  string toString(int indent = 0) const;
 
   /***
    * @brief ActionNode class constructor.

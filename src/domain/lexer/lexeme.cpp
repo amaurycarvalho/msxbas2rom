@@ -6,7 +6,7 @@
 
 #include "lexeme.h"
 
-#include <stdio.h>
+#include <string>
 
 /***
  * @name Lexeme class functions
@@ -74,13 +74,21 @@ void Lexeme::clear() {
   parm_count = 0;
 }
 
-void Lexeme::print() {
-  if (isArray)
-    printf("%*s--> %s %s (array): %s\n", indent, "", getTypeName(),
-           getSubTypeName(), value.c_str());
-  else
-    printf("%*s--> %s %s: %s\n", indent, "", getTypeName(), getSubTypeName(),
-           value.c_str());
+string Lexeme::toString(int indentOverride) {
+  int textIndent = indent;
+  if (indentOverride >= 0) textIndent = indentOverride;
+
+  string out;
+  out.append(textIndent, ' ');
+  out += "--> ";
+  out += getTypeName();
+  out += " ";
+  out += getSubTypeName();
+  if (isArray) out += " (array)";
+  out += ": ";
+  out += value;
+  out += "\n";
+  return out;
 }
 
 char* Lexeme::getTypeName() {
