@@ -22,3 +22,14 @@ These principles are not optional.
 ## Project Roadmap
 
 - Consult the `specs/plan.md` for project main roadmap and `specs/tasks.md` for the current sprint backlog.
+
+## Insights
+
+- Consult and maintain the `specs/insights.md` using it as a memory bank of your discoveries about this project.
+
+## Legacy Test Assets
+
+- `tests/deprecated/` is an archival and manual-only test asset area.
+- Its content is out of CI/TDD acceptance flow and has no mandatory coverage target.
+- Do not add new automated test cases there; prefer `tests/unit/` or `tests/integration/`.
+- Legacy scenarios from `tests/deprecated/` should be migrated to active suites when still relevant.
