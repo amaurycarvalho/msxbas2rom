@@ -40,7 +40,7 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
-  BuildOptions opts;
+  BuildOptionsSetup opts;
   unique_ptr<Lexer> lexer;
   unique_ptr<Rom> rom;
   unique_ptr<Parser> parser;
@@ -208,15 +208,15 @@ int main(int argc, char* argv[]) {
 
     if (!rom->build(compiler.get())) {
       bool shouldRetryWithAscii8 =
-          opts.autoROM &&
-          !retriedWithAscii8 &&
+          opts.autoROM && !retriedWithAscii8 &&
           opts.compileMode == BuildOptions::CompileMode::Plain &&
           rom->getErrorMessage().find("plain ROM limit") != string::npos;
 
       if (shouldRetryWithAscii8) {
         if (!opts.quiet) {
-          printf("    Auto mode: plain ROM overflow detected, retrying as "
-                 "ASCII8 MegaROM...\n");
+          printf(
+              "    Auto mode: plain ROM overflow detected, retrying as "
+              "ASCII8 MegaROM...\n");
         }
         opts.compileMode = BuildOptions::CompileMode::ASCII8;
         opts.megaROM = true;

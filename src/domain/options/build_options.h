@@ -1,13 +1,12 @@
 /***
- * @file options.h
+ * @file build_options.h
  * @brief Build options class header
  * @author Amaury Carvalho (2025)
  */
 
-#ifndef OPTIONS_H
-#define OPTIONS_H
+#ifndef BUILD_OPTIONS_H
+#define BUILD_OPTIONS_H
 
-#include "cliparser.h"
 #include "fswrapper.h"
 
 using namespace std;
@@ -20,9 +19,6 @@ using namespace std;
  * @brief Build options class
  */
 class BuildOptions {
- private:
-  CommandLineParser parser;
-
  public:
   //! @brief Compile modes: Plain ROM, ASCII8 MegaROM and KonamiSCC MegaROM
   //! @deprecated Pcoded
@@ -52,9 +48,6 @@ class BuildOptions {
   //! @brief Options error message
   string errorMessage;
 
-  //! @brief Parse CLI
-  bool parse(int argc, char* argv[]);
-
   //! @brief Set input filename
   void setInputFilename(string filename);
 
@@ -72,4 +65,4 @@ class BuildOptions {
   BuildOptions();
 };
 
-#endif  // OPTIONS_H
+#endif  // BUILD_OPTIONS_H

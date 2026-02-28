@@ -24,11 +24,10 @@
 #define MAIN_H_INCLUDED
 
 #include "appinfo.h"
-#include "cliparser.h"
+#include "build_options_setup.h"
 #include "compiler.h"
 #include "fswrapper.h"
 #include "lexer.h"
-#include "options.h"
 #include "rom.h"
 
 /***
@@ -38,7 +37,7 @@
  *   msxbas2rom -x program.bas
  *   msxbas2rom -x --scc program.bas
  */
-int main(int argc, char *argv[]);
+int main(int argc, char* argv[]);
 
 //! @brief Print header
 void printHeader();

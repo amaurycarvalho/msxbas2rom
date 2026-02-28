@@ -10,7 +10,7 @@
 
 #include <memory>
 
-#include "options.h"
+#include "build_options.h"
 #include "symbol_export_strategy.h"
 
 class SymbolExportStrategyFactory {

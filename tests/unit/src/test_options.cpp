@@ -6,12 +6,12 @@
 // NOLINTBEGIN
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "build_options_setup.h"
 #include "doctest/doctest.h"
-#include "options.h"
 
 TEST_SUITE("Options") {
   TEST_CASE("Parses auto mode with default plain compile mode") {
-    BuildOptions opts;
+    BuildOptionsSetup opts;
     char arg0[] = "msxbas2rom";
     char arg1[] = "--auto";
     char arg2[] = "program.bas";
@@ -24,7 +24,7 @@ TEST_SUITE("Options") {
   }
 
   TEST_CASE("Keeps explicit megarom selection when auto mode is present") {
-    BuildOptions opts;
+    BuildOptionsSetup opts;
     char arg0[] = "msxbas2rom";
     char arg1[] = "-a";
     char arg2[] = "-x";

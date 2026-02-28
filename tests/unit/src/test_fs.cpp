@@ -17,7 +17,7 @@
 #include "compiler.h"
 #include "doctest/doctest.h"
 #include "lexer.h"
-#include "options.h"
+#include "build_options.h"
 #include "parser.h"
 #include "pletter.h"
 

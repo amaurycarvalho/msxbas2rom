@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "code_node.h"
-#include "options.h"
+#include "build_options.h"
 
 using namespace std;
 

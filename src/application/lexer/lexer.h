@@ -14,7 +14,7 @@
 
 #include "fswrapper.h"
 #include "lexer_line.h"
-#include "options.h"
+#include "build_options.h"
 
 using namespace std;
 
