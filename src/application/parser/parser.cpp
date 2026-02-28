@@ -37,6 +37,7 @@ Parser::Parser() {
   has_akm = false;
   has_mtf = false;
   has_resource_restore = false;
+  statementBypassCleanup = false;
   error_message = "";
 
   for (i = 0; i < 26; i++) deftbl[i] = 0;
@@ -199,6 +200,7 @@ bool Parser::eval_statement(LexerLine* statement) {
   ActionNode* actionSaved = actionRoot;
   unsigned int actionCount = actionStack.size();
   bool result = true;
+  IParserStatementStrategy* strategy;
 
   lexeme = statement->getFirstLexeme();
 
@@ -207,119 +209,16 @@ bool Parser::eval_statement(LexerLine* statement) {
 
     action = new ActionNode(lexeme);
     pushActionRoot(action);
-
-    if (lexeme->value == "REM" || lexeme->value == "CLS" ||
-        lexeme->value == "END" || lexeme->value == "BEEP" ||
-        lexeme->value == "RANDOMIZE") {
-      result = true;
-    } else if (lexeme->value == "'") {
-      lexeme->type = Lexeme::type_keyword;
-      lexeme->name = "REM";
-      lexeme->value = lexeme->name;
-      result = true;
-    } else if (lexeme->value == "DEF") {
-      result = eval_cmd_def(statement, 0);
-    } else if (lexeme->value == "DEFINT") {
-      result = eval_cmd_def(statement, 2);
-    } else if (lexeme->value == "DEFSTR") {
-      result = eval_cmd_def(statement, 3);
-    } else if (lexeme->value == "DEFSNG") {
-      result = eval_cmd_def(statement, 4);
-    } else if (lexeme->value == "DEFDBL") {
-      result = eval_cmd_def(statement, 8);
-    } else if (lexeme->value == "WIDTH" || lexeme->value == "CLEAR" ||
-               lexeme->value == "ERASE" || lexeme->value == "LOCATE" ||
-               lexeme->value == "DRAW" || lexeme->value == "GOTO" ||
-               lexeme->value == "GOSUB" || lexeme->value == "RETURN" ||
-               lexeme->value == "SOUND" || lexeme->value == "RESTORE" ||
-               lexeme->value == "RESUME" || lexeme->value == "READ" ||
-               lexeme->value == "IREAD" || lexeme->value == "IRESTORE" ||
-               lexeme->value == "POKE" || lexeme->value == "IPOKE" ||
-               lexeme->value == "VPOKE" || lexeme->value == "OUT" ||
-               lexeme->value == "SWAP" || lexeme->value == "WAIT" ||
-               lexeme->value == "SEED" || lexeme->value == "BLOAD") {
-      if (lexeme->value == "BLOAD") resourceCount++;
-      result = eval_cmd_generic(statement);
-    } else if (lexeme->value == "SCREEN") {
-      result = eval_cmd_screen(statement);
-    } else if (lexeme->value == "PLAY") {
-      has_play = true;
-      result = eval_cmd_generic(statement);
-    } else if (lexeme->value == "LET") {
-      result = eval_cmd_let(statement);
-    } else if (lexeme->value == "DIM" || lexeme->value == "REDIM") {
-      result = eval_cmd_dim(statement);
-    } else if (lexeme->value == "PRINT") {
-      result = eval_cmd_print(statement);
-    } else if (lexeme->value == "?") {
-      lexeme->value = "PRINT";
-      lexeme->name = lexeme->value;
-      result = eval_cmd_print(statement);
-    } else if (lexeme->value == "INPUT") {
-      has_input = true;
-      result = eval_cmd_input(statement);
-    } else if (lexeme->value == "SPRITE") {
-      result = eval_cmd_sprite(statement);
-    } else if (lexeme->value == "BASE") {
-      result = eval_cmd_base(statement);
-    } else if (lexeme->value == "VDP") {
-      result = eval_cmd_vdp(statement);
-    } else if (lexeme->value == "PUT") {
-      result = eval_cmd_put(statement);
-    } else if (lexeme->value == "TIME") {
-      result = eval_cmd_time(statement);
-    } else if (lexeme->value == "SET") {
-      result = eval_cmd_set(statement);
-    } else if (lexeme->value == "GET") {
-      result = eval_cmd_get(statement);
-    } else if (lexeme->value == "ON") {
-      result = eval_cmd_on(statement);
-    } else if (lexeme->value == "INTERVAL") {
-      result = eval_cmd_interval(statement);
-    } else if (lexeme->value == "STOP") {
-      result = eval_cmd_stop(statement);
-    } else if (lexeme->value == "KEY") {
-      result = eval_cmd_key(statement);
-    } else if (lexeme->value == "STRIG") {
-      result = eval_cmd_strig(statement);
-    } else if (lexeme->value == "COLOR") {
-      result = eval_cmd_color(statement);
-    } else if (lexeme->value == "DATA") {
-      result = eval_cmd_data(statement, Lexeme::subtype_string);
-    } else if (lexeme->value == "IDATA") {
-      result = eval_cmd_data(statement, Lexeme::subtype_integer_data);
-    } else if (lexeme->value == "IF") {
-      return eval_cmd_if(statement, 0);
-    } else if (lexeme->value == "FOR") {
-      result = eval_cmd_for(statement);
-    } else if (lexeme->value == "NEXT") {
-      result = eval_cmd_next(statement);
-    } else if (lexeme->value == "PSET" || lexeme->value == "PRESET") {
-      result = eval_cmd_pset(statement);
-    } else if (lexeme->value == "LINE") {
-      result = eval_cmd_line(statement);
-    } else if (lexeme->value == "CIRCLE") {
-      result = eval_cmd_circle(statement);
-    } else if (lexeme->value == "PAINT") {
-      result = eval_cmd_paint(statement);
-    } else if (lexeme->value == "COPY") {
-      result = eval_cmd_copy(statement);
-    } else if (lexeme->value == "_") {
-      lexeme->value = "CALL";
-      lexeme->name = lexeme->value;
-      result = eval_cmd_call(statement);
-    } else if (lexeme->value == "CALL") {
-      result = eval_cmd_call(statement);
-    } else if (lexeme->value == "CMD") {
-      result = eval_cmd_cmd(statement);
-    } else if (lexeme->value == "OPEN") {
-      result = eval_cmd_open(statement);
-    } else if (lexeme->value == "CLOSE") {
-      result = eval_cmd_close(statement);
-    } else if (lexeme->value == "MAX") {
-      result = eval_cmd_maxfiles(statement);
+    statementBypassCleanup = false;
+    strategy = statementStrategyFactory.getStrategy(lexeme->value);
+    if (strategy) {
+      result = strategy->handle(*this, statement, lexeme);
     } else {
       result = false;
+    }
+
+    if (statementBypassCleanup) {
+      return result;
     }
 
     popActionRoot();
@@ -330,6 +229,100 @@ bool Parser::eval_statement(LexerLine* statement) {
   actionRoot = actionSaved;
 
   return result;
+}
+
+bool Parser::executeStatementCommand(ParserStatementAction action,
+                                     LexerLine* statement, Lexeme* lexeme) {
+  switch (action) {
+    case ParserStatementAction::NoOp:
+      return true;
+    case ParserStatementAction::Def:
+      return eval_cmd_def(statement, 0);
+    case ParserStatementAction::DefInt:
+      return eval_cmd_def(statement, 2);
+    case ParserStatementAction::DefStr:
+      return eval_cmd_def(statement, 3);
+    case ParserStatementAction::DefSng:
+      return eval_cmd_def(statement, 4);
+    case ParserStatementAction::DefDbl:
+      return eval_cmd_def(statement, 8);
+    case ParserStatementAction::Generic:
+      if (lexeme && lexeme->value == "BLOAD") resourceCount++;
+      return eval_cmd_generic(statement);
+    case ParserStatementAction::Screen:
+      return eval_cmd_screen(statement);
+    case ParserStatementAction::Play:
+      has_play = true;
+      return eval_cmd_generic(statement);
+    case ParserStatementAction::Let:
+      return eval_cmd_let(statement);
+    case ParserStatementAction::Dim:
+      return eval_cmd_dim(statement);
+    case ParserStatementAction::Print:
+      return eval_cmd_print(statement);
+    case ParserStatementAction::Input:
+      has_input = true;
+      return eval_cmd_input(statement);
+    case ParserStatementAction::Sprite:
+      return eval_cmd_sprite(statement);
+    case ParserStatementAction::Base:
+      return eval_cmd_base(statement);
+    case ParserStatementAction::Vdp:
+      return eval_cmd_vdp(statement);
+    case ParserStatementAction::Put:
+      return eval_cmd_put(statement);
+    case ParserStatementAction::Time:
+      return eval_cmd_time(statement);
+    case ParserStatementAction::Set:
+      return eval_cmd_set(statement);
+    case ParserStatementAction::Get:
+      return eval_cmd_get(statement);
+    case ParserStatementAction::On:
+      return eval_cmd_on(statement);
+    case ParserStatementAction::Interval:
+      return eval_cmd_interval(statement);
+    case ParserStatementAction::Stop:
+      return eval_cmd_stop(statement);
+    case ParserStatementAction::Key:
+      return eval_cmd_key(statement);
+    case ParserStatementAction::Strig:
+      return eval_cmd_strig(statement);
+    case ParserStatementAction::Color:
+      return eval_cmd_color(statement);
+    case ParserStatementAction::Data:
+      return eval_cmd_data(statement, Lexeme::subtype_string);
+    case ParserStatementAction::IData:
+      return eval_cmd_data(statement, Lexeme::subtype_integer_data);
+    case ParserStatementAction::If:
+      statementBypassCleanup = true;
+      return eval_cmd_if(statement, 0);
+    case ParserStatementAction::For:
+      return eval_cmd_for(statement);
+    case ParserStatementAction::Next:
+      return eval_cmd_next(statement);
+    case ParserStatementAction::Pset:
+      return eval_cmd_pset(statement);
+    case ParserStatementAction::Line:
+      return eval_cmd_line(statement);
+    case ParserStatementAction::Circle:
+      return eval_cmd_circle(statement);
+    case ParserStatementAction::Paint:
+      return eval_cmd_paint(statement);
+    case ParserStatementAction::Copy:
+      return eval_cmd_copy(statement);
+    case ParserStatementAction::Call:
+      return eval_cmd_call(statement);
+    case ParserStatementAction::Cmd:
+      return eval_cmd_cmd(statement);
+    case ParserStatementAction::Open:
+      return eval_cmd_open(statement);
+    case ParserStatementAction::Close:
+      return eval_cmd_close(statement);
+    case ParserStatementAction::Maxfiles:
+      return eval_cmd_maxfiles(statement);
+    default:
+      return false;
+  }
 }
 
 Lexeme* Parser::coalesceSymbols(Lexeme* lexeme) {
