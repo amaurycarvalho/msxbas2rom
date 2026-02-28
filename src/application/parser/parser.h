@@ -21,7 +21,6 @@
 #include "build_options.h"
 #include "fswrapper.h"
 #include "lexer.h"
-#include "parser_statement_strategy_factory.h"
 #include "tag_node.h"
 
 using namespace std;
@@ -133,7 +132,6 @@ class Parser {
 
   stack<ActionNode*> actionStack;
   stack<Lexeme*> expressionList;
-  ParserStatementStrategyFactory statementStrategyFactory;
 
   // @brief DEFTBL workarea
   int deftbl[26];
@@ -153,7 +151,6 @@ class Parser {
   bool has_play, has_input, has_font, has_mtf;
   bool has_pt3, has_akm, has_resource_restore;
   int resourceCount;
-  bool statementBypassCleanup;
 
   Lexer* lexer;
   BuildOptions* opts;
@@ -163,8 +160,6 @@ class Parser {
    * @return True, if syntatic analysis success
    */
   bool evaluate(Lexer* lexer);
-  bool executeStatementCommand(ParserStatementAction action,
-                               LexerLine* statement, Lexeme* lexeme);
 
   /***
    * @brief Print to the terminal all tags and it's syntax tree
