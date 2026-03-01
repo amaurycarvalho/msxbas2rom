@@ -194,6 +194,17 @@ class Parser {
   bool evalCmdTime(LexerLine* statement);
   bool evalCmdSet(LexerLine* statement);
   bool evalCmdGet(LexerLine* statement);
+  bool evalCmdOn(LexerLine* statement);
+  bool evalCmdInterval(LexerLine* statement);
+  bool evalCmdStop(LexerLine* statement);
+  bool evalCmdKey(LexerLine* statement);
+  bool evalCmdStrig(LexerLine* statement);
+  bool evalCmdColor(LexerLine* statement);
+  bool evalCmdCall(LexerLine* statement);
+  bool evalCmdCmd(LexerLine* statement);
+  bool evalCmdOpen(LexerLine* statement);
+  bool evalCmdClose(LexerLine* statement);
+  bool evalCmdMaxfiles(LexerLine* statement);
 
   /***
    * @brief Return all tags and it's syntax tree as a string

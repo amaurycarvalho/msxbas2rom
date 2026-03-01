@@ -95,6 +95,42 @@ bool Parser::evalCmdSet(LexerLine* statement) { return eval_cmd_set(statement); 
 
 bool Parser::evalCmdGet(LexerLine* statement) { return eval_cmd_get(statement); }
 
+bool Parser::evalCmdOn(LexerLine* statement) { return eval_cmd_on(statement); }
+
+bool Parser::evalCmdInterval(LexerLine* statement) {
+  return eval_cmd_interval(statement);
+}
+
+bool Parser::evalCmdStop(LexerLine* statement) { return eval_cmd_stop(statement); }
+
+bool Parser::evalCmdKey(LexerLine* statement) { return eval_cmd_key(statement); }
+
+bool Parser::evalCmdStrig(LexerLine* statement) {
+  return eval_cmd_strig(statement);
+}
+
+bool Parser::evalCmdColor(LexerLine* statement) {
+  return eval_cmd_color(statement);
+}
+
+bool Parser::evalCmdCall(LexerLine* statement) {
+  return eval_cmd_call(statement);
+}
+
+bool Parser::evalCmdCmd(LexerLine* statement) { return eval_cmd_cmd(statement); }
+
+bool Parser::evalCmdOpen(LexerLine* statement) {
+  return eval_cmd_open(statement);
+}
+
+bool Parser::evalCmdClose(LexerLine* statement) {
+  return eval_cmd_close(statement);
+}
+
+bool Parser::evalCmdMaxfiles(LexerLine* statement) {
+  return eval_cmd_maxfiles(statement);
+}
+
 bool Parser::evaluate(Lexer* lexer) {
   int i, t = lexer->lines.size();
   LexerLine* lexerLine;
@@ -255,18 +291,6 @@ bool Parser::eval_statement(LexerLine* statement) {
       result = eval_cmd_def(statement, 4);
     } else if (lexeme->value == "DEFDBL") {
       result = eval_cmd_def(statement, 8);
-    } else if (lexeme->value == "ON") {
-      result = eval_cmd_on(statement);
-    } else if (lexeme->value == "INTERVAL") {
-      result = eval_cmd_interval(statement);
-    } else if (lexeme->value == "STOP") {
-      result = eval_cmd_stop(statement);
-    } else if (lexeme->value == "KEY") {
-      result = eval_cmd_key(statement);
-    } else if (lexeme->value == "STRIG") {
-      result = eval_cmd_strig(statement);
-    } else if (lexeme->value == "COLOR") {
-      result = eval_cmd_color(statement);
     } else if (lexeme->value == "IF") {
       return eval_cmd_if(statement, 0);
     } else if (lexeme->value == "FOR") {
@@ -283,20 +307,6 @@ bool Parser::eval_statement(LexerLine* statement) {
       result = eval_cmd_paint(statement);
     } else if (lexeme->value == "COPY") {
       result = eval_cmd_copy(statement);
-    } else if (lexeme->value == "_") {
-      lexeme->value = "CALL";
-      lexeme->name = lexeme->value;
-      result = eval_cmd_call(statement);
-    } else if (lexeme->value == "CALL") {
-      result = eval_cmd_call(statement);
-    } else if (lexeme->value == "CMD") {
-      result = eval_cmd_cmd(statement);
-    } else if (lexeme->value == "OPEN") {
-      result = eval_cmd_open(statement);
-    } else if (lexeme->value == "CLOSE") {
-      result = eval_cmd_close(statement);
-    } else if (lexeme->value == "MAX") {
-      result = eval_cmd_maxfiles(statement);
     } else {
       result = false;
     }

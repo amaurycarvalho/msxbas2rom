@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 
+#include "call_statement_strategy.h"
 #include "data_statement_strategy.h"
 #include "direct_statement_strategy.h"
 #include "dim_statement_strategy.h"
@@ -26,6 +27,7 @@ class ParserStatementStrategyFactory {
   InputStatementStrategy inputStrategy;
   DataStatementStrategy dataStrategy;
   IDataStatementStrategy idataStrategy;
+  CallStatementStrategy callStrategy;
   DirectStatementStrategy screenStrategy;
   DirectStatementStrategy spriteStrategy;
   DirectStatementStrategy baseStrategy;
@@ -34,6 +36,16 @@ class ParserStatementStrategyFactory {
   DirectStatementStrategy timeStrategy;
   DirectStatementStrategy setStrategy;
   DirectStatementStrategy getStatementStrategy;
+  DirectStatementStrategy onStrategy;
+  DirectStatementStrategy intervalStrategy;
+  DirectStatementStrategy stopStrategy;
+  DirectStatementStrategy keyStrategy;
+  DirectStatementStrategy strigStrategy;
+  DirectStatementStrategy colorStrategy;
+  DirectStatementStrategy cmdStrategy;
+  DirectStatementStrategy openStrategy;
+  DirectStatementStrategy closeStrategy;
+  DirectStatementStrategy maxStrategy;
   map<string, IParserStatementStrategy*> strategies;
 
  public:

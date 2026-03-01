@@ -8,7 +8,17 @@ ParserStatementStrategyFactory::ParserStatementStrategyFactory()
       putStrategy(DirectStatementStrategy::PUT),
       timeStrategy(DirectStatementStrategy::TIME),
       setStrategy(DirectStatementStrategy::SET),
-      getStatementStrategy(DirectStatementStrategy::GET) {
+      getStatementStrategy(DirectStatementStrategy::GET),
+      onStrategy(DirectStatementStrategy::ON),
+      intervalStrategy(DirectStatementStrategy::INTERVAL),
+      stopStrategy(DirectStatementStrategy::STOP),
+      keyStrategy(DirectStatementStrategy::KEY),
+      strigStrategy(DirectStatementStrategy::STRIG),
+      colorStrategy(DirectStatementStrategy::COLOR),
+      cmdStrategy(DirectStatementStrategy::CMD),
+      openStrategy(DirectStatementStrategy::OPEN),
+      closeStrategy(DirectStatementStrategy::CLOSE),
+      maxStrategy(DirectStatementStrategy::MAX) {
   strategies["REM"] = &noopStrategy;
   strategies["CLS"] = &noopStrategy;
   strategies["END"] = &noopStrategy;
@@ -56,6 +66,18 @@ ParserStatementStrategyFactory::ParserStatementStrategyFactory()
   strategies["TIME"] = &timeStrategy;
   strategies["SET"] = &setStrategy;
   strategies["GET"] = &getStatementStrategy;
+  strategies["ON"] = &onStrategy;
+  strategies["INTERVAL"] = &intervalStrategy;
+  strategies["STOP"] = &stopStrategy;
+  strategies["KEY"] = &keyStrategy;
+  strategies["STRIG"] = &strigStrategy;
+  strategies["COLOR"] = &colorStrategy;
+  strategies["CMD"] = &cmdStrategy;
+  strategies["OPEN"] = &openStrategy;
+  strategies["CLOSE"] = &closeStrategy;
+  strategies["MAX"] = &maxStrategy;
+  strategies["CALL"] = &callStrategy;
+  strategies["_"] = &callStrategy;
 }
 
 IParserStatementStrategy* ParserStatementStrategyFactory::getStrategyByKeyword(

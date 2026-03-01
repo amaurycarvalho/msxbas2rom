@@ -23,6 +23,26 @@ bool DirectStatementStrategy::execute(Parser& parser, LexerLine* statement,
       return parser.evalCmdSet(statement);
     case GET:
       return parser.evalCmdGet(statement);
+    case ON:
+      return parser.evalCmdOn(statement);
+    case INTERVAL:
+      return parser.evalCmdInterval(statement);
+    case STOP:
+      return parser.evalCmdStop(statement);
+    case KEY:
+      return parser.evalCmdKey(statement);
+    case STRIG:
+      return parser.evalCmdStrig(statement);
+    case COLOR:
+      return parser.evalCmdColor(statement);
+    case CMD:
+      return parser.evalCmdCmd(statement);
+    case OPEN:
+      return parser.evalCmdOpen(statement);
+    case CLOSE:
+      return parser.evalCmdClose(statement);
+    case MAX:
+      return parser.evalCmdMaxfiles(statement);
     default:
       return false;
   }

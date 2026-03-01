@@ -13,7 +13,17 @@ class DirectStatementStrategy : public IParserStatementStrategy {
     PUT,
     TIME,
     SET,
-    GET
+    GET,
+    ON,
+    INTERVAL,
+    STOP,
+    KEY,
+    STRIG,
+    COLOR,
+    CMD,
+    OPEN,
+    CLOSE,
+    MAX
   };
 
  private:
