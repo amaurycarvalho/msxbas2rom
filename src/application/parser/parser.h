@@ -184,6 +184,7 @@ class Parser {
   bool evalExpressionTokens(LexerLine* parm);
   bool evalPhraseTokens(LexerLine* phrase);
   bool evalAssignmentTokens(LexerLine* assignment);
+  int gfxOperatorFromLexeme(Lexeme* lexeme);
   void pushActionNodeRoot(ActionNode* action);
   ActionNode* pushActionFromLexemeNode(Lexeme* lexeme);
   void popActionNodeRoot();
