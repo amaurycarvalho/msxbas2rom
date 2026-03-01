@@ -14,7 +14,6 @@ ParserStatementStrategyFactory::ParserStatementStrategyFactory()
       stopStrategy(DirectStatementStrategy::STOP),
       keyStrategy(DirectStatementStrategy::KEY),
       strigStrategy(DirectStatementStrategy::STRIG),
-      colorStrategy(DirectStatementStrategy::COLOR),
       cmdStrategy(DirectStatementStrategy::CMD),
       openStrategy(DirectStatementStrategy::OPEN),
       closeStrategy(DirectStatementStrategy::CLOSE),

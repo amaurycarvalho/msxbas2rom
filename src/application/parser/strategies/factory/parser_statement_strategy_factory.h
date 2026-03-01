@@ -5,6 +5,7 @@
 #include <string>
 
 #include "call_statement_strategy.h"
+#include "color_statement_strategy.h"
 #include "data_statement_strategy.h"
 #include "def_statement_strategy.h"
 #include "direct_statement_strategy.h"
@@ -28,6 +29,7 @@ class ParserStatementStrategyFactory {
   InputStatementStrategy inputStrategy;
   DataStatementStrategy dataStrategy;
   IDataStatementStrategy idataStrategy;
+  ColorStatementStrategy colorStrategy;
   DefStatementStrategy defStrategy;
   CallStatementStrategy callStrategy;
   DirectStatementStrategy screenStrategy;
@@ -43,7 +45,6 @@ class ParserStatementStrategyFactory {
   DirectStatementStrategy stopStrategy;
   DirectStatementStrategy keyStrategy;
   DirectStatementStrategy strigStrategy;
-  DirectStatementStrategy colorStrategy;
   DirectStatementStrategy cmdStrategy;
   DirectStatementStrategy openStrategy;
   DirectStatementStrategy closeStrategy;

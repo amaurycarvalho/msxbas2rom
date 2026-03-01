@@ -968,32 +968,18 @@ bool Parser::eval_cmd_print(LexerLine* statement) {
 }
 
 bool Parser::eval_cmd_input(LexerLine* statement) {
-  return eval_cmd_print(statement);
+  InputStatementStrategy strategy;
+  return strategy.parseStatement(*this, statement);
 }
 
 bool Parser::eval_cmd_line_input(LexerLine* statement) {
-  return eval_cmd_print(statement);
+  PrintStatementStrategy strategy;
+  return strategy.parseStatement(*this, statement);
 }
 
 bool Parser::eval_cmd_color(LexerLine* statement) {
-  Lexeme* next_lexeme = statement->getNextLexeme();
-
-  if (next_lexeme) {
-    if (next_lexeme->isOperator("=")) {
-      return eval_cmd_color_rgb(statement);
-    } else if (next_lexeme->isKeyword("SPRITE")) {
-      return eval_cmd_color_sprite(statement);
-    } else if (next_lexeme->isKeyword("SPRITE$")) {
-      return eval_cmd_color_sprite(statement);
-    } else {
-      statement->getPreviousLexeme();
-      return eval_cmd_generic(statement);
-    }
-  } else {
-    error_message = "Invalid COLOR statement";
-  }
-
-  return false;
+  ColorStatementStrategy strategy;
+  return strategy.parseStatement(*this, statement);
 }
 
 bool Parser::eval_cmd_color_rgb(LexerLine* statement) {

@@ -1,6 +1,12 @@
 #include "input_statement_strategy.h"
 
+#include "print_statement_strategy.h"
 #include "parser.h"
+
+bool InputStatementStrategy::parseStatement(Parser& parser, LexerLine* statement) {
+  PrintStatementStrategy printStrategy;
+  return printStrategy.parseStatement(parser, statement);
+}
 
 bool InputStatementStrategy::execute(Parser& parser, LexerLine* statement,
                                      Lexeme* lexeme) {
@@ -9,5 +15,5 @@ bool InputStatementStrategy::execute(Parser& parser, LexerLine* statement,
   ParserContext& ctx = parser.getContext();
   ctx.has_input = true;
 
-  return parser.evalCmdInput(statement);
+  return parseStatement(parser, statement);
 }

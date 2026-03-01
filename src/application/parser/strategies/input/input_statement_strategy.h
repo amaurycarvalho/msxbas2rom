@@ -5,6 +5,7 @@
 
 class InputStatementStrategy : public IParserStatementStrategy {
  public:
+  bool parseStatement(Parser& parser, LexerLine* statement);
   bool execute(Parser& parser, LexerLine* statement, Lexeme* lexeme) override;
 };
 
