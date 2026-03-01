@@ -174,12 +174,18 @@ class Parser {
   bool evaluate(Lexer* lexer);
 
   /***
-   * @brief Print to the terminal all tags and it's syntax tree
+   * @brief Parser context getter
+   */
+  ParserContext& getContext();
+  const ParserContext& getContext() const;
+
+  /***
+   * @brief Return all tags and it's syntax tree as a string
    */
   string toString();
 
   /***
-   * @brief Print to the terminal the invalid tag node
+   * @brief Return the invalid tag node as a string
    */
   string errorToString();
 

@@ -49,6 +49,10 @@ Parser::Parser()
 
 Parser::~Parser() {}
 
+ParserContext& Parser::getContext() { return ctx; }
+
+const ParserContext& Parser::getContext() const { return ctx; }
+
 bool Parser::evaluate(Lexer* lexer) {
   int i, t = lexer->lines.size();
   LexerLine* lexerLine;
@@ -57,13 +61,13 @@ bool Parser::evaluate(Lexer* lexer) {
   this->opts = lexer->opts;
   ctx.reset();
 
-  for (i = 0, lineNo = 1; i < t; i++, lineNo++) {
+  for (i = 0, ctx.lineNo = 1; i < t; i++, ctx.lineNo++) {
     lexerLine = lexer->lines[i];
     // if(opts->debug) {
     // printf("%s\n",lexerLine->line.c_str());
     // }
     if (lexerLine->getLexemeCount() > 0) {
-      line_comment = false;
+      ctx.line_comment = false;
       if (!eval_line(lexerLine)) return false;
     }
   }
@@ -77,17 +81,17 @@ bool Parser::eval_line(LexerLine* lexerLine) {
   LexerLine phrase;
   int if_count = 0;
 
-  error_line = lexerLine;
-  actionRoot = 0;
+  ctx.error_line = lexerLine;
+  ctx.actionRoot = 0;
 
   if (lexeme) {
     lexeme = coalesceSymbols(lexeme);
 
     if (lexeme->isLiteralNumeric()) {
-      tag = new TagNode();  // register line number tag
-      tag->name = lexeme->value;
-      tag->value = tag->name;
-      tags.push_back(tag);
+      ctx.tag = new TagNode();  // register line number tag
+      ctx.tag->name = lexeme->value;
+      ctx.tag->value = ctx.tag->name;
+      ctx.tags.push_back(ctx.tag);
 
       while ((lexeme = lexerLine->getNextLexeme())) {
         lexeme = coalesceSymbols(lexeme);
@@ -97,7 +101,7 @@ bool Parser::eval_line(LexerLine* lexerLine) {
         }
 
         if (lexeme->isSeparator(":") && if_count == 0) {
-          actionRoot = 0;
+          ctx.actionRoot = 0;
           if (phrase.getLexemeCount())
             if (!eval_phrase(&phrase)) return false;
           phrase.clearLexemes();
@@ -112,18 +116,18 @@ bool Parser::eval_line(LexerLine* lexerLine) {
       }
 
       if (phrase.getLexemeCount()) {
-        actionRoot = 0;
+        ctx.actionRoot = 0;
         if (!eval_phrase(&phrase)) return false;
       }
 
     } else if (lexeme->type == Lexeme::type_keyword) {
       if (lexeme->value == "FILE" || lexeme->value == "TEXT") {
-        resourceCount++;
+        ctx.resourceCount++;
 
-        tag = new TagNode();  // register line number tag
-        tag->name = "DIRECTIVE";
-        tag->value = tag->name;
-        tags.push_back(tag);
+        ctx.tag = new TagNode();  // register line number tag
+        ctx.tag->name = "DIRECTIVE";
+        ctx.tag->value = ctx.tag->name;
+        ctx.tags.push_back(ctx.tag);
 
         action = new ActionNode(lexeme);
         pushActionRoot(action);
@@ -138,13 +142,13 @@ bool Parser::eval_line(LexerLine* lexerLine) {
           if (lexeme->type == Lexeme::type_literal &&
               lexeme->subtype == Lexeme::subtype_string) {
             if (!loadInclude(lexeme)) {
-              error_message =
+              ctx.error_message =
                   "INCLUDE file not found or with content syntax error";
               return false;
             }
 
           } else {
-            error_message = "Invalid parameter in INCLUDE keyword";
+            ctx.error_message = "Invalid parameter in INCLUDE keyword";
             return false;
           }
         }
@@ -176,15 +180,15 @@ bool Parser::eval_phrase(LexerLine* phrase) {
     }
   }
 
-  error_message = "Invalid keyword/identifier";
+  ctx.error_message = "Invalid keyword/identifier";
   return false;
 }
 
 bool Parser::eval_statement(LexerLine* statement) {
   Lexeme* lexeme;
   ActionNode* action;
-  ActionNode* actionSaved = actionRoot;
-  unsigned int actionCount = actionStack.size();
+  ActionNode* actionSaved = ctx.actionRoot;
+  unsigned int actionCount = ctx.actionStack.size();
   bool result = true;
 
   lexeme = statement->getFirstLexeme();
@@ -225,12 +229,12 @@ bool Parser::eval_statement(LexerLine* statement) {
                lexeme->value == "VPOKE" || lexeme->value == "OUT" ||
                lexeme->value == "SWAP" || lexeme->value == "WAIT" ||
                lexeme->value == "SEED" || lexeme->value == "BLOAD") {
-      if (lexeme->value == "BLOAD") resourceCount++;
+      if (lexeme->value == "BLOAD") ctx.resourceCount++;
       result = eval_cmd_generic(statement);
     } else if (lexeme->value == "SCREEN") {
       result = eval_cmd_screen(statement);
     } else if (lexeme->value == "PLAY") {
-      has_play = true;
+      ctx.has_play = true;
       result = eval_cmd_generic(statement);
     } else if (lexeme->value == "LET") {
       result = eval_cmd_let(statement);
@@ -243,7 +247,7 @@ bool Parser::eval_statement(LexerLine* statement) {
       lexeme->name = lexeme->value;
       result = eval_cmd_print(statement);
     } else if (lexeme->value == "INPUT") {
-      has_input = true;
+      ctx.has_input = true;
       result = eval_cmd_input(statement);
     } else if (lexeme->value == "SPRITE") {
       result = eval_cmd_sprite(statement);
@@ -312,9 +316,9 @@ bool Parser::eval_statement(LexerLine* statement) {
     popActionRoot();
   }
 
-  while (actionStack.size() > actionCount) actionStack.pop();
+  while (ctx.actionStack.size() > actionCount) ctx.actionStack.pop();
 
-  actionRoot = actionSaved;
+  ctx.actionRoot = actionSaved;
 
   return result;
 }
