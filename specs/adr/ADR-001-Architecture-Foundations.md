@@ -57,6 +57,7 @@ All use cases must contain:
 ### Technological Restrictions
 
 - Do not use poorly understood, unprofessionally unvalidated, or unmaintained third-party frameworks, SDKs, libraries, components, or services.
+- Do not use the `friend` keyword in any C++ code (classes, functions, or anything else).
 
 --
 

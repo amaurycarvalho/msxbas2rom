@@ -391,8 +391,8 @@ bool Parser::eval_assignment(LexerLine* assignment) {
     if (lexeme->type == Lexeme::type_identifier ||
         (lexeme->type == Lexeme::type_keyword &&
          lexeme->subtype == Lexeme::subtype_function)) {
-      if (actionRoot) {
-        lexLet = actionRoot->lexeme;
+      if (ctx.actionRoot) {
+        lexLet = ctx.actionRoot->lexeme;
         if (lexLet->isKeyword("LET")) {
           add_let_action = false;
         }
@@ -438,25 +438,25 @@ bool Parser::eval_assignment(LexerLine* assignment) {
     }
   }
 
-  error_message = "Invalid LET statement";
+  ctx.error_message = "Invalid LET statement";
   return false;
 }
 
 bool Parser::eval_expression(LexerLine* parm) {
-  ActionNode* actionSaved = actionRoot;
-  unsigned int actionCount = actionStack.size();
+  ActionNode* actionSaved = ctx.actionRoot;
+  unsigned int actionCount = ctx.actionStack.size();
 
-  while (!expressionList.empty()) expressionList.pop();
+  while (!ctx.expressionList.empty()) ctx.expressionList.pop();
 
   if (!eval_expression_push(parm)) return false;
 
-  while (!expressionList.empty()) {
+  while (!ctx.expressionList.empty()) {
     eval_expression_pop(1);
   }
 
-  while (actionStack.size() > actionCount) actionStack.pop();
+  while (ctx.actionStack.size() > actionCount) ctx.actionStack.pop();
 
-  actionRoot = actionSaved;
+  ctx.actionRoot = actionSaved;
 
   return true;
 }
@@ -465,9 +465,9 @@ void Parser::eval_expression_pop(int n) {
   Lexeme* lexeme;
   int k;
 
-  while (n && !expressionList.empty()) {
-    lexeme = expressionList.top();
-    expressionList.pop();
+  while (n && !ctx.expressionList.empty()) {
+    lexeme = ctx.expressionList.top();
+    ctx.expressionList.pop();
 
     pushActionFromLexeme(lexeme);
 
@@ -519,8 +519,8 @@ bool Parser::eval_expression_push(LexerLine* parm) {
 
       if (outputCount == 0 || unary) {
         if (outputCount == 0 && lexeme->value == ")") {
-          eval_expr_error = true;
-          error_message = "Mismatched parentheses error";
+          ctx.eval_expr_error = true;
+          ctx.error_message = "Mismatched parentheses error";
           return false;
         } else if (lexeme->value == "=") {
           next_lexeme = operatorStack.top();
@@ -535,8 +535,8 @@ bool Parser::eval_expression_push(LexerLine* parm) {
             lexeme = coalesceSymbols(lexeme);
             continue;
           } else {
-            eval_expr_error = true;
-            error_message = "Invalid = symbol in expression";
+            ctx.eval_expr_error = true;
+            ctx.error_message = "Invalid = symbol in expression";
             return false;
           }
         } else if (lexeme->value == ">") {
@@ -547,15 +547,15 @@ bool Parser::eval_expression_push(LexerLine* parm) {
             lexeme = coalesceSymbols(lexeme);
             continue;
           } else {
-            eval_expr_error = true;
-            error_message = "Invalid > symbol in expression";
+            ctx.eval_expr_error = true;
+            ctx.error_message = "Invalid > symbol in expression";
             return false;
           }
         } else if (lexeme->value != "+" && lexeme->value != "-" &&
                    lexeme->value != "(" && lexeme->value != ")" &&
                    lexeme->value != "NOT") {
-          eval_expr_error = true;
-          error_message = "Invalid expression unary symbol";
+          ctx.eval_expr_error = true;
+          ctx.error_message = "Invalid expression unary symbol";
           return false;
         } else {
           if (lexeme->value == "+" ||
@@ -572,15 +572,15 @@ bool Parser::eval_expression_push(LexerLine* parm) {
 
       if (lexeme->value == "(") {
         if (lastWasFunction || lastWasIdentifier) {
-          if (expressionList.empty()) {
-            eval_expr_error = true;
-            error_message =
+          if (ctx.expressionList.empty()) {
+            ctx.eval_expr_error = true;
+            ctx.error_message =
                 "Invalid FUNCTION or ARRAY declaration in expression";
             return false;
           }
 
-          next_lexeme = expressionList.top();
-          expressionList.pop();
+          next_lexeme = ctx.expressionList.top();
+          ctx.expressionList.pop();
 
           // parse function/array parameters
           functionLexemes.clearLexemes();
@@ -612,14 +612,14 @@ bool Parser::eval_expression_push(LexerLine* parm) {
             functionLexemes.addLexeme(lexeme);
           }
           if (!ok) {
-            eval_expr_error = true;
-            error_message = "Mismatched parentheses error in function or array";
+            ctx.eval_expr_error = true;
+            ctx.error_message = "Mismatched parentheses error in function or array";
             return false;
           }
 
           if (!parmcount) {
-            eval_expr_error = true;
-            error_message =
+            ctx.eval_expr_error = true;
+            ctx.error_message =
                 "Invalid FUNCTION or ARRAY declaration in expression (missing "
                 "parameters?)";
             return false;
@@ -679,8 +679,8 @@ bool Parser::eval_expression_push(LexerLine* parm) {
           }
         }
         if (!ok) {
-          eval_expr_error = true;
-          error_message = "Mismatched parentheses error";
+          ctx.eval_expr_error = true;
+          ctx.error_message = "Mismatched parentheses error";
           return false;  // parentheses is missing
         }
       } else
@@ -782,7 +782,7 @@ int Parser::getOperatorParmCount(Lexeme* lexeme) {
 }
 
 void Parser::pushStackFromLexeme(Lexeme* lexeme) {
-  expressionList.push(lexeme);
+  ctx.expressionList.push(lexeme);
 }
 
 ActionNode* Parser::pushActionFromLexeme(Lexeme* lexeme) {
