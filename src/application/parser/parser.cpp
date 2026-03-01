@@ -59,9 +59,15 @@ bool Parser::evalExpressionTokens(LexerLine* parm) {
   return eval_expression(parm);
 }
 
+bool Parser::evalAssignmentTokens(LexerLine* assignment) {
+  return eval_assignment(assignment);
+}
+
 ActionNode* Parser::pushActionFromLexemeNode(Lexeme* lexeme) {
   return pushActionFromLexeme(lexeme);
 }
+
+void Parser::popActionNodeRoot() { popActionRoot(); }
 
 bool Parser::evalCmdLet(LexerLine* statement) { return eval_cmd_let(statement); }
 
@@ -947,149 +953,18 @@ bool Parser::eval_cmd_data(LexerLine* statement,
 }
 
 bool Parser::eval_cmd_dim(LexerLine* statement) {
-  ActionNode *action = actionRoot, *subaction;
-  Lexeme* lexeme;
-  unsigned int i, t;
-
-  if (!eval_cmd_generic(statement)) return false;
-
-  t = action->actions.size();
-  if (!t) return false;
-
-  for (i = 0; i < t; i++) {
-    subaction = action->actions[i];
-    lexeme = subaction->lexeme;
-    lexeme->isArray = true;
-    lexeme->parm_count = subaction->actions.size();
-    if (!lexeme->parm_count) {
-      error_message =
-          "Invalid array declaration: DIM size parameter is missing";
-      return false;
-    }
-  }
-
-  return true;
+  DimStatementStrategy strategy;
+  return strategy.parseStatement(*this, statement);
 }
 
 bool Parser::eval_cmd_let(LexerLine* statement) {
-  return eval_assignment(statement);
+  LetStatementStrategy strategy;
+  return strategy.parseStatement(*this, statement);
 }
 
 bool Parser::eval_cmd_print(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  LexerLine parm;
-  ActionNode* action;
-  int sepcount = 0, state = 0, i;
-  bool print_using = false;
-  Lexeme* lex_using[5] = {0, 0, 0, 0, 0};
-
-  // get keyword parameters
-  while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = coalesceSymbols(next_lexeme);
-
-    switch (state) {
-      case 0: {
-        if (next_lexeme->isSeparator("#") && sepcount == 0) {
-          state = 1;
-          pushActionFromLexeme(next_lexeme);
-          continue;
-        } else if (next_lexeme->isKeyword("USING")) {
-          print_using = true;
-          state = 3;
-          continue;
-        } else if (next_lexeme->isSeparator("(")) {
-          sepcount++;
-        } else if (next_lexeme->isSeparator(")") && sepcount > 0) {
-          sepcount--;
-        } else if (next_lexeme->type == Lexeme::type_separator &&
-                   (next_lexeme->value == "," || next_lexeme->value == ";") &&
-                   sepcount == 0) {
-          if (parm.getLexemeCount()) {
-            if (print_using) {
-              parm.addLexeme(lex_using[4]);
-            }
-
-            parm.setLexemeBOF();
-            if (!eval_expression(&parm)) {
-              return false;
-            }
-
-            parm.clearLexemes();
-          }
-
-          action = new ActionNode(next_lexeme);
-          actionRoot->actions.push_back(action);
-
-          continue;
-        }
-      } break;
-
-      case 1: {
-        state = 2;
-        pushActionFromLexeme(next_lexeme);
-        popActionRoot();
-        continue;
-      } break;
-
-      case 2: {
-        if (next_lexeme->isSeparator(",")) {
-          state = 0;
-          continue;
-        }
-      } break;
-
-      case 3: {
-        if (next_lexeme->type == Lexeme::type_identifier ||
-            next_lexeme->type == Lexeme::type_literal) {
-          lex_using[0] = new Lexeme(Lexeme::type_keyword,
-                                    Lexeme::subtype_function, "USING$");
-          lex_using[1] =
-              new Lexeme(Lexeme::type_separator, Lexeme::subtype_string, "(");
-          lex_using[2] = next_lexeme;
-          lex_using[3] =
-              new Lexeme(Lexeme::type_separator, Lexeme::subtype_string, ",");
-          lex_using[4] =
-              new Lexeme(Lexeme::type_separator, Lexeme::subtype_string, ")");
-
-          for (i = 0; i <= 3; i++) parm.addLexeme(lex_using[i]);
-
-          state = 4;
-
-          continue;
-        } else {
-          return false;
-        }
-      } break;
-
-      case 4: {
-        if (next_lexeme->type == Lexeme::type_separator &&
-            (next_lexeme->value == "," || next_lexeme->value == ";")) {
-          state = 0;
-          continue;
-        } else {
-          return false;
-        }
-      } break;
-    }
-
-    if (parm.getLexemeCount() == 0 && print_using) {
-      for (i = 0; i <= 3; i++) parm.addLexeme(lex_using[i]);
-    }
-
-    parm.addLexeme(next_lexeme);
-  }
-
-  if (parm.getLexemeCount()) {
-    if (print_using) {
-      parm.addLexeme(lex_using[4]);
-    }
-    parm.setLexemeBOF();
-    if (!eval_expression(&parm)) {
-      return false;
-    }
-  }
-
-  return true;
+  PrintStatementStrategy strategy;
+  return strategy.parseStatement(*this, statement);
 }
 
 bool Parser::eval_cmd_input(LexerLine* statement) {
