@@ -182,7 +182,9 @@ class Parser {
   const ParserContext& getContext() const;
   Lexeme* coalesceLexeme(Lexeme* lexeme);
   bool evalExpressionTokens(LexerLine* parm);
+  bool evalPhraseTokens(LexerLine* phrase);
   bool evalAssignmentTokens(LexerLine* assignment);
+  void pushActionNodeRoot(ActionNode* action);
   ActionNode* pushActionFromLexemeNode(Lexeme* lexeme);
   void popActionNodeRoot();
   bool evalCmdLet(LexerLine* statement);

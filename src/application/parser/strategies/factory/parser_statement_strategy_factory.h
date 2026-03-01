@@ -12,8 +12,11 @@
 #include "dim_statement_strategy.h"
 #include "generic_statement_strategy.h"
 #include "idata_statement_strategy.h"
+#include "if_statement_strategy.h"
 #include "input_statement_strategy.h"
 #include "let_statement_strategy.h"
+#include "for_statement_strategy.h"
+#include "next_statement_strategy.h"
 #include "noop_statement_strategy.h"
 #include "print_statement_strategy.h"
 
@@ -49,9 +52,9 @@ class ParserStatementStrategyFactory {
   DirectStatementStrategy openStrategy;
   DirectStatementStrategy closeStrategy;
   DirectStatementStrategy maxStrategy;
-  DirectStatementStrategy ifStrategy;
-  DirectStatementStrategy forStrategy;
-  DirectStatementStrategy nextStrategy;
+  IfStatementStrategy ifStrategy;
+  ForStatementStrategy forStrategy;
+  NextStatementStrategy nextStrategy;
   DirectStatementStrategy psetStrategy;
   DirectStatementStrategy lineStrategy;
   DirectStatementStrategy circleStrategy;
