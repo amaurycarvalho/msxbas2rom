@@ -180,7 +180,9 @@ class Parser {
    */
   ParserContext& getContext();
   const ParserContext& getContext() const;
-  bool evalCmdGeneric(LexerLine* statement);
+  Lexeme* coalesceLexeme(Lexeme* lexeme);
+  bool evalExpressionTokens(LexerLine* parm);
+  ActionNode* pushActionFromLexemeNode(Lexeme* lexeme);
   bool evalCmdLet(LexerLine* statement);
   bool evalCmdDim(LexerLine* statement);
   bool evalCmdPrint(LexerLine* statement);

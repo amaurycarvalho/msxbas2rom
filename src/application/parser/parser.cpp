@@ -53,8 +53,14 @@ ParserContext& Parser::getContext() { return ctx; }
 
 const ParserContext& Parser::getContext() const { return ctx; }
 
-bool Parser::evalCmdGeneric(LexerLine* statement) {
-  return eval_cmd_generic(statement);
+Lexeme* Parser::coalesceLexeme(Lexeme* lexeme) { return coalesceSymbols(lexeme); }
+
+bool Parser::evalExpressionTokens(LexerLine* parm) {
+  return eval_expression(parm);
+}
+
+ActionNode* Parser::pushActionFromLexemeNode(Lexeme* lexeme) {
+  return pushActionFromLexeme(lexeme);
 }
 
 bool Parser::evalCmdLet(LexerLine* statement) { return eval_cmd_let(statement); }
@@ -815,49 +821,8 @@ ActionNode* Parser::pushActionFromLexeme(Lexeme* lexeme) {
 //-----------------------------------------------------------------------------------------------------------------
 
 bool Parser::eval_cmd_generic(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  LexerLine parm;
-  int sepcount = 0;
-
-  // get keyword parameters
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = coalesceSymbols(next_lexeme);
-
-    if (next_lexeme->isSeparator("(")) {
-      sepcount++;
-    } else if (next_lexeme->isSeparator(")") && sepcount > 0) {
-      sepcount--;
-    } else if (next_lexeme->type == Lexeme::type_separator &&
-               (next_lexeme->value == "," || next_lexeme->value == ";") &&
-               sepcount == 0) {
-      if (parm.getLexemeCount()) {
-        parm.setLexemeBOF();
-        if (!eval_expression(&parm)) {
-          return false;
-        }
-        parm.clearLexemes();
-      } else {
-        next_lexeme = lex_null;
-        pushActionFromLexeme(next_lexeme);
-      }
-
-      continue;
-    } else if (next_lexeme->isOperator("'")) {
-      break;
-    }
-
-    parm.addLexeme(next_lexeme);
-  }
-
-  if (parm.getLexemeCount()) {
-    parm.setLexemeBOF();
-    if (!eval_expression(&parm)) {
-      return false;
-    }
-  }
-
-  return true;
+  GenericStatementStrategy strategy;
+  return strategy.parseStatement(*this, statement);
 }
 
 bool Parser::eval_cmd_data(LexerLine* statement,
