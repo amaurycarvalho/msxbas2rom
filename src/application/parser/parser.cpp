@@ -131,6 +131,40 @@ bool Parser::evalCmdMaxfiles(LexerLine* statement) {
   return eval_cmd_maxfiles(statement);
 }
 
+bool Parser::evalCmdDef(LexerLine* statement, int vartype) {
+  return eval_cmd_def(statement, vartype);
+}
+
+bool Parser::evalCmdIf(LexerLine* statement) {
+  return eval_cmd_if(statement, 0);
+}
+
+bool Parser::evalCmdFor(LexerLine* statement) { return eval_cmd_for(statement); }
+
+bool Parser::evalCmdNext(LexerLine* statement) {
+  return eval_cmd_next(statement);
+}
+
+bool Parser::evalCmdPset(LexerLine* statement) {
+  return eval_cmd_pset(statement);
+}
+
+bool Parser::evalCmdLine(LexerLine* statement) {
+  return eval_cmd_line(statement);
+}
+
+bool Parser::evalCmdCircle(LexerLine* statement) {
+  return eval_cmd_circle(statement);
+}
+
+bool Parser::evalCmdPaint(LexerLine* statement) {
+  return eval_cmd_paint(statement);
+}
+
+bool Parser::evalCmdCopy(LexerLine* statement) {
+  return eval_cmd_copy(statement);
+}
+
 bool Parser::evaluate(Lexer* lexer) {
   int i, t = lexer->lines.size();
   LexerLine* lexerLine;
@@ -281,32 +315,7 @@ bool Parser::eval_statement(LexerLine* statement) {
     strategy = statementStrategyFactory.getStrategyByKeyword(lexeme->value);
     if (strategy) {
       result = strategy->execute(*this, statement, lexeme);
-    } else if (lexeme->value == "DEF") {
-      result = eval_cmd_def(statement, 0);
-    } else if (lexeme->value == "DEFINT") {
-      result = eval_cmd_def(statement, 2);
-    } else if (lexeme->value == "DEFSTR") {
-      result = eval_cmd_def(statement, 3);
-    } else if (lexeme->value == "DEFSNG") {
-      result = eval_cmd_def(statement, 4);
-    } else if (lexeme->value == "DEFDBL") {
-      result = eval_cmd_def(statement, 8);
-    } else if (lexeme->value == "IF") {
-      return eval_cmd_if(statement, 0);
-    } else if (lexeme->value == "FOR") {
-      result = eval_cmd_for(statement);
-    } else if (lexeme->value == "NEXT") {
-      result = eval_cmd_next(statement);
-    } else if (lexeme->value == "PSET" || lexeme->value == "PRESET") {
-      result = eval_cmd_pset(statement);
-    } else if (lexeme->value == "LINE") {
-      result = eval_cmd_line(statement);
-    } else if (lexeme->value == "CIRCLE") {
-      result = eval_cmd_circle(statement);
-    } else if (lexeme->value == "PAINT") {
-      result = eval_cmd_paint(statement);
-    } else if (lexeme->value == "COPY") {
-      result = eval_cmd_copy(statement);
+      if (lexeme->value == "IF") return result;
     } else {
       result = false;
     }

@@ -18,7 +18,15 @@ ParserStatementStrategyFactory::ParserStatementStrategyFactory()
       cmdStrategy(DirectStatementStrategy::CMD),
       openStrategy(DirectStatementStrategy::OPEN),
       closeStrategy(DirectStatementStrategy::CLOSE),
-      maxStrategy(DirectStatementStrategy::MAX) {
+      maxStrategy(DirectStatementStrategy::MAX),
+      ifStrategy(DirectStatementStrategy::IF),
+      forStrategy(DirectStatementStrategy::FOR),
+      nextStrategy(DirectStatementStrategy::NEXT),
+      psetStrategy(DirectStatementStrategy::PSET),
+      lineStrategy(DirectStatementStrategy::LINE),
+      circleStrategy(DirectStatementStrategy::CIRCLE),
+      paintStrategy(DirectStatementStrategy::PAINT),
+      copyStrategy(DirectStatementStrategy::COPY) {
   strategies["REM"] = &noopStrategy;
   strategies["CLS"] = &noopStrategy;
   strategies["END"] = &noopStrategy;
@@ -78,6 +86,20 @@ ParserStatementStrategyFactory::ParserStatementStrategyFactory()
   strategies["MAX"] = &maxStrategy;
   strategies["CALL"] = &callStrategy;
   strategies["_"] = &callStrategy;
+  strategies["DEF"] = &defStrategy;
+  strategies["DEFINT"] = &defStrategy;
+  strategies["DEFSTR"] = &defStrategy;
+  strategies["DEFSNG"] = &defStrategy;
+  strategies["DEFDBL"] = &defStrategy;
+  strategies["IF"] = &ifStrategy;
+  strategies["FOR"] = &forStrategy;
+  strategies["NEXT"] = &nextStrategy;
+  strategies["PSET"] = &psetStrategy;
+  strategies["PRESET"] = &psetStrategy;
+  strategies["LINE"] = &lineStrategy;
+  strategies["CIRCLE"] = &circleStrategy;
+  strategies["PAINT"] = &paintStrategy;
+  strategies["COPY"] = &copyStrategy;
 }
 
 IParserStatementStrategy* ParserStatementStrategyFactory::getStrategyByKeyword(

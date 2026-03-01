@@ -43,6 +43,22 @@ bool DirectStatementStrategy::execute(Parser& parser, LexerLine* statement,
       return parser.evalCmdClose(statement);
     case MAX:
       return parser.evalCmdMaxfiles(statement);
+    case IF:
+      return parser.evalCmdIf(statement);
+    case FOR:
+      return parser.evalCmdFor(statement);
+    case NEXT:
+      return parser.evalCmdNext(statement);
+    case PSET:
+      return parser.evalCmdPset(statement);
+    case LINE:
+      return parser.evalCmdLine(statement);
+    case CIRCLE:
+      return parser.evalCmdCircle(statement);
+    case PAINT:
+      return parser.evalCmdPaint(statement);
+    case COPY:
+      return parser.evalCmdCopy(statement);
     default:
       return false;
   }

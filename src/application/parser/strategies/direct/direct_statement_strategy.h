@@ -24,6 +24,15 @@ class DirectStatementStrategy : public IParserStatementStrategy {
     OPEN,
     CLOSE,
     MAX
+    ,
+    IF,
+    FOR,
+    NEXT,
+    PSET,
+    LINE,
+    CIRCLE,
+    PAINT,
+    COPY
   };
 
  private:
