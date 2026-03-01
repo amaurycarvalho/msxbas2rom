@@ -181,6 +181,9 @@ class Parser {
   ParserContext& getContext();
   const ParserContext& getContext() const;
   bool evalCmdGeneric(LexerLine* statement);
+  bool evalCmdLet(LexerLine* statement);
+  bool evalCmdDim(LexerLine* statement);
+  bool evalCmdPrint(LexerLine* statement);
 
   /***
    * @brief Return all tags and it's syntax tree as a string

@@ -31,6 +31,12 @@ ParserStatementStrategyFactory::ParserStatementStrategyFactory() {
   strategies["SEED"] = &genericStrategy;
   strategies["BLOAD"] = &genericStrategy;
   strategies["PLAY"] = &genericStrategy;
+
+  strategies["LET"] = &letStrategy;
+  strategies["DIM"] = &dimStrategy;
+  strategies["REDIM"] = &dimStrategy;
+  strategies["PRINT"] = &printStrategy;
+  strategies["?"] = &printStrategy;
 }
 
 IParserStatementStrategy* ParserStatementStrategyFactory::getStrategy(

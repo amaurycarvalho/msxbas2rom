@@ -57,6 +57,14 @@ bool Parser::evalCmdGeneric(LexerLine* statement) {
   return eval_cmd_generic(statement);
 }
 
+bool Parser::evalCmdLet(LexerLine* statement) { return eval_cmd_let(statement); }
+
+bool Parser::evalCmdDim(LexerLine* statement) { return eval_cmd_dim(statement); }
+
+bool Parser::evalCmdPrint(LexerLine* statement) {
+  return eval_cmd_print(statement);
+}
+
 bool Parser::evaluate(Lexer* lexer) {
   int i, t = lexer->lines.size();
   LexerLine* lexerLine;
@@ -219,16 +227,6 @@ bool Parser::eval_statement(LexerLine* statement) {
       result = eval_cmd_def(statement, 8);
     } else if (lexeme->value == "SCREEN") {
       result = eval_cmd_screen(statement);
-    } else if (lexeme->value == "LET") {
-      result = eval_cmd_let(statement);
-    } else if (lexeme->value == "DIM" || lexeme->value == "REDIM") {
-      result = eval_cmd_dim(statement);
-    } else if (lexeme->value == "PRINT") {
-      result = eval_cmd_print(statement);
-    } else if (lexeme->value == "?") {
-      lexeme->value = "PRINT";
-      lexeme->name = lexeme->value;
-      result = eval_cmd_print(statement);
     } else if (lexeme->value == "INPUT") {
       ctx.has_input = true;
       result = eval_cmd_input(statement);
