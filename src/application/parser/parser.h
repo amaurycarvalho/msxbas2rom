@@ -184,6 +184,16 @@ class Parser {
   bool evalCmdLet(LexerLine* statement);
   bool evalCmdDim(LexerLine* statement);
   bool evalCmdPrint(LexerLine* statement);
+  bool evalCmdInput(LexerLine* statement);
+  bool evalCmdData(LexerLine* statement, Lexeme::LexemeSubType subtype);
+  bool evalCmdScreen(LexerLine* statement);
+  bool evalCmdSprite(LexerLine* statement);
+  bool evalCmdBase(LexerLine* statement);
+  bool evalCmdVdp(LexerLine* statement);
+  bool evalCmdPut(LexerLine* statement);
+  bool evalCmdTime(LexerLine* statement);
+  bool evalCmdSet(LexerLine* statement);
+  bool evalCmdGet(LexerLine* statement);
 
   /***
    * @brief Return all tags and it's syntax tree as a string

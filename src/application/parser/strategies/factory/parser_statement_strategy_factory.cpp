@@ -1,6 +1,14 @@
 #include "parser_statement_strategy_factory.h"
 
-ParserStatementStrategyFactory::ParserStatementStrategyFactory() {
+ParserStatementStrategyFactory::ParserStatementStrategyFactory()
+    : screenStrategy(DirectStatementStrategy::SCREEN),
+      spriteStrategy(DirectStatementStrategy::SPRITE),
+      baseStrategy(DirectStatementStrategy::BASE),
+      vdpStrategy(DirectStatementStrategy::VDP),
+      putStrategy(DirectStatementStrategy::PUT),
+      timeStrategy(DirectStatementStrategy::TIME),
+      setStrategy(DirectStatementStrategy::SET),
+      getStatementStrategy(DirectStatementStrategy::GET) {
   strategies["REM"] = &noopStrategy;
   strategies["CLS"] = &noopStrategy;
   strategies["END"] = &noopStrategy;
@@ -37,9 +45,20 @@ ParserStatementStrategyFactory::ParserStatementStrategyFactory() {
   strategies["REDIM"] = &dimStrategy;
   strategies["PRINT"] = &printStrategy;
   strategies["?"] = &printStrategy;
+  strategies["INPUT"] = &inputStrategy;
+  strategies["DATA"] = &dataStrategy;
+  strategies["IDATA"] = &idataStrategy;
+  strategies["SCREEN"] = &screenStrategy;
+  strategies["SPRITE"] = &spriteStrategy;
+  strategies["BASE"] = &baseStrategy;
+  strategies["VDP"] = &vdpStrategy;
+  strategies["PUT"] = &putStrategy;
+  strategies["TIME"] = &timeStrategy;
+  strategies["SET"] = &setStrategy;
+  strategies["GET"] = &getStatementStrategy;
 }
 
-IParserStatementStrategy* ParserStatementStrategyFactory::getStrategy(
+IParserStatementStrategy* ParserStatementStrategyFactory::getStrategyByKeyword(
     const string& keyword) {
   map<string, IParserStatementStrategy*>::iterator it = strategies.find(keyword);
   if (it == strategies.end()) return 0;

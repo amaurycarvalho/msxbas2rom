@@ -65,6 +65,36 @@ bool Parser::evalCmdPrint(LexerLine* statement) {
   return eval_cmd_print(statement);
 }
 
+bool Parser::evalCmdInput(LexerLine* statement) {
+  return eval_cmd_input(statement);
+}
+
+bool Parser::evalCmdData(LexerLine* statement, Lexeme::LexemeSubType subtype) {
+  return eval_cmd_data(statement, subtype);
+}
+
+bool Parser::evalCmdScreen(LexerLine* statement) {
+  return eval_cmd_screen(statement);
+}
+
+bool Parser::evalCmdSprite(LexerLine* statement) {
+  return eval_cmd_sprite(statement);
+}
+
+bool Parser::evalCmdBase(LexerLine* statement) { return eval_cmd_base(statement); }
+
+bool Parser::evalCmdVdp(LexerLine* statement) { return eval_cmd_vdp(statement); }
+
+bool Parser::evalCmdPut(LexerLine* statement) { return eval_cmd_put(statement); }
+
+bool Parser::evalCmdTime(LexerLine* statement) {
+  return eval_cmd_time(statement);
+}
+
+bool Parser::evalCmdSet(LexerLine* statement) { return eval_cmd_set(statement); }
+
+bool Parser::evalCmdGet(LexerLine* statement) { return eval_cmd_get(statement); }
+
 bool Parser::evaluate(Lexer* lexer) {
   int i, t = lexer->lines.size();
   LexerLine* lexerLine;
@@ -212,7 +242,7 @@ bool Parser::eval_statement(LexerLine* statement) {
     action = new ActionNode(lexeme);
     pushActionRoot(action);
 
-    strategy = statementStrategyFactory.getStrategy(lexeme->value);
+    strategy = statementStrategyFactory.getStrategyByKeyword(lexeme->value);
     if (strategy) {
       result = strategy->execute(*this, statement, lexeme);
     } else if (lexeme->value == "DEF") {
@@ -225,25 +255,6 @@ bool Parser::eval_statement(LexerLine* statement) {
       result = eval_cmd_def(statement, 4);
     } else if (lexeme->value == "DEFDBL") {
       result = eval_cmd_def(statement, 8);
-    } else if (lexeme->value == "SCREEN") {
-      result = eval_cmd_screen(statement);
-    } else if (lexeme->value == "INPUT") {
-      ctx.has_input = true;
-      result = eval_cmd_input(statement);
-    } else if (lexeme->value == "SPRITE") {
-      result = eval_cmd_sprite(statement);
-    } else if (lexeme->value == "BASE") {
-      result = eval_cmd_base(statement);
-    } else if (lexeme->value == "VDP") {
-      result = eval_cmd_vdp(statement);
-    } else if (lexeme->value == "PUT") {
-      result = eval_cmd_put(statement);
-    } else if (lexeme->value == "TIME") {
-      result = eval_cmd_time(statement);
-    } else if (lexeme->value == "SET") {
-      result = eval_cmd_set(statement);
-    } else if (lexeme->value == "GET") {
-      result = eval_cmd_get(statement);
     } else if (lexeme->value == "ON") {
       result = eval_cmd_on(statement);
     } else if (lexeme->value == "INTERVAL") {
@@ -256,10 +267,6 @@ bool Parser::eval_statement(LexerLine* statement) {
       result = eval_cmd_strig(statement);
     } else if (lexeme->value == "COLOR") {
       result = eval_cmd_color(statement);
-    } else if (lexeme->value == "DATA") {
-      result = eval_cmd_data(statement, Lexeme::subtype_string);
-    } else if (lexeme->value == "IDATA") {
-      result = eval_cmd_data(statement, Lexeme::subtype_integer_data);
     } else if (lexeme->value == "IF") {
       return eval_cmd_if(statement, 0);
     } else if (lexeme->value == "FOR") {
