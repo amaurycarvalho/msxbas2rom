@@ -15,60 +15,47 @@
  * @name Parser class code
  */
 
-Parser::Parser() {
-  int i;
+Parser::Parser()
+    : tag(ctx.tag),
+      actionRoot(ctx.actionRoot),
+      error_line(ctx.error_line),
+      lex_null(ctx.lex_null),
+      lex_index(ctx.lex_index),
+      lex_empty_string(ctx.lex_empty_string),
+      actionStack(ctx.actionStack),
+      expressionList(ctx.expressionList),
+      deftbl(ctx.deftbl),
+      eval_expr_error(ctx.eval_expr_error),
+      line_comment(ctx.line_comment),
+      error_message(ctx.error_message),
+      lineNo(ctx.lineNo),
+      tags(ctx.tags),
+      symbolList(ctx.symbolList),
+      datas(ctx.datas),
+      has_traps(ctx.has_traps),
+      has_defusr(ctx.has_defusr),
+      has_data(ctx.has_data),
+      has_idata(ctx.has_idata),
+      has_play(ctx.has_play),
+      has_input(ctx.has_input),
+      has_font(ctx.has_font),
+      has_mtf(ctx.has_mtf),
+      has_pt3(ctx.has_pt3),
+      has_akm(ctx.has_akm),
+      has_resource_restore(ctx.has_resource_restore),
+      resourceCount(ctx.resourceCount),
+      lexer(0),
+      opts(0) {}
 
-  tag = 0;
-  actionRoot = 0;
-  error_line = 0;
-  resourceCount = 0;
-
-  lineNo = 0;
-  eval_expr_error = false;
-  line_comment = false;
-  has_traps = false;
-  has_defusr = false;
-  has_data = false;
-  has_idata = false;
-  has_play = false;
-  has_input = false;
-  has_font = false;
-  has_pt3 = false;
-  has_akm = false;
-  has_mtf = false;
-  has_resource_restore = false;
-  error_message = "";
-
-  for (i = 0; i < 26; i++) deftbl[i] = 0;
-
-  tags.clear();
-  symbolList.clear();
-  datas.clear();
-
-  while (!actionStack.empty()) actionStack.pop();
-
-  lex_null = new Lexeme(Lexeme::type_literal, Lexeme::subtype_null, "NULL");
-
-  lex_empty_string =
-      new Lexeme(Lexeme::type_literal, Lexeme::subtype_string, "");
-
-  lex_index =
-      new Lexeme(Lexeme::type_keyword, Lexeme::subtype_numeric, "INDEX");
-}
-
-Parser::~Parser() {
-  if (lex_null) delete lex_null;
-  if (lex_empty_string) delete lex_empty_string;
-  if (lex_index) delete lex_index;
-}
+Parser::~Parser() {}
 
 bool Parser::evaluate(Lexer* lexer) {
   int i, t = lexer->lines.size();
   LexerLine* lexerLine;
 
+  this->lexer = lexer;
   this->opts = lexer->opts;
-
-  Parser();
+  ctx.reset();
 
   for (i = 0, lineNo = 1; i < t; i++, lineNo++) {
     lexerLine = lexer->lines[i];

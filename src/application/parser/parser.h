@@ -21,6 +21,7 @@
 #include "build_options.h"
 #include "fswrapper.h"
 #include "lexer.h"
+#include "parser_context.h"
 #include "tag_node.h"
 
 using namespace std;
@@ -125,32 +126,43 @@ class Parser {
 
   Lexeme* coalesceSymbols(Lexeme* lexeme);
 
-  TagNode* tag;
-  ActionNode* actionRoot;
-  LexerLine* error_line;
-  Lexeme *lex_null, *lex_index, *lex_empty_string;
+  ParserContext ctx;
 
-  stack<ActionNode*> actionStack;
-  stack<Lexeme*> expressionList;
+  TagNode*& tag;
+  ActionNode*& actionRoot;
+  LexerLine*& error_line;
+  Lexeme*& lex_null;
+  Lexeme*& lex_index;
+  Lexeme*& lex_empty_string;
 
-  // @brief DEFTBL workarea
-  int deftbl[26];
+  stack<ActionNode*>& actionStack;
+  stack<Lexeme*>& expressionList;
+  int (&deftbl)[26];
 
-  bool eval_expr_error, line_comment;
-  string error_message;
+  bool& eval_expr_error;
+  bool& line_comment;
+  string& error_message;
 
  public:
-  int lineNo;
+  int& lineNo;
   //! @brief abstract syntax tree in list form implementation
-  vector<TagNode*> tags;
+  vector<TagNode*>& tags;
   //! @brief symbols list coalesced
-  vector<Lexeme*> symbolList;
-  vector<Lexeme*> datas;
+  vector<Lexeme*>& symbolList;
+  vector<Lexeme*>& datas;
 
-  bool has_traps, has_defusr, has_data, has_idata;
-  bool has_play, has_input, has_font, has_mtf;
-  bool has_pt3, has_akm, has_resource_restore;
-  int resourceCount;
+  bool& has_traps;
+  bool& has_defusr;
+  bool& has_data;
+  bool& has_idata;
+  bool& has_play;
+  bool& has_input;
+  bool& has_font;
+  bool& has_mtf;
+  bool& has_pt3;
+  bool& has_akm;
+  bool& has_resource_restore;
+  int& resourceCount;
 
   Lexer* lexer;
   BuildOptions* opts;
