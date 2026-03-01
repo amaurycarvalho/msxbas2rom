@@ -800,7 +800,7 @@ ActionNode* Parser::pushActionFromLexeme(Lexeme* lexeme) {
     pushActionRoot(actionExpr);
 
   } else
-    actionRoot->actions.push_back(actionExpr);
+    ctx.actionRoot->actions.push_back(actionExpr);
 
   return actionExpr;
 }
@@ -4532,38 +4532,38 @@ bool Parser::loadInclude(Lexeme* lexeme) {
 }
 
 void Parser::pushActionRoot(ActionNode* action) {
-  if (actionRoot) {
-    actionRoot->actions.push_back(action);
-    actionStack.push(actionRoot);
+  if (ctx.actionRoot) {
+    ctx.actionRoot->actions.push_back(action);
+    ctx.actionStack.push(ctx.actionRoot);
   } else {
-    while (!actionStack.empty()) actionStack.pop();
-    tag->actions.push_back(action);
+    while (!ctx.actionStack.empty()) ctx.actionStack.pop();
+    ctx.tag->actions.push_back(action);
   }
-  actionRoot = action;
+  ctx.actionRoot = action;
 }
 
 void Parser::popActionRoot() {
-  if (actionStack.empty()) {
-    actionRoot = 0;
+  if (ctx.actionStack.empty()) {
+    ctx.actionRoot = 0;
   } else {
-    actionRoot = actionStack.top();
-    actionStack.pop();
+    ctx.actionRoot = ctx.actionStack.top();
+    ctx.actionStack.pop();
   }
 }
 
 string Parser::toString() {
   string out;
-  for (unsigned int i = 0; i < tags.size(); i++) {
-    if (tags[i]) out += tags[i]->toString();
+  for (unsigned int i = 0; i < ctx.tags.size(); i++) {
+    if (ctx.tags[i]) out += ctx.tags[i]->toString();
   }
   return out;
 }
 
 string Parser::errorToString() {
   string out;
-  if (error_line) out += error_line->toString();
-  if (error_message.size() > 0) {
-    out += error_message;
+  if (ctx.error_line) out += ctx.error_line->toString();
+  if (ctx.error_message.size() > 0) {
+    out += ctx.error_message;
     out += "\n";
   }
   return out;
