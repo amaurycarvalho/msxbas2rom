@@ -12,6 +12,12 @@
 #include "parser.h"
 #include "file_statement_strategy.h"
 #include "graphics_statement_strategy.h"
+#include "get_statement_strategy.h"
+#include "on_statement_strategy.h"
+#include "put_statement_strategy.h"
+#include "screen_statement_strategy.h"
+#include "set_statement_strategy.h"
+#include "sprite_statement_strategy.h"
 
 /***
  * @name Parser class code
@@ -185,6 +191,66 @@ bool Parser::evalCmdPaint(LexerLine* statement) {
 
 bool Parser::evalCmdCopy(LexerLine* statement) {
   return eval_cmd_copy(statement);
+}
+
+bool Parser::evalCmdPutSprite(LexerLine* statement) {
+  return eval_cmd_put_sprite(statement);
+}
+
+bool Parser::evalCmdPutTile(LexerLine* statement) {
+  return eval_cmd_put_tile(statement);
+}
+
+bool Parser::evalCmdSetAdjust(LexerLine* statement) {
+  return eval_cmd_set_adjust(statement);
+}
+
+bool Parser::evalCmdSetTile(LexerLine* statement) {
+  return eval_cmd_set_tile(statement);
+}
+
+bool Parser::evalCmdSetSprite(LexerLine* statement) {
+  return eval_cmd_set_sprite(statement);
+}
+
+bool Parser::evalCmdSetSpriteColpattra(LexerLine* statement) {
+  return eval_cmd_set_sprite_colpattra(statement);
+}
+
+bool Parser::evalCmdGetTile(LexerLine* statement) {
+  return eval_cmd_get_tile(statement);
+}
+
+bool Parser::evalCmdGetSprite(LexerLine* statement) {
+  return eval_cmd_get_sprite(statement);
+}
+
+bool Parser::evalCmdScreenCopy(LexerLine* statement) {
+  return eval_cmd_screen_copy(statement);
+}
+
+bool Parser::evalCmdScreenPaste(LexerLine* statement) {
+  return eval_cmd_screen_paste(statement);
+}
+
+bool Parser::evalCmdScreenScroll(LexerLine* statement) {
+  return eval_cmd_screen_scroll(statement);
+}
+
+bool Parser::evalCmdScreenLoad(LexerLine* statement) {
+  return eval_cmd_screen_load(statement);
+}
+
+bool Parser::evalCmdScreenOn(LexerLine* statement) {
+  return eval_cmd_screen_on(statement);
+}
+
+bool Parser::evalCmdScreenOff(LexerLine* statement) {
+  return eval_cmd_screen_off(statement);
+}
+
+bool Parser::evalCmdSpriteLoad(LexerLine* statement) {
+  return eval_cmd_sprite_load(statement);
 }
 
 bool Parser::evaluate(Lexer* lexer) {
@@ -1130,451 +1196,38 @@ bool Parser::eval_cmd_def_usr(LexerLine* statement) {
 }
 
 bool Parser::eval_cmd_put(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode* action;
-  bool result = false;
-
-  if ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = coalesceSymbols(next_lexeme);
-
-    if (next_lexeme->type == Lexeme::type_keyword) {
-      action = new ActionNode(next_lexeme);
-      pushActionRoot(action);
-
-      if (next_lexeme->value == "SPRITE") {
-        result = eval_cmd_put_sprite(statement);
-      } else if (next_lexeme->value == "TILE") {
-        result = eval_cmd_put_tile(statement);
-      }
-
-      popActionRoot();
-    }
-  }
-
-  return result;
+  PutStatementStrategy strategy;
+  return strategy.parseStatement(*this, statement);
 }
 
 bool Parser::eval_cmd_put_sprite(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode *action, *act_coord;
-  LexerLine parm;
-  int state = 0, sepCount = 0;
-
-  act_coord = new ActionNode("COORD");
-
-  parm.clearLexemes();
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = coalesceSymbols(next_lexeme);
-
-    switch (state) {
-      case 0: {
-        if (next_lexeme->isSeparator(",")) {
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!eval_expression(&parm)) {
-              return false;
-            }
-            parm.clearLexemes();
-          } else {
-            pushActionFromLexeme(lex_null);
-          }
-          state = 1;
-          continue;
-        }
-      } break;
-
-      case 1: {
-        if (next_lexeme->isKeyword("STEP")) {
-          action = new ActionNode(next_lexeme);
-          pushActionRoot(action);
-          continue;
-        } else if (next_lexeme->isSeparator("(")) {
-          state = 2;
-          if (actionRoot) {
-            if (actionRoot->lexeme) {
-              if (actionRoot->lexeme->value != "STEP") {
-                pushActionRoot(act_coord);
-              }
-            }
-          }
-          continue;
-        } else if (next_lexeme->isSeparator(",")) {
-          state = 3;
-          pushActionRoot(act_coord);
-          pushActionFromLexeme(lex_null);
-          pushActionFromLexeme(lex_null);
-          popActionRoot();
-          continue;
-        } else {
-          error_message = "PUT SPRITE without a valid complement.";
-          eval_expr_error = true;
-          return false;
-        }
-      } break;
-
-      case 2: {
-        if (next_lexeme->isSeparator("(")) {
-          sepCount++;
-        } else if (next_lexeme->isSeparator(")")) {
-          if (sepCount) {
-            sepCount--;
-          } else {
-            state = 3;
-            if (parm.getLexemeCount()) {
-              parm.setLexemeBOF();
-              if (!eval_expression(&parm)) {
-                return false;
-              }
-              parm.clearLexemes();
-            } else {
-              if (actionRoot) {
-                pushActionFromLexeme(lex_null);
-                if (actionRoot->actions.size() == 1) {
-                  pushActionFromLexeme(lex_null);
-                }
-              }
-            }
-            popActionRoot();
-            next_lexeme = statement->getNextLexeme();
-            if (next_lexeme) {
-              if (next_lexeme->type != Lexeme::type_separator ||
-                  next_lexeme->value != ",") {
-                return false;
-              }
-            }
-            continue;
-          }
-        } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!eval_expression(&parm)) {
-              return false;
-            }
-            parm.clearLexemes();
-          } else {
-            pushActionFromLexeme(lex_null);
-          }
-          continue;
-        }
-
-      } break;
-
-      case 3: {
-        if (next_lexeme->isSeparator("(")) {
-          sepCount++;
-        } else if (next_lexeme->isSeparator(")")) {
-          if (sepCount) sepCount--;
-        } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!eval_expression(&parm)) {
-              return false;
-            }
-            parm.clearLexemes();
-          } else {
-            next_lexeme = lex_null;
-            pushActionFromLexeme(next_lexeme);
-          }
-          continue;
-        }
-
-      } break;
-    }
-
-    parm.addLexeme(next_lexeme);
-  }
-
-  if (parm.getLexemeCount()) {
-    parm.setLexemeBOF();
-    if (!eval_expression(&parm)) {
-      return false;
-    }
-
-    parm.clearLexemes();
-  }
-
-  return true;
+  PutStatementStrategy strategy;
+  return strategy.parsePutSprite(*this, statement);
 }
 
 bool Parser::eval_cmd_put_tile(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode *action, *act_coord;
-  LexerLine parm;
-  int state = 0, sepCount = 0;
-
-  act_coord = new ActionNode("COORD");
-
-  parm.clearLexemes();
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = coalesceSymbols(next_lexeme);
-
-    switch (state) {
-      case 0: {
-        if (next_lexeme->isSeparator(",")) {
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!eval_expression(&parm)) {
-              return false;
-            }
-            parm.clearLexemes();
-          } else {
-            pushActionFromLexeme(lex_null);
-          }
-          state = 1;
-          continue;
-        }
-      } break;
-
-      case 1: {
-        if (next_lexeme->isKeyword("STEP")) {
-          action = new ActionNode(next_lexeme);
-          pushActionRoot(action);
-          continue;
-        } else if (next_lexeme->isSeparator("(")) {
-          state = 2;
-          if (actionRoot) {
-            if (actionRoot->lexeme) {
-              if (actionRoot->lexeme->value != "STEP") {
-                pushActionRoot(act_coord);
-              }
-            }
-          }
-          continue;
-        } else if (next_lexeme->isSeparator(",")) {
-          state = 3;
-          pushActionRoot(act_coord);
-          pushActionFromLexeme(lex_null);
-          pushActionFromLexeme(lex_null);
-          popActionRoot();
-          continue;
-        } else {
-          error_message = "PUT TILE without a valid complement.";
-          eval_expr_error = true;
-          return false;
-        }
-      } break;
-
-      case 2: {
-        if (next_lexeme->isSeparator("(")) {
-          sepCount++;
-        } else if (next_lexeme->isSeparator(")")) {
-          if (sepCount) {
-            sepCount--;
-          } else {
-            state = 3;
-            if (parm.getLexemeCount()) {
-              parm.setLexemeBOF();
-              if (!eval_expression(&parm)) {
-                return false;
-              }
-              parm.clearLexemes();
-            } else {
-              if (actionRoot) {
-                pushActionFromLexeme(lex_null);
-                if (actionRoot->actions.size() == 1) {
-                  pushActionFromLexeme(lex_null);
-                }
-              }
-            }
-            popActionRoot();
-            next_lexeme = statement->getNextLexeme();
-            if (next_lexeme) {
-              if (next_lexeme->type != Lexeme::type_separator ||
-                  next_lexeme->value != ",") {
-                return false;
-              }
-            }
-            continue;
-          }
-        } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!eval_expression(&parm)) {
-              return false;
-            }
-            parm.clearLexemes();
-          } else {
-            pushActionFromLexeme(lex_null);
-          }
-          continue;
-        }
-
-      } break;
-
-      case 3: {
-        if (next_lexeme->isSeparator("(")) {
-          sepCount++;
-        } else if (next_lexeme->isSeparator(")")) {
-          if (sepCount) sepCount--;
-        } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!eval_expression(&parm)) {
-              return false;
-            }
-            parm.clearLexemes();
-          } else {
-            next_lexeme = lex_null;
-            pushActionFromLexeme(next_lexeme);
-          }
-          continue;
-        }
-
-      } break;
-    }
-
-    parm.addLexeme(next_lexeme);
-  }
-
-  if (parm.getLexemeCount()) {
-    parm.setLexemeBOF();
-    if (!eval_expression(&parm)) {
-      return false;
-    }
-
-    parm.clearLexemes();
-  }
-
-  return true;
+  PutStatementStrategy strategy;
+  return strategy.parsePutTile(*this, statement);
 }
 
 bool Parser::eval_cmd_sprite(LexerLine* statement) {
-  Lexeme* next_lexeme;
-
-  if ((next_lexeme = statement->getNextLexeme())) {
-    if (next_lexeme->type == Lexeme::type_keyword) {
-      if (next_lexeme->value == "ON" || next_lexeme->value == "OFF" ||
-          next_lexeme->value == "STOP") {
-        pushActionFromLexeme(next_lexeme);
-
-        return true;
-
-      } else if (next_lexeme->value == "LOAD") {
-        return eval_cmd_sprite_load(statement);
-      }
-    }
-  }
-
-  return false;
+  SpriteStatementStrategy strategy;
+  return strategy.parseStatement(*this, statement);
 }
 
 bool Parser::eval_cmd_sprite_load(LexerLine* statement) {
-  Lexeme* next_lexeme = statement->getCurrentLexeme();
-  bool result;
-  pushActionFromLexeme(next_lexeme);
-  result = eval_cmd_generic(statement);
-  popActionRoot();
-  return result;
+  SpriteStatementStrategy strategy;
+  return strategy.parseSpriteLoad(*this, statement);
 }
 
 bool Parser::eval_cmd_key(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  LexerLine parm;
-  int sepCount = 0;
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    if (next_lexeme->type == Lexeme::type_keyword) {
-      if (next_lexeme->value == "ON" || next_lexeme->value == "OFF" ||
-          next_lexeme->value == "STOP") {
-        if (parm.getLexemeCount()) {
-          parm.setLexemeBOF();
-          if (!eval_expression(&parm)) {
-            return false;
-          }
-          parm.clearLexemes();
-        }
-
-        pushActionFromLexeme(next_lexeme);
-
-        continue;
-      }
-
-    } else if (next_lexeme->isSeparator("(")) {
-      sepCount++;
-
-    } else if (next_lexeme->isSeparator(")")) {
-      if (sepCount) sepCount--;
-
-    } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
-      if (parm.getLexemeCount()) {
-        parm.setLexemeBOF();
-        if (!eval_expression(&parm)) {
-          return false;
-        }
-        parm.clearLexemes();
-      }
-
-      continue;
-    }
-
-    parm.addLexeme(next_lexeme);
-  }
-
-  if (parm.getLexemeCount()) {
-    parm.setLexemeBOF();
-    if (!eval_expression(&parm)) {
-      return false;
-    }
-    parm.clearLexemes();
-  }
-
-  return true;
+  OnStatementStrategy strategy;
+  return strategy.parseKey(*this, statement);
 }
 
 bool Parser::eval_cmd_strig(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  LexerLine parm;
-  int sepCount = 0;
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    if (next_lexeme->type == Lexeme::type_keyword) {
-      if (next_lexeme->value == "ON" || next_lexeme->value == "OFF" ||
-          next_lexeme->value == "STOP") {
-        if (parm.getLexemeCount()) {
-          parm.setLexemeBOF();
-          if (!eval_expression(&parm)) {
-            return false;
-          }
-          parm.clearLexemes();
-        }
-
-        pushActionFromLexeme(next_lexeme);
-
-        continue;
-      }
-
-    } else if (next_lexeme->isSeparator("(")) {
-      sepCount++;
-
-    } else if (next_lexeme->isSeparator(")")) {
-      if (sepCount) sepCount--;
-
-    } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
-      if (parm.getLexemeCount()) {
-        parm.setLexemeBOF();
-        if (!eval_expression(&parm)) {
-          return false;
-        }
-        parm.clearLexemes();
-      }
-
-      continue;
-    }
-
-    parm.addLexeme(next_lexeme);
-  }
-
-  if (parm.getLexemeCount()) {
-    parm.setLexemeBOF();
-    if (!eval_expression(&parm)) {
-      return false;
-    }
-    parm.clearLexemes();
-  }
-
-  return true;
+  OnStatementStrategy strategy;
+  return strategy.parseStrig(*this, statement);
 }
 
 bool Parser::eval_cmd_base(LexerLine* statement) {
@@ -1779,1012 +1432,133 @@ bool Parser::eval_cmd_copy(LexerLine* statement) {
 }
 
 bool Parser::eval_cmd_set(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode* action;
-  bool result = false;
-
-  if ((next_lexeme = statement->getNextLexeme())) {
-    coalesceSymbols(next_lexeme);
-
-    next_lexeme = statement->getCurrentLexeme();
-    action = new ActionNode(next_lexeme);
-    pushActionRoot(action);
-
-    if (next_lexeme->type == Lexeme::type_keyword) {
-      if (next_lexeme->value == "BEEP" || next_lexeme->value == "DATE" ||
-          next_lexeme->value == "PAGE" || next_lexeme->value == "PASSWORD" ||
-          next_lexeme->value == "PROMPT" || next_lexeme->value == "SCREEN" ||
-          next_lexeme->value == "SCROLL" || next_lexeme->value == "TIME" ||
-          next_lexeme->value == "TITLE" || next_lexeme->value == "VIDEO" ||
-          next_lexeme->value == "FONT") {
-        result = eval_cmd_generic(statement);
-      } else if (next_lexeme->value == "ADJUST") {
-        result = eval_cmd_set_adjust(statement);
-      } else if (next_lexeme->value == "TILE") {
-        result = eval_cmd_set_tile(statement);
-      } else if (next_lexeme->value == "SPRITE") {
-        result = eval_cmd_set_sprite(statement);
-      }
-    }
-
-    popActionRoot();
-  }
-
-  return result;
+  SetStatementStrategy strategy;
+  return strategy.parseStatement(*this, statement);
 }
 
 bool Parser::eval_cmd_set_adjust(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  // ActionNode *action;
-  LexerLine parm;
-  int state = 0, sepCount = 0, parmCount = 0;
-  bool mustPopAction = false;
-  string parmValue;
-
-  parm.clearLexemes();
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = coalesceSymbols(next_lexeme);
-
-    if (state == 0) {
-      if (next_lexeme->isSeparator("(")) {
-        state++;
-        parmCount++;
-        continue;
-      } else {
-        error_message = "SET ADJUST without a valid complement.";
-        eval_expr_error = true;
-        return false;
-      }
-    } else if (state == 1) {
-      if (next_lexeme->isSeparator("(")) {
-        sepCount++;
-      } else if (next_lexeme->isSeparator(")")) {
-        if (sepCount) {
-          sepCount--;
-        } else {
-          mustPopAction = true;
-          parmCount++;
-          continue;
-        }
-      } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
-        if (parm.getLexemeCount()) {
-          parm.setLexemeBOF();
-          if (!eval_expression(&parm)) {
-            return false;
-          }
-          parm.clearLexemes();
-          if (mustPopAction) {
-            popActionRoot();
-            mustPopAction = false;
-          } else
-            parmCount++;
-        } else {
-          parmCount++;
-          next_lexeme = lex_null;
-          pushActionFromLexeme(next_lexeme);
-        }
-        continue;
-      }
-      parm.addLexeme(next_lexeme);
-    }
-  }
-
-  if (parm.getLexemeCount()) {
-    parm.getFirstLexeme();
-
-    parm.setLexemeBOF();
-    if (!eval_expression(&parm)) {
-      return false;
-    }
-
-    parm.clearLexemes();
-  }
-
-  return true;
+  SetStatementStrategy strategy;
+  return strategy.parseSetAdjust(*this, statement);
 }
 
 bool Parser::eval_cmd_set_tile(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode* action;
-  bool result = false;
-
-  if ((next_lexeme = statement->getNextLexeme())) {
-    coalesceSymbols(next_lexeme);
-
-    next_lexeme = statement->getCurrentLexeme();
-    action = new ActionNode(next_lexeme);
-    pushActionRoot(action);
-
-    if (next_lexeme->type == Lexeme::type_keyword) {
-      if (next_lexeme->value == "COLOR" || next_lexeme->value == "PATTERN" ||
-          next_lexeme->value == "FLIP" || next_lexeme->value == "ROTATE") {
-        result = eval_cmd_set_tile_colpat(statement);
-      } else if (next_lexeme->value == "ON" || next_lexeme->value == "OFF") {
-        result = true;
-      }
-    }
-
-    popActionRoot();
-  }
-
-  return result;
+  SetStatementStrategy strategy;
+  return strategy.parseSetTile(*this, statement);
 }
 
 bool Parser::eval_cmd_set_tile_colpat(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode* act_coord;
-  LexerLine parm;
-  int state = 1, sepCount = 0;
-  bool hasArrayParm = false;
-
-  parm.clearLexemes();
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = coalesceSymbols(next_lexeme);
-
-    switch (state) {
-      case 0: {
-        if (next_lexeme->isSeparator("(")) {
-          state = 2;
-          sepCount = 0;
-          act_coord = new ActionNode("ARRAY");
-          pushActionRoot(act_coord);
-          hasArrayParm = true;
-          continue;
-        } else {
-          state = 1;
-        }
-      }
-
-      case 1: {
-        if (next_lexeme->isSeparator(",")) {
-          state = 0;
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!eval_expression(&parm)) {
-              return false;
-            }
-            parm.clearLexemes();
-          } else {
-            pushActionFromLexeme(lex_null);
-          }
-          if (hasArrayParm) {
-            popActionRoot();
-            hasArrayParm = false;
-          }
-          continue;
-        }
-      } break;
-
-      case 2: {
-        if (next_lexeme->isSeparator("(")) {
-          sepCount++;
-        } else if (next_lexeme->isSeparator(")")) {
-          if (sepCount) {
-            sepCount--;
-          } else {
-            state = 1;
-            continue;
-          }
-        } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!eval_expression(&parm)) {
-              return false;
-            }
-            parm.clearLexemes();
-          } else {
-            pushActionFromLexeme(lex_null);
-          }
-          continue;
-        }
-
-      } break;
-    }
-
-    parm.addLexeme(next_lexeme);
-  }
-
-  if (parm.getLexemeCount()) {
-    parm.setLexemeBOF();
-    if (!eval_expression(&parm)) {
-      return false;
-    }
-
-    parm.clearLexemes();
-
-    if (hasArrayParm) {
-      popActionRoot();
-    }
-  }
-
-  return true;
+  SetStatementStrategy strategy;
+  return strategy.parseSetTileColpat(*this, statement);
 }
 
 bool Parser::eval_cmd_set_sprite(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode* action;
-  bool result = false;
-
-  if ((next_lexeme = statement->getNextLexeme())) {
-    coalesceSymbols(next_lexeme);
-
-    next_lexeme = statement->getCurrentLexeme();
-    action = new ActionNode(next_lexeme);
-    pushActionRoot(action);
-
-    if (next_lexeme->type == Lexeme::type_keyword) {
-      if (next_lexeme->value == "COLOR" || next_lexeme->value == "PATTERN" ||
-          next_lexeme->value == "FLIP" || next_lexeme->value == "ROTATE") {
-        result = eval_cmd_set_sprite_colpattra(statement);
-      }
-    }
-
-    popActionRoot();
-  }
-
-  return result;
+  SetStatementStrategy strategy;
+  return strategy.parseSetSprite(*this, statement);
 }
 
 bool Parser::eval_cmd_set_sprite_colpattra(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode* act_coord;
-  LexerLine parm;
-  int state = 1, sepCount = 0;
-  bool hasArrayParm = false;
-
-  parm.clearLexemes();
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = coalesceSymbols(next_lexeme);
-
-    switch (state) {
-      case 0: {
-        if (next_lexeme->isSeparator("(")) {
-          state = 2;
-          sepCount = 0;
-          act_coord = new ActionNode("ARRAY");
-          pushActionRoot(act_coord);
-          hasArrayParm = true;
-          continue;
-        } else {
-          state = 1;
-        }
-      }
-
-      case 1: {
-        if (next_lexeme->isSeparator(",")) {
-          state = 0;
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!eval_expression(&parm)) {
-              return false;
-            }
-            parm.clearLexemes();
-          } else {
-            pushActionFromLexeme(lex_null);
-          }
-          if (hasArrayParm) {
-            popActionRoot();
-            hasArrayParm = false;
-          }
-          continue;
-        }
-      } break;
-
-      case 2: {
-        if (next_lexeme->isSeparator("(")) {
-          sepCount++;
-        } else if (next_lexeme->isSeparator(")")) {
-          if (sepCount) {
-            sepCount--;
-          } else {
-            state = 1;
-            continue;
-          }
-        } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!eval_expression(&parm)) {
-              return false;
-            }
-            parm.clearLexemes();
-          } else {
-            pushActionFromLexeme(lex_null);
-          }
-          continue;
-        }
-
-      } break;
-    }
-
-    parm.addLexeme(next_lexeme);
-  }
-
-  if (parm.getLexemeCount()) {
-    parm.setLexemeBOF();
-    if (!eval_expression(&parm)) {
-      return false;
-    }
-
-    parm.clearLexemes();
-
-    if (hasArrayParm) {
-      popActionRoot();
-    }
-  }
-
-  return true;
+  SetStatementStrategy strategy;
+  return strategy.parseSetSpriteColpattra(*this, statement);
 }
 
 bool Parser::eval_cmd_get(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode* action;
-  bool result = false;
-
-  if ((next_lexeme = statement->getNextLexeme())) {
-    coalesceSymbols(next_lexeme);
-
-    next_lexeme = statement->getCurrentLexeme();
-    action = new ActionNode(next_lexeme);
-    pushActionRoot(action);
-
-    if (next_lexeme->type == Lexeme::type_keyword) {
-      if (next_lexeme->value == "DATE" || next_lexeme->value == "TIME") {
-        result = eval_cmd_generic(statement);
-      } else if (next_lexeme->value == "TILE") {
-        result = eval_cmd_get_tile(statement);
-      } else if (next_lexeme->value == "SPRITE") {
-        result = eval_cmd_get_sprite(statement);
-      }
-    }
-
-    popActionRoot();
-  }
-
-  return result;
+  GetStatementStrategy strategy;
+  return strategy.parseStatement(*this, statement);
 }
 
 bool Parser::eval_cmd_get_tile(LexerLine* statement) {
-  return eval_cmd_get_sprite(statement);
+  GetStatementStrategy strategy;
+  return strategy.parseGetTile(*this, statement);
 }
 
 bool Parser::eval_cmd_get_sprite(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode* action;
-  bool result = false;
-
-  if ((next_lexeme = statement->getNextLexeme())) {
-    coalesceSymbols(next_lexeme);
-
-    next_lexeme = statement->getCurrentLexeme();
-    action = new ActionNode(next_lexeme);
-    pushActionRoot(action);
-
-    if (next_lexeme->type == Lexeme::type_keyword) {
-      if (next_lexeme->value == "COLOR" || next_lexeme->value == "PATTERN") {
-        result = eval_cmd_set_sprite_colpattra(statement);
-      }
-    }
-
-    popActionRoot();
-  }
-
-  return result;
+  GetStatementStrategy strategy;
+  return strategy.parseGetSprite(*this, statement);
 }
 
 bool Parser::eval_cmd_screen(LexerLine* statement) {
-  Lexeme* next_lexeme;
-
-  if ((next_lexeme = statement->getNextLexeme())) {
-    if (next_lexeme->type == Lexeme::type_keyword) {
-      if (next_lexeme->value == "COPY") {
-        return eval_cmd_screen_copy(statement);
-      } else if (next_lexeme->value == "PASTE") {
-        return eval_cmd_screen_paste(statement);
-      } else if (next_lexeme->value == "SCROLL") {
-        return eval_cmd_screen_scroll(statement);
-      } else if (next_lexeme->value == "LOAD") {
-        return eval_cmd_screen_load(statement);
-      } else if (next_lexeme->value == "ON") {
-        return eval_cmd_screen_on(statement);
-      } else if (next_lexeme->value == "OFF") {
-        return eval_cmd_screen_off(statement);
-      }
-    }
-
-    statement->getPreviousLexeme();
-
-    return eval_cmd_generic(statement);
-  }
-
-  return false;
+  ScreenStatementStrategy strategy;
+  return strategy.parseStatement(*this, statement);
 }
 
 bool Parser::eval_cmd_screen_copy(LexerLine* statement) {
-  Lexeme* next_lexeme = statement->getCurrentLexeme();
-  LexerLine parm;
-  int state = 0;
-  bool result = false;
-
-  pushActionFromLexeme(next_lexeme);
-
-  parm.clearLexemes();
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = coalesceSymbols(next_lexeme);
-
-    switch (state) {
-      case 0: {
-        if (next_lexeme->isKeyword("TO")) {
-          state = 1;
-          continue;
-        } else {
-          return false;
-        }
-      } break;
-
-      case 1: {
-        if (next_lexeme->isKeyword("SCROLL")) {
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!eval_expression(&parm)) {
-              return false;
-            }
-            parm.clearLexemes();
-          } else {
-            return false;
-          }
-          state = 2;
-          continue;
-        }
-      } break;
-    }
-
-    parm.addLexeme(next_lexeme);
-  }
-
-  if (parm.getLexemeCount()) {
-    parm.setLexemeBOF();
-    if (!eval_expression(&parm)) {
-      return false;
-    }
-
-    result = true;
-  }
-
-  popActionRoot();
-
-  return result;
+  ScreenStatementStrategy strategy;
+  return strategy.parseScreenCopy(*this, statement);
 }
 
 bool Parser::eval_cmd_screen_paste(LexerLine* statement) {
-  Lexeme* next_lexeme = statement->getCurrentLexeme();
-  bool result = false;
-
-  pushActionFromLexeme(next_lexeme);
-
-  if ((next_lexeme = statement->getNextLexeme())) {
-    if (next_lexeme->isKeyword("FROM")) {
-      result = eval_cmd_generic(statement);
-    }
-  }
-
-  popActionRoot();
-
-  return result;
+  ScreenStatementStrategy strategy;
+  return strategy.parseScreenPaste(*this, statement);
 }
 
 bool Parser::eval_cmd_screen_scroll(LexerLine* statement) {
-  Lexeme* next_lexeme = statement->getCurrentLexeme();
-  bool result;
-  pushActionFromLexeme(next_lexeme);
-  result = eval_cmd_generic(statement);
-  popActionRoot();
-  return result;
+  ScreenStatementStrategy strategy;
+  return strategy.parseScreenScroll(*this, statement);
 }
 
 bool Parser::eval_cmd_screen_load(LexerLine* statement) {
-  Lexeme* next_lexeme = statement->getCurrentLexeme();
-  bool result;
-  pushActionFromLexeme(next_lexeme);
-  result = eval_cmd_generic(statement);
-  popActionRoot();
-  return result;
+  ScreenStatementStrategy strategy;
+  return strategy.parseScreenLoad(*this, statement);
 }
 
 bool Parser::eval_cmd_screen_on(LexerLine* statement) {
-  Lexeme* next_lexeme = statement->getCurrentLexeme();
-  pushActionFromLexeme(next_lexeme);
-  popActionRoot();
-  return true;
+  ScreenStatementStrategy strategy;
+  return strategy.parseScreenOn(*this, statement);
 }
 
 bool Parser::eval_cmd_screen_off(LexerLine* statement) {
-  return eval_cmd_screen_on(statement);
+  ScreenStatementStrategy strategy;
+  return strategy.parseScreenOff(*this, statement);
 }
 
 bool Parser::eval_cmd_on(LexerLine* statement) {
-  Lexeme* next_lexeme;
-
-  if ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = coalesceSymbols(next_lexeme);
-
-    if (next_lexeme->isKeyword("ERROR")) {
-      return eval_cmd_on_error(statement);
-    } else if (next_lexeme->isKeyword("INTERVAL")) {
-      has_traps = true;
-      return eval_cmd_on_interval(statement);
-    } else if (next_lexeme->isKeyword("KEY")) {
-      has_traps = true;
-      return eval_cmd_on_key(statement);
-    } else if (next_lexeme->isKeyword("SPRITE")) {
-      has_traps = true;
-      return eval_cmd_on_sprite(statement);
-    } else if (next_lexeme->isKeyword("STOP")) {
-      has_traps = true;
-      return eval_cmd_on_stop(statement);
-    } else if (next_lexeme->isKeyword("STRIG")) {
-      has_traps = true;
-      return eval_cmd_on_strig(statement);
-    } else {
-      return eval_cmd_on_goto_gosub(statement);
-    }
-  }
-
-  return false;
+  OnStatementStrategy strategy;
+  return strategy.parseOn(*this, statement);
 }
 
 bool Parser::eval_cmd_on_goto_gosub(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode *action, *action_index;
-  LexerLine parm;
-  int state = 0;
-  bool next_is_sep = false;
-
-  next_lexeme = statement->getPreviousLexeme();
-  if (!next_lexeme) return false;
-
-  action_index = new ActionNode(lex_index);
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    switch (state) {
-      case 0: {
-        if (next_lexeme->isKeyword("GOSUB") || next_lexeme->isKeyword("GOTO")) {
-          if (!parm.getLexemeCount()) return false;
-
-          pushActionRoot(action_index);
-
-          parm.setLexemeBOF();
-          if (!eval_expression(&parm)) {
-            return false;
-          }
-          parm.clearLexemes();
-
-          popActionRoot();
-
-          action = new ActionNode(next_lexeme);
-          pushActionRoot(action);
-
-          state++;
-
-          continue;
-        }
-
-      } break;
-
-      case 1: {
-        if (next_lexeme->type == Lexeme::type_literal) {
-          if (next_is_sep) return false;
-
-          pushActionFromLexeme(next_lexeme);
-
-          next_is_sep = true;
-
-          continue;
-
-        } else if (next_lexeme->isSeparator(",")) {
-          if (!next_is_sep) {
-            pushActionFromLexeme(lex_null);
-          }
-
-          next_is_sep = false;
-
-          continue;
-
-        } else
-          return false;
-
-      } break;
-    }
-
-    parm.addLexeme(next_lexeme);
-  }
-
-  if (state) {
-    popActionRoot();
-  }
-
-  return state;
+  OnStatementStrategy strategy;
+  return strategy.parseOnGotoGosub(*this, statement);
 }
 
 bool Parser::eval_cmd_on_error(LexerLine* statement) {
-  return false;
+  OnStatementStrategy strategy;
+  return strategy.parseOnError(*this, statement);
 }
 
 bool Parser::eval_cmd_on_interval(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode *action, *action_index;
-  LexerLine parm;
-  int state = 0;
-  bool first = true;
-
-  next_lexeme = statement->getCurrentLexeme();
-  if (!next_lexeme) return false;
-
-  action = new ActionNode(next_lexeme);
-  pushActionRoot(action);
-
-  action_index = new ActionNode(lex_index);
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    switch (state) {
-      case 0: {
-        if (first) {
-          first = false;
-          if (next_lexeme->isOperator("=")) {
-            continue;
-          }
-        }
-
-        if (next_lexeme->isKeyword("GOSUB")) {
-          if (!parm.getLexemeCount()) return false;
-
-          pushActionRoot(action_index);
-
-          parm.setLexemeBOF();
-          if (!eval_expression(&parm)) {
-            return false;
-          }
-          parm.clearLexemes();
-
-          popActionRoot();
-
-          action = new ActionNode(next_lexeme);
-          pushActionRoot(action);
-
-          state++;
-
-          continue;
-        }
-
-      } break;
-
-      case 1: {
-        if (next_lexeme->type == Lexeme::type_literal) {
-          pushActionFromLexeme(next_lexeme);
-
-          state++;
-
-          continue;
-
-        } else
-          return false;
-
-      } break;
-
-      case 2: {
-        return false;
-      } break;
-    }
-
-    parm.addLexeme(next_lexeme);
-  }
-
-  if (state) {
-    popActionRoot();
-  }
-
-  popActionRoot();
-
-  return state;
+  OnStatementStrategy strategy;
+  return strategy.parseOnInterval(*this, statement);
 }
 
 bool Parser::eval_cmd_on_key(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode* action;
-  LexerLine parm;
-  int state = 0;
-  bool next_is_sep = false;
-
-  next_lexeme = statement->getCurrentLexeme();
-  if (!next_lexeme) return false;
-  action = new ActionNode(next_lexeme);
-  pushActionRoot(action);
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    switch (state) {
-      case 0: {
-        if (next_lexeme->isKeyword("GOSUB")) {
-          action = new ActionNode(next_lexeme);
-          pushActionRoot(action);
-
-          state++;
-
-          continue;
-
-        } else
-          return false;
-
-      } break;
-
-      case 1: {
-        if (next_lexeme->type == Lexeme::type_literal) {
-          if (next_is_sep) return false;
-
-          pushActionFromLexeme(next_lexeme);
-
-          next_is_sep = true;
-
-          continue;
-
-        } else if (next_lexeme->isSeparator(",")) {
-          if (!next_is_sep) {
-            pushActionFromLexeme(lex_null);
-          }
-
-          next_is_sep = false;
-
-          continue;
-
-        } else
-          return false;
-
-      } break;
-    }
-
-    parm.addLexeme(next_lexeme);
-  }
-
-  if (state) {
-    popActionRoot();
-  }
-
-  popActionRoot();
-
-  return state;
+  OnStatementStrategy strategy;
+  return strategy.parseOnKey(*this, statement);
 }
 
 bool Parser::eval_cmd_on_sprite(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode* action;
-  LexerLine parm;
-  int state = 0;
-  bool next_is_sep = false;
-
-  next_lexeme = statement->getCurrentLexeme();
-  if (!next_lexeme) return false;
-  action = new ActionNode(next_lexeme);
-  pushActionRoot(action);
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    switch (state) {
-      case 0: {
-        if (next_lexeme->isKeyword("GOSUB")) {
-          action = new ActionNode(next_lexeme);
-          pushActionRoot(action);
-
-          state++;
-
-          continue;
-
-        } else
-          return false;
-
-      } break;
-
-      case 1: {
-        if (next_lexeme->type == Lexeme::type_literal) {
-          if (next_is_sep) return false;
-
-          pushActionFromLexeme(next_lexeme);
-
-          next_is_sep = true;
-
-          continue;
-
-        } else if (next_lexeme->isSeparator(",")) {
-          if (!next_is_sep) {
-            pushActionFromLexeme(lex_null);
-          }
-
-          next_is_sep = false;
-
-          continue;
-
-        } else
-          return false;
-
-      } break;
-    }
-
-    parm.addLexeme(next_lexeme);
-  }
-
-  if (state) {
-    popActionRoot();
-  }
-
-  popActionRoot();
-
-  return state;
+  OnStatementStrategy strategy;
+  return strategy.parseOnSprite(*this, statement);
 }
 
 bool Parser::eval_cmd_on_stop(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode* action;
-  LexerLine parm;
-  int state = 0;
-  bool next_is_sep = false;
-
-  next_lexeme = statement->getCurrentLexeme();
-  if (!next_lexeme) return false;
-  action = new ActionNode(next_lexeme);
-  pushActionRoot(action);
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    switch (state) {
-      case 0: {
-        if (next_lexeme->isKeyword("GOSUB")) {
-          action = new ActionNode(next_lexeme);
-          pushActionRoot(action);
-
-          state++;
-
-          continue;
-
-        } else
-          return false;
-
-      } break;
-
-      case 1: {
-        if (next_lexeme->type == Lexeme::type_literal) {
-          if (next_is_sep) return false;
-
-          pushActionFromLexeme(next_lexeme);
-
-          next_is_sep = true;
-
-          continue;
-
-        } else if (next_lexeme->isSeparator(",")) {
-          if (!next_is_sep) {
-            pushActionFromLexeme(lex_null);
-          }
-
-          next_is_sep = false;
-
-          continue;
-
-        } else
-          return false;
-
-      } break;
-    }
-
-    parm.addLexeme(next_lexeme);
-  }
-
-  if (state) {
-    popActionRoot();
-  }
-
-  popActionRoot();
-
-  return state;
+  OnStatementStrategy strategy;
+  return strategy.parseOnStop(*this, statement);
 }
 
 bool Parser::eval_cmd_on_strig(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  ActionNode* action;
-  LexerLine parm;
-  int state = 0;
-  bool next_is_sep = false;
-
-  next_lexeme = statement->getCurrentLexeme();
-  if (!next_lexeme) return false;
-  action = new ActionNode(next_lexeme);
-  pushActionRoot(action);
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    switch (state) {
-      case 0: {
-        if (next_lexeme->isKeyword("GOSUB")) {
-          action = new ActionNode(next_lexeme);
-          pushActionRoot(action);
-
-          state++;
-
-          continue;
-
-        } else
-          return false;
-
-      } break;
-
-      case 1: {
-        if (next_lexeme->type == Lexeme::type_literal) {
-          if (next_is_sep) return false;
-
-          pushActionFromLexeme(next_lexeme);
-
-          next_is_sep = true;
-
-          continue;
-
-        } else if (next_lexeme->isSeparator(",")) {
-          if (!next_is_sep) {
-            pushActionFromLexeme(lex_null);
-          }
-
-          next_is_sep = false;
-
-          continue;
-
-        } else
-          return false;
-
-      } break;
-    }
-
-    parm.addLexeme(next_lexeme);
-  }
-
-  if (state) {
-    popActionRoot();
-  }
-
-  popActionRoot();
-
-  return state;
+  OnStatementStrategy strategy;
+  return strategy.parseOnStrig(*this, statement);
 }
 
 bool Parser::eval_cmd_interval(LexerLine* statement) {
-  Lexeme* next_lexeme;
-
-  if ((next_lexeme = statement->getNextLexeme())) {
-    if (next_lexeme->type == Lexeme::type_keyword) {
-      if (next_lexeme->value == "ON" || next_lexeme->value == "OFF" ||
-          next_lexeme->value == "STOP") {
-        pushActionFromLexeme(next_lexeme);
-
-        return true;
-      }
-    }
-  }
-
-  return false;
+  OnStatementStrategy strategy;
+  return strategy.parseInterval(*this, statement);
 }
 
 bool Parser::eval_cmd_stop(LexerLine* statement) {
-  Lexeme* next_lexeme;
-
-  if ((next_lexeme = statement->getNextLexeme())) {
-    if (next_lexeme->type == Lexeme::type_keyword) {
-      if (next_lexeme->value == "ON" || next_lexeme->value == "OFF" ||
-          next_lexeme->value == "STOP") {
-        pushActionFromLexeme(next_lexeme);
-
-      } else
-        return false;
-
-    } else
-      return false;
-  }
-
-  return true;
+  OnStatementStrategy strategy;
+  return strategy.parseStop(*this, statement);
 }
 
 bool Parser::eval_cmd_call(LexerLine* statement) {

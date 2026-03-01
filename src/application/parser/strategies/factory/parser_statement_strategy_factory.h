@@ -16,10 +16,16 @@
 #include "if_statement_strategy.h"
 #include "input_statement_strategy.h"
 #include "let_statement_strategy.h"
+#include "get_statement_strategy.h"
 #include "for_statement_strategy.h"
 #include "next_statement_strategy.h"
 #include "noop_statement_strategy.h"
+#include "on_statement_strategy.h"
 #include "print_statement_strategy.h"
+#include "put_statement_strategy.h"
+#include "screen_statement_strategy.h"
+#include "set_statement_strategy.h"
+#include "sprite_statement_strategy.h"
 
 using namespace std;
 
@@ -34,22 +40,18 @@ class ParserStatementStrategyFactory {
   DataStatementStrategy dataStrategy;
   IDataStatementStrategy idataStrategy;
   GraphicsStatementStrategy graphicsStrategy;
+  PutStatementStrategy putStrategy;
+  GetStatementStrategy getStrategy;
+  SetStatementStrategy setStrategy;
+  ScreenStatementStrategy screenStrategy;
+  SpriteStatementStrategy spriteStrategy;
   ColorStatementStrategy colorStrategy;
   DefStatementStrategy defStrategy;
   CallStatementStrategy callStrategy;
-  DirectStatementStrategy screenStrategy;
-  DirectStatementStrategy spriteStrategy;
   DirectStatementStrategy baseStrategy;
   DirectStatementStrategy vdpStrategy;
-  DirectStatementStrategy putStrategy;
   DirectStatementStrategy timeStrategy;
-  DirectStatementStrategy setStrategy;
-  DirectStatementStrategy getStatementStrategy;
-  DirectStatementStrategy onStrategy;
-  DirectStatementStrategy intervalStrategy;
-  DirectStatementStrategy stopStrategy;
-  DirectStatementStrategy keyStrategy;
-  DirectStatementStrategy strigStrategy;
+  OnStatementStrategy onStrategy;
   DirectStatementStrategy cmdStrategy;
   DirectStatementStrategy openStrategy;
   DirectStatementStrategy closeStrategy;

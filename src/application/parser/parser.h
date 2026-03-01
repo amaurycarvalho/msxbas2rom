@@ -221,6 +221,21 @@ class Parser {
   bool evalCmdCircle(LexerLine* statement);
   bool evalCmdPaint(LexerLine* statement);
   bool evalCmdCopy(LexerLine* statement);
+  bool evalCmdPutSprite(LexerLine* statement);
+  bool evalCmdPutTile(LexerLine* statement);
+  bool evalCmdSetAdjust(LexerLine* statement);
+  bool evalCmdSetTile(LexerLine* statement);
+  bool evalCmdSetSprite(LexerLine* statement);
+  bool evalCmdSetSpriteColpattra(LexerLine* statement);
+  bool evalCmdGetTile(LexerLine* statement);
+  bool evalCmdGetSprite(LexerLine* statement);
+  bool evalCmdScreenCopy(LexerLine* statement);
+  bool evalCmdScreenPaste(LexerLine* statement);
+  bool evalCmdScreenScroll(LexerLine* statement);
+  bool evalCmdScreenLoad(LexerLine* statement);
+  bool evalCmdScreenOn(LexerLine* statement);
+  bool evalCmdScreenOff(LexerLine* statement);
+  bool evalCmdSpriteLoad(LexerLine* statement);
 
   /***
    * @brief Return all tags and it's syntax tree as a string

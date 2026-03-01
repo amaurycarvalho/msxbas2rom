@@ -1,19 +1,9 @@
 #include "parser_statement_strategy_factory.h"
 
 ParserStatementStrategyFactory::ParserStatementStrategyFactory()
-    : screenStrategy(DirectStatementStrategy::SCREEN),
-      spriteStrategy(DirectStatementStrategy::SPRITE),
-      baseStrategy(DirectStatementStrategy::BASE),
+    : baseStrategy(DirectStatementStrategy::BASE),
       vdpStrategy(DirectStatementStrategy::VDP),
-      putStrategy(DirectStatementStrategy::PUT),
       timeStrategy(DirectStatementStrategy::TIME),
-      setStrategy(DirectStatementStrategy::SET),
-      getStatementStrategy(DirectStatementStrategy::GET),
-      onStrategy(DirectStatementStrategy::ON),
-      intervalStrategy(DirectStatementStrategy::INTERVAL),
-      stopStrategy(DirectStatementStrategy::STOP),
-      keyStrategy(DirectStatementStrategy::KEY),
-      strigStrategy(DirectStatementStrategy::STRIG),
       cmdStrategy(DirectStatementStrategy::CMD),
       openStrategy(DirectStatementStrategy::OPEN),
       closeStrategy(DirectStatementStrategy::CLOSE),
@@ -64,12 +54,12 @@ ParserStatementStrategyFactory::ParserStatementStrategyFactory()
   strategies["PUT"] = &putStrategy;
   strategies["TIME"] = &timeStrategy;
   strategies["SET"] = &setStrategy;
-  strategies["GET"] = &getStatementStrategy;
+  strategies["GET"] = &getStrategy;
   strategies["ON"] = &onStrategy;
-  strategies["INTERVAL"] = &intervalStrategy;
-  strategies["STOP"] = &stopStrategy;
-  strategies["KEY"] = &keyStrategy;
-  strategies["STRIG"] = &strigStrategy;
+  strategies["INTERVAL"] = &onStrategy;
+  strategies["STOP"] = &onStrategy;
+  strategies["KEY"] = &onStrategy;
+  strategies["STRIG"] = &onStrategy;
   strategies["COLOR"] = &colorStrategy;
   strategies["CMD"] = &cmdStrategy;
   strategies["OPEN"] = &openStrategy;
