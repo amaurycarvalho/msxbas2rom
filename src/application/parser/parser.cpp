@@ -10,6 +10,8 @@
  */
 
 #include "parser.h"
+#include "call_statement_strategy.h"
+#include "cmd_statement_strategy.h"
 #include "file_statement_strategy.h"
 #include "graphics_statement_strategy.h"
 #include "get_statement_strategy.h"
@@ -1562,43 +1564,13 @@ bool Parser::eval_cmd_stop(LexerLine* statement) {
 }
 
 bool Parser::eval_cmd_call(LexerLine* statement) {
-  Lexeme* next_lexeme;
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    pushActionFromLexeme(next_lexeme);
-  }
-
-  return true;
+  CallStatementStrategy strategy;
+  return strategy.parseCall(*this, statement);
 }
 
 bool Parser::eval_cmd_cmd(LexerLine* statement) {
-  ActionNode* action;
-  Lexeme* lexeme = statement->getNextLexeme();
-
-  if (!lexeme) return false;
-
-  action = new ActionNode(lexeme);
-  pushActionRoot(action);
-
-  if (lexeme->value == "WRTFNT" || lexeme->value == "SETFNT" ||
-      lexeme->value == "WRTCHR")
-    has_font = true;
-
-  if (lexeme->value == "PT3LOAD" || lexeme->value == "PT3PLAY") has_pt3 = true;
-
-  if (lexeme->value == "PLYLOAD" || lexeme->value == "PLYPLAY" ||
-      lexeme->value == "PLYSONG")
-    has_akm = true;
-
-  if (lexeme->value == "MTF") has_mtf = true;
-
-  if (lexeme->value == "RESTORE") has_resource_restore = true;
-
-  if (!eval_cmd_generic(statement)) return false;
-
-  popActionRoot();
-
-  return true;
+  CmdStatementStrategy strategy;
+  return strategy.parseStatement(*this, statement);
 }
 
 //-----------------------------------------------------------------------------------------------------------------

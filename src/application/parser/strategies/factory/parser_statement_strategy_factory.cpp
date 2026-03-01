@@ -4,7 +4,6 @@ ParserStatementStrategyFactory::ParserStatementStrategyFactory()
     : baseStrategy(DirectStatementStrategy::BASE),
       vdpStrategy(DirectStatementStrategy::VDP),
       timeStrategy(DirectStatementStrategy::TIME),
-      cmdStrategy(DirectStatementStrategy::CMD),
       openStrategy(DirectStatementStrategy::OPEN),
       closeStrategy(DirectStatementStrategy::CLOSE),
       maxStrategy(DirectStatementStrategy::MAX) {

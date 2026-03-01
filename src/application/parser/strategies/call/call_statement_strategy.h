@@ -5,6 +5,7 @@
 
 class CallStatementStrategy : public IParserStatementStrategy {
  public:
+  bool parseCall(Parser& parser, LexerLine* statement);
   bool execute(Parser& parser, LexerLine* statement, Lexeme* lexeme) override;
 };
 

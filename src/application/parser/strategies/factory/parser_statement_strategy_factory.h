@@ -5,6 +5,7 @@
 #include <string>
 
 #include "call_statement_strategy.h"
+#include "cmd_statement_strategy.h"
 #include "color_statement_strategy.h"
 #include "data_statement_strategy.h"
 #include "def_statement_strategy.h"
@@ -48,11 +49,11 @@ class ParserStatementStrategyFactory {
   ColorStatementStrategy colorStrategy;
   DefStatementStrategy defStrategy;
   CallStatementStrategy callStrategy;
+  CmdStatementStrategy cmdStrategy;
   DirectStatementStrategy baseStrategy;
   DirectStatementStrategy vdpStrategy;
   DirectStatementStrategy timeStrategy;
   OnStatementStrategy onStrategy;
-  DirectStatementStrategy cmdStrategy;
   DirectStatementStrategy openStrategy;
   DirectStatementStrategy closeStrategy;
   DirectStatementStrategy maxStrategy;

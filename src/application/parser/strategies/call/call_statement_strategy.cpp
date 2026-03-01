@@ -3,6 +3,16 @@
 #include "lexer.h"
 #include "parser.h"
 
+bool CallStatementStrategy::parseCall(Parser& parser, LexerLine* statement) {
+  Lexeme* next_lexeme;
+
+  while ((next_lexeme = statement->getNextLexeme())) {
+    parser.pushActionFromLexemeNode(next_lexeme);
+  }
+
+  return true;
+}
+
 bool CallStatementStrategy::execute(Parser& parser, LexerLine* statement,
                                     Lexeme* lexeme) {
   if (lexeme->value == "_") {
@@ -10,5 +20,5 @@ bool CallStatementStrategy::execute(Parser& parser, LexerLine* statement,
     lexeme->name = lexeme->value;
   }
 
-  return parser.evalCmdCall(statement);
+  return parseCall(parser, statement);
 }
