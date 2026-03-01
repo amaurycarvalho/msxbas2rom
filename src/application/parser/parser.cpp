@@ -53,6 +53,10 @@ ParserContext& Parser::getContext() { return ctx; }
 
 const ParserContext& Parser::getContext() const { return ctx; }
 
+bool Parser::evalCmdGeneric(LexerLine* statement) {
+  return eval_cmd_generic(statement);
+}
+
 bool Parser::evaluate(Lexer* lexer) {
   int i, t = lexer->lines.size();
   LexerLine* lexerLine;
@@ -187,6 +191,7 @@ bool Parser::eval_phrase(LexerLine* phrase) {
 bool Parser::eval_statement(LexerLine* statement) {
   Lexeme* lexeme;
   ActionNode* action;
+  IParserStatementStrategy* strategy;
   ActionNode* actionSaved = ctx.actionRoot;
   unsigned int actionCount = ctx.actionStack.size();
   bool result = true;
@@ -199,15 +204,9 @@ bool Parser::eval_statement(LexerLine* statement) {
     action = new ActionNode(lexeme);
     pushActionRoot(action);
 
-    if (lexeme->value == "REM" || lexeme->value == "CLS" ||
-        lexeme->value == "END" || lexeme->value == "BEEP" ||
-        lexeme->value == "RANDOMIZE") {
-      result = true;
-    } else if (lexeme->value == "'") {
-      lexeme->type = Lexeme::type_keyword;
-      lexeme->name = "REM";
-      lexeme->value = lexeme->name;
-      result = true;
+    strategy = statementStrategyFactory.getStrategy(lexeme->value);
+    if (strategy) {
+      result = strategy->execute(*this, statement, lexeme);
     } else if (lexeme->value == "DEF") {
       result = eval_cmd_def(statement, 0);
     } else if (lexeme->value == "DEFINT") {
@@ -218,24 +217,8 @@ bool Parser::eval_statement(LexerLine* statement) {
       result = eval_cmd_def(statement, 4);
     } else if (lexeme->value == "DEFDBL") {
       result = eval_cmd_def(statement, 8);
-    } else if (lexeme->value == "WIDTH" || lexeme->value == "CLEAR" ||
-               lexeme->value == "ERASE" || lexeme->value == "LOCATE" ||
-               lexeme->value == "DRAW" || lexeme->value == "GOTO" ||
-               lexeme->value == "GOSUB" || lexeme->value == "RETURN" ||
-               lexeme->value == "SOUND" || lexeme->value == "RESTORE" ||
-               lexeme->value == "RESUME" || lexeme->value == "READ" ||
-               lexeme->value == "IREAD" || lexeme->value == "IRESTORE" ||
-               lexeme->value == "POKE" || lexeme->value == "IPOKE" ||
-               lexeme->value == "VPOKE" || lexeme->value == "OUT" ||
-               lexeme->value == "SWAP" || lexeme->value == "WAIT" ||
-               lexeme->value == "SEED" || lexeme->value == "BLOAD") {
-      if (lexeme->value == "BLOAD") ctx.resourceCount++;
-      result = eval_cmd_generic(statement);
     } else if (lexeme->value == "SCREEN") {
       result = eval_cmd_screen(statement);
-    } else if (lexeme->value == "PLAY") {
-      ctx.has_play = true;
-      result = eval_cmd_generic(statement);
     } else if (lexeme->value == "LET") {
       result = eval_cmd_let(statement);
     } else if (lexeme->value == "DIM" || lexeme->value == "REDIM") {

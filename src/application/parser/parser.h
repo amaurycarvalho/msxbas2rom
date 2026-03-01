@@ -22,6 +22,7 @@
 #include "fswrapper.h"
 #include "lexer.h"
 #include "parser_context.h"
+#include "parser_statement_strategy_factory.h"
 #include "tag_node.h"
 
 using namespace std;
@@ -127,6 +128,7 @@ class Parser {
   Lexeme* coalesceSymbols(Lexeme* lexeme);
 
   ParserContext ctx;
+  ParserStatementStrategyFactory statementStrategyFactory;
 
   TagNode*& tag;
   ActionNode*& actionRoot;
@@ -178,6 +180,7 @@ class Parser {
    */
   ParserContext& getContext();
   const ParserContext& getContext() const;
+  bool evalCmdGeneric(LexerLine* statement);
 
   /***
    * @brief Return all tags and it's syntax tree as a string
