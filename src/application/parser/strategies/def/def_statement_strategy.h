@@ -4,7 +4,11 @@
 #include "parser_statement_strategy.h"
 
 class DefStatementStrategy : public IParserStatementStrategy {
+ private:
+  bool parseDefUsr(Parser& parser, LexerLine* statement);
+
  public:
+  bool parseWithType(Parser& parser, LexerLine* statement, int vartype);
   bool execute(Parser& parser, LexerLine* statement, Lexeme* lexeme) override;
 };
 
