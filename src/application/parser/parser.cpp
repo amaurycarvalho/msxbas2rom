@@ -10,11 +10,12 @@
  */
 
 #include "parser.h"
+
 #include "call_statement_strategy.h"
 #include "cmd_statement_strategy.h"
 #include "file_statement_strategy.h"
-#include "graphics_statement_strategy.h"
 #include "get_statement_strategy.h"
+#include "graphics_statement_strategy.h"
 #include "on_statement_strategy.h"
 #include "put_statement_strategy.h"
 #include "screen_statement_strategy.h"
@@ -59,17 +60,25 @@ Parser::Parser()
 
 Parser::~Parser() {}
 
-ParserContext& Parser::getContext() { return ctx; }
+ParserContext& Parser::getContext() {
+  return ctx;
+}
 
-const ParserContext& Parser::getContext() const { return ctx; }
+const ParserContext& Parser::getContext() const {
+  return ctx;
+}
 
-Lexeme* Parser::coalesceLexeme(Lexeme* lexeme) { return coalesceSymbols(lexeme); }
+Lexeme* Parser::coalesceLexeme(Lexeme* lexeme) {
+  return coalesceSymbols(lexeme);
+}
 
 bool Parser::evalExpressionTokens(LexerLine* parm) {
   return eval_expression(parm);
 }
 
-bool Parser::evalPhraseTokens(LexerLine* phrase) { return eval_phrase(phrase); }
+bool Parser::evalPhraseTokens(LexerLine* phrase) {
+  return eval_phrase(phrase);
+}
 
 bool Parser::evalAssignmentTokens(LexerLine* assignment) {
   return eval_assignment(assignment);
@@ -79,17 +88,25 @@ int Parser::gfxOperatorFromLexeme(Lexeme* lexeme) {
   return gfxOperatorCode(lexeme);
 }
 
-void Parser::pushActionNodeRoot(ActionNode* action) { pushActionRoot(action); }
+void Parser::pushActionNodeRoot(ActionNode* action) {
+  pushActionRoot(action);
+}
 
 ActionNode* Parser::pushActionFromLexemeNode(Lexeme* lexeme) {
   return pushActionFromLexeme(lexeme);
 }
 
-void Parser::popActionNodeRoot() { popActionRoot(); }
+void Parser::popActionNodeRoot() {
+  popActionRoot();
+}
 
-bool Parser::evalCmdLet(LexerLine* statement) { return eval_cmd_let(statement); }
+bool Parser::evalCmdLet(LexerLine* statement) {
+  return eval_cmd_let(statement);
+}
 
-bool Parser::evalCmdDim(LexerLine* statement) { return eval_cmd_dim(statement); }
+bool Parser::evalCmdDim(LexerLine* statement) {
+  return eval_cmd_dim(statement);
+}
 
 bool Parser::evalCmdPrint(LexerLine* statement) {
   return eval_cmd_print(statement);
@@ -111,29 +128,45 @@ bool Parser::evalCmdSprite(LexerLine* statement) {
   return eval_cmd_sprite(statement);
 }
 
-bool Parser::evalCmdBase(LexerLine* statement) { return eval_cmd_base(statement); }
+bool Parser::evalCmdBase(LexerLine* statement) {
+  return eval_cmd_base(statement);
+}
 
-bool Parser::evalCmdVdp(LexerLine* statement) { return eval_cmd_vdp(statement); }
+bool Parser::evalCmdVdp(LexerLine* statement) {
+  return eval_cmd_vdp(statement);
+}
 
-bool Parser::evalCmdPut(LexerLine* statement) { return eval_cmd_put(statement); }
+bool Parser::evalCmdPut(LexerLine* statement) {
+  return eval_cmd_put(statement);
+}
 
 bool Parser::evalCmdTime(LexerLine* statement) {
   return eval_cmd_time(statement);
 }
 
-bool Parser::evalCmdSet(LexerLine* statement) { return eval_cmd_set(statement); }
+bool Parser::evalCmdSet(LexerLine* statement) {
+  return eval_cmd_set(statement);
+}
 
-bool Parser::evalCmdGet(LexerLine* statement) { return eval_cmd_get(statement); }
+bool Parser::evalCmdGet(LexerLine* statement) {
+  return eval_cmd_get(statement);
+}
 
-bool Parser::evalCmdOn(LexerLine* statement) { return eval_cmd_on(statement); }
+bool Parser::evalCmdOn(LexerLine* statement) {
+  return eval_cmd_on(statement);
+}
 
 bool Parser::evalCmdInterval(LexerLine* statement) {
   return eval_cmd_interval(statement);
 }
 
-bool Parser::evalCmdStop(LexerLine* statement) { return eval_cmd_stop(statement); }
+bool Parser::evalCmdStop(LexerLine* statement) {
+  return eval_cmd_stop(statement);
+}
 
-bool Parser::evalCmdKey(LexerLine* statement) { return eval_cmd_key(statement); }
+bool Parser::evalCmdKey(LexerLine* statement) {
+  return eval_cmd_key(statement);
+}
 
 bool Parser::evalCmdStrig(LexerLine* statement) {
   return eval_cmd_strig(statement);
@@ -147,7 +180,9 @@ bool Parser::evalCmdCall(LexerLine* statement) {
   return eval_cmd_call(statement);
 }
 
-bool Parser::evalCmdCmd(LexerLine* statement) { return eval_cmd_cmd(statement); }
+bool Parser::evalCmdCmd(LexerLine* statement) {
+  return eval_cmd_cmd(statement);
+}
 
 bool Parser::evalCmdOpen(LexerLine* statement) {
   return eval_cmd_open(statement);
@@ -169,7 +204,9 @@ bool Parser::evalCmdIf(LexerLine* statement) {
   return eval_cmd_if(statement, 0);
 }
 
-bool Parser::evalCmdFor(LexerLine* statement) { return eval_cmd_for(statement); }
+bool Parser::evalCmdFor(LexerLine* statement) {
+  return eval_cmd_for(statement);
+}
 
 bool Parser::evalCmdNext(LexerLine* statement) {
   return eval_cmd_next(statement);
@@ -407,6 +444,7 @@ bool Parser::eval_statement(LexerLine* statement) {
       result = strategy->execute(*this, statement, lexeme);
       if (lexeme->value == "IF") return result;
     } else {
+      ctx.error_message = "Invalid keyword / identifier";
       result = false;
     }
 
@@ -710,7 +748,8 @@ bool Parser::eval_expression_push(LexerLine* parm) {
           }
           if (!ok) {
             ctx.eval_expr_error = true;
-            ctx.error_message = "Mismatched parentheses error in function or array";
+            ctx.error_message =
+                "Mismatched parentheses error in function or array";
             return false;
           }
 
@@ -904,11 +943,6 @@ ActionNode* Parser::pushActionFromLexeme(Lexeme* lexeme) {
 
 //-----------------------------------------------------------------------------------------------------------------
 
-bool Parser::eval_cmd_generic(LexerLine* statement) {
-  GenericStatementStrategy strategy;
-  return strategy.parseStatement(*this, statement);
-}
-
 bool Parser::eval_cmd_data(LexerLine* statement,
                            Lexeme::LexemeSubType subtype) {
   Lexeme *next_lexeme, *lexeme;
@@ -1050,151 +1084,14 @@ bool Parser::eval_cmd_input(LexerLine* statement) {
   return strategy.parseStatement(*this, statement);
 }
 
-bool Parser::eval_cmd_line_input(LexerLine* statement) {
-  PrintStatementStrategy strategy;
-  return strategy.parseStatement(*this, statement);
-}
-
 bool Parser::eval_cmd_color(LexerLine* statement) {
   ColorStatementStrategy strategy;
   return strategy.parseStatement(*this, statement);
 }
 
-bool Parser::eval_cmd_color_rgb(LexerLine* statement) {
-  Lexeme *next_lexeme, *lex_rgb;
-  LexerLine parm;
-  int state = 0, sepCount = 0;
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    switch (state) {
-      case 0: {
-        if (next_lexeme->isSeparator("(")) {
-          lex_rgb =
-              new Lexeme(Lexeme::type_keyword, Lexeme::subtype_any, "RGB");
-          pushActionFromLexeme(lex_rgb);
-
-          state++;
-          sepCount++;
-          continue;
-
-        } else if (next_lexeme->isKeyword("NEW") ||
-                   next_lexeme->isKeyword("RESTORE")) {
-          pushActionFromLexeme(next_lexeme);
-          return true;
-
-        } else
-          return false;
-
-      } break;
-
-      case 1: {
-        if (next_lexeme->isSeparator("(")) {
-          sepCount++;
-        } else if (next_lexeme->isSeparator(")")) {
-          sepCount--;
-        }
-
-        if (next_lexeme->isSeparator(")") && sepCount == 0) {
-          parm.setLexemeBOF();
-          if (!eval_expression(&parm)) {
-            return false;
-          }
-          parm.clearLexemes();
-
-          popActionRoot();
-
-          return true;
-
-        } else if (next_lexeme->isSeparator(",")) {
-          parm.setLexemeBOF();
-          if (!eval_expression(&parm)) {
-            return false;
-          }
-          parm.clearLexemes();
-
-        } else {
-          parm.addLexeme(next_lexeme);
-        }
-
-      } break;
-    }
-  }
-
-  return false;
-}
-
-bool Parser::eval_cmd_color_sprite(LexerLine* statement) {
-  Lexeme* next_lexeme;
-  LexerLine parm;
-  int state = 0, sepCount = 0;
-
-  next_lexeme = statement->getCurrentLexeme();
-  if (!next_lexeme) return false;
-
-  pushActionFromLexeme(next_lexeme);
-
-  while ((next_lexeme = statement->getNextLexeme())) {
-    if (state == 0) {
-      if (next_lexeme->isSeparator("(")) {
-        state++;
-        sepCount++;
-        continue;
-      } else
-        return false;
-
-    } else if (state == 1) {
-      if (next_lexeme->isSeparator("(")) {
-        sepCount++;
-      } else if (next_lexeme->isSeparator(")")) {
-        sepCount--;
-      }
-
-      if (next_lexeme->isSeparator(")") && sepCount == 0) {
-        parm.setLexemeBOF();
-        if (!eval_expression(&parm)) {
-          return false;
-        }
-        parm.clearLexemes();
-
-        state++;
-        continue;
-      } else {
-        parm.addLexeme(next_lexeme);
-      }
-
-    } else if (state == 2) {
-      if (next_lexeme->isOperator("=")) {
-        state++;
-        continue;
-      } else
-        return false;
-
-    } else {
-      parm.addLexeme(next_lexeme);
-    }
-  }
-
-  if (state < 3) return false;
-
-  if (parm.getLexemeCount()) {
-    parm.setLexemeBOF();
-    if (!eval_expression(&parm)) {
-      return false;
-    }
-  } else
-    return false;
-
-  return true;
-}
-
 bool Parser::eval_cmd_def(LexerLine* statement, int vartype) {
   DefStatementStrategy strategy;
   return strategy.parseWithType(*this, statement, vartype);
-}
-
-bool Parser::eval_cmd_def_usr(LexerLine* statement) {
-  DefStatementStrategy strategy;
-  return strategy.parseWithType(*this, statement, 0);
 }
 
 bool Parser::eval_cmd_put(LexerLine* statement) {
@@ -1448,11 +1345,6 @@ bool Parser::eval_cmd_set_tile(LexerLine* statement) {
   return strategy.parseSetTile(*this, statement);
 }
 
-bool Parser::eval_cmd_set_tile_colpat(LexerLine* statement) {
-  SetStatementStrategy strategy;
-  return strategy.parseSetTileColpat(*this, statement);
-}
-
 bool Parser::eval_cmd_set_sprite(LexerLine* statement) {
   SetStatementStrategy strategy;
   return strategy.parseSetSprite(*this, statement);
@@ -1516,41 +1408,6 @@ bool Parser::eval_cmd_screen_off(LexerLine* statement) {
 bool Parser::eval_cmd_on(LexerLine* statement) {
   OnStatementStrategy strategy;
   return strategy.parseOn(*this, statement);
-}
-
-bool Parser::eval_cmd_on_goto_gosub(LexerLine* statement) {
-  OnStatementStrategy strategy;
-  return strategy.parseOnGotoGosub(*this, statement);
-}
-
-bool Parser::eval_cmd_on_error(LexerLine* statement) {
-  OnStatementStrategy strategy;
-  return strategy.parseOnError(*this, statement);
-}
-
-bool Parser::eval_cmd_on_interval(LexerLine* statement) {
-  OnStatementStrategy strategy;
-  return strategy.parseOnInterval(*this, statement);
-}
-
-bool Parser::eval_cmd_on_key(LexerLine* statement) {
-  OnStatementStrategy strategy;
-  return strategy.parseOnKey(*this, statement);
-}
-
-bool Parser::eval_cmd_on_sprite(LexerLine* statement) {
-  OnStatementStrategy strategy;
-  return strategy.parseOnSprite(*this, statement);
-}
-
-bool Parser::eval_cmd_on_stop(LexerLine* statement) {
-  OnStatementStrategy strategy;
-  return strategy.parseOnStop(*this, statement);
-}
-
-bool Parser::eval_cmd_on_strig(LexerLine* statement) {
-  OnStatementStrategy strategy;
-  return strategy.parseOnStrig(*this, statement);
 }
 
 bool Parser::eval_cmd_interval(LexerLine* statement) {

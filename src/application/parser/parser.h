@@ -33,12 +33,50 @@ using namespace std;
  */
 class Parser {
  private:
+  /***
+   * @brief Extract a phrase from current line and evaluate it
+   * @note Check for LINE NUMBERS and DIRECTIVES
+   * @return True, if syntatic analysis success
+   */
   bool eval_line(LexerLine* lexerLine);
+
+  /***
+   * @brief Phrase syntatic analysis
+   * @note Check if the current phrase it's a statement, expression or
+   * assignment
+   * @return True, if syntatic analysis success
+   */
   bool eval_phrase(LexerLine* phrase);
+
+  /***
+   * @brief Statement syntatic analysis
+   * @note Check for the correct statement strategy and apply it
+   * @return True, if syntatic analysis success
+   */
   bool eval_statement(LexerLine* statement);
+
+  /***
+   * @brief Assignments syntatic analysis
+   * @return True, if syntatic analysis success
+   */
   bool eval_assignment(LexerLine* assignment);
+
+  /***
+   * @brief Expressions syntatic analysis
+   * @note Math/Logical/String expressions parser
+   * @return True, if syntatic analysis success
+   */
   bool eval_expression(LexerLine* parm);
+
+  /***
+   * @brief Expressions stack helper (push)
+   * @return True, if success
+   */
   bool eval_expression_push(LexerLine* parm);
+
+  /***
+   * @brief Expressions stack helper (pop)
+   */
   void eval_expression_pop(int n);
 
   /***
@@ -47,14 +85,11 @@ class Parser {
    * @{
    */
 
-  bool eval_cmd_generic(LexerLine* statement);
   bool eval_cmd_let(LexerLine* statement);
   bool eval_cmd_dim(LexerLine* statement);
   bool eval_cmd_def(LexerLine* statement, int vartype);
-  bool eval_cmd_def_usr(LexerLine* statement);
   bool eval_cmd_print(LexerLine* statement);
   bool eval_cmd_input(LexerLine* statement);
-  bool eval_cmd_line_input(LexerLine* statement);
   bool eval_cmd_put(LexerLine* statement);
   bool eval_cmd_put_sprite(LexerLine* statement);
   bool eval_cmd_put_tile(LexerLine* statement);
@@ -62,8 +97,6 @@ class Parser {
   bool eval_cmd_vdp(LexerLine* statement);
   bool eval_cmd_time(LexerLine* statement);
   bool eval_cmd_color(LexerLine* statement);
-  bool eval_cmd_color_rgb(LexerLine* statement);
-  bool eval_cmd_color_sprite(LexerLine* statement);
   bool eval_cmd_if(LexerLine* statement, int level);
   bool eval_cmd_for(LexerLine* statement);
   bool eval_cmd_next(LexerLine* statement);
@@ -82,20 +115,12 @@ class Parser {
   bool eval_cmd_set(LexerLine* statement);
   bool eval_cmd_set_adjust(LexerLine* statement);
   bool eval_cmd_set_tile(LexerLine* statement);
-  bool eval_cmd_set_tile_colpat(LexerLine* statement);
   bool eval_cmd_set_sprite(LexerLine* statement);
   bool eval_cmd_set_sprite_colpattra(LexerLine* statement);
   bool eval_cmd_get(LexerLine* statement);
   bool eval_cmd_get_tile(LexerLine* statement);
   bool eval_cmd_get_sprite(LexerLine* statement);
   bool eval_cmd_on(LexerLine* statement);
-  bool eval_cmd_on_goto_gosub(LexerLine* statement);
-  bool eval_cmd_on_error(LexerLine* statement);
-  bool eval_cmd_on_interval(LexerLine* statement);
-  bool eval_cmd_on_key(LexerLine* statement);
-  bool eval_cmd_on_sprite(LexerLine* statement);
-  bool eval_cmd_on_stop(LexerLine* statement);
-  bool eval_cmd_on_strig(LexerLine* statement);
   bool eval_cmd_interval(LexerLine* statement);
   bool eval_cmd_stop(LexerLine* statement);
   bool eval_cmd_key(LexerLine* statement);
@@ -170,24 +195,49 @@ class Parser {
   BuildOptions* opts;
 
   /***
-   * @brief Perform a syntatic analysis on the tags list
+   * @brief Parser context getter for strategies use
+   * @return context object
+   */
+  ParserContext& getContext();
+  const ParserContext& getContext() const;
+
+  /***
+   * @brief Perform a full syntatic analysis on the tags list
    * @return True, if syntatic analysis success
    */
   bool evaluate(Lexer* lexer);
 
   /***
-   * @brief Parser context getter
+   * @brief Phrase syntatic analysis
+   * @note Check if the current phrase it's a statement, expression or
+   * assignment
+   * @return True, if syntatic analysis success
    */
-  ParserContext& getContext();
-  const ParserContext& getContext() const;
-  Lexeme* coalesceLexeme(Lexeme* lexeme);
-  bool evalExpressionTokens(LexerLine* parm);
   bool evalPhraseTokens(LexerLine* phrase);
+
+  /***
+   * @brief Expressions syntatic analysis
+   * @note Math/Logical/String expressions parser
+   * @return True, if syntatic analysis success
+   */
+  bool evalExpressionTokens(LexerLine* parm);
+
+  /***
+   * @brief Assignments syntatic analysis
+   * @return True, if syntatic analysis success
+   */
   bool evalAssignmentTokens(LexerLine* assignment);
+
+  //! Lexeme/Action auxiliary methods
+
   int gfxOperatorFromLexeme(Lexeme* lexeme);
+  Lexeme* coalesceLexeme(Lexeme* lexeme);
   void pushActionNodeRoot(ActionNode* action);
   ActionNode* pushActionFromLexemeNode(Lexeme* lexeme);
   void popActionNodeRoot();
+
+  //! Refactoring transitory code
+
   bool evalCmdLet(LexerLine* statement);
   bool evalCmdDim(LexerLine* statement);
   bool evalCmdPrint(LexerLine* statement);
@@ -248,8 +298,8 @@ class Parser {
   string errorToString();
 
   /***
-   * @brief Parse class constructor, specialized as a MSX BASIC syntax tree
-   * builder
+   * @brief Parse class constructor, specialized as a
+   * MSX BASIC syntax tree builder
    */
   Parser();
   ~Parser();
