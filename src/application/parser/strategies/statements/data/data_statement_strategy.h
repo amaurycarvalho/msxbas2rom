@@ -4,6 +4,9 @@
 #include "parser_statement_strategy.h"
 
 class DataStatementStrategy : public IParserStatementStrategy {
+ protected:
+  bool parseData(Parser& parser, LexerLine* statement, bool isBinaryData);
+
  public:
   bool execute(Parser& parser, LexerLine* statement, Lexeme* lexeme) override;
 };

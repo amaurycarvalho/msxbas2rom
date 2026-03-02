@@ -10,7 +10,7 @@
 #include "data_statement_strategy.h"
 #include "def_statement_strategy.h"
 #include "dim_statement_strategy.h"
-#include "direct_statement_strategy.h"
+#include "file_statement_strategy.h"
 #include "for_statement_strategy.h"
 #include "generic_statement_strategy.h"
 #include "get_statement_strategy.h"
@@ -51,13 +51,13 @@ class ParserStatementStrategyFactory {
   DefStatementStrategy defStrategy;
   CallStatementStrategy callStrategy;
   CmdStatementStrategy cmdStrategy;
-  DirectStatementStrategy baseStrategy;
-  DirectStatementStrategy vdpStrategy;
+  NoopStatementStrategy baseStrategy;
+  NoopStatementStrategy vdpStrategy;
   TimeStatementStrategy timeStrategy;
   OnStatementStrategy onStrategy;
-  DirectStatementStrategy openStrategy;
-  DirectStatementStrategy closeStrategy;
-  DirectStatementStrategy maxStrategy;
+  FileStatementStrategy openStrategy;
+  FileStatementStrategy closeStrategy;
+  FileStatementStrategy maxStrategy;
   IfStatementStrategy ifStrategy;
   ForStatementStrategy forStrategy;
   NextStatementStrategy nextStrategy;

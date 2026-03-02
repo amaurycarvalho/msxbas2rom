@@ -22,7 +22,8 @@ bool GetStatementStrategy::parseGetSprite(Parser& parser,
 
     if (next_lexeme->type == Lexeme::type_keyword) {
       if (next_lexeme->value == "COLOR" || next_lexeme->value == "PATTERN") {
-        result = parser.evalCmdSetSpriteColpattra(statement);
+        SetStatementStrategy strategy;
+        return strategy.parseSetSpriteColpattra(parser, statement);
       }
     }
 
@@ -32,7 +33,8 @@ bool GetStatementStrategy::parseGetSprite(Parser& parser,
   return result;
 }
 
-bool GetStatementStrategy::parseStatement(Parser& parser, LexerLine* statement) {
+bool GetStatementStrategy::parseStatement(Parser& parser,
+                                          LexerLine* statement) {
   Lexeme* next_lexeme;
   ActionNode* action;
   bool result = false;

@@ -1,11 +1,6 @@
 #include "parser_statement_strategy_factory.h"
 
-ParserStatementStrategyFactory::ParserStatementStrategyFactory()
-    : baseStrategy(DirectStatementStrategy::BASE),
-      vdpStrategy(DirectStatementStrategy::VDP),
-      openStrategy(DirectStatementStrategy::OPEN),
-      closeStrategy(DirectStatementStrategy::CLOSE),
-      maxStrategy(DirectStatementStrategy::MAX) {
+ParserStatementStrategyFactory::ParserStatementStrategyFactory() {
   strategies["REM"] = &noopStrategy;
   strategies["CLS"] = &noopStrategy;
   strategies["END"] = &noopStrategy;
