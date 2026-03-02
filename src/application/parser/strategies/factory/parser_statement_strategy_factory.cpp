@@ -3,7 +3,6 @@
 ParserStatementStrategyFactory::ParserStatementStrategyFactory()
     : baseStrategy(DirectStatementStrategy::BASE),
       vdpStrategy(DirectStatementStrategy::VDP),
-      timeStrategy(DirectStatementStrategy::TIME),
       openStrategy(DirectStatementStrategy::OPEN),
       closeStrategy(DirectStatementStrategy::CLOSE),
       maxStrategy(DirectStatementStrategy::MAX) {
@@ -84,7 +83,8 @@ ParserStatementStrategyFactory::ParserStatementStrategyFactory()
 
 IParserStatementStrategy* ParserStatementStrategyFactory::getStrategyByKeyword(
     const string& keyword) {
-  map<string, IParserStatementStrategy*>::iterator it = strategies.find(keyword);
+  map<string, IParserStatementStrategy*>::iterator it =
+      strategies.find(keyword);
   if (it == strategies.end()) return 0;
 
   return it->second;

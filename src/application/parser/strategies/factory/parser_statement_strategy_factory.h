@@ -9,16 +9,16 @@
 #include "color_statement_strategy.h"
 #include "data_statement_strategy.h"
 #include "def_statement_strategy.h"
-#include "direct_statement_strategy.h"
 #include "dim_statement_strategy.h"
+#include "direct_statement_strategy.h"
+#include "for_statement_strategy.h"
 #include "generic_statement_strategy.h"
+#include "get_statement_strategy.h"
 #include "graphics_statement_strategy.h"
 #include "idata_statement_strategy.h"
 #include "if_statement_strategy.h"
 #include "input_statement_strategy.h"
 #include "let_statement_strategy.h"
-#include "get_statement_strategy.h"
-#include "for_statement_strategy.h"
 #include "next_statement_strategy.h"
 #include "noop_statement_strategy.h"
 #include "on_statement_strategy.h"
@@ -27,6 +27,7 @@
 #include "screen_statement_strategy.h"
 #include "set_statement_strategy.h"
 #include "sprite_statement_strategy.h"
+#include "time_statement_strategy.h"
 
 using namespace std;
 
@@ -52,7 +53,7 @@ class ParserStatementStrategyFactory {
   CmdStatementStrategy cmdStrategy;
   DirectStatementStrategy baseStrategy;
   DirectStatementStrategy vdpStrategy;
-  DirectStatementStrategy timeStrategy;
+  TimeStatementStrategy timeStrategy;
   OnStatementStrategy onStrategy;
   DirectStatementStrategy openStrategy;
   DirectStatementStrategy closeStrategy;

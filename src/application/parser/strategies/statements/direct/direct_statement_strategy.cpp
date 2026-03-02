@@ -17,8 +17,6 @@ bool DirectStatementStrategy::execute(Parser& parser, LexerLine* statement,
       return parser.evalCmdVdp(statement);
     case PUT:
       return parser.evalCmdPut(statement);
-    case TIME:
-      return parser.evalCmdTime(statement);
     case SET:
       return parser.evalCmdSet(statement);
     case GET:

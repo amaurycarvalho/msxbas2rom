@@ -11,7 +11,6 @@ class DirectStatementStrategy : public IParserStatementStrategy {
     BASE,
     VDP,
     PUT,
-    TIME,
     SET,
     GET,
     ON,
@@ -23,8 +22,7 @@ class DirectStatementStrategy : public IParserStatementStrategy {
     CMD,
     OPEN,
     CLOSE,
-    MAX
-    ,
+    MAX,
     IF,
     FOR,
     NEXT,

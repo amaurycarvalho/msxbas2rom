@@ -5,7 +5,7 @@
 
 bool NoopStatementStrategy::execute(Parser& parser, LexerLine* statement,
                                     Lexeme* lexeme) {
-  (void)parser;
+  (void)parser;  /// @remark ignore 'variable not used' warning
   (void)statement;
 
   if (lexeme->value == "'") {

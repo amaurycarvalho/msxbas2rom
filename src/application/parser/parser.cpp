@@ -100,22 +100,6 @@ void Parser::popActionNodeRoot() {
   popActionRoot();
 }
 
-bool Parser::evalCmdLet(LexerLine* statement) {
-  return eval_cmd_let(statement);
-}
-
-bool Parser::evalCmdDim(LexerLine* statement) {
-  return eval_cmd_dim(statement);
-}
-
-bool Parser::evalCmdPrint(LexerLine* statement) {
-  return eval_cmd_print(statement);
-}
-
-bool Parser::evalCmdInput(LexerLine* statement) {
-  return eval_cmd_input(statement);
-}
-
 bool Parser::evalCmdData(LexerLine* statement, Lexeme::LexemeSubType subtype) {
   return eval_cmd_data(statement, subtype);
 }
@@ -138,10 +122,6 @@ bool Parser::evalCmdVdp(LexerLine* statement) {
 
 bool Parser::evalCmdPut(LexerLine* statement) {
   return eval_cmd_put(statement);
-}
-
-bool Parser::evalCmdTime(LexerLine* statement) {
-  return eval_cmd_time(statement);
 }
 
 bool Parser::evalCmdSet(LexerLine* statement) {
@@ -176,10 +156,6 @@ bool Parser::evalCmdColor(LexerLine* statement) {
   return eval_cmd_color(statement);
 }
 
-bool Parser::evalCmdCall(LexerLine* statement) {
-  return eval_cmd_call(statement);
-}
-
 bool Parser::evalCmdCmd(LexerLine* statement) {
   return eval_cmd_cmd(statement);
 }
@@ -194,10 +170,6 @@ bool Parser::evalCmdClose(LexerLine* statement) {
 
 bool Parser::evalCmdMaxfiles(LexerLine* statement) {
   return eval_cmd_maxfiles(statement);
-}
-
-bool Parser::evalCmdDef(LexerLine* statement, int vartype) {
-  return eval_cmd_def(statement, vartype);
 }
 
 bool Parser::evalCmdIf(LexerLine* statement) {
@@ -232,64 +204,8 @@ bool Parser::evalCmdCopy(LexerLine* statement) {
   return eval_cmd_copy(statement);
 }
 
-bool Parser::evalCmdPutSprite(LexerLine* statement) {
-  return eval_cmd_put_sprite(statement);
-}
-
-bool Parser::evalCmdPutTile(LexerLine* statement) {
-  return eval_cmd_put_tile(statement);
-}
-
-bool Parser::evalCmdSetAdjust(LexerLine* statement) {
-  return eval_cmd_set_adjust(statement);
-}
-
-bool Parser::evalCmdSetTile(LexerLine* statement) {
-  return eval_cmd_set_tile(statement);
-}
-
-bool Parser::evalCmdSetSprite(LexerLine* statement) {
-  return eval_cmd_set_sprite(statement);
-}
-
 bool Parser::evalCmdSetSpriteColpattra(LexerLine* statement) {
   return eval_cmd_set_sprite_colpattra(statement);
-}
-
-bool Parser::evalCmdGetTile(LexerLine* statement) {
-  return eval_cmd_get_tile(statement);
-}
-
-bool Parser::evalCmdGetSprite(LexerLine* statement) {
-  return eval_cmd_get_sprite(statement);
-}
-
-bool Parser::evalCmdScreenCopy(LexerLine* statement) {
-  return eval_cmd_screen_copy(statement);
-}
-
-bool Parser::evalCmdScreenPaste(LexerLine* statement) {
-  return eval_cmd_screen_paste(statement);
-}
-
-bool Parser::evalCmdScreenScroll(LexerLine* statement) {
-  return eval_cmd_screen_scroll(statement);
-}
-
-bool Parser::evalCmdScreenLoad(LexerLine* statement) {
-  return eval_cmd_screen_load(statement);
-}
-
-bool Parser::evalCmdScreenOn(LexerLine* statement) {
-  return eval_cmd_screen_on(statement);
-}
-
-bool Parser::evalCmdScreenOff(LexerLine* statement) {
-  return eval_cmd_screen_off(statement);
-}
-
-bool Parser::evalCmdSpriteLoad(LexerLine* statement) {
-  return eval_cmd_sprite_load(statement);
 }
 
 bool Parser::evaluate(Lexer* lexer) {
@@ -1064,49 +980,14 @@ bool Parser::eval_cmd_data(LexerLine* statement,
   return true;
 }
 
-bool Parser::eval_cmd_dim(LexerLine* statement) {
-  DimStatementStrategy strategy;
-  return strategy.parseStatement(*this, statement);
-}
-
-bool Parser::eval_cmd_let(LexerLine* statement) {
-  LetStatementStrategy strategy;
-  return strategy.parseStatement(*this, statement);
-}
-
-bool Parser::eval_cmd_print(LexerLine* statement) {
-  PrintStatementStrategy strategy;
-  return strategy.parseStatement(*this, statement);
-}
-
-bool Parser::eval_cmd_input(LexerLine* statement) {
-  InputStatementStrategy strategy;
-  return strategy.parseStatement(*this, statement);
-}
-
 bool Parser::eval_cmd_color(LexerLine* statement) {
   ColorStatementStrategy strategy;
   return strategy.parseStatement(*this, statement);
 }
 
-bool Parser::eval_cmd_def(LexerLine* statement, int vartype) {
-  DefStatementStrategy strategy;
-  return strategy.parseWithType(*this, statement, vartype);
-}
-
 bool Parser::eval_cmd_put(LexerLine* statement) {
   PutStatementStrategy strategy;
   return strategy.parseStatement(*this, statement);
-}
-
-bool Parser::eval_cmd_put_sprite(LexerLine* statement) {
-  PutStatementStrategy strategy;
-  return strategy.parsePutSprite(*this, statement);
-}
-
-bool Parser::eval_cmd_put_tile(LexerLine* statement) {
-  PutStatementStrategy strategy;
-  return strategy.parsePutTile(*this, statement);
 }
 
 bool Parser::eval_cmd_sprite(LexerLine* statement) {
@@ -1271,10 +1152,6 @@ bool Parser::eval_cmd_vdp(LexerLine* statement) {
   return true;
 }
 
-bool Parser::eval_cmd_time(LexerLine* statement) {
-  return eval_cmd_let(statement);
-}
-
 bool Parser::eval_cmd_if(LexerLine* statement, int level) {
   IfStatementStrategy strategy;
   return strategy.parseStatement(*this, statement, level);
@@ -1335,21 +1212,6 @@ bool Parser::eval_cmd_set(LexerLine* statement) {
   return strategy.parseStatement(*this, statement);
 }
 
-bool Parser::eval_cmd_set_adjust(LexerLine* statement) {
-  SetStatementStrategy strategy;
-  return strategy.parseSetAdjust(*this, statement);
-}
-
-bool Parser::eval_cmd_set_tile(LexerLine* statement) {
-  SetStatementStrategy strategy;
-  return strategy.parseSetTile(*this, statement);
-}
-
-bool Parser::eval_cmd_set_sprite(LexerLine* statement) {
-  SetStatementStrategy strategy;
-  return strategy.parseSetSprite(*this, statement);
-}
-
 bool Parser::eval_cmd_set_sprite_colpattra(LexerLine* statement) {
   SetStatementStrategy strategy;
   return strategy.parseSetSpriteColpattra(*this, statement);
@@ -1360,49 +1222,9 @@ bool Parser::eval_cmd_get(LexerLine* statement) {
   return strategy.parseStatement(*this, statement);
 }
 
-bool Parser::eval_cmd_get_tile(LexerLine* statement) {
-  GetStatementStrategy strategy;
-  return strategy.parseGetTile(*this, statement);
-}
-
-bool Parser::eval_cmd_get_sprite(LexerLine* statement) {
-  GetStatementStrategy strategy;
-  return strategy.parseGetSprite(*this, statement);
-}
-
 bool Parser::eval_cmd_screen(LexerLine* statement) {
   ScreenStatementStrategy strategy;
   return strategy.parseStatement(*this, statement);
-}
-
-bool Parser::eval_cmd_screen_copy(LexerLine* statement) {
-  ScreenStatementStrategy strategy;
-  return strategy.parseScreenCopy(*this, statement);
-}
-
-bool Parser::eval_cmd_screen_paste(LexerLine* statement) {
-  ScreenStatementStrategy strategy;
-  return strategy.parseScreenPaste(*this, statement);
-}
-
-bool Parser::eval_cmd_screen_scroll(LexerLine* statement) {
-  ScreenStatementStrategy strategy;
-  return strategy.parseScreenScroll(*this, statement);
-}
-
-bool Parser::eval_cmd_screen_load(LexerLine* statement) {
-  ScreenStatementStrategy strategy;
-  return strategy.parseScreenLoad(*this, statement);
-}
-
-bool Parser::eval_cmd_screen_on(LexerLine* statement) {
-  ScreenStatementStrategy strategy;
-  return strategy.parseScreenOn(*this, statement);
-}
-
-bool Parser::eval_cmd_screen_off(LexerLine* statement) {
-  ScreenStatementStrategy strategy;
-  return strategy.parseScreenOff(*this, statement);
 }
 
 bool Parser::eval_cmd_on(LexerLine* statement) {
@@ -1418,11 +1240,6 @@ bool Parser::eval_cmd_interval(LexerLine* statement) {
 bool Parser::eval_cmd_stop(LexerLine* statement) {
   OnStatementStrategy strategy;
   return strategy.parseStop(*this, statement);
-}
-
-bool Parser::eval_cmd_call(LexerLine* statement) {
-  CallStatementStrategy strategy;
-  return strategy.parseCall(*this, statement);
 }
 
 bool Parser::eval_cmd_cmd(LexerLine* statement) {

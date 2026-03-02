@@ -85,17 +85,9 @@ class Parser {
    * @{
    */
 
-  bool eval_cmd_let(LexerLine* statement);
-  bool eval_cmd_dim(LexerLine* statement);
-  bool eval_cmd_def(LexerLine* statement, int vartype);
-  bool eval_cmd_print(LexerLine* statement);
-  bool eval_cmd_input(LexerLine* statement);
   bool eval_cmd_put(LexerLine* statement);
-  bool eval_cmd_put_sprite(LexerLine* statement);
-  bool eval_cmd_put_tile(LexerLine* statement);
   bool eval_cmd_base(LexerLine* statement);
   bool eval_cmd_vdp(LexerLine* statement);
-  bool eval_cmd_time(LexerLine* statement);
   bool eval_cmd_color(LexerLine* statement);
   bool eval_cmd_if(LexerLine* statement, int level);
   bool eval_cmd_for(LexerLine* statement);
@@ -106,20 +98,9 @@ class Parser {
   bool eval_cmd_paint(LexerLine* statement);
   bool eval_cmd_copy(LexerLine* statement);
   bool eval_cmd_screen(LexerLine* statement);
-  bool eval_cmd_screen_copy(LexerLine* statement);
-  bool eval_cmd_screen_paste(LexerLine* statement);
-  bool eval_cmd_screen_scroll(LexerLine* statement);
-  bool eval_cmd_screen_load(LexerLine* statement);
-  bool eval_cmd_screen_on(LexerLine* statement);
-  bool eval_cmd_screen_off(LexerLine* statement);
   bool eval_cmd_set(LexerLine* statement);
-  bool eval_cmd_set_adjust(LexerLine* statement);
-  bool eval_cmd_set_tile(LexerLine* statement);
-  bool eval_cmd_set_sprite(LexerLine* statement);
   bool eval_cmd_set_sprite_colpattra(LexerLine* statement);
   bool eval_cmd_get(LexerLine* statement);
-  bool eval_cmd_get_tile(LexerLine* statement);
-  bool eval_cmd_get_sprite(LexerLine* statement);
   bool eval_cmd_on(LexerLine* statement);
   bool eval_cmd_interval(LexerLine* statement);
   bool eval_cmd_stop(LexerLine* statement);
@@ -128,7 +109,6 @@ class Parser {
   bool eval_cmd_sprite(LexerLine* statement);
   bool eval_cmd_sprite_load(LexerLine* statement);
   bool eval_cmd_data(LexerLine* statement, Lexeme::LexemeSubType subtype);
-  bool eval_cmd_call(LexerLine* statement);
   bool eval_cmd_cmd(LexerLine* statement);
   bool eval_cmd_open(LexerLine* statement);
   bool eval_cmd_close(LexerLine* statement);
@@ -238,17 +218,12 @@ class Parser {
 
   //! Refactoring transitory code
 
-  bool evalCmdLet(LexerLine* statement);
-  bool evalCmdDim(LexerLine* statement);
-  bool evalCmdPrint(LexerLine* statement);
-  bool evalCmdInput(LexerLine* statement);
   bool evalCmdData(LexerLine* statement, Lexeme::LexemeSubType subtype);
   bool evalCmdScreen(LexerLine* statement);
   bool evalCmdSprite(LexerLine* statement);
   bool evalCmdBase(LexerLine* statement);
   bool evalCmdVdp(LexerLine* statement);
   bool evalCmdPut(LexerLine* statement);
-  bool evalCmdTime(LexerLine* statement);
   bool evalCmdSet(LexerLine* statement);
   bool evalCmdGet(LexerLine* statement);
   bool evalCmdOn(LexerLine* statement);
@@ -257,12 +232,10 @@ class Parser {
   bool evalCmdKey(LexerLine* statement);
   bool evalCmdStrig(LexerLine* statement);
   bool evalCmdColor(LexerLine* statement);
-  bool evalCmdCall(LexerLine* statement);
   bool evalCmdCmd(LexerLine* statement);
   bool evalCmdOpen(LexerLine* statement);
   bool evalCmdClose(LexerLine* statement);
   bool evalCmdMaxfiles(LexerLine* statement);
-  bool evalCmdDef(LexerLine* statement, int vartype);
   bool evalCmdIf(LexerLine* statement);
   bool evalCmdFor(LexerLine* statement);
   bool evalCmdNext(LexerLine* statement);
@@ -271,21 +244,7 @@ class Parser {
   bool evalCmdCircle(LexerLine* statement);
   bool evalCmdPaint(LexerLine* statement);
   bool evalCmdCopy(LexerLine* statement);
-  bool evalCmdPutSprite(LexerLine* statement);
-  bool evalCmdPutTile(LexerLine* statement);
-  bool evalCmdSetAdjust(LexerLine* statement);
-  bool evalCmdSetTile(LexerLine* statement);
-  bool evalCmdSetSprite(LexerLine* statement);
   bool evalCmdSetSpriteColpattra(LexerLine* statement);
-  bool evalCmdGetTile(LexerLine* statement);
-  bool evalCmdGetSprite(LexerLine* statement);
-  bool evalCmdScreenCopy(LexerLine* statement);
-  bool evalCmdScreenPaste(LexerLine* statement);
-  bool evalCmdScreenScroll(LexerLine* statement);
-  bool evalCmdScreenLoad(LexerLine* statement);
-  bool evalCmdScreenOn(LexerLine* statement);
-  bool evalCmdScreenOff(LexerLine* statement);
-  bool evalCmdSpriteLoad(LexerLine* statement);
 
   /***
    * @brief Return all tags and it's syntax tree as a string
