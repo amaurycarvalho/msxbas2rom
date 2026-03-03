@@ -6,8 +6,10 @@
 
 #include "include_loader.h"
 
-IncludeLoader::IncludeLoader(IParserProcessor& parserProcessor)
-    : parserProcessor(parserProcessor) {}
+#include "parser_line_evaluator.h"
+
+IncludeLoader::IncludeLoader(ParserLineEvaluator& lineEvaluator)
+    : lineEvaluator(lineEvaluator) {}
 
 bool IncludeLoader::load(Lexeme* lexeme) {
   if (lexeme) {
@@ -47,7 +49,7 @@ bool IncludeLoader::load(const string& filename) {
     while (fgets(line, sizeof(line), file)) {
       lexerLine->line = line;
       if (lexerLine->evaluate()) {
-        if (!parserProcessor.processLine(lexerLine)) {
+        if (!lineEvaluator.evaluateLine(lexerLine)) {
           result = false;
           break;
         }

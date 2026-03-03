@@ -1,7 +1,6 @@
 #include "noop_statement_strategy.h"
 
 #include "lexer.h"
-#include "parser.h"
 
 bool NoopStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
   (void)context;

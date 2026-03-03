@@ -1,7 +1,6 @@
 #include "input_statement_strategy.h"
 
 #include "print_statement_strategy.h"
-#include "parser.h"
 
 bool InputStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
   PrintStatementStrategy printStrategy;

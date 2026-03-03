@@ -1,7 +1,7 @@
 #include "get_statement_strategy.h"
 
 #include "generic_statement_strategy.h"
-#include "parser.h"
+#include "set_statement_strategy.h"
 
 bool GetStatementStrategy::parseGetTile(ParserContext& context, LexerLine* statement) {
   return parseGetSprite(context, statement);

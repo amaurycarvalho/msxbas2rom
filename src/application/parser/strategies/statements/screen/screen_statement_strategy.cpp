@@ -1,7 +1,6 @@
 #include "screen_statement_strategy.h"
 
 #include "generic_statement_strategy.h"
-#include "parser.h"
 
 bool ScreenStatementStrategy::parseScreenCopy(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme = statement->getCurrentLexeme();

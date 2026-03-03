@@ -1,6 +1,5 @@
 #include "generic_statement_strategy.h"
 
-#include "parser.h"
 
 bool GenericStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;

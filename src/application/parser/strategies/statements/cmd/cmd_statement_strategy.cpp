@@ -1,7 +1,6 @@
 #include "cmd_statement_strategy.h"
 
 #include "generic_statement_strategy.h"
-#include "parser.h"
 
 bool CmdStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
   ActionNode* action;

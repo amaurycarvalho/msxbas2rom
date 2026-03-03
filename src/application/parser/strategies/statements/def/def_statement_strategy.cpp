@@ -1,6 +1,5 @@
 #include "def_statement_strategy.h"
 
-#include "parser.h"
 
 bool DefStatementStrategy::parseDefUsr(ParserContext& context, LexerLine* statement) {
   Lexeme *next_lexeme, *lex_zero;

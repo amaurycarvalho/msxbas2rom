@@ -1,7 +1,6 @@
 #include "call_statement_strategy.h"
 
 #include "lexer.h"
-#include "parser.h"
 
 bool CallStatementStrategy::parseCall(ParserContext& context,
                                       LexerLine* statement) {

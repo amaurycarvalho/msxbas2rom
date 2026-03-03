@@ -1,6 +1,5 @@
 #include "put_statement_strategy.h"
 
-#include "parser.h"
 
 bool PutStatementStrategy::parsePutSprite(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;

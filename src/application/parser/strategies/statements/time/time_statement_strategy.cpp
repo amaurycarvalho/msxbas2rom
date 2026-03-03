@@ -1,7 +1,6 @@
 #include "time_statement_strategy.h"
 
 #include "let_statement_strategy.h"
-#include "parser.h"
 
 bool TimeStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
   LetStatementStrategy letStrategy;

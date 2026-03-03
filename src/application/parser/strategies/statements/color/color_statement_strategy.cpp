@@ -1,7 +1,6 @@
 #include "color_statement_strategy.h"
 
 #include "generic_statement_strategy.h"
-#include "parser.h"
 
 bool ColorStatementStrategy::parseColorRgb(ParserContext& context, LexerLine* statement) {
   Lexeme *next_lexeme, *lex_rgb;

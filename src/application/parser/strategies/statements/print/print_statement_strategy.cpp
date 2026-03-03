@@ -1,7 +1,6 @@
 #include "print_statement_strategy.h"
 
 #include "lexer.h"
-#include "parser.h"
 
 bool PrintStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;

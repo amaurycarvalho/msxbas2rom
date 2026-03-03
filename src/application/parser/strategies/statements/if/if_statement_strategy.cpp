@@ -2,73 +2,17 @@
 
 #include "assignment_evaluator.h"
 #include "expression_evaluator.h"
+#include "parser_line_evaluator.h"
 #include "parser_statement_strategy_factory.h"
 
-namespace {
-
-bool evalStatement(ParserContext& context,
-                   LexerLine* statement) {
-  Lexeme* lexeme;
-  ActionNode* action;
-  IParserStatementStrategy* strategy;
-  ActionNode* actionSaved = context.actionRoot;
-  unsigned int actionCount = context.actionStack.size();
-  bool result = true;
-
+bool IfStatementStrategy::evalPhrase(ParserContext& context, LexerLine* phrase) {
   ParserStatementStrategyFactory statementStrategyFactory;
-
-  lexeme = statement->getFirstLexeme();
-
-  if (lexeme) {
-    lexeme = context.coalesceSymbols(lexeme);
-
-    action = new ActionNode(lexeme);
-    context.pushActionRoot(action);
-
-    strategy = statementStrategyFactory.getStrategyByKeyword(lexeme->value);
-    if (strategy) {
-      result = strategy->execute(context, statement, lexeme);
-      if (lexeme->value == "IF") return result;
-    } else {
-      context.error_message = "Invalid keyword / identifier";
-      result = false;
-    }
-
-    context.popActionRoot();
-  }
-
-  while (context.actionStack.size() > actionCount) context.actionStack.pop();
-  context.actionRoot = actionSaved;
-
-  return result;
+  ExpressionEvaluator exprEval(context);
+  AssignmentEvaluator assignEval(context, exprEval);
+  ParserLineEvaluator lineEval(context, statementStrategyFactory, exprEval,
+                               assignEval);
+  return lineEval.evaluatePhrase(phrase);
 }
-
-bool evalPhrase(ParserContext& context,
-                LexerLine* phrase) {
-  Lexeme* lexeme = phrase->getFirstLexeme();
-
-  if (lexeme) {
-    lexeme = context.coalesceSymbols(lexeme);
-
-    if (lexeme->type == Lexeme::type_identifier ||
-        (lexeme->type == Lexeme::type_keyword &&
-         lexeme->subtype == Lexeme::subtype_function &&
-         lexeme->value != "STRIG")) {
-      phrase->setLexemeBOF();
-      ExpressionEvaluator exprEval(context);
-      AssignmentEvaluator assignEval(context, exprEval);
-      return assignEval.evaluate(phrase);
-    } else if (lexeme->type == Lexeme::type_keyword || lexeme->isOperator("'") ||
-               lexeme->isOperator("_")) {
-      return evalStatement(context, phrase);
-    }
-  }
-
-  context.error_message = "Invalid keyword/identifier";
-  return false;
-}
-
-}  // namespace
 
 bool IfStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement, int level) {
   Lexeme *next_lexeme, *last_lexeme = statement->getCurrentLexeme();
@@ -205,7 +149,7 @@ bool IfStatementStrategy::parseStatement(ParserContext& context, LexerLine* stat
 
           if (parm.getLexemeCount()) {
             parm.setLexemeBOF();
-            if (!evalPhrase(context, &parm)) return false;
+            if (!this->evalPhrase(context, &parm)) return false;
             parm.clearLexemes();
           } else {
             if (skipEmptyStmtCheck) {
@@ -273,7 +217,7 @@ bool IfStatementStrategy::parseStatement(ParserContext& context, LexerLine* stat
     } else {
       if (parm.getLexemeCount()) {
         parm.setLexemeBOF();
-        if (!evalPhrase(context, &parm)) return false;
+        if (!this->evalPhrase(context, &parm)) return false;
         parm.clearLexemes();
       }
     }

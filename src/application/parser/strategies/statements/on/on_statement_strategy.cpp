@@ -1,6 +1,5 @@
 #include "on_statement_strategy.h"
 
-#include "parser.h"
 
 bool OnStatementStrategy::parseOn(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;

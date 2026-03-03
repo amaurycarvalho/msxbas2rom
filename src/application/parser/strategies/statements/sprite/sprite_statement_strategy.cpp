@@ -1,7 +1,6 @@
 #include "sprite_statement_strategy.h"
 
 #include "generic_statement_strategy.h"
-#include "parser.h"
 
 bool SpriteStatementStrategy::parseSpriteLoad(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme = statement->getCurrentLexeme();

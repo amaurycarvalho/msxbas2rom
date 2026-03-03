@@ -1,7 +1,6 @@
 #include "set_statement_strategy.h"
 
 #include "generic_statement_strategy.h"
-#include "parser.h"
 
 bool SetStatementStrategy::parseSetAdjust(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;

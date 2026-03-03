@@ -2,7 +2,6 @@
 
 #include <cctype>
 
-#include "parser.h"
 
 bool FileStatementStrategy::parseOpen(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;

@@ -12,8 +12,6 @@
 #ifndef PARSE_H_INCLUDED
 #define PARSE_H_INCLUDED
 
-#include <array>
-#include <stack>
 #include <string>
 #include <vector>
 
@@ -21,11 +19,9 @@
 #include "assignment_evaluator.h"
 #include "build_options.h"
 #include "expression_evaluator.h"
-#include "fswrapper.h"
-#include "i_parser_processor.h"
-#include "include_loader.h"
 #include "lexer.h"
 #include "parser_context.h"
+#include "parser_line_evaluator.h"
 #include "parser_statement_strategy_factory.h"
 #include "tag_node.h"
 
@@ -35,50 +31,13 @@ using namespace std;
  * @class Parser
  * @brief Parser class specialized as a MSX BASIC syntax tree builder
  */
-class Parser : public IParserProcessor {
+class Parser {
  private:
-  /***
-   * @brief Extract a phrase from current line and evaluate it
-   * @note Check for LINE NUMBERS and DIRECTIVES
-   * @return True, if syntatic analysis success
-   */
-  bool eval_line(LexerLine* lexerLine);
-
-  /***
-   * @brief Phrase syntatic analysis
-   * @note Check if the current phrase it's a statement, expression or
-   * assignment
-   * @return True, if syntatic analysis success
-   */
-  bool eval_phrase(LexerLine* phrase);
-
-  /***
-   * @brief Statement syntatic analysis
-   * @note Check for the correct statement strategy and apply it
-   * @return True, if syntatic analysis success
-   */
-  bool eval_statement(LexerLine* statement);
-
   ParserContext ctx;
   ParserStatementStrategyFactory statementStrategyFactory;
   ExpressionEvaluator exprEval;
   AssignmentEvaluator assignEval;
-  IncludeLoader includeLoader;
-
-  TagNode*& tag;
-  ActionNode*& actionRoot;
-  LexerLine*& error_line;
-  Lexeme*& lex_null;
-  Lexeme*& lex_index;
-  Lexeme*& lex_empty_string;
-
-  stack<ActionNode*>& actionStack;
-  stack<Lexeme*>& expressionList;
-  int (&deftbl)[26];
-
-  bool& eval_expr_error;
-  bool& line_comment;
-  string& error_message;
+  ParserLineEvaluator lineEval;
 
  public:
   int& lineNo;
@@ -109,7 +68,6 @@ class Parser : public IParserProcessor {
    * @return True, if syntatic analysis success
    */
   bool evaluate(Lexer* lexer);
-  bool processLine(LexerLine* line) override;
 
   /***
    * @brief Return all tags and it's syntax tree as a string

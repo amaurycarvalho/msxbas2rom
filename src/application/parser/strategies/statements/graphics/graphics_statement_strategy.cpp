@@ -1,7 +1,6 @@
 #include "graphics_statement_strategy.h"
 
 #include "generic_statement_strategy.h"
-#include "parser.h"
 #include "print_statement_strategy.h"
 
 bool GraphicsStatementStrategy::parsePset(ParserContext& context, LexerLine* statement) {

@@ -1,7 +1,6 @@
 #include "data_statement_strategy.h"
 
 #include "lexer.h"
-#include "parser.h"
 
 bool DataStatementStrategy::parseData(ParserContext& context,
                                       LexerLine* statement,

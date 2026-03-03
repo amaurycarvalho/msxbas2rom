@@ -1,6 +1,5 @@
 #include "next_statement_strategy.h"
 
-#include "parser.h"
 
 bool NextStatementStrategy::parseStatement(ParserContext& context,
                                            LexerLine* statement) {

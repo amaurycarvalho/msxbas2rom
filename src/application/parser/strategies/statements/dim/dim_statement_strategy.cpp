@@ -1,7 +1,6 @@
 #include "dim_statement_strategy.h"
 
 #include "generic_statement_strategy.h"
-#include "parser.h"
 
 bool DimStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
   ActionNode *action = context.actionRoot, *subaction;
