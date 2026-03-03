@@ -1,13 +1,15 @@
 #include "for_statement_strategy.h"
 
-#include "parser.h"
+#include "assignment_evaluator.h"
+#include "expression_evaluator.h"
 
-bool ForStatementStrategy::parseStatement(Parser& parser, LexerLine* statement) {
+bool ForStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
   Lexeme *next_lexeme, *last_lexeme = 0;
   LexerLine parm;
   ActionNode* action;
   int state = 0;
-  ParserContext& ctx = parser.getContext();
+  ExpressionEvaluator exprEval(context);
+  AssignmentEvaluator assignEval(context, exprEval);
 
   parm.clearLexemes();
 
@@ -16,16 +18,16 @@ bool ForStatementStrategy::parseStatement(Parser& parser, LexerLine* statement) 
       case 0: {
         if (next_lexeme->isKeyword("TO")) {
           parm.setLexemeBOF();
-          if (!parser.evalAssignmentTokens(&parm)) {
-            ctx.error_message = "FOR command without a valid assignment";
-            ctx.eval_expr_error = true;
+          if (!assignEval.evaluate(&parm)) {
+            context.error_message = "FOR command without a valid assignment";
+            context.eval_expr_error = true;
             return false;
           }
 
           parm.clearLexemes();
 
           action = new ActionNode(next_lexeme);
-          parser.pushActionNodeRoot(action);
+          context.pushActionRoot(action);
 
           last_lexeme = next_lexeme;
 
@@ -39,23 +41,23 @@ bool ForStatementStrategy::parseStatement(Parser& parser, LexerLine* statement) 
       case 1: {
         if (next_lexeme->isKeyword("STEP")) {
           if (last_lexeme->value != "TO") {
-            ctx.error_message = "STEP without a TO clausule";
-            ctx.eval_expr_error = true;
+            context.error_message = "STEP without a TO clausule";
+            context.eval_expr_error = true;
             return false;
           }
 
           parm.setLexemeBOF();
-          if (!parser.evalExpressionTokens(&parm)) {
-            ctx.error_message = "FOR with an invalid TO/STEP";
-            ctx.eval_expr_error = true;
+          if (!evaluateExpression(context, &parm)) {
+            context.error_message = "FOR with an invalid TO/STEP";
+            context.eval_expr_error = true;
             return false;
           }
 
           parm.clearLexemes();
-          parser.popActionNodeRoot();
+          context.popActionRoot();
 
           action = new ActionNode(next_lexeme);
-          parser.pushActionNodeRoot(action);
+          context.pushActionRoot(action);
 
           last_lexeme = next_lexeme;
 
@@ -72,31 +74,30 @@ bool ForStatementStrategy::parseStatement(Parser& parser, LexerLine* statement) 
 
   if (parm.getLexemeCount() && last_lexeme) {
     if (last_lexeme->value != "TO" && last_lexeme->value != "STEP") {
-      ctx.error_message = "FOR command without a TO/STEP complement.";
-      ctx.eval_expr_error = true;
+      context.error_message = "FOR command without a TO/STEP complement.";
+      context.eval_expr_error = true;
       return false;
     }
 
     parm.setLexemeBOF();
-    if (!parser.evalExpressionTokens(&parm)) {
-      ctx.error_message = "FOR with an invalid TO/STEP";
-      ctx.eval_expr_error = true;
+    if (!evaluateExpression(context, &parm)) {
+      context.error_message = "FOR with an invalid TO/STEP";
+      context.eval_expr_error = true;
       return false;
     }
 
-    parser.popActionNodeRoot();
+    context.popActionRoot();
     parm.clearLexemes();
 
   } else {
-    ctx.error_message = "Invalid FOR statement (empty)";
+    context.error_message = "Invalid FOR statement (empty)";
     return false;
   }
 
   return true;
 }
 
-bool ForStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                   Lexeme* lexeme) {
+bool ForStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
   (void)lexeme;
-  return parseStatement(parser, statement);
+  return parseStatement(context, statement);
 }

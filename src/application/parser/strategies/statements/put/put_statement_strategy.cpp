@@ -2,31 +2,30 @@
 
 #include "parser.h"
 
-bool PutStatementStrategy::parsePutSprite(Parser& parser, LexerLine* statement) {
+bool PutStatementStrategy::parsePutSprite(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;
   ActionNode *action, *act_coord;
   LexerLine parm;
   int state = 0, sepCount = 0;
-  ParserContext& ctx = parser.getContext();
 
   act_coord = new ActionNode("COORD");
 
   parm.clearLexemes();
 
   while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = parser.coalesceLexeme(next_lexeme);
+    next_lexeme = context.coalesceSymbols(next_lexeme);
 
     switch (state) {
       case 0: {
         if (next_lexeme->isSeparator(",")) {
           if (parm.getLexemeCount()) {
             parm.setLexemeBOF();
-            if (!parser.evalExpressionTokens(&parm)) {
+            if (!evaluateExpression(context, &parm)) {
               return false;
             }
             parm.clearLexemes();
           } else {
-            parser.pushActionFromLexemeNode(ctx.lex_null);
+            context.pushActionFromLexeme(context.lex_null);
           }
           state = 1;
           continue;
@@ -36,28 +35,28 @@ bool PutStatementStrategy::parsePutSprite(Parser& parser, LexerLine* statement) 
       case 1: {
         if (next_lexeme->isKeyword("STEP")) {
           action = new ActionNode(next_lexeme);
-          parser.pushActionNodeRoot(action);
+          context.pushActionRoot(action);
           continue;
         } else if (next_lexeme->isSeparator("(")) {
           state = 2;
-          if (ctx.actionRoot) {
-            if (ctx.actionRoot->lexeme) {
-              if (ctx.actionRoot->lexeme->value != "STEP") {
-                parser.pushActionNodeRoot(act_coord);
+          if (context.actionRoot) {
+            if (context.actionRoot->lexeme) {
+              if (context.actionRoot->lexeme->value != "STEP") {
+                context.pushActionRoot(act_coord);
               }
             }
           }
           continue;
         } else if (next_lexeme->isSeparator(",")) {
           state = 3;
-          parser.pushActionNodeRoot(act_coord);
-          parser.pushActionFromLexemeNode(ctx.lex_null);
-          parser.pushActionFromLexemeNode(ctx.lex_null);
-          parser.popActionNodeRoot();
+          context.pushActionRoot(act_coord);
+          context.pushActionFromLexeme(context.lex_null);
+          context.pushActionFromLexeme(context.lex_null);
+          context.popActionRoot();
           continue;
         } else {
-          ctx.error_message = "PUT SPRITE without a valid complement.";
-          ctx.eval_expr_error = true;
+          context.error_message = "PUT SPRITE without a valid complement.";
+          context.eval_expr_error = true;
           return false;
         }
       } break;
@@ -72,19 +71,19 @@ bool PutStatementStrategy::parsePutSprite(Parser& parser, LexerLine* statement) 
             state = 3;
             if (parm.getLexemeCount()) {
               parm.setLexemeBOF();
-              if (!parser.evalExpressionTokens(&parm)) {
+              if (!evaluateExpression(context, &parm)) {
                 return false;
               }
               parm.clearLexemes();
             } else {
-              if (ctx.actionRoot) {
-                parser.pushActionFromLexemeNode(ctx.lex_null);
-                if (ctx.actionRoot->actions.size() == 1) {
-                  parser.pushActionFromLexemeNode(ctx.lex_null);
+              if (context.actionRoot) {
+                context.pushActionFromLexeme(context.lex_null);
+                if (context.actionRoot->actions.size() == 1) {
+                  context.pushActionFromLexeme(context.lex_null);
                 }
               }
             }
-            parser.popActionNodeRoot();
+            context.popActionRoot();
             next_lexeme = statement->getNextLexeme();
             if (next_lexeme) {
               if (next_lexeme->type != Lexeme::type_separator ||
@@ -97,12 +96,12 @@ bool PutStatementStrategy::parsePutSprite(Parser& parser, LexerLine* statement) 
         } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
           if (parm.getLexemeCount()) {
             parm.setLexemeBOF();
-            if (!parser.evalExpressionTokens(&parm)) {
+            if (!evaluateExpression(context, &parm)) {
               return false;
             }
             parm.clearLexemes();
           } else {
-            parser.pushActionFromLexemeNode(ctx.lex_null);
+            context.pushActionFromLexeme(context.lex_null);
           }
           continue;
         }
@@ -117,12 +116,12 @@ bool PutStatementStrategy::parsePutSprite(Parser& parser, LexerLine* statement) 
         } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
           if (parm.getLexemeCount()) {
             parm.setLexemeBOF();
-            if (!parser.evalExpressionTokens(&parm)) {
+            if (!evaluateExpression(context, &parm)) {
               return false;
             }
             parm.clearLexemes();
           } else {
-            parser.pushActionFromLexemeNode(ctx.lex_null);
+            context.pushActionFromLexeme(context.lex_null);
           }
           continue;
         }
@@ -135,7 +134,7 @@ bool PutStatementStrategy::parsePutSprite(Parser& parser, LexerLine* statement) 
 
   if (parm.getLexemeCount()) {
     parm.setLexemeBOF();
-    if (!parser.evalExpressionTokens(&parm)) {
+    if (!evaluateExpression(context, &parm)) {
       return false;
     }
 
@@ -145,31 +144,30 @@ bool PutStatementStrategy::parsePutSprite(Parser& parser, LexerLine* statement) 
   return true;
 }
 
-bool PutStatementStrategy::parsePutTile(Parser& parser, LexerLine* statement) {
+bool PutStatementStrategy::parsePutTile(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;
   ActionNode *action, *act_coord;
   LexerLine parm;
   int state = 0, sepCount = 0;
-  ParserContext& ctx = parser.getContext();
 
   act_coord = new ActionNode("COORD");
 
   parm.clearLexemes();
 
   while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = parser.coalesceLexeme(next_lexeme);
+    next_lexeme = context.coalesceSymbols(next_lexeme);
 
     switch (state) {
       case 0: {
         if (next_lexeme->isSeparator(",")) {
           if (parm.getLexemeCount()) {
             parm.setLexemeBOF();
-            if (!parser.evalExpressionTokens(&parm)) {
+            if (!evaluateExpression(context, &parm)) {
               return false;
             }
             parm.clearLexemes();
           } else {
-            parser.pushActionFromLexemeNode(ctx.lex_null);
+            context.pushActionFromLexeme(context.lex_null);
           }
           state = 1;
           continue;
@@ -179,28 +177,28 @@ bool PutStatementStrategy::parsePutTile(Parser& parser, LexerLine* statement) {
       case 1: {
         if (next_lexeme->isKeyword("STEP")) {
           action = new ActionNode(next_lexeme);
-          parser.pushActionNodeRoot(action);
+          context.pushActionRoot(action);
           continue;
         } else if (next_lexeme->isSeparator("(")) {
           state = 2;
-          if (ctx.actionRoot) {
-            if (ctx.actionRoot->lexeme) {
-              if (ctx.actionRoot->lexeme->value != "STEP") {
-                parser.pushActionNodeRoot(act_coord);
+          if (context.actionRoot) {
+            if (context.actionRoot->lexeme) {
+              if (context.actionRoot->lexeme->value != "STEP") {
+                context.pushActionRoot(act_coord);
               }
             }
           }
           continue;
         } else if (next_lexeme->isSeparator(",")) {
           state = 3;
-          parser.pushActionNodeRoot(act_coord);
-          parser.pushActionFromLexemeNode(ctx.lex_null);
-          parser.pushActionFromLexemeNode(ctx.lex_null);
-          parser.popActionNodeRoot();
+          context.pushActionRoot(act_coord);
+          context.pushActionFromLexeme(context.lex_null);
+          context.pushActionFromLexeme(context.lex_null);
+          context.popActionRoot();
           continue;
         } else {
-          ctx.error_message = "PUT TILE without a valid complement.";
-          ctx.eval_expr_error = true;
+          context.error_message = "PUT TILE without a valid complement.";
+          context.eval_expr_error = true;
           return false;
         }
       } break;
@@ -215,19 +213,19 @@ bool PutStatementStrategy::parsePutTile(Parser& parser, LexerLine* statement) {
             state = 3;
             if (parm.getLexemeCount()) {
               parm.setLexemeBOF();
-              if (!parser.evalExpressionTokens(&parm)) {
+              if (!evaluateExpression(context, &parm)) {
                 return false;
               }
               parm.clearLexemes();
             } else {
-              if (ctx.actionRoot) {
-                parser.pushActionFromLexemeNode(ctx.lex_null);
-                if (ctx.actionRoot->actions.size() == 1) {
-                  parser.pushActionFromLexemeNode(ctx.lex_null);
+              if (context.actionRoot) {
+                context.pushActionFromLexeme(context.lex_null);
+                if (context.actionRoot->actions.size() == 1) {
+                  context.pushActionFromLexeme(context.lex_null);
                 }
               }
             }
-            parser.popActionNodeRoot();
+            context.popActionRoot();
             next_lexeme = statement->getNextLexeme();
             if (next_lexeme) {
               if (next_lexeme->type != Lexeme::type_separator ||
@@ -240,12 +238,12 @@ bool PutStatementStrategy::parsePutTile(Parser& parser, LexerLine* statement) {
         } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
           if (parm.getLexemeCount()) {
             parm.setLexemeBOF();
-            if (!parser.evalExpressionTokens(&parm)) {
+            if (!evaluateExpression(context, &parm)) {
               return false;
             }
             parm.clearLexemes();
           } else {
-            parser.pushActionFromLexemeNode(ctx.lex_null);
+            context.pushActionFromLexeme(context.lex_null);
           }
           continue;
         }
@@ -260,12 +258,12 @@ bool PutStatementStrategy::parsePutTile(Parser& parser, LexerLine* statement) {
         } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
           if (parm.getLexemeCount()) {
             parm.setLexemeBOF();
-            if (!parser.evalExpressionTokens(&parm)) {
+            if (!evaluateExpression(context, &parm)) {
               return false;
             }
             parm.clearLexemes();
           } else {
-            parser.pushActionFromLexemeNode(ctx.lex_null);
+            context.pushActionFromLexeme(context.lex_null);
           }
           continue;
         }
@@ -278,7 +276,7 @@ bool PutStatementStrategy::parsePutTile(Parser& parser, LexerLine* statement) {
 
   if (parm.getLexemeCount()) {
     parm.setLexemeBOF();
-    if (!parser.evalExpressionTokens(&parm)) {
+    if (!evaluateExpression(context, &parm)) {
       return false;
     }
 
@@ -288,33 +286,32 @@ bool PutStatementStrategy::parsePutTile(Parser& parser, LexerLine* statement) {
   return true;
 }
 
-bool PutStatementStrategy::parseStatement(Parser& parser, LexerLine* statement) {
+bool PutStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;
   ActionNode* action;
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = parser.coalesceLexeme(next_lexeme);
+    next_lexeme = context.coalesceSymbols(next_lexeme);
 
     if (next_lexeme->type == Lexeme::type_keyword) {
       action = new ActionNode(next_lexeme);
-      parser.pushActionNodeRoot(action);
+      context.pushActionRoot(action);
 
       if (next_lexeme->value == "SPRITE") {
-        result = parsePutSprite(parser, statement);
+        result = parsePutSprite(context, statement);
       } else if (next_lexeme->value == "TILE") {
-        result = parsePutTile(parser, statement);
+        result = parsePutTile(context, statement);
       }
 
-      parser.popActionNodeRoot();
+      context.popActionRoot();
     }
   }
 
   return result;
 }
 
-bool PutStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                   Lexeme* lexeme) {
+bool PutStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
   (void)lexeme;
-  return parseStatement(parser, statement);
+  return parseStatement(context, statement);
 }

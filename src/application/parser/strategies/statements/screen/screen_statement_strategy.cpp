@@ -3,18 +3,17 @@
 #include "generic_statement_strategy.h"
 #include "parser.h"
 
-bool ScreenStatementStrategy::parseScreenCopy(Parser& parser,
-                                              LexerLine* statement) {
+bool ScreenStatementStrategy::parseScreenCopy(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme = statement->getCurrentLexeme();
   LexerLine parm;
   int state = 0;
   bool result = false;
 
-  parser.pushActionFromLexemeNode(next_lexeme);
+  context.pushActionFromLexeme(next_lexeme);
   parm.clearLexemes();
 
   while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = parser.coalesceLexeme(next_lexeme);
+    next_lexeme = context.coalesceSymbols(next_lexeme);
 
     switch (state) {
       case 0: {
@@ -30,7 +29,7 @@ bool ScreenStatementStrategy::parseScreenCopy(Parser& parser,
         if (next_lexeme->isKeyword("SCROLL")) {
           if (parm.getLexemeCount()) {
             parm.setLexemeBOF();
-            if (!parser.evalExpressionTokens(&parm)) {
+            if (!evaluateExpression(context, &parm)) {
               return false;
             }
             parm.clearLexemes();
@@ -48,105 +47,98 @@ bool ScreenStatementStrategy::parseScreenCopy(Parser& parser,
 
   if (parm.getLexemeCount()) {
     parm.setLexemeBOF();
-    if (!parser.evalExpressionTokens(&parm)) {
+    if (!evaluateExpression(context, &parm)) {
       return false;
     }
 
     result = true;
   }
 
-  parser.popActionNodeRoot();
+  context.popActionRoot();
   return result;
 }
 
-bool ScreenStatementStrategy::parseScreenPaste(Parser& parser,
-                                               LexerLine* statement) {
+bool ScreenStatementStrategy::parseScreenPaste(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme = statement->getCurrentLexeme();
   bool result = false;
 
-  parser.pushActionFromLexemeNode(next_lexeme);
+  context.pushActionFromLexeme(next_lexeme);
 
   if ((next_lexeme = statement->getNextLexeme())) {
     if (next_lexeme->isKeyword("FROM")) {
       GenericStatementStrategy genericStrategy;
-      result = genericStrategy.parseStatement(parser, statement);
+      result = genericStrategy.parseStatement(context, statement);
     }
   }
 
-  parser.popActionNodeRoot();
+  context.popActionRoot();
   return result;
 }
 
-bool ScreenStatementStrategy::parseScreenScroll(Parser& parser,
-                                                LexerLine* statement) {
+bool ScreenStatementStrategy::parseScreenScroll(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme = statement->getCurrentLexeme();
   bool result;
 
-  parser.pushActionFromLexemeNode(next_lexeme);
+  context.pushActionFromLexeme(next_lexeme);
   GenericStatementStrategy genericStrategy;
-  result = genericStrategy.parseStatement(parser, statement);
-  parser.popActionNodeRoot();
+  result = genericStrategy.parseStatement(context, statement);
+  context.popActionRoot();
 
   return result;
 }
 
-bool ScreenStatementStrategy::parseScreenLoad(Parser& parser,
-                                              LexerLine* statement) {
+bool ScreenStatementStrategy::parseScreenLoad(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme = statement->getCurrentLexeme();
   bool result;
 
-  parser.pushActionFromLexemeNode(next_lexeme);
+  context.pushActionFromLexeme(next_lexeme);
   GenericStatementStrategy genericStrategy;
-  result = genericStrategy.parseStatement(parser, statement);
-  parser.popActionNodeRoot();
+  result = genericStrategy.parseStatement(context, statement);
+  context.popActionRoot();
 
   return result;
 }
 
-bool ScreenStatementStrategy::parseScreenOn(Parser& parser,
-                                            LexerLine* statement) {
+bool ScreenStatementStrategy::parseScreenOn(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme = statement->getCurrentLexeme();
-  parser.pushActionFromLexemeNode(next_lexeme);
-  parser.popActionNodeRoot();
+  context.pushActionFromLexeme(next_lexeme);
+  context.popActionRoot();
   return true;
 }
 
-bool ScreenStatementStrategy::parseScreenOff(Parser& parser,
-                                             LexerLine* statement) {
-  return parseScreenOn(parser, statement);
+bool ScreenStatementStrategy::parseScreenOff(ParserContext& context, LexerLine* statement) {
+  return parseScreenOn(context, statement);
 }
 
-bool ScreenStatementStrategy::parseStatement(Parser& parser,
-                                             LexerLine* statement) {
+bool ScreenStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;
 
   if ((next_lexeme = statement->getNextLexeme())) {
     if (next_lexeme->type == Lexeme::type_keyword) {
       if (next_lexeme->value == "COPY") {
-        return parseScreenCopy(parser, statement);
+        return parseScreenCopy(context, statement);
       } else if (next_lexeme->value == "PASTE") {
-        return parseScreenPaste(parser, statement);
+        return parseScreenPaste(context, statement);
       } else if (next_lexeme->value == "SCROLL") {
-        return parseScreenScroll(parser, statement);
+        return parseScreenScroll(context, statement);
       } else if (next_lexeme->value == "LOAD") {
-        return parseScreenLoad(parser, statement);
+        return parseScreenLoad(context, statement);
       } else if (next_lexeme->value == "ON") {
-        return parseScreenOn(parser, statement);
+        return parseScreenOn(context, statement);
       } else if (next_lexeme->value == "OFF") {
-        return parseScreenOff(parser, statement);
+        return parseScreenOff(context, statement);
       }
     }
 
     statement->getPreviousLexeme();
     GenericStatementStrategy genericStrategy;
-    return genericStrategy.parseStatement(parser, statement);
+    return genericStrategy.parseStatement(context, statement);
   }
 
   return false;
 }
 
-bool ScreenStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                      Lexeme* lexeme) {
+bool ScreenStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
   (void)lexeme;
-  return parseStatement(parser, statement);
+  return parseStatement(context, statement);
 }

@@ -5,10 +5,10 @@
 
 class GetStatementStrategy : public IParserStatementStrategy {
  public:
-  bool parseGetTile(Parser& parser, LexerLine* statement);
-  bool parseGetSprite(Parser& parser, LexerLine* statement);
-  bool parseStatement(Parser& parser, LexerLine* statement);
-  bool execute(Parser& parser, LexerLine* statement, Lexeme* lexeme) override;
+  bool parseGetTile(ParserContext& context, LexerLine* statement);
+  bool parseGetSprite(ParserContext& context, LexerLine* statement);
+  bool parseStatement(ParserContext& context, LexerLine* statement);
+  bool execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) override;
 };
 
 #endif  // GET_STATEMENT_STRATEGY_H_INCLUDED

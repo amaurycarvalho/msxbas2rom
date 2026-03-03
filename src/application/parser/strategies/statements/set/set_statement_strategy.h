@@ -5,13 +5,13 @@
 
 class SetStatementStrategy : public IParserStatementStrategy {
  public:
-  bool parseSetAdjust(Parser& parser, LexerLine* statement);
-  bool parseSetTile(Parser& parser, LexerLine* statement);
-  bool parseSetTileColpat(Parser& parser, LexerLine* statement);
-  bool parseSetSprite(Parser& parser, LexerLine* statement);
-  bool parseSetSpriteColpattra(Parser& parser, LexerLine* statement);
-  bool parseStatement(Parser& parser, LexerLine* statement);
-  bool execute(Parser& parser, LexerLine* statement, Lexeme* lexeme) override;
+  bool parseSetAdjust(ParserContext& context, LexerLine* statement);
+  bool parseSetTile(ParserContext& context, LexerLine* statement);
+  bool parseSetTileColpat(ParserContext& context, LexerLine* statement);
+  bool parseSetSprite(ParserContext& context, LexerLine* statement);
+  bool parseSetSpriteColpattra(ParserContext& context, LexerLine* statement);
+  bool parseStatement(ParserContext& context, LexerLine* statement);
+  bool execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) override;
 };
 
 #endif  // SET_STATEMENT_STRATEGY_H_INCLUDED

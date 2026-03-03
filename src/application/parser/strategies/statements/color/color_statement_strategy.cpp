@@ -3,7 +3,7 @@
 #include "generic_statement_strategy.h"
 #include "parser.h"
 
-bool ColorStatementStrategy::parseColorRgb(Parser& parser, LexerLine* statement) {
+bool ColorStatementStrategy::parseColorRgb(ParserContext& context, LexerLine* statement) {
   Lexeme *next_lexeme, *lex_rgb;
   LexerLine parm;
   int state = 0, sepCount = 0;
@@ -13,7 +13,7 @@ bool ColorStatementStrategy::parseColorRgb(Parser& parser, LexerLine* statement)
       case 0: {
         if (next_lexeme->isSeparator("(")) {
           lex_rgb = new Lexeme(Lexeme::type_keyword, Lexeme::subtype_any, "RGB");
-          parser.pushActionFromLexemeNode(lex_rgb);
+          context.pushActionFromLexeme(lex_rgb);
 
           state++;
           sepCount++;
@@ -21,7 +21,7 @@ bool ColorStatementStrategy::parseColorRgb(Parser& parser, LexerLine* statement)
 
         } else if (next_lexeme->isKeyword("NEW") ||
                    next_lexeme->isKeyword("RESTORE")) {
-          parser.pushActionFromLexemeNode(next_lexeme);
+          context.pushActionFromLexeme(next_lexeme);
           return true;
 
         } else
@@ -38,18 +38,18 @@ bool ColorStatementStrategy::parseColorRgb(Parser& parser, LexerLine* statement)
 
         if (next_lexeme->isSeparator(")") && sepCount == 0) {
           parm.setLexemeBOF();
-          if (!parser.evalExpressionTokens(&parm)) {
+          if (!evaluateExpression(context, &parm)) {
             return false;
           }
           parm.clearLexemes();
 
-          parser.popActionNodeRoot();
+          context.popActionRoot();
 
           return true;
 
         } else if (next_lexeme->isSeparator(",")) {
           parm.setLexemeBOF();
-          if (!parser.evalExpressionTokens(&parm)) {
+          if (!evaluateExpression(context, &parm)) {
             return false;
           }
           parm.clearLexemes();
@@ -65,8 +65,7 @@ bool ColorStatementStrategy::parseColorRgb(Parser& parser, LexerLine* statement)
   return false;
 }
 
-bool ColorStatementStrategy::parseColorSprite(Parser& parser,
-                                              LexerLine* statement) {
+bool ColorStatementStrategy::parseColorSprite(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;
   LexerLine parm;
   int state = 0, sepCount = 0;
@@ -74,7 +73,7 @@ bool ColorStatementStrategy::parseColorSprite(Parser& parser,
   next_lexeme = statement->getCurrentLexeme();
   if (!next_lexeme) return false;
 
-  parser.pushActionFromLexemeNode(next_lexeme);
+  context.pushActionFromLexeme(next_lexeme);
 
   while ((next_lexeme = statement->getNextLexeme())) {
     if (state == 0) {
@@ -94,7 +93,7 @@ bool ColorStatementStrategy::parseColorSprite(Parser& parser,
 
       if (next_lexeme->isSeparator(")") && sepCount == 0) {
         parm.setLexemeBOF();
-        if (!parser.evalExpressionTokens(&parm)) {
+        if (!evaluateExpression(context, &parm)) {
           return false;
         }
         parm.clearLexemes();
@@ -121,7 +120,7 @@ bool ColorStatementStrategy::parseColorSprite(Parser& parser,
 
   if (parm.getLexemeCount()) {
     parm.setLexemeBOF();
-    if (!parser.evalExpressionTokens(&parm)) {
+    if (!evaluateExpression(context, &parm)) {
       return false;
     }
   } else
@@ -130,32 +129,29 @@ bool ColorStatementStrategy::parseColorSprite(Parser& parser,
   return true;
 }
 
-bool ColorStatementStrategy::parseStatement(Parser& parser,
-                                            LexerLine* statement) {
+bool ColorStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme = statement->getNextLexeme();
-  ParserContext& ctx = parser.getContext();
 
   if (next_lexeme) {
     if (next_lexeme->isOperator("=")) {
-      return parseColorRgb(parser, statement);
+      return parseColorRgb(context, statement);
     } else if (next_lexeme->isKeyword("SPRITE")) {
-      return parseColorSprite(parser, statement);
+      return parseColorSprite(context, statement);
     } else if (next_lexeme->isKeyword("SPRITE$")) {
-      return parseColorSprite(parser, statement);
+      return parseColorSprite(context, statement);
     } else {
       statement->getPreviousLexeme();
       GenericStatementStrategy genericStrategy;
-      return genericStrategy.parseStatement(parser, statement);
+      return genericStrategy.parseStatement(context, statement);
     }
   } else {
-    ctx.error_message = "Invalid COLOR statement";
+    context.error_message = "Invalid COLOR statement";
   }
 
   return false;
 }
 
-bool ColorStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                     Lexeme* lexeme) {
+bool ColorStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
   (void)lexeme;
-  return parseStatement(parser, statement);
+  return parseStatement(context, statement);
 }

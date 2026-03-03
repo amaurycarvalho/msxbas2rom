@@ -3,22 +3,23 @@
 #include "lexer.h"
 #include "parser.h"
 
-bool CallStatementStrategy::parseCall(Parser& parser, LexerLine* statement) {
+bool CallStatementStrategy::parseCall(ParserContext& context,
+                                      LexerLine* statement) {
+  (void)context;
   Lexeme* next_lexeme;
 
   while ((next_lexeme = statement->getNextLexeme())) {
-    parser.pushActionFromLexemeNode(next_lexeme);
+    context.pushActionFromLexeme(next_lexeme);
   }
 
   return true;
 }
 
-bool CallStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                    Lexeme* lexeme) {
+bool CallStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
   if (lexeme->value == "_") {
     lexeme->value = "CALL";
     lexeme->name = lexeme->value;
   }
 
-  return parseCall(parser, statement);
+  return parseCall(context, statement);
 }

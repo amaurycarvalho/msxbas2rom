@@ -22,8 +22,8 @@
 #include "build_options.h"
 #include "expression_evaluator.h"
 #include "fswrapper.h"
-#include "include_loader.h"
 #include "i_parser_processor.h"
+#include "include_loader.h"
 #include "lexer.h"
 #include "parser_context.h"
 #include "parser_statement_strategy_factory.h"
@@ -105,46 +105,11 @@ class Parser : public IParserProcessor {
   BuildOptions* opts;
 
   /***
-   * @brief Parser context getter for strategies use
-   * @return context object
-   */
-  ParserContext& getContext();
-  const ParserContext& getContext() const;
-
-  /***
    * @brief Perform a full syntatic analysis on the tags list
    * @return True, if syntatic analysis success
    */
   bool evaluate(Lexer* lexer);
-
-  /***
-   * @brief Phrase syntatic analysis
-   * @note Check if the current phrase it's a statement, expression or
-   * assignment
-   * @return True, if syntatic analysis success
-   */
-  bool evalPhraseTokens(LexerLine* phrase);
-
-  /***
-   * @brief Expressions syntatic analysis
-   * @return True, if syntatic analysis success
-   */
-  bool evalExpressionTokens(LexerLine* expression);
-
-  /***
-   * @brief Assignments syntatic analysis
-   * @return True, if syntatic analysis success
-   */
-  bool evalAssignmentTokens(LexerLine* assignment);
   bool processLine(LexerLine* line) override;
-
-  //! Lexeme/Action auxiliary methods
-
-  int gfxOperatorFromLexeme(Lexeme* lexeme);
-  Lexeme* coalesceLexeme(Lexeme* lexeme);
-  void pushActionNodeRoot(ActionNode* action);
-  ActionNode* pushActionFromLexemeNode(Lexeme* lexeme);
-  void popActionNodeRoot();
 
   /***
    * @brief Return all tags and it's syntax tree as a string

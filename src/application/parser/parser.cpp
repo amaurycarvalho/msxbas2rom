@@ -63,48 +63,8 @@ Parser::Parser()
 
 Parser::~Parser() {}
 
-ParserContext& Parser::getContext() {
-  return ctx;
-}
-
-const ParserContext& Parser::getContext() const {
-  return ctx;
-}
-
-Lexeme* Parser::coalesceLexeme(Lexeme* lexeme) {
-  return ctx.coalesceSymbols(lexeme);
-}
-
-bool Parser::evalPhraseTokens(LexerLine* phrase) {
-  return eval_phrase(phrase);
-}
-
-bool Parser::evalExpressionTokens(LexerLine* expression) {
-  return exprEval.evaluate(expression);
-}
-
-bool Parser::evalAssignmentTokens(LexerLine* assignment) {
-  return assignEval.evaluate(assignment);
-}
-
 bool Parser::processLine(LexerLine* line) {
   return eval_line(line);
-}
-
-int Parser::gfxOperatorFromLexeme(Lexeme* lexeme) {
-  return ctx.gfxOperatorCode(lexeme);
-}
-
-void Parser::pushActionNodeRoot(ActionNode* action) {
-  ctx.pushActionRoot(action);
-}
-
-ActionNode* Parser::pushActionFromLexemeNode(Lexeme* lexeme) {
-  return ctx.pushActionFromLexeme(lexeme);
-}
-
-void Parser::popActionNodeRoot() {
-  ctx.popActionRoot();
 }
 
 bool Parser::evaluate(Lexer* lexer) {
@@ -256,7 +216,7 @@ bool Parser::eval_statement(LexerLine* statement) {
 
     strategy = statementStrategyFactory.getStrategyByKeyword(lexeme->value);
     if (strategy) {
-      result = strategy->execute(*this, statement, lexeme);
+      result = strategy->execute(ctx, statement, lexeme);
       if (lexeme->value == "IF") return result;
     } else {
       ctx.error_message = "Invalid keyword / identifier";

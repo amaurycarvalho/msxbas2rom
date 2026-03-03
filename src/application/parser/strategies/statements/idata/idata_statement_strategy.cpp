@@ -3,8 +3,7 @@
 #include "lexer.h"
 #include "parser.h"
 
-bool IDataStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                     Lexeme* lexeme) {
+bool IDataStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
   (void)lexeme;
-  return parseData(parser, statement, true);
+  return parseData(context, statement, true);
 }

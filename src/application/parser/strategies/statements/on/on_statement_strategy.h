@@ -5,21 +5,21 @@
 
 class OnStatementStrategy : public IParserStatementStrategy {
  public:
-  bool parseOn(Parser& parser, LexerLine* statement);
-  bool parseOnGotoGosub(Parser& parser, LexerLine* statement);
-  bool parseOnError(Parser& parser, LexerLine* statement);
-  bool parseOnInterval(Parser& parser, LexerLine* statement);
-  bool parseOnKey(Parser& parser, LexerLine* statement);
-  bool parseOnSprite(Parser& parser, LexerLine* statement);
-  bool parseOnStop(Parser& parser, LexerLine* statement);
-  bool parseOnStrig(Parser& parser, LexerLine* statement);
+  bool parseOn(ParserContext& context, LexerLine* statement);
+  bool parseOnGotoGosub(ParserContext& context, LexerLine* statement);
+  bool parseOnError(ParserContext& context, LexerLine* statement);
+  bool parseOnInterval(ParserContext& context, LexerLine* statement);
+  bool parseOnKey(ParserContext& context, LexerLine* statement);
+  bool parseOnSprite(ParserContext& context, LexerLine* statement);
+  bool parseOnStop(ParserContext& context, LexerLine* statement);
+  bool parseOnStrig(ParserContext& context, LexerLine* statement);
 
-  bool parseInterval(Parser& parser, LexerLine* statement);
-  bool parseStop(Parser& parser, LexerLine* statement);
-  bool parseKey(Parser& parser, LexerLine* statement);
-  bool parseStrig(Parser& parser, LexerLine* statement);
+  bool parseInterval(ParserContext& context, LexerLine* statement);
+  bool parseStop(ParserContext& context, LexerLine* statement);
+  bool parseKey(ParserContext& context, LexerLine* statement);
+  bool parseStrig(ParserContext& context, LexerLine* statement);
 
-  bool execute(Parser& parser, LexerLine* statement, Lexeme* lexeme) override;
+  bool execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) override;
 };
 
 #endif  // ON_STATEMENT_STRATEGY_H_INCLUDED

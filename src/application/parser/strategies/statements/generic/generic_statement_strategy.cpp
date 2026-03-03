@@ -2,14 +2,13 @@
 
 #include "parser.h"
 
-bool GenericStatementStrategy::parseStatement(Parser& parser,
-                                              LexerLine* statement) {
+bool GenericStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;
   LexerLine parm;
   int sepcount = 0;
 
   while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = parser.coalesceLexeme(next_lexeme);
+    next_lexeme = context.coalesceSymbols(next_lexeme);
 
     if (next_lexeme->isSeparator("(")) {
       sepcount++;
@@ -20,13 +19,13 @@ bool GenericStatementStrategy::parseStatement(Parser& parser,
                sepcount == 0) {
       if (parm.getLexemeCount()) {
         parm.setLexemeBOF();
-        if (!parser.evalExpressionTokens(&parm)) {
+        if (!evaluateExpression(context, &parm)) {
           return false;
         }
         parm.clearLexemes();
       } else {
-        next_lexeme = parser.getContext().lex_null;
-        parser.pushActionFromLexemeNode(next_lexeme);
+        next_lexeme = context.lex_null;
+        context.pushActionFromLexeme(next_lexeme);
       }
 
       continue;
@@ -39,7 +38,7 @@ bool GenericStatementStrategy::parseStatement(Parser& parser,
 
   if (parm.getLexemeCount()) {
     parm.setLexemeBOF();
-    if (!parser.evalExpressionTokens(&parm)) {
+    if (!evaluateExpression(context, &parm)) {
       return false;
     }
   }
@@ -47,12 +46,10 @@ bool GenericStatementStrategy::parseStatement(Parser& parser,
   return true;
 }
 
-bool GenericStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                       Lexeme* lexeme) {
-  ParserContext& ctx = parser.getContext();
+bool GenericStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
 
-  if (lexeme->value == "BLOAD") ctx.resourceCount++;
-  if (lexeme->value == "PLAY") ctx.has_play = true;
+  if (lexeme->value == "BLOAD") context.resourceCount++;
+  if (lexeme->value == "PLAY") context.has_play = true;
 
-  return parseStatement(parser, statement);
+  return parseStatement(context, statement);
 }

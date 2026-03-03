@@ -3,18 +3,14 @@
 #include "let_statement_strategy.h"
 #include "parser.h"
 
-bool TimeStatementStrategy::parseStatement(Parser& parser,
-                                           LexerLine* statement) {
+bool TimeStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
   LetStatementStrategy letStrategy;
-  return letStrategy.parseStatement(parser, statement);
+  return letStrategy.parseStatement(context, statement);
 }
 
-bool TimeStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                    Lexeme* lexeme) {
+bool TimeStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
   (void)lexeme;
+  context.has_input = true;
 
-  ParserContext& ctx = parser.getContext();
-  ctx.has_input = true;
-
-  return parseStatement(parser, statement);
+  return parseStatement(context, statement);
 }

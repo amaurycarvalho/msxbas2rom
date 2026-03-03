@@ -3,68 +3,65 @@
 #include "generic_statement_strategy.h"
 #include "parser.h"
 
-bool GetStatementStrategy::parseGetTile(Parser& parser, LexerLine* statement) {
-  return parseGetSprite(parser, statement);
+bool GetStatementStrategy::parseGetTile(ParserContext& context, LexerLine* statement) {
+  return parseGetSprite(context, statement);
 }
 
-bool GetStatementStrategy::parseGetSprite(Parser& parser,
-                                          LexerLine* statement) {
+bool GetStatementStrategy::parseGetSprite(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;
   ActionNode* action;
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
-    parser.coalesceLexeme(next_lexeme);
+    context.coalesceSymbols(next_lexeme);
 
     next_lexeme = statement->getCurrentLexeme();
     action = new ActionNode(next_lexeme);
-    parser.pushActionNodeRoot(action);
+    context.pushActionRoot(action);
 
     if (next_lexeme->type == Lexeme::type_keyword) {
       if (next_lexeme->value == "COLOR" || next_lexeme->value == "PATTERN") {
         SetStatementStrategy strategy;
-        return strategy.parseSetSpriteColpattra(parser, statement);
+        return strategy.parseSetSpriteColpattra(context, statement);
       }
     }
 
-    parser.popActionNodeRoot();
+    context.popActionRoot();
   }
 
   return result;
 }
 
-bool GetStatementStrategy::parseStatement(Parser& parser,
-                                          LexerLine* statement) {
+bool GetStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;
   ActionNode* action;
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
-    parser.coalesceLexeme(next_lexeme);
+    context.coalesceSymbols(next_lexeme);
 
     next_lexeme = statement->getCurrentLexeme();
     action = new ActionNode(next_lexeme);
-    parser.pushActionNodeRoot(action);
+    context.pushActionRoot(action);
 
     if (next_lexeme->type == Lexeme::type_keyword) {
       if (next_lexeme->value == "DATE" || next_lexeme->value == "TIME") {
         GenericStatementStrategy genericStrategy;
-        result = genericStrategy.parseStatement(parser, statement);
+        result = genericStrategy.parseStatement(context, statement);
       } else if (next_lexeme->value == "TILE") {
-        result = parseGetTile(parser, statement);
+        result = parseGetTile(context, statement);
       } else if (next_lexeme->value == "SPRITE") {
-        result = parseGetSprite(parser, statement);
+        result = parseGetSprite(context, statement);
       }
     }
 
-    parser.popActionNodeRoot();
+    context.popActionRoot();
   }
 
   return result;
 }
 
-bool GetStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                   Lexeme* lexeme) {
+bool GetStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
   (void)lexeme;
-  return parseStatement(parser, statement);
+  return parseStatement(context, statement);
 }

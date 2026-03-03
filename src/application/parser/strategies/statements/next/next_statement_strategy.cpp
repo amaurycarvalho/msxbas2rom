@@ -2,8 +2,9 @@
 
 #include "parser.h"
 
-bool NextStatementStrategy::parseStatement(Parser& parser, LexerLine* statement) {
-  Lexeme *next_lexeme, *current_lexeme = parser.getContext().actionRoot->lexeme;
+bool NextStatementStrategy::parseStatement(ParserContext& context,
+                                           LexerLine* statement) {
+  Lexeme *next_lexeme, *current_lexeme = context.actionRoot->lexeme;
   ActionNode* action;
   int sepCount = 0;
 
@@ -13,17 +14,16 @@ bool NextStatementStrategy::parseStatement(Parser& parser, LexerLine* statement)
     } else if (next_lexeme->isSeparator(")")) {
       if (sepCount) sepCount--;
     } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
-      parser.popActionNodeRoot();
+      context.popActionRoot();
       action = new ActionNode(current_lexeme);
-      parser.pushActionNodeRoot(action);
+      context.pushActionRoot(action);
     }
   }
 
   return true;
 }
 
-bool NextStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                    Lexeme* lexeme) {
+bool NextStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
   (void)lexeme;
-  return parseStatement(parser, statement);
+  return parseStatement(context, statement);
 }

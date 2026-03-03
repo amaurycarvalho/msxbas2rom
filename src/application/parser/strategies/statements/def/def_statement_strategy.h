@@ -5,11 +5,11 @@
 
 class DefStatementStrategy : public IParserStatementStrategy {
  private:
-  bool parseDefUsr(Parser& parser, LexerLine* statement);
+  bool parseDefUsr(ParserContext& context, LexerLine* statement);
 
  public:
-  bool parseWithType(Parser& parser, LexerLine* statement, int vartype);
-  bool execute(Parser& parser, LexerLine* statement, Lexeme* lexeme) override;
+  bool parseWithType(ParserContext& context, LexerLine* statement, int vartype);
+  bool execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) override;
 };
 
 #endif  // DEF_STATEMENT_STRATEGY_H_INCLUDED

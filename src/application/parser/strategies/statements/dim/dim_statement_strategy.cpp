@@ -3,14 +3,13 @@
 #include "generic_statement_strategy.h"
 #include "parser.h"
 
-bool DimStatementStrategy::parseStatement(Parser& parser, LexerLine* statement) {
-  ParserContext& ctx = parser.getContext();
-  ActionNode *action = ctx.actionRoot, *subaction;
+bool DimStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
+  ActionNode *action = context.actionRoot, *subaction;
   Lexeme* lexeme;
   unsigned int i, t;
 
   GenericStatementStrategy genericStrategy;
-  if (!genericStrategy.parseStatement(parser, statement)) return false;
+  if (!genericStrategy.parseStatement(context, statement)) return false;
 
   t = action->actions.size();
   if (!t) return false;
@@ -21,7 +20,7 @@ bool DimStatementStrategy::parseStatement(Parser& parser, LexerLine* statement) 
     lexeme->isArray = true;
     lexeme->parm_count = subaction->actions.size();
     if (!lexeme->parm_count) {
-      ctx.error_message = "Invalid array declaration: DIM size parameter is missing";
+      context.error_message = "Invalid array declaration: DIM size parameter is missing";
       return false;
     }
   }
@@ -29,8 +28,7 @@ bool DimStatementStrategy::parseStatement(Parser& parser, LexerLine* statement) 
   return true;
 }
 
-bool DimStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                   Lexeme* lexeme) {
+bool DimStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
   (void)lexeme;
-  return parseStatement(parser, statement);
+  return parseStatement(context, statement);
 }

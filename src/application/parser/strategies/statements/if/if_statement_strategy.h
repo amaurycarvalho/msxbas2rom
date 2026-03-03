@@ -5,8 +5,8 @@
 
 class IfStatementStrategy : public IParserStatementStrategy {
  public:
-  bool parseStatement(Parser& parser, LexerLine* statement, int level);
-  bool execute(Parser& parser, LexerLine* statement, Lexeme* lexeme) override;
+  bool parseStatement(ParserContext& context, LexerLine* statement, int level);
+  bool execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) override;
 };
 
 #endif  // IF_STATEMENT_STRATEGY_H_INCLUDED

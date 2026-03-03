@@ -3,9 +3,8 @@
 #include "lexer.h"
 #include "parser.h"
 
-bool NoopStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                    Lexeme* lexeme) {
-  (void)parser;  /// @remark ignore 'variable not used' warning
+bool NoopStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+  (void)context;
   (void)statement;
 
   if (lexeme->value == "'") {

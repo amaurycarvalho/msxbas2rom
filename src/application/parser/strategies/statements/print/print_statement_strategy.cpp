@@ -3,23 +3,22 @@
 #include "lexer.h"
 #include "parser.h"
 
-bool PrintStatementStrategy::parseStatement(Parser& parser, LexerLine* statement) {
+bool PrintStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;
   LexerLine parm;
   ActionNode* action;
   int sepcount = 0, state = 0, i;
   bool print_using = false;
   Lexeme* lex_using[5] = {0, 0, 0, 0, 0};
-  ParserContext& ctx = parser.getContext();
 
   while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = parser.coalesceLexeme(next_lexeme);
+    next_lexeme = context.coalesceSymbols(next_lexeme);
 
     switch (state) {
       case 0: {
         if (next_lexeme->isSeparator("#") && sepcount == 0) {
           state = 1;
-          parser.pushActionFromLexemeNode(next_lexeme);
+          context.pushActionFromLexeme(next_lexeme);
           continue;
         } else if (next_lexeme->isKeyword("USING")) {
           print_using = true;
@@ -38,7 +37,7 @@ bool PrintStatementStrategy::parseStatement(Parser& parser, LexerLine* statement
             }
 
             parm.setLexemeBOF();
-            if (!parser.evalExpressionTokens(&parm)) {
+            if (!evaluateExpression(context, &parm)) {
               return false;
             }
 
@@ -46,7 +45,7 @@ bool PrintStatementStrategy::parseStatement(Parser& parser, LexerLine* statement
           }
 
           action = new ActionNode(next_lexeme);
-          ctx.actionRoot->actions.push_back(action);
+          context.actionRoot->actions.push_back(action);
 
           continue;
         }
@@ -54,8 +53,8 @@ bool PrintStatementStrategy::parseStatement(Parser& parser, LexerLine* statement
 
       case 1: {
         state = 2;
-        parser.pushActionFromLexemeNode(next_lexeme);
-        parser.popActionNodeRoot();
+        context.pushActionFromLexeme(next_lexeme);
+        context.popActionRoot();
         continue;
       } break;
 
@@ -112,7 +111,7 @@ bool PrintStatementStrategy::parseStatement(Parser& parser, LexerLine* statement
       parm.addLexeme(lex_using[4]);
     }
     parm.setLexemeBOF();
-    if (!parser.evalExpressionTokens(&parm)) {
+    if (!evaluateExpression(context, &parm)) {
       return false;
     }
   }
@@ -120,12 +119,11 @@ bool PrintStatementStrategy::parseStatement(Parser& parser, LexerLine* statement
   return true;
 }
 
-bool PrintStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                     Lexeme* lexeme) {
+bool PrintStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
   if (lexeme->value == "?") {
     lexeme->value = "PRINT";
     lexeme->name = lexeme->value;
   }
 
-  return parseStatement(parser, statement);
+  return parseStatement(context, statement);
 }

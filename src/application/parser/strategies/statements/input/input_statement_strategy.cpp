@@ -3,17 +3,14 @@
 #include "print_statement_strategy.h"
 #include "parser.h"
 
-bool InputStatementStrategy::parseStatement(Parser& parser, LexerLine* statement) {
+bool InputStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
   PrintStatementStrategy printStrategy;
-  return printStrategy.parseStatement(parser, statement);
+  return printStrategy.parseStatement(context, statement);
 }
 
-bool InputStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                     Lexeme* lexeme) {
+bool InputStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
   (void)lexeme;
+  context.has_input = true;
 
-  ParserContext& ctx = parser.getContext();
-  ctx.has_input = true;
-
-  return parseStatement(parser, statement);
+  return parseStatement(context, statement);
 }

@@ -4,12 +4,11 @@
 
 #include "parser.h"
 
-bool FileStatementStrategy::parseOpen(Parser& parser, LexerLine* statement) {
+bool FileStatementStrategy::parseOpen(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;
   char* s;
   string stext;
   int state = 0;
-  ParserContext& ctx = parser.getContext();
 
   while ((next_lexeme = statement->getNextLexeme())) {
     switch (state) {
@@ -29,15 +28,15 @@ bool FileStatementStrategy::parseOpen(Parser& parser, LexerLine* statement) {
           }
 
           if (next_lexeme->type == Lexeme::type_literal && str == "GRP:") {
-            ctx.actionRoot->lexeme->name = "OPEN_GRP";
-            ctx.actionRoot->lexeme->value = ctx.actionRoot->lexeme->name;
+            context.actionRoot->lexeme->name = "OPEN_GRP";
+            context.actionRoot->lexeme->value = context.actionRoot->lexeme->name;
             return true;
           }
-          parser.pushActionFromLexemeNode(next_lexeme);
+          context.pushActionFromLexeme(next_lexeme);
           state = 1;
           continue;
         } else {
-          ctx.error_message = "File name is missing in OPEN statement";
+          context.error_message = "File name is missing in OPEN statement";
           return false;
         }
       } break;
@@ -56,11 +55,11 @@ bool FileStatementStrategy::parseOpen(Parser& parser, LexerLine* statement) {
           stext = *s;
           next_lexeme =
               new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, stext);
-          parser.pushActionFromLexemeNode(next_lexeme);
+          context.pushActionFromLexeme(next_lexeme);
           state = 5;
           continue;
         } else {
-          ctx.error_message = "FOR/AS is missing in OPEN statement";
+          context.error_message = "FOR/AS is missing in OPEN statement";
           return false;
         }
       } break;
@@ -70,8 +69,8 @@ bool FileStatementStrategy::parseOpen(Parser& parser, LexerLine* statement) {
 
         if (next_lexeme->value == "INPUT" || next_lexeme->value == "OUT" ||
             next_lexeme->value == "APP") {
-          parser.pushActionFromLexemeNode(next_lexeme);
-          parser.popActionNodeRoot();
+          context.pushActionFromLexeme(next_lexeme);
+          context.popActionRoot();
           continue;
         } else if (next_lexeme->type == Lexeme::type_keyword &&
                    (next_lexeme->value == "PUT" ||
@@ -85,11 +84,11 @@ bool FileStatementStrategy::parseOpen(Parser& parser, LexerLine* statement) {
           stext = *s;
           next_lexeme =
               new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, stext);
-          parser.pushActionFromLexemeNode(next_lexeme);
+          context.pushActionFromLexeme(next_lexeme);
           state = 5;
           continue;
         } else {
-          ctx.error_message = "Invalid FOR parameter in OPEN statement";
+          context.error_message = "Invalid FOR parameter in OPEN statement";
           return false;
         }
       } break;
@@ -105,11 +104,11 @@ bool FileStatementStrategy::parseOpen(Parser& parser, LexerLine* statement) {
           stext = *s;
           next_lexeme =
               new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, stext);
-          parser.pushActionFromLexemeNode(next_lexeme);
+          context.pushActionFromLexeme(next_lexeme);
           state = 5;
           continue;
         } else {
-          ctx.error_message = "AS is missing in OPEN statement";
+          context.error_message = "AS is missing in OPEN statement";
           return false;
         }
       } break;
@@ -119,11 +118,11 @@ bool FileStatementStrategy::parseOpen(Parser& parser, LexerLine* statement) {
 
         if (next_lexeme->type == Lexeme::type_identifier ||
             next_lexeme->type == Lexeme::type_literal) {
-          parser.pushActionFromLexemeNode(next_lexeme);
+          context.pushActionFromLexeme(next_lexeme);
           state = 5;
           continue;
         } else {
-          ctx.error_message = "File number is missing in OPEN statement";
+          context.error_message = "File number is missing in OPEN statement";
           return false;
         }
       } break;
@@ -133,7 +132,7 @@ bool FileStatementStrategy::parseOpen(Parser& parser, LexerLine* statement) {
           state = 6;
           continue;
         } else {
-          ctx.error_message = "LEN is missing in OPEN statement";
+          context.error_message = "LEN is missing in OPEN statement";
           return false;
         }
       } break;
@@ -143,11 +142,11 @@ bool FileStatementStrategy::parseOpen(Parser& parser, LexerLine* statement) {
 
         if (next_lexeme->type == Lexeme::type_identifier ||
             next_lexeme->type == Lexeme::type_literal) {
-          parser.pushActionFromLexemeNode(next_lexeme);
+          context.pushActionFromLexeme(next_lexeme);
           state = 7;
           continue;
         } else {
-          ctx.error_message = "Record length is missing in OPEN statement";
+          context.error_message = "Record length is missing in OPEN statement";
           return false;
         }
       } break;
@@ -157,10 +156,9 @@ bool FileStatementStrategy::parseOpen(Parser& parser, LexerLine* statement) {
   return true;
 }
 
-bool FileStatementStrategy::parseClose(Parser& parser, LexerLine* statement) {
+bool FileStatementStrategy::parseClose(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;
   int state = 0;
-  ParserContext& ctx = parser.getContext();
 
   while ((next_lexeme = statement->getNextLexeme())) {
     switch (state) {
@@ -168,7 +166,7 @@ bool FileStatementStrategy::parseClose(Parser& parser, LexerLine* statement) {
         if (next_lexeme->isSeparator("#")) {
           state = 1;
         } else {
-          ctx.error_message = "# is missing in CLOSE statement";
+          context.error_message = "# is missing in CLOSE statement";
           return false;
         }
 
@@ -176,9 +174,9 @@ bool FileStatementStrategy::parseClose(Parser& parser, LexerLine* statement) {
 
       case 1: {
         if (next_lexeme->isLiteralNumeric()) {
-          parser.pushActionFromLexemeNode(next_lexeme);
+          context.pushActionFromLexeme(next_lexeme);
         } else {
-          ctx.error_message = "Invalid parameter in CLOSE statement";
+          context.error_message = "Invalid parameter in CLOSE statement";
           return false;
         }
 
@@ -188,7 +186,7 @@ bool FileStatementStrategy::parseClose(Parser& parser, LexerLine* statement) {
         if (next_lexeme->isSeparator(",")) {
           state = 0;
         } else {
-          ctx.error_message = "Comma is missing in CLOSE statement";
+          context.error_message = "Comma is missing in CLOSE statement";
           return false;
         }
       } break;
@@ -198,11 +196,10 @@ bool FileStatementStrategy::parseClose(Parser& parser, LexerLine* statement) {
   return true;
 }
 
-bool FileStatementStrategy::parseMaxfiles(Parser& parser, LexerLine* statement) {
+bool FileStatementStrategy::parseMaxfiles(ParserContext& context, LexerLine* statement) {
   Lexeme* next_lexeme;
   LexerLine parm;
   int state = 0;
-  ParserContext& ctx = parser.getContext();
 
   next_lexeme = statement->getCurrentLexeme();
   if (!next_lexeme) return false;
@@ -217,7 +214,7 @@ bool FileStatementStrategy::parseMaxfiles(Parser& parser, LexerLine* statement) 
           state = 1;
           continue;
         } else {
-          ctx.error_message = "Invalid MAXFILES assignment";
+          context.error_message = "Invalid MAXFILES assignment";
           return false;
         }
       } break;
@@ -226,7 +223,7 @@ bool FileStatementStrategy::parseMaxfiles(Parser& parser, LexerLine* statement) 
         if (next_lexeme->isOperator("=")) {
           state = 2;
         } else {
-          ctx.error_message = "MAXFILES assignment is missing";
+          context.error_message = "MAXFILES assignment is missing";
           return false;
         }
       } break;
@@ -239,7 +236,7 @@ bool FileStatementStrategy::parseMaxfiles(Parser& parser, LexerLine* statement) 
 
   if (parm.getLexemeCount()) {
     parm.setLexemeBOF();
-    if (!parser.evalExpressionTokens(&parm)) {
+    if (!evaluateExpression(context, &parm)) {
       return false;
     }
     parm.clearLexemes();
@@ -248,9 +245,8 @@ bool FileStatementStrategy::parseMaxfiles(Parser& parser, LexerLine* statement) 
   return true;
 }
 
-bool FileStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                    Lexeme* lexeme) {
-  if (lexeme->value == "OPEN") return parseOpen(parser, statement);
-  if (lexeme->value == "CLOSE") return parseClose(parser, statement);
-  return parseMaxfiles(parser, statement);
+bool FileStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+  if (lexeme->value == "OPEN") return parseOpen(context, statement);
+  if (lexeme->value == "CLOSE") return parseClose(context, statement);
+  return parseMaxfiles(context, statement);
 }

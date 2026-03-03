@@ -3,10 +3,10 @@
 #include "lexer.h"
 #include "parser.h"
 
-bool DataStatementStrategy::parseData(Parser& parser, LexerLine* statement,
+bool DataStatementStrategy::parseData(ParserContext& context,
+                                      LexerLine* statement,
                                       bool isBinaryData) {
   Lexeme *next_lexeme, *lexeme;
-  ParserContext& ctx = parser.getContext();
   Lexeme::LexemeSubType subtype;
   string stext = "", sname;
   int i, itext;
@@ -14,35 +14,35 @@ bool DataStatementStrategy::parseData(Parser& parser, LexerLine* statement,
   bool lastWasSeparator = true;
 
   if (isBinaryData) {
-    ctx.has_idata = true;
+    context.has_idata = true;
     sname = "_IDATA_";
     subtype = Lexeme::subtype_integer_data;
   } else {
-    ctx.has_data = true;
+    context.has_data = true;
     sname = "_DATA_";
     subtype = Lexeme::subtype_string;
   }
 
   while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = parser.coalesceLexeme(next_lexeme);
+    next_lexeme = context.coalesceSymbols(next_lexeme);
 
     if (next_lexeme->type == Lexeme::type_separator &&
         (next_lexeme->value == "," || next_lexeme->value == ";")) {
       if (lastWasSeparator) {
-        i = ctx.datas.size() + 1;
+        i = context.datas.size() + 1;
         lexeme = new Lexeme(Lexeme::type_literal, Lexeme::subtype_string,
                             sname + to_string(i), "");
         if (lexeme) {
-          lexeme->tag = ctx.tag->name;
-          parser.pushActionFromLexemeNode(lexeme);
-          ctx.datas.push_back(lexeme);
+          lexeme->tag = context.tag->name;
+          context.pushActionFromLexeme(lexeme);
+          context.datas.push_back(lexeme);
         }
 
       } else if (stext.size()) {
-        i = ctx.datas.size() + 1;
+        i = context.datas.size() + 1;
         next_lexeme = new Lexeme(Lexeme::type_literal, subtype,
                                  sname + to_string(i), stext);
-        next_lexeme->tag = ctx.tag->name;
+        next_lexeme->tag = context.tag->name;
 
         s = (char*)stext.c_str();
         if (s[0] == '&') {
@@ -63,13 +63,13 @@ bool DataStatementStrategy::parseData(Parser& parser, LexerLine* statement,
           next_lexeme->value = to_string(itext);
         }
 
-        parser.pushActionFromLexemeNode(next_lexeme);
-        ctx.datas.push_back(next_lexeme);
+        context.pushActionFromLexeme(next_lexeme);
+        context.datas.push_back(next_lexeme);
 
         stext = "";
 
       } else {
-        ctx.error_message = "Invalid DATA parameter type";
+        context.error_message = "Invalid DATA parameter type";
         return false;
       }
 
@@ -86,21 +86,21 @@ bool DataStatementStrategy::parseData(Parser& parser, LexerLine* statement,
   }
 
   if (lastWasSeparator) {
-    i = ctx.datas.size() + 1;
+    i = context.datas.size() + 1;
     lexeme = new Lexeme(Lexeme::type_literal, Lexeme::subtype_string,
                         sname + to_string(i), "");
     if (lexeme) {
-      lexeme->tag = ctx.tag->name;
-      parser.pushActionFromLexemeNode(lexeme);
-      ctx.datas.push_back(lexeme);
+      lexeme->tag = context.tag->name;
+      context.pushActionFromLexeme(lexeme);
+      context.datas.push_back(lexeme);
     }
   }
 
   if (stext.size()) {
-    i = ctx.datas.size() + 1;
+    i = context.datas.size() + 1;
     next_lexeme = new Lexeme(Lexeme::type_literal, subtype,
                              "_DATA_" + to_string(i), stext);
-    next_lexeme->tag = ctx.tag->name;
+    next_lexeme->tag = context.tag->name;
 
     s = (char*)stext.c_str();
     if (s[0] == '&') {
@@ -121,15 +121,14 @@ bool DataStatementStrategy::parseData(Parser& parser, LexerLine* statement,
       next_lexeme->value = to_string(itext);
     }
 
-    parser.pushActionFromLexemeNode(next_lexeme);
-    ctx.datas.push_back(next_lexeme);
+    context.pushActionFromLexeme(next_lexeme);
+    context.datas.push_back(next_lexeme);
   }
 
   return true;
 }
 
-bool DataStatementStrategy::execute(Parser& parser, LexerLine* statement,
-                                    Lexeme* lexeme) {
+bool DataStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
   (void)lexeme;
-  return parseData(parser, statement, false);
+  return parseData(context, statement, false);
 }
