@@ -18,7 +18,7 @@ Adopt as a foundation:
 
 1. Spec Driven Development (SDD);
 2. Domain-Driven Design (DDD);
-3. Clean Code, implementing Dependency Inversion Principle (DIP) and Separation of Concerns (SoC);
+3. Clean Code + SOLID;
 4. Clean Architecture;
 5. C++ as the main stack;
 6. TDD + BDD for user stories;

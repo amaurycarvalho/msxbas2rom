@@ -18,8 +18,12 @@
 #include <vector>
 
 #include "action_node.h"
+#include "assignment_evaluator.h"
 #include "build_options.h"
+#include "expression_evaluator.h"
 #include "fswrapper.h"
+#include "include_loader.h"
+#include "i_parser_processor.h"
 #include "lexer.h"
 #include "parser_context.h"
 #include "parser_statement_strategy_factory.h"
@@ -31,7 +35,7 @@ using namespace std;
  * @class Parser
  * @brief Parser class specialized as a MSX BASIC syntax tree builder
  */
-class Parser {
+class Parser : public IParserProcessor {
  private:
   /***
    * @brief Extract a phrase from current line and evaluate it
@@ -55,45 +59,11 @@ class Parser {
    */
   bool eval_statement(LexerLine* statement);
 
-  /***
-   * @brief Assignments syntatic analysis
-   * @return True, if syntatic analysis success
-   */
-  bool eval_assignment(LexerLine* assignment);
-
-  /***
-   * @brief Expressions syntatic analysis
-   * @note Math/Logical/String expressions parser
-   * @return True, if syntatic analysis success
-   */
-  bool eval_expression(LexerLine* parm);
-
-  /***
-   * @brief Expressions stack helper (push)
-   * @return True, if success
-   */
-  bool eval_expression_push(LexerLine* parm);
-
-  /***
-   * @brief Expressions stack helper (pop)
-   */
-  void eval_expression_pop(int n);
-
-  bool loadInclude(Lexeme* lexeme);
-  int gfxOperatorCode(Lexeme* lexeme);
-
-  int getOperatorPrecedence(Lexeme* lexeme);
-  int getOperatorParmCount(Lexeme* lexeme);
-  ActionNode* pushActionFromLexeme(Lexeme* lexeme);
-  void pushStackFromLexeme(Lexeme* lexeme);
-
-  void pushActionRoot(ActionNode* action);
-  void popActionRoot();
-
-  Lexeme* coalesceSymbols(Lexeme* lexeme);
-
   ParserContext ctx;
   ParserStatementStrategyFactory statementStrategyFactory;
+  ExpressionEvaluator exprEval;
+  AssignmentEvaluator assignEval;
+  IncludeLoader includeLoader;
 
   TagNode*& tag;
   ActionNode*& actionRoot;
@@ -157,16 +127,16 @@ class Parser {
 
   /***
    * @brief Expressions syntatic analysis
-   * @note Math/Logical/String expressions parser
    * @return True, if syntatic analysis success
    */
-  bool evalExpressionTokens(LexerLine* parm);
+  bool evalExpressionTokens(LexerLine* expression);
 
   /***
    * @brief Assignments syntatic analysis
    * @return True, if syntatic analysis success
    */
   bool evalAssignmentTokens(LexerLine* assignment);
+  bool processLine(LexerLine* line) override;
 
   //! Lexeme/Action auxiliary methods
 

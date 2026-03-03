@@ -50,6 +50,13 @@ class ParserContext {
   ~ParserContext();
 
   void reset();
+
+  int gfxOperatorCode(Lexeme* lexeme);
+  ActionNode* pushActionFromLexeme(Lexeme* lexeme);
+  void pushStackFromLexeme(Lexeme* lexeme);
+  void pushActionRoot(ActionNode* action);
+  void popActionRoot();
+  Lexeme* coalesceSymbols(Lexeme* lexeme);
 };
 
 #endif  // PARSER_CONTEXT_H_INCLUDED
