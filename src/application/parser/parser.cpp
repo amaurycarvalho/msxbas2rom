@@ -19,24 +19,8 @@ Parser::Parser()
     : exprEval(ctx),
       assignEval(ctx, exprEval),
       lineEval(ctx, statementStrategyFactory, exprEval, assignEval),
-      lineNo(ctx.lineNo),
-      tags(ctx.tags),
-      symbolList(ctx.symbolList),
-      datas(ctx.datas),
-      has_traps(ctx.has_traps),
-      has_defusr(ctx.has_defusr),
-      has_data(ctx.has_data),
-      has_idata(ctx.has_idata),
-      has_play(ctx.has_play),
-      has_input(ctx.has_input),
-      has_font(ctx.has_font),
-      has_mtf(ctx.has_mtf),
-      has_pt3(ctx.has_pt3),
-      has_akm(ctx.has_akm),
-      has_resource_restore(ctx.has_resource_restore),
-      resourceCount(ctx.resourceCount),
-      lexer(0),
-      opts(0) {}
+      lexer(nullptr),
+      opts(nullptr) {}
 
 Parser::~Parser() {}
 
@@ -61,6 +45,34 @@ bool Parser::evaluate(Lexer* lexer) {
 
   return true;
 }
+
+int Parser::getLineNo() const { return ctx.lineNo; }
+
+vector<TagNode*>& Parser::getTags() { return ctx.tags; }
+const vector<TagNode*>& Parser::getTags() const { return ctx.tags; }
+
+vector<Lexeme*>& Parser::getSymbolList() { return ctx.symbolList; }
+const vector<Lexeme*>& Parser::getSymbolList() const { return ctx.symbolList; }
+
+vector<Lexeme*>& Parser::getDatas() { return ctx.datas; }
+const vector<Lexeme*>& Parser::getDatas() const { return ctx.datas; }
+
+bool Parser::getHasTraps() const { return ctx.has_traps; }
+bool Parser::getHasDefusr() const { return ctx.has_defusr; }
+bool Parser::getHasData() const { return ctx.has_data; }
+bool Parser::getHasIData() const { return ctx.has_idata; }
+bool Parser::getHasPlay() const { return ctx.has_play; }
+bool Parser::getHasInput() const { return ctx.has_input; }
+bool Parser::getHasFont() const { return ctx.has_font; }
+bool Parser::getHasMtf() const { return ctx.has_mtf; }
+bool Parser::getHasPt3() const { return ctx.has_pt3; }
+bool Parser::getHasAkm() const { return ctx.has_akm; }
+bool Parser::getHasResourceRestore() const { return ctx.has_resource_restore; }
+
+int Parser::getResourceCount() const { return ctx.resourceCount; }
+
+Lexer* Parser::getLexer() const { return lexer; }
+BuildOptions* Parser::getOpts() const { return opts; }
 
 string Parser::toString() {
   string out;

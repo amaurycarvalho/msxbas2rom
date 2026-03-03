@@ -57,11 +57,11 @@ bool Compiler::build(Parser* parser) {
   unsigned int i, t;
 
   this->parser = parser;
-  this->opts = parser->opts;
+  this->opts = parser->getOpts();
 
   clearSymbols();
 
-  t = parser->tags.size();
+  t = parser->getTags().size();
   compiled = (t > 0);
 
   code_pointer = code_start;
@@ -102,7 +102,7 @@ bool Compiler::build(Parser* parser) {
   if (opts->debug) printf("Registering compiled code (line/bytes): ");
 
   for (i = 0; i < t; i++) {
-    tag = parser->tags[i];
+    tag = parser->getTags()[i];
 
     if (tag) {
       if (opts->debug) {
@@ -200,12 +200,12 @@ bool Compiler::build(Parser* parser) {
       return false;
     }
 
-    if (parser->has_idata) {
+    if (parser->getHasIData()) {
       if (opts->debug) printf("Registering IDATA resource...");
       resourceManager.addIDataResource(parser);
     }
 
-    if (parser->has_data) {
+    if (parser->getHasData()) {
       if (opts->debug) printf("Registering DATA resource...");
       resourceManager.addDataResource(parser);
     }
@@ -401,7 +401,7 @@ int Compiler::saveSymbols() {
   ram_size += var_size;
   ram_pointer += var_size;
 
-  if (parser->has_font) {
+  if (parser->getHasFont()) {
     ram_size += def_RAM_BUFSIZ;
     ram_pointer += def_RAM_BUFSIZ;
   }
@@ -4637,7 +4637,7 @@ void Compiler::cmd_start() {
   addFix(temp_str_mark);
   addLdDE(0x0000);
 
-  if (parser->has_font) {
+  if (parser->getHasFont()) {
     // ld ix, FONT BUFFER START ADDRESS
     addByte(0xDD);
     addFix(heap_mark)->step = -def_RAM_BUFSIZ;
@@ -4653,7 +4653,7 @@ void Compiler::cmd_start() {
   // string start address, bc=data address, ix=font address, a=data segment
   addCall(def_XBASIC_INIT);
 
-  if (parser->has_traps) {
+  if (parser->getHasTraps()) {
     if (opts->megaROM) {
       // ld a, 0xFF
       addLdA(0xFF);
@@ -4673,16 +4673,16 @@ void Compiler::cmd_start() {
     addCall(def_MR_CHANGE_SGM);
   }
 
-  if (parser->has_data || parser->has_idata) {
+  if (parser->getHasData() || parser->getHasIData()) {
     // ld hl, data resource number
-    addLdHL(parser->resourceCount);
+    addLdHL(parser->getResourceCount());
     // ld (DAC), hl
     addLdiiHL(def_DAC);
     // call cmd_restore
     addCall(def_cmd_restore);  // MSXBAS2ROM resource RESTORE statement
   }
 
-  if (parser->has_akm) {
+  if (parser->getHasAkm()) {
     // initialize AKM player
     addCall(def_player_initialize);
   }
@@ -4694,7 +4694,7 @@ void Compiler::cmd_start() {
 void Compiler::cmd_end(bool doCodeRegistering) {
   if (doCodeRegistering) {
     /// @remark first instruction needs to be a skip to the program start code
-    if (parser->has_akm) {
+    if (parser->getHasAkm()) {
       addJr(1 + 3 + 10);
     } else
       addJr(1 + 10);
@@ -4704,7 +4704,7 @@ void Compiler::cmd_end(bool doCodeRegistering) {
     end_mark->address = code_pointer;
 
     /// write the END statement code
-    if (parser->has_akm) {
+    if (parser->getHasAkm()) {
       // disable AKM player
       addCall(def_player_unhook);
     }
@@ -10650,12 +10650,12 @@ void Compiler::cmd_strig() {
 }
 
 bool Compiler::addCheckTraps() {
-  if (parser->has_traps) {
+  if (parser->getHasTraps()) {
     // call 0x6c25   ; xbasic check traps
     addCall(def_XBASIC_TRAP_CHECK);
   }
 
-  return parser->has_traps;
+  return parser->getHasTraps();
 }
 
 void Compiler::cmd_on_key() {

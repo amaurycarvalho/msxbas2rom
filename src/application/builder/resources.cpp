@@ -1621,14 +1621,14 @@ bool ResourceDataReader::load() {
 }
 
 bool ResourceDataReader::populateFields() {
-  int fieldCount = parser->datas.size(), i;
+  int fieldCount = parser->getDatas().size(), i;
   Lexeme *lexeme;
   string lineNumber;
   /// DATA/IDATA resource data
   lineFields.clear();
   lineNumbers.clear();
   for (i = 0; i < fieldCount; i++) {  // DATA/IDATA items values
-    if ((lexeme = parser->datas[i])) {
+    if ((lexeme = parser->getDatas()[i])) {
       if ((isIntegerData && lexeme->subtype == Lexeme::subtype_integer_data) ||
           (!isIntegerData && lexeme->subtype != Lexeme::subtype_integer_data)) {
         if (lineNumber != lexeme->tag) {

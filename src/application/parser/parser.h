@@ -39,35 +39,43 @@ class Parser {
   AssignmentEvaluator assignEval;
   ParserLineEvaluator lineEval;
 
- public:
-  int& lineNo;
-  //! @brief abstract syntax tree in list form implementation
-  vector<TagNode*>& tags;
-  //! @brief symbols list coalesced
-  vector<Lexeme*>& symbolList;
-  vector<Lexeme*>& datas;
-
-  bool& has_traps;
-  bool& has_defusr;
-  bool& has_data;
-  bool& has_idata;
-  bool& has_play;
-  bool& has_input;
-  bool& has_font;
-  bool& has_mtf;
-  bool& has_pt3;
-  bool& has_akm;
-  bool& has_resource_restore;
-  int& resourceCount;
-
   Lexer* lexer;
   BuildOptions* opts;
 
+ public:
   /***
    * @brief Perform a full syntatic analysis on the tags list
    * @return True, if syntatic analysis success
    */
   bool evaluate(Lexer* lexer);
+
+  int getLineNo() const;
+
+  vector<TagNode*>& getTags();
+  const vector<TagNode*>& getTags() const;
+
+  vector<Lexeme*>& getSymbolList();
+  const vector<Lexeme*>& getSymbolList() const;
+
+  vector<Lexeme*>& getDatas();
+  const vector<Lexeme*>& getDatas() const;
+
+  bool getHasTraps() const;
+  bool getHasDefusr() const;
+  bool getHasData() const;
+  bool getHasIData() const;
+  bool getHasPlay() const;
+  bool getHasInput() const;
+  bool getHasFont() const;
+  bool getHasMtf() const;
+  bool getHasPt3() const;
+  bool getHasAkm() const;
+  bool getHasResourceRestore() const;
+
+  int getResourceCount() const;
+
+  Lexer* getLexer() const;
+  BuildOptions* getOpts() const;
 
   /***
    * @brief Return all tags and it's syntax tree as a string

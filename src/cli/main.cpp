@@ -156,11 +156,11 @@ int main(int argc, char* argv[]) {
     if (!opts.quiet) printf("(2) Doing syntactic analysis...\n");
 
     if (!parser->evaluate(lexer.get())) {
-      if (parser->lineNo == 0)
+      if (parser->getLineNo() == 0)
         printf("ERROR: Cannot build the symbol tree\n");
       else {
         printf("%s", parser->errorToString().c_str());
-        printf("ERROR: Syntax error at line %i\n", parser->lineNo);
+        printf("ERROR: Syntax error at line %i\n", parser->getLineNo());
       }
       return 1;
     }
@@ -175,7 +175,7 @@ int main(int argc, char* argv[]) {
 
     if (!opts.quiet) printf("(3) Doing semantic analysis (compiling)...\n");
 
-    if (parser->has_pt3) {
+    if (parser->getHasPt3()) {
       printf(
           "ERROR: PT3 support is now DEPRECATED\n"
           "If you really need it, try to use v0.3.3.1 release.\n"

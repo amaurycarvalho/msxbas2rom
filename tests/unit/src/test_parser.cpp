@@ -34,7 +34,7 @@ TEST_SUITE("Parser") {
     REQUIRE(lexer.load(filename) == true);
     REQUIRE(lexer.evaluate() == true);
     CHECK(parser.evaluate(&lexer) == true);
-    CHECK(parser.tags.size() >= 3);
+    CHECK(parser.getTags().size() >= 3);
 
     std::remove(filename.c_str());
   }
@@ -63,7 +63,7 @@ TEST_SUITE("Parser") {
     REQUIRE(lexer.load(filename) == true);
     REQUIRE(lexer.evaluate() == true);
     CHECK(parser.evaluate(&lexer) == true);
-    CHECK(parser.resourceCount == 1);
+    CHECK(parser.getResourceCount() == 1);
 
     std::remove(filename.c_str());
   }
