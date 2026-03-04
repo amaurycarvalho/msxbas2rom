@@ -21,33 +21,81 @@
  * @name Compiler class code
  */
 
-Compiler::Compiler() : IZ80() {
-  code = (unsigned char*)malloc(COMPILE_CODE_SIZE);
-  ram = (unsigned char*)malloc(COMPILE_RAM_SIZE);
-
-  memset(code, 0x00, COMPILE_CODE_SIZE);
-  memset(ram, 0x00, COMPILE_RAM_SIZE);
-
-  code_size = 0;
-  code_start = 0;
-  code_pointer = code_start;
-
-  ram_size = 0;
-  ram_page = 0x8000;
-  ram_start = def_RAM_BOTTOM - ram_page;
-  ram_pointer = ram_start;
-  ramMemoryPerc = 0;
-  segm_last = 0;
-  segm_total = 0;
-
+Compiler::Compiler(ICpuOpcodeWriter* cpuWriter) {
+  cpuContext = new CpuWorkspaceContext(COMPILE_CODE_SIZE, COMPILE_RAM_SIZE,
+                                       def_RAM_BOTTOM);
+  this->cpuWriter = cpuWriter;
+  cpuWriter->setWorkspaceContext(cpuContext);
   error_message = "";
   current_tag = 0;
   compiled = false;
 }
 
 Compiler::~Compiler() {
-  free(code);
-  free(ram);
+  if (cpuContext) delete cpuContext;
+}
+
+int Compiler::getCodeSize() const {
+  return cpuContext->code_size;
+}
+
+float Compiler::getRamMemoryPerc() const {
+  return cpuContext->ram_memory_perc;
+}
+
+bool Compiler::getPt3() const {
+  return pt3;
+}
+
+bool Compiler::getAkm() const {
+  return akm;
+}
+
+bool Compiler::getFont() const {
+  return font;
+}
+
+bool Compiler::getHasTinySprite() const {
+  return has_tiny_sprite;
+}
+
+SymbolManager& Compiler::getSymbolManager() {
+  return symbolManager;
+}
+
+const SymbolManager& Compiler::getSymbolManager() const {
+  return symbolManager;
+}
+
+ResourceManager& Compiler::getResourceManager() {
+  return resourceManager;
+}
+const ResourceManager& Compiler::getResourceManager() const {
+  return resourceManager;
+}
+
+int Compiler::getRamSize() const {
+  return cpuContext->ram_size;
+}
+
+const string& Compiler::getErrorMessage() const {
+  return error_message;
+}
+
+TagNode* Compiler::getCurrentTag() const {
+  return current_tag;
+}
+
+Parser* Compiler::getParser() const {
+  return parser;
+}
+
+BuildOptions* Compiler::getOpts() const {
+  return opts;
+}
+
+bool Compiler::isCompiled() const {
+  return compiled;
 }
 
 bool Compiler::build(Parser* parser) {
@@ -59,25 +107,21 @@ bool Compiler::build(Parser* parser) {
   this->parser = parser;
   this->opts = parser->getOpts();
 
+  cpuContext->clear();
+
   clearSymbols();
 
   t = parser->getTags().size();
   compiled = (t > 0);
-
-  code_pointer = code_start;
-  code_size = 0;
-  ram_pointer = ram_start;
-  ram_size = 0;
-  for (i = 0; i < 5; i++) last_code[i] = &code[code_pointer];
 
   /// @remark END statement needs to be here (first segment) for MegaROM support
   if (opts->debug) printf("Registering END statement...");
 
   codeItem = new CodeNode();
   codeItem->name = "END_STMT";
-  codeItem->start = code_pointer;
+  codeItem->start = cpuContext->code_pointer;
   cmd_end(true);  //! write END statement code
-  codeItem->length = code_pointer - codeItem->start;
+  codeItem->length = cpuContext->code_pointer - codeItem->start;
   codeItem->is_code = true;
   codeItem->debug = true;
   symbolManager.codeList.push_back(codeItem);
@@ -87,9 +131,9 @@ bool Compiler::build(Parser* parser) {
 
   codeItem = new CodeNode();
   codeItem->name = "START_PGM";
-  codeItem->start = code_pointer;
+  codeItem->start = cpuContext->code_pointer;
   cmd_start();
-  codeItem->length = code_pointer - codeItem->start;
+  codeItem->length = cpuContext->code_pointer - codeItem->start;
   codeItem->is_code = true;
   codeItem->debug = true;
   symbolManager.codeList.push_back(codeItem);
@@ -129,11 +173,11 @@ bool Compiler::build(Parser* parser) {
         } else
           symbol = addSymbol(tag);
 
-        symbol->address = code_pointer;
+        symbol->address = cpuContext->code_pointer;
       }
 
       codeItem = new CodeNode();
-      codeItem->start = code_pointer;
+      codeItem->start = cpuContext->code_pointer;
       codeItem->name = "LIN_" + tag->name;
 
       if (!evaluate(tag)) {
@@ -141,7 +185,7 @@ bool Compiler::build(Parser* parser) {
         break;
       }
 
-      codeItem->length = code_pointer - codeItem->start;
+      codeItem->length = cpuContext->code_pointer - codeItem->start;
       codeItem->is_code = true;
       codeItem->debug = true;
       symbolManager.codeList.push_back(codeItem);
@@ -173,9 +217,9 @@ bool Compiler::build(Parser* parser) {
 
     codeItem = new CodeNode();
     codeItem->name = "END_PGM";
-    codeItem->start = code_pointer;
+    codeItem->start = cpuContext->code_pointer;
     cmd_end(false);  //! jump to the real END statement
-    codeItem->length = code_pointer - codeItem->start;
+    codeItem->length = cpuContext->code_pointer - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = true;
     symbolManager.codeList.push_back(codeItem);
@@ -188,9 +232,9 @@ bool Compiler::build(Parser* parser) {
     if (opts->debug) printf("Registering support code...");
 
     codeItem = new CodeNode();
-    codeItem->start = code_pointer;
+    codeItem->start = cpuContext->code_pointer;
     addSupportSymbols();
-    codeItem->length = code_pointer - codeItem->start;
+    codeItem->length = cpuContext->code_pointer - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = false;
     symbolManager.codeList.push_back(codeItem);
@@ -222,23 +266,13 @@ bool Compiler::build(Parser* parser) {
 
     doFix();
 
-    ramMemoryPerc = (ram_size * 100.0) / def_RAM_SIZE;
+    cpuContext->ram_memory_perc = (cpuContext->ram_size * 100.0) / def_RAM_SIZE;
   }
 
   return compiled;
 }
 
 void Compiler::clearSymbols() {
-  code_size = 0;
-  code_start = 0;
-  code_pointer = code_start;
-
-  ram_size = 0;
-  ram_start =
-      def_RAM_BOTTOM - 0x8000;  // code_start + 0x4000 + def_RAM_INTVARSIZ;
-  ram_pointer = ram_start;
-  ramMemoryPerc = 0;
-
   error_message = "";
   current_tag = 0;
 
@@ -253,12 +287,12 @@ void Compiler::clearSymbols() {
   has_tiny_sprite = false;
   compiled = false;
 
-  end_mark = 0;
-  enable_basic_mark = 0;
-  disable_basic_mark = 0;
-  draw_mark = 0;
-  io_redirect_mark = 0;
-  io_screen_mark = 0;
+  end_mark = nullptr;
+  enable_basic_mark = nullptr;
+  disable_basic_mark = nullptr;
+  draw_mark = nullptr;
+  io_redirect_mark = nullptr;
+  io_screen_mark = nullptr;
 
   symbols.clear();
   fixes.clear();
@@ -293,7 +327,7 @@ int Compiler::saveSymbols() {
         if (lexeme->isAbstract) continue;
 
         if (lexeme->type == Lexeme::type_literal) {
-          symbol->address = code_pointer;
+          symbol->address = cpuContext->code_pointer;
 
           // string constant or binary data
           if (lexeme->subtype == Lexeme::subtype_string ||
@@ -303,7 +337,7 @@ int Compiler::saveSymbols() {
 
             codeItem = new CodeNode();
             codeItem->name = "LIT_" + to_string(literal_count);
-            codeItem->start = code_pointer;
+            codeItem->start = cpuContext->code_pointer;
 
             literal_count++;
 
@@ -325,16 +359,16 @@ int Compiler::saveSymbols() {
 
             if (lexeme->subtype == Lexeme::subtype_integer_data) {
               k = atoi(s);
-              addWord(k);
+              cpuWriter->addWord(k);
             } else {
-              addByte(tt);
+              cpuWriter->addByte(tt);
 
               for (k = 0; k < tt; k++) {
-                addByte(s[k]);
+                cpuWriter->addByte(s[k]);
               }
             }
 
-            codeItem->length = code_pointer - codeItem->start;
+            codeItem->length = cpuContext->code_pointer - codeItem->start;
             codeItem->is_code = false;
             codeItem->debug = true;
             symbolManager.codeList.push_back(codeItem);
@@ -345,8 +379,9 @@ int Compiler::saveSymbols() {
         } else if (lexeme->type == Lexeme::type_identifier) {
           codeItem = new CodeNode();
           codeItem->name = "VAR_" + lexeme->value;
-          codeItem->start = ram_pointer;
-          codeItem->addr_within_segm = ram_page + ram_pointer;
+          codeItem->start = cpuContext->ram_pointer;
+          codeItem->addr_within_segm =
+              cpuContext->ram_page + cpuContext->ram_pointer;
           codeItem->is_code = false;
           codeItem->debug = true;
           codeItem->lexeme = lexeme;
@@ -354,7 +389,7 @@ int Compiler::saveSymbols() {
 
           var_size = 0;
 
-          symbol->address = ram_pointer;
+          symbol->address = cpuContext->ram_pointer;
 
           // string variable
           if (lexeme->subtype == Lexeme::subtype_string) {
@@ -383,30 +418,31 @@ int Compiler::saveSymbols() {
 
           codeItem->length = var_size;
 
-          ram_size += var_size;
-          ram_pointer += var_size;
+          cpuContext->ram_size += var_size;
+          cpuContext->ram_pointer += var_size;
 
-          if (ram_size > def_RAM_SIZE) {
+          if (cpuContext->ram_size > def_RAM_SIZE) {
             syntaxError("Not enough memory to variables [" +
-                        to_string(ram_size) + "bytes occupied from RAM]");
+                        to_string(cpuContext->ram_size) +
+                        "bytes occupied from RAM]");
           }
         }
       }
     }
   }
 
-  temp_str_mark->address = ram_pointer;
+  temp_str_mark->address = cpuContext->ram_pointer;
 
   var_size = (256 * 5);  // temporary strings
-  ram_size += var_size;
-  ram_pointer += var_size;
+  cpuContext->ram_size += var_size;
+  cpuContext->ram_pointer += var_size;
 
   if (parser->getHasFont()) {
-    ram_size += def_RAM_BUFSIZ;
-    ram_pointer += def_RAM_BUFSIZ;
+    cpuContext->ram_size += def_RAM_BUFSIZ;
+    cpuContext->ram_pointer += def_RAM_BUFSIZ;
   }
 
-  heap_mark->address = ram_pointer;
+  heap_mark->address = cpuContext->ram_pointer;
 
   return length;
 }
@@ -436,14 +472,14 @@ void Compiler::doFix() {
 
     address += fix->step;
 
-    code[fix->address] = address & 0xFF;
-    code[fix->address + 1] = (address >> 8) & 0xFF;
+    cpuContext->code[fix->address] = address & 0xFF;
+    cpuContext->code[fix->address + 1] = (address >> 8) & 0xFF;
   }
 }
 
 void Compiler::addByteOptimized(unsigned char byte) {
   bool optimized = false;
-  int code_pointer_saved = code_pointer;
+  int code_pointer_saved = cpuContext->code_pointer;
   int code_reduced = 0;
   unsigned char* s;
 
@@ -452,44 +488,51 @@ void Compiler::addByteOptimized(unsigned char byte) {
       // pop de
       case 0xD1: {
         // ld hl,x | push hl | ld hl,x | pop de
-        if (*last_code[0] == 0x21 && *last_code[1] == 0xE5 &&
-            *last_code[2] == 0x21 && *last_code[3] != 0xDD &&
-            *last_code[3] != 0xFD) {
+        if (*cpuContext->code_pipeline[0] == 0x21 &&
+            *cpuContext->code_pipeline[1] == 0xE5 &&
+            *cpuContext->code_pipeline[2] == 0x21 &&
+            *cpuContext->code_pipeline[3] != 0xDD &&
+            *cpuContext->code_pipeline[3] != 0xFD) {
           // optimize to ld de,x | ld hl,x
-          s = last_code[2];
+          s = cpuContext->code_pipeline[2];
           s[0] = 0x11;
           s[3] = 0x21;
           s[4] = s[5];
           s[5] = s[6];
-          popLastCode();
-          last_code[1] = s;
-          last_code[0] = &s[3];
-          code_pointer_saved = (last_code[0] - &code[0]);
+          cpuWriter->popLastCode();
+          cpuContext->code_pipeline[1] = s;
+          cpuContext->code_pipeline[0] = &s[3];
+          code_pointer_saved =
+              (cpuContext->code_pipeline[0] - &cpuContext->code[0]);
           code_reduced = 1;
-          code_pointer -= code_reduced;
-          code_size -= code_reduced;
+          cpuContext->code_pointer -= code_reduced;
+          cpuContext->code_size -= code_reduced;
           optimized = true;
 
           // push hl | ld hl,x | pop de
-        } else if (*last_code[0] == 0x21 && *last_code[1] == 0xE5) {
+        } else if (*cpuContext->code_pipeline[0] == 0x21 &&
+                   *cpuContext->code_pipeline[1] == 0xE5) {
           // optimize to ex de,hl | ld hl,x
-          s = last_code[1];
+          s = cpuContext->code_pipeline[1];
           s[0] = 0xEB;
           optimized = true;
 
           // ld hl,(x) | push hl | ld hl,(x) | pop de
-        } else if (*last_code[0] == 0x2A && *last_code[1] == 0xE5 &&
-                   *last_code[2] == 0x2A && *last_code[3] != 0xDD &&
-                   *last_code[3] != 0xFD) {
+        } else if (*cpuContext->code_pipeline[0] == 0x2A &&
+                   *cpuContext->code_pipeline[1] == 0xE5 &&
+                   *cpuContext->code_pipeline[2] == 0x2A &&
+                   *cpuContext->code_pipeline[3] != 0xDD &&
+                   *cpuContext->code_pipeline[3] != 0xFD) {
           // optimize to ld hl,(x) | ex de,hl | ld hl,(x)
-          s = last_code[1];
+          s = cpuContext->code_pipeline[1];
           s[0] = 0xEB;
           optimized = true;
 
           // push hl | ld hl,(x) | pop de
-        } else if (*last_code[0] == 0x2A && *last_code[1] == 0xE5) {
+        } else if (*cpuContext->code_pipeline[0] == 0x2A &&
+                   *cpuContext->code_pipeline[1] == 0xE5) {
           // optimize to ex de,hl | ld hl,(x)
-          s = last_code[1];
+          s = cpuContext->code_pipeline[1];
           s[0] = 0xEB;
           optimized = true;
         }
@@ -499,62 +542,64 @@ void Compiler::addByteOptimized(unsigned char byte) {
       // add hl,de
       case 0x19: {
         // ex de,hl | ld hl,x | add hl,de
-        if (*last_code[0] == 0x21 && *last_code[1] == 0xEB) {
-          s = last_code[0];
+        if (*cpuContext->code_pipeline[0] == 0x21 &&
+            *cpuContext->code_pipeline[1] == 0xEB) {
+          s = cpuContext->code_pipeline[0];
           // optimize to inc hl if 1, 2 or 3
           if (s[2] == 0x00 && s[1] == 1) {
-            s = last_code[1];
+            s = cpuContext->code_pipeline[1];
             s[0] = 0x23;
-            code_pointer -= 3;
-            code_size -= 3;
-            popLastCode();
+            cpuContext->code_pointer -= 3;
+            cpuContext->code_size -= 3;
+            cpuWriter->popLastCode();
             optimized = true;
           } else if (s[2] == 0x00 && s[1] == 2) {
-            s = last_code[1];
+            s = cpuContext->code_pipeline[1];
             s[0] = 0x23;
             s[1] = 0x23;
-            code_pointer -= 2;
-            code_size -= 2;
-            popLastCode();
+            cpuContext->code_pointer -= 2;
+            cpuContext->code_size -= 2;
+            cpuWriter->popLastCode();
             optimized = true;
           } else if (s[2] == 0x00 && s[1] == 3) {
-            s = last_code[1];
+            s = cpuContext->code_pipeline[1];
             s[0] = 0x23;
             s[1] = 0x23;
             s[2] = 0x23;
-            code_pointer--;
-            code_size--;
-            popLastCode();
+            cpuContext->code_pointer--;
+            cpuContext->code_size--;
+            cpuWriter->popLastCode();
             optimized = true;
           } else {
             // optimize to ld de,x | add hl,de
-            s = last_code[1];
+            s = cpuContext->code_pipeline[1];
             s[0] = 0x11;
             s[1] = s[2];
             s[2] = s[3];
             s[3] = byte;
-            last_code[0] = &s[3];
+            cpuContext->code_pipeline[0] = &s[3];
             optimized = true;
           }
 
           // ld hl,(x) | ld de,x | add hl,de
-        } else if (*last_code[0] == 11 && *last_code[1] == 0x2A) {
+        } else if (*cpuContext->code_pipeline[0] == 11 &&
+                   *cpuContext->code_pipeline[1] == 0x2A) {
           // optimize to ld hl,(x) | inc hl if 1, 2 or 3
-          s = last_code[0];
+          s = cpuContext->code_pipeline[0];
           if (s[2] == 0x00) {
             switch (s[1]) {
               case 1: {
                 s[0] = 0x23;
-                code_pointer -= 2;
-                code_size -= 2;
+                cpuContext->code_pointer -= 2;
+                cpuContext->code_size -= 2;
                 optimized = true;
               } break;
 
               case 2: {
                 s[0] = 0x23;
                 s[1] = 0x23;
-                code_pointer--;
-                code_size--;
+                cpuContext->code_pointer--;
+                cpuContext->code_size--;
                 optimized = true;
               } break;
 
@@ -573,34 +618,39 @@ void Compiler::addByteOptimized(unsigned char byte) {
       // ex de,hl
       case 0xEB: {
         // ex de,hl | ld hl,x | ex de,hl
-        if (*last_code[0] == 0x21 && *last_code[1] == 0xEB) {
+        if (*cpuContext->code_pipeline[0] == 0x21 &&
+            *cpuContext->code_pipeline[1] == 0xEB) {
           // optimize to ld de,x
-          s = last_code[1];
+          s = cpuContext->code_pipeline[1];
           s[0] = 0x11;
           s[1] = s[2];
           s[2] = s[3];
-          popLastCode();
-          last_code[0] = s;
-          code_pointer_saved = (s - &code[0]);
+          cpuWriter->popLastCode();
+          cpuContext->code_pipeline[0] = s;
+          code_pointer_saved = (s - &cpuContext->code[0]);
           code_reduced = 1;
-          code_pointer--;
-          code_size--;
+          cpuContext->code_pointer--;
+          cpuContext->code_size--;
           optimized = true;
 
           // ld de,x | ld hl,x | ex de,hl
-        } else if (*last_code[0] == 0x21 && *last_code[1] == 0x11 &&
-                   *last_code[2] != 0xDD && *last_code[2] != 0xFD) {
+        } else if (*cpuContext->code_pipeline[0] == 0x21 &&
+                   *cpuContext->code_pipeline[1] == 0x11 &&
+                   *cpuContext->code_pipeline[2] != 0xDD &&
+                   *cpuContext->code_pipeline[2] != 0xFD) {
           // optimize to ld hl,x | ld de,x
-          s = last_code[1];
+          s = cpuContext->code_pipeline[1];
           s[0] = 0x21;
           s[3] = 0x11;
           optimized = true;
 
           // ld hl,x | ld de,x | ex de,hl
-        } else if (*last_code[0] == 0x11 && *last_code[1] == 0x21 &&
-                   *last_code[2] != 0xDD && *last_code[2] != 0xFD) {
+        } else if (*cpuContext->code_pipeline[0] == 0x11 &&
+                   *cpuContext->code_pipeline[1] == 0x21 &&
+                   *cpuContext->code_pipeline[2] != 0xDD &&
+                   *cpuContext->code_pipeline[2] != 0xFD) {
           // optimize to ld de,x | ld hl,x
-          s = last_code[1];
+          s = cpuContext->code_pipeline[1];
           s[0] = 0x11;
           s[3] = 0x21;
           optimized = true;
@@ -626,8 +676,8 @@ void Compiler::addByteOptimized(unsigned char byte) {
     }
 
   } else {
-    pushLastCode();
-    addCodeByte(byte);
+    cpuWriter->pushLastCode();
+    cpuWriter->addCodeByte(byte);
   }
 }
 
@@ -637,7 +687,7 @@ void Compiler::addByteOptimized(unsigned char byte) {
  * skipping the jump map
  */
 void Compiler::addKernelCall(unsigned int address) {
-  addCall(getKernelCallAddr(address));
+  cpuWriter->addCall(getKernelCallAddr(address));
 }
 
 int Compiler::getKernelCallAddr(unsigned int address) {
@@ -654,7 +704,7 @@ int Compiler::getKernelCallAddr(unsigned int address) {
 }
 
 void Compiler::addLdHLmegarom() {
-  addCmd(0xFF, 0x0000);
+  cpuWriter->addCmd(0xFF, 0x0000);
 }
 
 SymbolNode* Compiler::getSymbol(Lexeme* lexeme) {
@@ -767,21 +817,21 @@ FixNode* Compiler::addFix(SymbolNode* symbol) {
 
   if (opts->megaROM && !is_id) {
     // nop, nop      ; reserved to "jr ?, ??" when "call ?, ??" or "jp ?, ??"
-    addNop();
-    addNop();
+    cpuWriter->addNop();
+    cpuWriter->addNop();
     // ex AF, AF'    ; save registers (will be restored by MR_ function)
-    addExAF();
+    cpuWriter->addExAF();
     // exx
-    addExx();
+    cpuWriter->addExx();
     // ld A, <segm>
-    addLdA(0x00);
+    cpuWriter->addLdA(0x00);
     // ld HL, <address>
-    addLdHL(0x0000);
+    cpuWriter->addLdHL(0x0000);
     // CALL MR_????
   }
 
   fix->symbol = symbol;
-  fix->address = code_pointer + 1;
+  fix->address = cpuContext->code_pointer + 1;
   fix->step = 0;
   fixes.push_back(fix);
 
@@ -826,10 +876,10 @@ int Compiler::write(unsigned char* dest, int start_address) {
   if (opts->megaROM) {
     skips.clear();
 
-    segm_last = 2;   // last ROM segment starts at segment 2
-    segm_total = 4;  // 4 segments of 8kb (0, 1, 2, 3)
+    cpuContext->segm_last = 2;   // last ROM segment starts at segment 2
+    cpuContext->segm_total = 4;  // 4 segments of 8kb (0, 1, 2, 3)
     length = (start_address - 0x8000);
-    code_size = 0;
+    cpuContext->code_size = 0;
     d = dest;
 
     for (i = 0; i < t; i++) {
@@ -839,7 +889,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
       // codeItem->length);
 
       if (codeItem->length) {
-        s = &code[codeItem->start];
+        s = &cpuContext->code[codeItem->start];
 
         if (codeItem->is_code)
           step = 8;
@@ -849,7 +899,8 @@ int Compiler::write(unsigned char* dest, int start_address) {
         tt = (length + codeItem->length + step);
 
         if (tt >= 0x4000) {
-          segm_last += 2;  // konami segments size are 8kb (0/1, 2/3...)
+          cpuContext->segm_last +=
+              2;  // konami segments size are 8kb (0/1, 2/3...)
           addr_within_segm = 0x8000;
 
           if (codeItem->is_code) {
@@ -857,7 +908,8 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
             // ld a, segmt
             d[0] = 0x3E;
-            d[1] = segm_last;  // extra code will start after segment 3
+            d[1] =
+                cpuContext->segm_last;  // extra code will start after segment 3
             // ld hl, 0x8000
             d[2] = 0x21;
             d[3] = 0x00;
@@ -889,7 +941,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
           skip->step = step;
           skips.push_back(skip);
 
-          code_size += length;
+          cpuContext->code_size += length;
 
           length = 0;
         }
@@ -897,7 +949,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
         memcpy(d, s, codeItem->length);
 
         codeItem->addr_within_segm = addr_within_segm;
-        codeItem->segm = segm_last;
+        codeItem->segm = cpuContext->segm_last;
         if (codeItem->addr_within_segm >= (0xA000)) codeItem->segm++;
 
         d += codeItem->length;
@@ -905,14 +957,14 @@ int Compiler::write(unsigned char* dest, int start_address) {
         addr_within_segm += codeItem->length;
       } else {
         codeItem->addr_within_segm = addr_within_segm;
-        codeItem->segm = segm_last;
+        codeItem->segm = cpuContext->segm_last;
         if (codeItem->addr_within_segm >= (0xA000)) codeItem->segm++;
       }
     }
 
-    code_size += length;
+    cpuContext->code_size += length;
 
-    segm_total = ((segm_last + 1) / 16 + 1) * 16;
+    cpuContext->segm_total = ((cpuContext->segm_last + 1) / 16 + 1) * 16;
 
     tt = skips.size();
 
@@ -924,7 +976,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
       addr_within_segm += codeItem->length;
     }
 
-    memcpy(dest, code, code_size);
+    memcpy(dest, cpuContext->code.get(), cpuContext->code_size);
   }
 
   // reallocate code pointers to new start address
@@ -1161,7 +1213,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
       printf("Error in fix object (null)\n");
   }
 
-  return code_size;
+  return cpuContext->code_size;
 }
 
 void Compiler::double2FloatLib(double value, int* words) {
@@ -1319,9 +1371,9 @@ bool Compiler::evaluate(TagNode* tag) {
       lin = 0;
     }
     // ld hl, line number
-    addLdHL(lin);
+    cpuWriter->addLdHL(lin);
     // ld (CURLIN), hl
-    addLdiiHL(def_CURLIN);
+    cpuWriter->addLdiiHL(def_CURLIN);
   }
 
   for (i = 0; i < t && compiled; i++) {
@@ -1607,27 +1659,27 @@ int Compiler::evalExpression(ActionNode* action) {
         } else {
           if (lexeme->subtype == Lexeme::subtype_numeric) {
             // ld e, (hl)
-            addLdEiHL();
+            cpuWriter->addLdEiHL();
             // inc hl
-            addIncHL();
+            cpuWriter->addIncHL();
             // ld d, (hl)
-            addLdDiHL();
+            cpuWriter->addLdDiHL();
             // ex de, hl
-            addExDEHL();
+            cpuWriter->addExDEHL();
           } else if (lexeme->subtype == Lexeme::subtype_single_decimal ||
                      lexeme->subtype == Lexeme::subtype_double_decimal) {
             // ld b, (hl)
-            addLdBiHL();
+            cpuWriter->addLdBiHL();
             // inc hl
-            addIncHL();
+            cpuWriter->addIncHL();
             // ld e, (hl)
-            addLdEiHL();
+            cpuWriter->addLdEiHL();
             // inc hl
-            addIncHL();
+            cpuWriter->addIncHL();
             // ld d, (hl)
-            addLdDiHL();
+            cpuWriter->addLdDiHL();
             // ex de, hl
-            addExDEHL();
+            cpuWriter->addExDEHL();
           }
         }
       } else {
@@ -1641,17 +1693,17 @@ int Compiler::evalExpression(ActionNode* action) {
         if (lexeme->subtype == Lexeme::subtype_numeric) {
           // ld hl, (variable)
           addFix(lexeme);
-          addLdHLii(0x0000);
+          cpuWriter->addLdHLii(0x0000);
         } else if (lexeme->subtype == Lexeme::subtype_single_decimal ||
                    lexeme->subtype == Lexeme::subtype_double_decimal) {
           // ld a, (variable)
           addFix(lexeme);
-          addLdAii(0x0000);
+          cpuWriter->addLdAii(0x0000);
           // ld b, a
-          addLdBA();
+          cpuWriter->addLdBA();
           // ld hl, (variable+1)
           addFix(lexeme)->step = 1;
-          addLdHLii(0x0000);
+          cpuWriter->addLdHLii(0x0000);
         }
       }
 
@@ -1671,34 +1723,37 @@ int Compiler::evalExpression(ActionNode* action) {
       if (lexeme->subtype == Lexeme::subtype_string) {
         addFix(lexeme);
 
-        addLdHL(0x0000);  // ld hl, string
+        cpuWriter->addLdHL(0x0000);  // ld hl, string
 
       } else if (lexeme->subtype == Lexeme::subtype_numeric) {
         char* s = (char*)lexeme->value.c_str();
         try {
           if (s[0] == '&') {
             if (s[1] == 'h' || s[1] == 'H')
-              addLdHL(stoi(lexeme->value.substr(2), 0, 16));  // ld hl, value
+              cpuWriter->addLdHL(
+                  stoi(lexeme->value.substr(2), 0, 16));  // ld hl, value
             else if (s[1] == 'o' || s[1] == 'O')
-              addLdHL(stoi(lexeme->value.substr(2), 0, 8));  // ld hl, value
+              cpuWriter->addLdHL(
+                  stoi(lexeme->value.substr(2), 0, 8));  // ld hl, value
             else if (s[1] == 'b' || s[1] == 'B')
-              addLdHL(stoi(lexeme->value.substr(2), 0, 2));  // ld hl, value
+              cpuWriter->addLdHL(
+                  stoi(lexeme->value.substr(2), 0, 2));  // ld hl, value
             else
               result = Lexeme::subtype_unknown;
           } else
-            addLdHL(stoi(lexeme->value));  // ld hl, value
+            cpuWriter->addLdHL(stoi(lexeme->value));  // ld hl, value
         } catch (exception& e) {
           printf("Warning: error while converting numeric constant %s\n",
                  lexeme->value.c_str());
-          addLdHL(0x0000);  // ld hl, value
+          cpuWriter->addLdHL(0x0000);  // ld hl, value
         }
 
       } else if (lexeme->subtype == Lexeme::subtype_single_decimal ||
                  lexeme->subtype == Lexeme::subtype_double_decimal) {
         int value = str2FloatLib(lexeme->value);
 
-        addLdB((value >> 16) & 0xff);  // ld b, value
-        addLdHL(value & 0xffff);       // ld hl, value
+        cpuWriter->addLdB((value >> 16) & 0xff);  // ld b, value
+        cpuWriter->addLdHL(value & 0xffff);       // ld hl, value
 
       } else if (lexeme->subtype == Lexeme::subtype_null) {
       } else {
@@ -1732,7 +1787,7 @@ int Compiler::evalOperator(ActionNode* action) {
       if (lexeme->value == "NOT") {
         if (result == Lexeme::subtype_numeric) {
           // call intCompareNOT
-          // addCall(def_intCompareNOT);
+          // cpuWriter->addCall(def_intCompareNOT);
           addKernelCall(def_intCompareNOT);
 
         } else
@@ -1741,13 +1796,13 @@ int Compiler::evalOperator(ActionNode* action) {
       } else if (lexeme->value == "-") {
         if (result == Lexeme::subtype_numeric) {
           // call intNEG
-          // addCall(def_intNEG);
+          // cpuWriter->addCall(def_intNEG);
           addKernelCall(def_intNEG);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
           // call floatNeg
-          // addCall(def_floatNEG);
+          // cpuWriter->addCall(def_floatNEG);
           addKernelCall(def_floatNEG);
 
         } else
@@ -1770,7 +1825,7 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xD1);
 
           // call intCompareAND
-          // addCall(def_intCompareAND);
+          // cpuWriter->addCall(def_intCompareAND);
           addKernelCall(def_intCompareAND);
 
         } else
@@ -1782,7 +1837,7 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xD1);
 
           // call intCompareOR
-          // addCall(def_intCompareOR);
+          // cpuWriter->addCall(def_intCompareOR);
           addKernelCall(def_intCompareOR);
 
         } else
@@ -1794,7 +1849,7 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xD1);
 
           // call intCompareXOR
-          // addCall(def_intCompareXOR);
+          // cpuWriter->addCall(def_intCompareXOR);
           addKernelCall(def_intCompareXOR);
 
         } else
@@ -1808,21 +1863,21 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xD1);
 
           // ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
           // xor e
-          addXorE();
+          cpuWriter->addXorE();
           // cpl
-          addCPL();
+          cpuWriter->addCPL();
           // ld l, a
-          addLdLA();
+          cpuWriter->addLdLA();
           // ld a, h
-          addAddH();
+          cpuWriter->addAddH();
           // xor d
-          addXorD();
+          cpuWriter->addXorD();
           // cpl
-          addCPL();
+          cpuWriter->addCPL();
           // ld h, a
-          addLdHA();
+          cpuWriter->addLdHA();
 
         } else
           result = Lexeme::subtype_unknown;
@@ -1835,21 +1890,21 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xD1);
 
           // ld a, e
-          addLdAE();
+          cpuWriter->addLdAE();
           // cpl
-          addCPL();
+          cpuWriter->addCPL();
           // or l
-          addOrL();
+          cpuWriter->addOrL();
           // ld l, a
-          addLdLA();
+          cpuWriter->addLdLA();
           // ld a, d
-          addLdAD();
+          cpuWriter->addLdAD();
           // cpl
-          addCPL();
+          cpuWriter->addCPL();
           // or h
-          addOrH();
+          cpuWriter->addOrH();
           // ld h, a
-          addLdHA();
+          cpuWriter->addLdHA();
 
         } else
           result = Lexeme::subtype_unknown;
@@ -1860,31 +1915,31 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xD1);
 
           // call intCompareEQ
-          // addCall(def_intCompareEQ);
+          // cpuWriter->addCall(def_intCompareEQ);
           addKernelCall(def_intCompareEQ);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
           // pop af
-          addPopAF();
+          cpuWriter->addPopAF();
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
           // ld c, a
-          addLdCA();
+          cpuWriter->addLdCA();
 
           // 7876 xbasic compare floats (=)
-          addCall(def_XBASIC_COMPARE_FLOATS_EQ);
+          cpuWriter->addCall(def_XBASIC_COMPARE_FLOATS_EQ);
 
           result = Lexeme::subtype_numeric;
 
         } else if (result == Lexeme::subtype_string) {
           // 7e99 xbasic copy string to NULBUF
-          addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
+          cpuWriter->addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
           // pop hl
-          addPopHL();
+          cpuWriter->addPopHL();
 
           // 7eae xbasic compare string (NULBUF = string)
-          addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_EQ);
+          cpuWriter->addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_EQ);
 
           result = Lexeme::subtype_numeric;
 
@@ -1897,31 +1952,31 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xD1);
 
           // call intCompareNE
-          // addCall(def_intCompareNE);
+          // cpuWriter->addCall(def_intCompareNE);
           addKernelCall(def_intCompareNE);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
           // pop af
-          addPopAF();
+          cpuWriter->addPopAF();
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
           // ld c, a
-          addLdCA();
+          cpuWriter->addLdCA();
 
           // 787f xbasic compare floats (<>)
-          addCall(def_XBASIC_COMPARE_FLOATS_NE);
+          cpuWriter->addCall(def_XBASIC_COMPARE_FLOATS_NE);
 
           result = Lexeme::subtype_numeric;
 
         } else if (result == Lexeme::subtype_string) {
           // 7e99 xbasic copy string to NULBUF
-          addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
+          cpuWriter->addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
           // pop hl
-          addPopHL();
+          cpuWriter->addPopHL();
 
           // 7ec9 xbasic compare string (NULBUF <> string)
-          addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_NE);
+          cpuWriter->addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_NE);
 
           result = Lexeme::subtype_numeric;
 
@@ -1934,31 +1989,31 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xD1);
 
           // call intCompareLT
-          // addCall(def_intCompareLT);
+          // cpuWriter->addCall(def_intCompareLT);
           addKernelCall(def_intCompareLT);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
           // pop af
-          addPopAF();
+          cpuWriter->addPopAF();
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
           // ld c, a
-          addLdCA();
+          cpuWriter->addLdCA();
 
           // 7888 xbasic compare floats (>)
-          addCall(def_XBASIC_COMPARE_FLOATS_GT);
+          cpuWriter->addCall(def_XBASIC_COMPARE_FLOATS_GT);
 
           result = Lexeme::subtype_numeric;
 
         } else if (result == Lexeme::subtype_string) {
           // 7e99 xbasic copy string to NULBUF
-          addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
+          cpuWriter->addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
           // pop hl
-          addPopHL();
+          cpuWriter->addPopHL();
 
           // 7ea4 xbasic compare string (NULBUF > string)
-          addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_GT);
+          cpuWriter->addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_GT);
 
           result = Lexeme::subtype_numeric;
 
@@ -1971,31 +2026,31 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xD1);
 
           // call intCompareLE
-          // addCall(def_intCompareLE);
+          // cpuWriter->addCall(def_intCompareLE);
           addKernelCall(def_intCompareLE);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
           // pop af
-          addPopAF();
+          cpuWriter->addPopAF();
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
           // ld c, a
-          addLdCA();
+          cpuWriter->addLdCA();
 
           // 7892 xbasic compare floats (>=)
-          addCall(def_XBASIC_COMPARE_FLOATS_GE);
+          cpuWriter->addCall(def_XBASIC_COMPARE_FLOATS_GE);
 
           result = Lexeme::subtype_numeric;
 
         } else if (result == Lexeme::subtype_string) {
           // 7e99 xbasic copy string to NULBUF
-          addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
+          cpuWriter->addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
           // pop hl
-          addPopHL();
+          cpuWriter->addPopHL();
 
           // 7eb7 xbasic compare string (NULBUF >= string)
-          addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_GE);
+          cpuWriter->addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_GE);
 
           result = Lexeme::subtype_numeric;
 
@@ -2008,31 +2063,31 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xD1);
 
           // call intCompareGT
-          // addCall(def_intCompareGT);
+          // cpuWriter->addCall(def_intCompareGT);
           addKernelCall(def_intCompareGT);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
           // pop af
-          addPopAF();
+          cpuWriter->addPopAF();
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
           // ld c, a
-          addLdCA();
+          cpuWriter->addLdCA();
 
           // 789b xbasic compare floats (<)
-          addCall(def_XBASIC_COMPARE_FLOATS_LT);
+          cpuWriter->addCall(def_XBASIC_COMPARE_FLOATS_LT);
 
           result = Lexeme::subtype_numeric;
 
         } else if (result == Lexeme::subtype_string) {
           // 7e99 xbasic copy string to NULBUF
-          addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
+          cpuWriter->addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
           // pop hl
-          addPopHL();
+          cpuWriter->addPopHL();
 
           // 7ec0 xbasic compare string (NULBUF < string)
-          addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_LT);
+          cpuWriter->addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_LT);
 
           result = Lexeme::subtype_numeric;
 
@@ -2045,31 +2100,31 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xD1);
 
           // call intCompareGE
-          // addCall(def_intCompareGE);
+          // cpuWriter->addCall(def_intCompareGE);
           addKernelCall(def_intCompareGE);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
           // pop af
-          addPopAF();
+          cpuWriter->addPopAF();
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
           // ld c, a
-          addLdCA();
+          cpuWriter->addLdCA();
 
           // 78a4 xbasic compare floats (<=)
-          addCall(def_XBASIC_COMPARE_FLOATS_LE);
+          cpuWriter->addCall(def_XBASIC_COMPARE_FLOATS_LE);
 
           result = Lexeme::subtype_numeric;
 
         } else if (result == Lexeme::subtype_string) {
           // 7e99 xbasic copy string to NULBUF
-          addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
+          cpuWriter->addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
           // pop hl
-          addPopHL();
+          cpuWriter->addPopHL();
 
           // 7ed2 xbasic compare string (NULBUF <= string)
-          addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_LE);
+          cpuWriter->addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_LE);
 
           result = Lexeme::subtype_numeric;
 
@@ -2086,26 +2141,26 @@ int Compiler::evalOperator(ActionNode* action) {
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
           // pop af
-          addPopAF();
+          cpuWriter->addPopAF();
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
           // ld c, a
-          addLdCA();
+          cpuWriter->addLdCA();
           // call 0x76c1     ; add floats (b:hl + c:de = b:hl)
-          addCall(def_XBASIC_ADD_FLOATS);
+          cpuWriter->addCall(def_XBASIC_ADD_FLOATS);
 
         } else if (result == Lexeme::subtype_string) {
           // pop bc                      ; bc=string 1, hl=string 2
-          addPopBC();
+          cpuWriter->addPopBC();
           // ld de, temporary variable   ; de=string destination
           addTempStr(false);
           // push de
-          addPushDE();
+          cpuWriter->addPushDE();
           //   call 0x7f05               ; xbasic concat strings (in: bc=str1,
           //   hl=str2, de=strdest; out: hl fake)
-          addCall(def_XBASIC_CONCAT_STRINGS);
+          cpuWriter->addCall(def_XBASIC_CONCAT_STRINGS);
           // pop hl                      ; correct destination
-          addPopHL();
+          cpuWriter->addPopHL();
 
         } else
           result = Lexeme::subtype_unknown;
@@ -2117,37 +2172,37 @@ int Compiler::evalOperator(ActionNode* action) {
           // ex de,hl
           addByteOptimized(0xEB);
 
-          s = last_code[0];
+          s = cpuContext->code_pipeline[0];
           i = s[1] | (s[2] << 8);
           if (s[0] == 0x11 && i <= 4) {  // ld de, n
-            code_pointer -= 3;
-            code_size -= 3;
+            cpuContext->code_pointer -= 3;
+            cpuContext->code_size -= 3;
             while (i) {
               // dec hl
-              addDecHL();
+              cpuWriter->addDecHL();
               i--;
             }
           } else {
             // and a
-            addAndA();
+            cpuWriter->addAndA();
             // sbc hl, de      ; subtract integers
-            addSbcHLDE();
+            cpuWriter->addSbcHLDE();
           }
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
           // pop af
-          addPopAF();
+          cpuWriter->addPopAF();
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
           // ex de,hl
-          addExDEHL();
+          cpuWriter->addExDEHL();
           // ld c, b
-          addLdCB();
+          cpuWriter->addLdCB();
           // ld b, a
-          addLdBA();
+          cpuWriter->addLdBA();
           // call 0x76bd     ; subtract floats (b:hl - c:de = b:hl)
-          addCall(def_XBASIC_SUBTRACT_FLOATS);
+          cpuWriter->addCall(def_XBASIC_SUBTRACT_FLOATS);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -2160,48 +2215,48 @@ int Compiler::evalOperator(ActionNode* action) {
           /// @remark math optimization when second parameter is a integer
           /// constant
           if (opts->megaROM)
-            s = last_code[1];
+            s = cpuContext->code_pipeline[1];
           else
-            s = last_code[0];
+            s = cpuContext->code_pipeline[0];
 
           i = s[1] | (s[2] << 8);
 
           if (action->actions[0]->lexeme->type == Lexeme::type_literal &&
               i <= 256) {
             if (opts->megaROM) {
-              code_pointer -= 5;  //! @todo verify if 5 or 6
-              code_size -= 5;
+              cpuContext->code_pointer -= 5;  //! @todo verify if 5 or 6
+              cpuContext->code_size -= 5;
             } else {
-              code_pointer -= 4;
-              code_size -= 4;
+              cpuContext->code_pointer -= 4;
+              cpuContext->code_size -= 4;
 
               if (action->actions[1]->lexeme->type == Lexeme::type_literal) {
-                code_pointer += 1;
-                code_size += 1;
-                s = &code[code_pointer - 3];
+                cpuContext->code_pointer += 1;
+                cpuContext->code_size += 1;
+                s = &cpuContext->code[cpuContext->code_pointer - 3];
                 if (s[0] == 0x11) s[0] = 0x21;  // change "ld de,n" to "ld hl,n"
               }
             }
 
             switch (i) {
               case 0: {
-                addLdHL(0x0000);
+                cpuWriter->addLdHL(0x0000);
               } break;
 
               case 128: {
                 // XOR A | SRL H | RR L | RRA | LD H, L | LD L, A
-                addXorA();
-                addSRLH();
-                addRRL();
-                addRRA();
-                addLdHL();
-                addLdLA();
+                cpuWriter->addXorA();
+                cpuWriter->addSRLH();
+                cpuWriter->addRRL();
+                cpuWriter->addRRA();
+                cpuWriter->addLdHL();
+                cpuWriter->addLdLA();
               } break;
 
               case 256: {
                 //  LD H, L | LD L, 0
-                addLdHL();
-                addLdL(0);
+                cpuWriter->addLdHL();
+                cpuWriter->addLdL(0);
               } break;
 
               default: {
@@ -2215,14 +2270,14 @@ int Compiler::evalOperator(ActionNode* action) {
                   n++;
                 }
                 if (k) {
-                  addLdEL();
-                  addLdDH();
+                  cpuWriter->addLdEL();
+                  cpuWriter->addLdDH();
                 }
                 while (n) {
                   n--;
-                  addAddHLHL();
+                  cpuWriter->addAddHLHL();
                   if (b[n]) {
-                    addAddHLDE();
+                    cpuWriter->addAddHLDE();
                   }
                 }
               } break;
@@ -2230,19 +2285,19 @@ int Compiler::evalOperator(ActionNode* action) {
 
           } else {
             // call 0x761b     ; multiply integers (hl = hl * de)
-            addCall(def_XBASIC_MULTIPLY_INTEGERS);
+            cpuWriter->addCall(def_XBASIC_MULTIPLY_INTEGERS);
           }
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
           // pop af
-          addPopAF();
+          cpuWriter->addPopAF();
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
           // ld c, a
-          addLdCA();
+          cpuWriter->addLdCA();
           // call 0x7732     ; multiply floats
-          addCall(def_XBASIC_MULTIPLY_FLOATS);
+          cpuWriter->addCall(def_XBASIC_MULTIPLY_FLOATS);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -2255,275 +2310,275 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xEB);
 
           // math optimization when second parameter is a integer constant
-          s = last_code[0];
+          s = cpuContext->code_pipeline[0];
           if (s[0] == 0x11) {  // ld de, n
             i = s[1] | (s[2] << 8);
 
             switch (i) {
               case 0: {
-                code_pointer -= 3;
-                code_size -= 3;
-                addLdHL(0x0000);
+                cpuContext->code_pointer -= 3;
+                cpuContext->code_size -= 3;
+                cpuWriter->addLdHL(0x0000);
               } break;
 
               case 1: {
-                code_pointer -= 3;
-                code_size -= 3;
+                cpuContext->code_pointer -= 3;
+                cpuContext->code_size -= 3;
               } break;
 
               case 2: {
-                code_pointer -= 3;
-                code_size -= 3;
+                cpuContext->code_pointer -= 3;
+                cpuContext->code_size -= 3;
                 // sra h | rr l
-                addSRAH();
-                addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
                 // JRNC $+6   ; jump if there's no rest of division by 2
-                addJrNC(0x06);
+                cpuWriter->addJrNC(0x06);
                 //   LD A, H
-                addLdAH();
+                cpuWriter->addLdAH();
                 //   AND 0x80  ; sign bit
-                addAnd(0x80);
+                cpuWriter->addAnd(0x80);
                 //   JRZ $+1
-                addJrZ(0x01);
+                cpuWriter->addJrZ(0x01);
                 //     INC HL
-                addIncHL();
+                cpuWriter->addIncHL();
               } break;
 
               case 4: {
-                code_pointer -= 3;
-                code_size -= 3;
+                cpuContext->code_pointer -= 3;
+                cpuContext->code_size -= 3;
                 // LD A, L
-                addLdAL();
+                cpuWriter->addLdAL();
                 // sra h | rr l (2 times)
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
                 // and 0x03
-                addAnd(0x03);
+                cpuWriter->addAnd(0x03);
                 // JRZ $+6   ; jump if there's no rest of division by 4
-                addJrZ(0x06);
+                cpuWriter->addJrZ(0x06);
                 //   LD A, H
-                addLdAH();
+                cpuWriter->addLdAH();
                 //   AND 0x80  ; sign bit
-                addAnd(0x80);
+                cpuWriter->addAnd(0x80);
                 //   JRZ $+1
-                addJrZ(0x01);
+                cpuWriter->addJrZ(0x01);
                 //     INC HL
-                addIncHL();
+                cpuWriter->addIncHL();
               } break;
 
               case 8: {
                 // OLD: LD A, L | SRA H | RRA | SRL H | RRA | SRL H | RRA | LD
                 // L, A
-                code_pointer -= 3;
-                code_size -= 3;
+                cpuContext->code_pointer -= 3;
+                cpuContext->code_size -= 3;
                 // LD A, L
-                addLdAL();
+                cpuWriter->addLdAL();
                 // sra h | rr l (3 times)
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
                 // and 0x07
-                addAnd(0x07);
+                cpuWriter->addAnd(0x07);
                 // JRZ $+6   ; jump if there's no rest of division by 8
-                addJrZ(0x06);
+                cpuWriter->addJrZ(0x06);
                 //   LD A, H
-                addLdAH();
+                cpuWriter->addLdAH();
                 //   AND 0x80  ; sign bit
-                addAnd(0x80);
+                cpuWriter->addAnd(0x80);
                 //   JRZ $+1
-                addJrZ(0x01);
+                cpuWriter->addJrZ(0x01);
                 //     INC HL
-                addIncHL();
+                cpuWriter->addIncHL();
               } break;
 
               case 16: {
                 // old: XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | ADD HL, HL
                 // | RLA | ADD HL, HL | RLA | LD L, H | LD H, A
-                code_pointer -= 3;
-                code_size -= 3;
+                cpuContext->code_pointer -= 3;
+                cpuContext->code_size -= 3;
                 // LD A, L
-                addLdAL();
+                cpuWriter->addLdAL();
                 // sra h | rr l (4 times)
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
                 // and 0x0F
-                addAnd(0x0F);
+                cpuWriter->addAnd(0x0F);
                 // JRZ $+6   ; jump if there's no rest of division by 16
-                addJrZ(0x06);
+                cpuWriter->addJrZ(0x06);
                 //   LD A, H
-                addLdAH();
+                cpuWriter->addLdAH();
                 //   AND 0x80  ; sign bit
-                addAnd(0x80);
+                cpuWriter->addAnd(0x80);
                 //   JRZ $+1
-                addJrZ(0x01);
+                cpuWriter->addJrZ(0x01);
                 //     INC HL
-                addIncHL();
+                cpuWriter->addIncHL();
               } break;
 
               case 32: {
                 // old: XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | ADD HL, HL
                 // | RLA | LD L, H | LD H, A
-                code_pointer -= 3;
-                code_size -= 3;
+                cpuContext->code_pointer -= 3;
+                cpuContext->code_size -= 3;
                 // LD A, L
-                addLdAL();
+                cpuWriter->addLdAL();
                 // sra h | rr l (5 times)
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
                 // and 0x1F
-                addAnd(0x1F);
+                cpuWriter->addAnd(0x1F);
                 // JRZ $+6   ; jump if there's no rest of division by 32
-                addJrZ(0x06);
+                cpuWriter->addJrZ(0x06);
                 //   LD A, H
-                addLdAH();
+                cpuWriter->addLdAH();
                 //   AND 0x80  ; sign bit
-                addAnd(0x80);
+                cpuWriter->addAnd(0x80);
                 //   JRZ $+1
-                addJrZ(0x01);
+                cpuWriter->addJrZ(0x01);
                 //     INC HL
-                addIncHL();
+                cpuWriter->addIncHL();
               } break;
 
               case 64: {
                 // old: XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | LD L, H |
                 // LD H, A
-                code_pointer -= 3;
-                code_size -= 3;
+                cpuContext->code_pointer -= 3;
+                cpuContext->code_size -= 3;
                 // LD A, L
-                addLdAL();
+                cpuWriter->addLdAL();
                 // sra h | rr l (6 times)
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
                 // and 0x3F
-                addAnd(0x3F);
+                cpuWriter->addAnd(0x3F);
                 // JRZ $+6   ; jump if there's no rest of division by 64
-                addJrZ(0x06);
+                cpuWriter->addJrZ(0x06);
                 //   LD A, H
-                addLdAH();
+                cpuWriter->addLdAH();
                 //   AND 0x80  ; sign bit
-                addAnd(0x80);
+                cpuWriter->addAnd(0x80);
                 //   JRZ $+1
-                addJrZ(0x01);
+                cpuWriter->addJrZ(0x01);
                 //     INC HL
-                addIncHL();
+                cpuWriter->addIncHL();
               } break;
 
               case 128: {
                 // old: XOR A | ADD HL, HL | RLA | LD L, H | LD H, A
-                code_pointer -= 3;
-                code_size -= 3;
+                cpuContext->code_pointer -= 3;
+                cpuContext->code_size -= 3;
                 // LD A, L
-                addLdAL();
+                cpuWriter->addLdAL();
                 // sra h | rr l (7 times)
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
-                addSRAH();
-                addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
+                cpuWriter->addSRAH();
+                cpuWriter->addRRL();
                 // and 0x7F
-                addAnd(0x7F);
+                cpuWriter->addAnd(0x7F);
                 // JRZ $+6   ; jump if there's no rest of division by 64
-                addJrZ(0x06);
+                cpuWriter->addJrZ(0x06);
                 //   LD A, H
-                addLdAH();
+                cpuWriter->addLdAH();
                 //   AND 0x80  ; sign bit
-                addAnd(0x80);
+                cpuWriter->addAnd(0x80);
                 //   JRZ $+1
-                addJrZ(0x01);
+                cpuWriter->addJrZ(0x01);
                 //     INC HL
-                addIncHL();
+                cpuWriter->addIncHL();
               } break;
 
               case 256: {
-                code_pointer -= 3;
-                code_size -= 3;
+                cpuContext->code_pointer -= 3;
+                cpuContext->code_size -= 3;
                 // LD E, L
-                addLdEL();
+                cpuWriter->addLdEL();
                 // LD L, H
-                addLdLH();
+                cpuWriter->addLdLH();
                 // LD H, 0x00
-                addLdH(0x00);
+                cpuWriter->addLdH(0x00);
                 // LD A, L
-                addLdAL();
+                cpuWriter->addLdAL();
                 // AND 0x80    ; sign bit
-                addAnd(0x80);
+                cpuWriter->addAnd(0x80);
                 // JRZ $+7
-                addJrZ(0x07);
+                cpuWriter->addJrZ(0x07);
                 //   LD H, 0xFF
-                addLdH(0xFF);
+                cpuWriter->addLdH(0xFF);
                 //   XOR A
-                addXorA();
+                cpuWriter->addXorA();
                 //   OR E
-                addOrE();
+                cpuWriter->addOrE();
                 //   JRZ $+1
-                addJrZ(0x01);
+                cpuWriter->addJrZ(0x01);
                 //     INC HL
-                addIncHL();
+                cpuWriter->addIncHL();
               } break;
 
               default: {
                 // call divide integers
-                addCall(def_XBASIC_DIVIDE_INTEGERS);
+                cpuWriter->addCall(def_XBASIC_DIVIDE_INTEGERS);
               } break;
             }
 
           } else {
             // call divide integers
-            addCall(def_XBASIC_DIVIDE_INTEGERS);
+            cpuWriter->addCall(def_XBASIC_DIVIDE_INTEGERS);
           }
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
           // pop af
-          addPopAF();
+          cpuWriter->addPopAF();
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
           // ex de,hl
-          addExDEHL();
+          cpuWriter->addExDEHL();
           // ld c, b
-          addLdCB();
+          cpuWriter->addLdCB();
           // ld b, a
-          addLdBA();
+          cpuWriter->addLdBA();
           // call 0x7775     ; divide floats
-          addCall(def_XBASIC_DIVIDE_FLOATS);
+          cpuWriter->addCall(def_XBASIC_DIVIDE_FLOATS);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -2535,7 +2590,7 @@ int Compiler::evalOperator(ActionNode* action) {
           // ex de,hl
           addByteOptimized(0xEB);
           // call 0x762d     ; divide integers
-          addCall(def_XBASIC_DIVIDE_INTEGERS);
+          cpuWriter->addCall(def_XBASIC_DIVIDE_INTEGERS);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -2543,22 +2598,22 @@ int Compiler::evalOperator(ActionNode* action) {
           addCast(result, Lexeme::subtype_numeric);
 
           // pop bc
-          addPopBC();
+          cpuWriter->addPopBC();
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
           // ex de, hl
-          addExDEHL();
+          cpuWriter->addExDEHL();
 
           // cast
           addCast(result, Lexeme::subtype_numeric);
 
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
 
           // call 0x762d     ; divide integers
-          addCall(def_XBASIC_DIVIDE_INTEGERS);
+          cpuWriter->addCall(def_XBASIC_DIVIDE_INTEGERS);
 
           result = Lexeme::subtype_numeric;
 
@@ -2571,30 +2626,30 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xEB);
 
           // pop hl
-          addPopHL();
+          cpuWriter->addPopHL();
 
           //   call 0x782D     ; integer to float
-          addCall(def_XBASIC_CAST_INTEGER_TO_FLOAT);
+          cpuWriter->addCall(def_XBASIC_CAST_INTEGER_TO_FLOAT);
 
           // call 0x77C1       ; power float ^ integer
-          addCall(def_XBASIC_POWER_FLOAT_TO_INTEGER);
+          cpuWriter->addCall(def_XBASIC_POWER_FLOAT_TO_INTEGER);
 
           result = Lexeme::subtype_single_decimal;
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
           // pop af
-          addPopAF();
+          cpuWriter->addPopAF();
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
           // ex de,hl
-          addExDEHL();
+          cpuWriter->addExDEHL();
           // ld c, b
-          addLdCB();
+          cpuWriter->addLdCB();
           // ld b, a
-          addLdBA();
+          cpuWriter->addLdBA();
           // call 0x780d      ; power float ^ float
-          addCall(def_XBASIC_POWER_FLOAT_TO_FLOAT);
+          cpuWriter->addCall(def_XBASIC_POWER_FLOAT_TO_FLOAT);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -2606,9 +2661,9 @@ int Compiler::evalOperator(ActionNode* action) {
           // ex de,hl
           addByteOptimized(0xEB);
           // call 0x762d     ; divide integers
-          addCall(def_XBASIC_DIVIDE_INTEGERS);
+          cpuWriter->addCall(def_XBASIC_DIVIDE_INTEGERS);
           // ex de, hl       ; remainder
-          addExDEHL();
+          cpuWriter->addExDEHL();
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -2616,25 +2671,25 @@ int Compiler::evalOperator(ActionNode* action) {
           addCast(result, Lexeme::subtype_numeric);
 
           // pop bc
-          addPopBC();
+          cpuWriter->addPopBC();
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
           // ex de, hl
-          addExDEHL();
+          cpuWriter->addExDEHL();
 
           // cast
           addCast(result, Lexeme::subtype_numeric);
 
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
 
           // call 0x762d     ; divide integers
-          addCall(def_XBASIC_DIVIDE_INTEGERS);
+          cpuWriter->addCall(def_XBASIC_DIVIDE_INTEGERS);
 
           // ex de, hl       ; remainder
-          addExDEHL();
+          cpuWriter->addExDEHL();
 
           result = Lexeme::subtype_numeric;
 
@@ -2647,7 +2702,7 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xD1);
 
           // call intSHR
-          // addCall(def_intSHR);
+          // cpuWriter->addCall(def_intSHR);
           addKernelCall(def_intSHR);
 
         } else
@@ -2659,7 +2714,7 @@ int Compiler::evalOperator(ActionNode* action) {
           addByteOptimized(0xD1);
 
           // call intSHL
-          // addCall(def_intSHL);
+          // cpuWriter->addCall(def_intSHL);
           addKernelCall(def_intSHL);
 
         } else
@@ -2693,11 +2748,11 @@ bool Compiler::evalOperatorParms(ActionNode* action, int parmCount) {
 
       if (i) {
         // push hl
-        addPushHL();
+        cpuWriter->addPushHL();
         if (subtype == Lexeme::subtype_single_decimal ||
             subtype == Lexeme::subtype_double_decimal) {
           // push bc
-          addPushBC();
+          cpuWriter->addPushBC();
         }
       }
     }
@@ -2723,7 +2778,7 @@ int Compiler::evalOperatorCast(ActionNode* action) {
     //     200.0 + 100
 
     // call castParamFloatInt
-    addCall(def_castParamFloatInt);
+    cpuWriter->addCall(def_castParamFloatInt);
 
     result = next_action1->subtype;
 
@@ -2741,21 +2796,21 @@ int Compiler::evalOperatorCast(ActionNode* action) {
   } else if (next_action2->subtype == Lexeme::subtype_numeric &&
              next_action1->subtype == Lexeme::subtype_string) {
     // pop de   ; swap parameters code
-    addPopDE();
+    cpuWriter->addPopDE();
     // push hl
-    addPushHL();
+    cpuWriter->addPushHL();
     // ex de,hl
-    addExDEHL();
+    cpuWriter->addExDEHL();
 
     // cast
     addCast(next_action1->subtype, next_action2->subtype);
 
     // pop de   ; swap again
-    addPopDE();
+    cpuWriter->addPopDE();
     // push hl
-    addPushHL();
+    cpuWriter->addPushHL();
     // ex de,hl
-    addExDEHL();
+    cpuWriter->addExDEHL();
 
     result = next_action2->subtype;
 
@@ -2839,129 +2894,129 @@ int Compiler::evalFunction(ActionNode* action) {
       case 0: {
         if (lexeme->value == "TIME") {
           // ld hl, (0xFC9E)    ; JIFFY
-          addLdHLii(0xFC9E);
+          cpuWriter->addLdHLii(0xFC9E);
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "POS") {
           // ld hl, (0xF661)  ; TTYPOS
-          addLdHLii(0xF661);
+          cpuWriter->addLdHLii(0xF661);
           // ld h, 0
-          addLdH(0x00);
+          cpuWriter->addLdH(0x00);
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "LPOS") {
           // ld hl, (0xF415)  ; LPTPOS
-          addLdHLii(0xF415);
+          cpuWriter->addLdHLii(0xF415);
           // ld h, 0
-          addLdH(0x00);
+          cpuWriter->addLdH(0x00);
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "CSRLIN") {
           // ld hl, (0xF3DC)  ; CSRY
-          addLdHLii(def_CSRY);
+          cpuWriter->addLdHLii(def_CSRY);
           // ld h, 0
-          addLdH(0x00);
+          cpuWriter->addLdH(0x00);
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "INKEY") {
           // ld hl, 0
-          addLdHL(0x0000);
+          cpuWriter->addLdHL(0x0000);
           // call 0x009C        ; CHSNS
-          addCall(0x009C);
+          cpuWriter->addCall(0x009C);
           // jr z,$+5
-          addJrZ(0x04);
+          cpuWriter->addJrZ(0x04);
           //   call 0x009F        ; CHGET
-          addCall(0x009F);
+          cpuWriter->addCall(0x009F);
           //   ld l, a
-          addLdLA();
+          cpuWriter->addLdLA();
 
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "INKEY$") {
           // call 0x009C        ; CHSNS
-          addCall(0x009C);
+          cpuWriter->addCall(0x009C);
           // ld hl, temporary string
           addTempStr(true);
           // call 0x7e5e   ; xbasic INKEY$ (in: hl=dest; out: hl=result)
-          addCall(def_XBASIC_INKEY);
+          cpuWriter->addCall(def_XBASIC_INKEY);
 
           result[0] = Lexeme::subtype_string;
 
         } else if (lexeme->value == "MAXFILES") {
           // ld hl, (MAXFIL)
-          addLdHLii(0xF85F);
+          cpuWriter->addLdHLii(0xF85F);
 
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "FRE") {
           // ld hl, (HEAPSIZ)
-          addLdHLii(def_HEAPSIZ);
+          cpuWriter->addLdHLii(def_HEAPSIZ);
 
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "HEAP") {
           // ld hl, (HEAPSTR)
-          addLdHLii(def_HEAPSTR);
+          cpuWriter->addLdHLii(def_HEAPSTR);
 
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "MSX") {
           // ld hl, (VERSION)                    ; 0 = MSX1, 1 = MSX2, 2 =
           // MSX2+, 3 = MSXturboR
-          addLdHLii(def_VERSION);
+          cpuWriter->addLdHLii(def_VERSION);
           // ld h, 0
-          addLdH(0x00);
+          cpuWriter->addLdH(0x00);
 
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "NTSC") {
           // ld hl, 0
-          addLdHL(0x0000);
+          cpuWriter->addLdHL(0x0000);
           // ld a, (NTSC)
-          addLdAii(def_NTSC);
+          cpuWriter->addLdAii(def_NTSC);
           // and 128   ; bit 7 on?
-          addAnd(0x80);
+          cpuWriter->addAnd(0x80);
           // jr nz, $+1
-          addJrNZ(0x01);
+          cpuWriter->addJrNZ(0x01);
           //    dec hl
-          addDecHL();
+          cpuWriter->addDecHL();
 
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "VDP") {
           // VDP() without parameters returns VDP version
           // ld a, 4
-          addLdA(4);
+          cpuWriter->addLdA(4);
           // CALL USR2
-          addCall(getKernelCallAddr(def_usr2) + 1);
+          cpuWriter->addCall(getKernelCallAddr(def_usr2) + 1);
 
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "TURBO") {
           // ld a, 5
-          addLdA(5);
+          cpuWriter->addLdA(5);
           // CALL USR2
-          addCall(getKernelCallAddr(def_usr2) + 1);
+          cpuWriter->addCall(getKernelCallAddr(def_usr2) + 1);
 
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "COLLISION") {
           // CALL SUB_SPRCOL_ALL
-          addCall(def_usr3_COLLISION_ALL);
+          cpuWriter->addCall(def_usr3_COLLISION_ALL);
 
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "MAKER") {
           // ld a, 6
-          addLdA(6);
+          cpuWriter->addLdA(6);
           // CALL USR2
-          addCall(getKernelCallAddr(def_usr2) + 1);
+          cpuWriter->addCall(getKernelCallAddr(def_usr2) + 1);
 
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "PLYSTATUS") {
           // CALL usr2_player_status
-          addCall(def_usr2_player_status);
+          cpuWriter->addCall(def_usr2_player_status);
 
           result[0] = Lexeme::subtype_numeric;
 
@@ -2979,7 +3034,7 @@ int Compiler::evalFunction(ActionNode* action) {
           } else if (result[0] == Lexeme::subtype_single_decimal ||
                      result[0] == Lexeme::subtype_double_decimal) {
             // call 0x78e5         ; xbasic INT
-            addCall(def_XBASIC_INT);
+            cpuWriter->addCall(def_XBASIC_INT);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -2994,7 +3049,7 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[0] == Lexeme::subtype_single_decimal ||
               result[0] == Lexeme::subtype_double_decimal) {
             // call 0x78d8         ; xbasic FIX (in b:hl, out b:hl)
-            addCall(def_XBASIC_FIX);
+            cpuWriter->addCall(def_XBASIC_FIX);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3009,7 +3064,7 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[0] == Lexeme::subtype_single_decimal ||
               result[0] == Lexeme::subtype_double_decimal) {
             // call 0x7678         ; xbasic RND (in b:hl, out b:hl)
-            addCall(def_XBASIC_RND);
+            cpuWriter->addCall(def_XBASIC_RND);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3024,7 +3079,7 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[0] == Lexeme::subtype_single_decimal ||
               result[0] == Lexeme::subtype_double_decimal) {
             // call 0x7936         ; xbasic SIN (in b:hl, out b:hl)
-            addCall(def_XBASIC_SIN);
+            cpuWriter->addCall(def_XBASIC_SIN);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3039,7 +3094,7 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[0] == Lexeme::subtype_single_decimal ||
               result[0] == Lexeme::subtype_double_decimal) {
             // call 0x792e         ; xbasic COS (in b:hl, out b:hl)
-            addCall(def_XBASIC_COS);
+            cpuWriter->addCall(def_XBASIC_COS);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3054,7 +3109,7 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[0] == Lexeme::subtype_single_decimal ||
               result[0] == Lexeme::subtype_double_decimal) {
             // call 0x7990         ; xbasic TAN (in b:hl, out b:hl)
-            addCall(def_XBASIC_TAN);
+            cpuWriter->addCall(def_XBASIC_TAN);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3069,7 +3124,7 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[0] == Lexeme::subtype_single_decimal ||
               result[0] == Lexeme::subtype_double_decimal) {
             // call 0x79b2         ; xbasic ATN (in b:hl, out b:hl)
-            addCall(def_XBASIC_ATN);
+            cpuWriter->addCall(def_XBASIC_ATN);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3084,7 +3139,7 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[0] == Lexeme::subtype_single_decimal ||
               result[0] == Lexeme::subtype_double_decimal) {
             // call 0x79fa         ; xbasic EXP (in b:hl, out b:hl)
-            addCall(def_XBASIC_EXP);
+            cpuWriter->addCall(def_XBASIC_EXP);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3099,7 +3154,7 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[0] == Lexeme::subtype_single_decimal ||
               result[0] == Lexeme::subtype_double_decimal) {
             // call 0x7a53         ; xbasic LOG (in b:hl, out b:hl)
-            addCall(def_XBASIC_LOG);
+            cpuWriter->addCall(def_XBASIC_LOG);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3114,7 +3169,7 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[0] == Lexeme::subtype_single_decimal ||
               result[0] == Lexeme::subtype_double_decimal) {
             // call 0x7ab5         ; xbasic SQR (in b:hl, out b:hl)
-            addCall(def_XBASIC_SQR);
+            cpuWriter->addCall(def_XBASIC_SQR);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3122,12 +3177,12 @@ int Compiler::evalFunction(ActionNode* action) {
         } else if (lexeme->value == "SGN") {
           if (result[0] == Lexeme::subtype_numeric) {
             // call 0x5b5d         ; xbasic SGN (in hl, out hl)
-            addCall(def_XBASIC_SGN_INT);
+            cpuWriter->addCall(def_XBASIC_SGN_INT);
 
           } else if (result[0] == Lexeme::subtype_single_decimal ||
                      result[0] == Lexeme::subtype_double_decimal) {
             // call 0x5b72         ; xbasic SGN (in b:hl, out b:hl)
-            addCall(def_XBASIC_SGN_FLOAT);
+            cpuWriter->addCall(def_XBASIC_SGN_FLOAT);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3135,13 +3190,13 @@ int Compiler::evalFunction(ActionNode* action) {
         } else if (lexeme->value == "ABS") {
           if (result[0] == Lexeme::subtype_numeric) {
             // call 0x5b36         ; xbasic ABS (in hl, out hl)
-            addCall(def_XBASIC_ABS_INT);
+            cpuWriter->addCall(def_XBASIC_ABS_INT);
 
           } else if (result[0] == Lexeme::subtype_single_decimal ||
                      result[0] == Lexeme::subtype_double_decimal) {
             // xbasic ABS (in b:hl, out b:hl)
             // res 7,h
-            addWord(0xCB, 0xBC);
+            cpuWriter->addWord(0xCB, 0xBC);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3159,7 +3214,7 @@ int Compiler::evalFunction(ActionNode* action) {
           } else if (result[0] == Lexeme::subtype_string) {
             // call 0x7e07   ; VAL function - xbasic string to float (in hl, out
             // b:hl)
-            addCall(def_XBASIC_VAL);
+            cpuWriter->addCall(def_XBASIC_VAL);
             result[0] = Lexeme::subtype_single_decimal;
 
           } else
@@ -3175,9 +3230,9 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // ld l,(hl)
-            addLdLiHL();
+            cpuWriter->addLdLiHL();
             // ld h, 0
-            addLdH(0x00);
+            cpuWriter->addLdH(0x00);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3192,13 +3247,13 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // ld e,(hl)
-            addLdEiHL();
+            cpuWriter->addLdEiHL();
             // inc HL
-            addIncHL();
+            cpuWriter->addIncHL();
             // ld d, (hl)
-            addLdDiHL();
+            cpuWriter->addLdDiHL();
             // ex de, hl
-            addExDEHL();
+            cpuWriter->addExDEHL();
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3213,7 +3268,7 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // call 0x70a1    ; xbasic VPEEK (in:hl, out:hl)
-            addCall(def_XBASIC_VPEEK);
+            cpuWriter->addCall(def_XBASIC_VPEEK);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3228,13 +3283,13 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // ld c, l
-            addLdCL();
+            cpuWriter->addLdCL();
             // in a, (c)
-            addWord(0xED, 0x78);
+            cpuWriter->addWord(0xED, 0x78);
             // ld l, a
-            addLdLA();
+            cpuWriter->addLdLA();
             // ld h, 0
-            addLdH(0x00);
+            cpuWriter->addLdH(0x00);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3249,25 +3304,25 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // ld (DAC+2), hl
-            addLdiiHL(def_DAC + 2);
+            cpuWriter->addLdiiHL(def_DAC + 2);
 
             addEnableBasicSlot();
 
             // call HSAVD          ; alloc disk
-            addCall(0xFE94);
+            cpuWriter->addCall(0xFE94);
             // call GETIOBLK       ; get io channel control block from DAC
-            addCall(0x6A6A);
+            cpuWriter->addCall(0x6A6A);
             // jr z, $+6           ; file not open
-            addJrZ(0x05);
+            cpuWriter->addJrZ(0x05);
             // jr c, $+4           ; not a disk drive device
-            addJrC(0x03);
+            cpuWriter->addJrC(0x03);
             // call HEOF           ; put in DAC end of file status
-            addCall(0xFEA3);
+            cpuWriter->addCall(0xFEA3);
 
             addDisableBasicSlot();
 
             // ld hl, (DAC+2)
-            addLdHLii(def_DAC + 2);
+            cpuWriter->addLdHLii(def_DAC + 2);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3282,7 +3337,7 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // call 0x7337         ; xbasic VDP (in: hl, out: hl)
-            addCall(def_XBASIC_VDP);
+            cpuWriter->addCall(def_XBASIC_VDP);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3297,17 +3352,17 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // ld a, l
-            addLdAL();
+            cpuWriter->addLdAL();
             // cp 16
-            addCp(0x10);
+            cpuWriter->addCp(0x10);
             // jr nc, $+4
-            addJrNC(0x03);
+            cpuWriter->addJrNC(0x03);
             //   call 0x0096         ; RDPSG (in: a = PSG register)
-            addCall(0x0096);
+            cpuWriter->addCall(0x0096);
             //   ld l, a
-            addLdLA();
+            cpuWriter->addLdLA();
             //   ld h, 0
-            addLdH(0x00);
+            cpuWriter->addLdH(0x00);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3322,7 +3377,7 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // call usr2_play
-            addCall(def_usr2_play);
+            cpuWriter->addCall(def_usr2_play);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3337,13 +3392,13 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // ld a, l
-            addLdAL();
+            cpuWriter->addLdAL();
             // call 0x00D5      ; GTSTCK
-            addCall(0x00D5);
+            cpuWriter->addCall(0x00D5);
             // ld h, 0
-            addLdH(0x00);
+            cpuWriter->addLdH(0x00);
             // ld l, a
-            addLdLA();
+            cpuWriter->addLdLA();
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3358,13 +3413,13 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // ld a, l
-            addLdAL();
+            cpuWriter->addLdAL();
             // call 0x00D8      ; GTTRIG
-            addCall(0x00D8);
+            cpuWriter->addCall(0x00D8);
             // ld h, a
-            addLdHA();
+            cpuWriter->addLdHA();
             // ld l, a
-            addLdLA();
+            cpuWriter->addLdLA();
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3379,7 +3434,7 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // call cmd_pad
-            addCall(def_cmd_pad);
+            cpuWriter->addCall(def_cmd_pad);
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3394,13 +3449,13 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // ld a, l
-            addLdAL();
+            cpuWriter->addLdAL();
             // call 0x00DE      ; GTPDL
-            addCall(0x00DE);
+            cpuWriter->addCall(0x00DE);
             // ld h, 0
-            addLdH(0x00);
+            cpuWriter->addLdH(0x00);
             // ld l, a
-            addLdLA();
+            cpuWriter->addLdLA();
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3415,8 +3470,8 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // call base function
-            addCall(def_XBASIC_BASE);
-            // addCall(def_XBASIC_ABS_INT);  // abs()
+            cpuWriter->addCall(def_XBASIC_BASE);
+            // cpuWriter->addCall(def_XBASIC_ABS_INT);  // abs()
 
           } else
             result[0] = Lexeme::subtype_unknown;
@@ -3426,19 +3481,19 @@ int Compiler::evalFunction(ActionNode* action) {
             // ex de, hl
             addByteOptimized(0xEB);
             // ld hl, 0
-            addLdHL(0x0000);
+            cpuWriter->addLdHL(0x0000);
             // ld a, (de)
-            addLdAiDE();
+            cpuWriter->addLdAiDE();
             // and a
-            addAndA();
+            cpuWriter->addAndA();
             // jr z,$+4
-            addJrZ(0x03);
+            cpuWriter->addJrZ(0x03);
             //   inc de
-            addIncDE();
+            cpuWriter->addIncDE();
             //   ld a, (de)
-            addLdAiDE();
+            cpuWriter->addLdAiDE();
             //   ld l, a
-            addLdLA();
+            cpuWriter->addLdLA();
 
             result[0] = Lexeme::subtype_numeric;
 
@@ -3448,9 +3503,9 @@ int Compiler::evalFunction(ActionNode* action) {
         } else if (lexeme->value == "LEN") {
           if (result[0] == Lexeme::subtype_string) {
             // ld l, (hl)
-            addLdLiHL();
+            cpuWriter->addLdLiHL();
             // ld h, 0
-            addLdH(0x00);
+            cpuWriter->addLdH(0x00);
 
             result[0] = Lexeme::subtype_numeric;
 
@@ -3477,23 +3532,23 @@ int Compiler::evalFunction(ActionNode* action) {
 
         } else if (lexeme->value == "POS") {
           // ld hl, (0xF661)  ; TTYPOS
-          addLdHLii(0xF661);
+          cpuWriter->addLdHLii(0xF661);
           // ld h, 0
-          addLdH(0x00);
+          cpuWriter->addLdH(0x00);
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "LPOS") {
           // ld hl, (0xF415)  ; LPTPOS
-          addLdHLii(0xF415);
+          cpuWriter->addLdHLii(0xF415);
           // ld h, 0
-          addLdH(0x00);
+          cpuWriter->addLdH(0x00);
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "CSRLIN") {
           // ld hl, (0xF3DC)  ; CSRY
-          addLdHLii(0xF3DC);
+          cpuWriter->addLdHLii(0xF3DC);
           // ld h, 0
-          addLdH(0x00);
+          cpuWriter->addLdH(0x00);
           result[0] = Lexeme::subtype_numeric;
 
         } else if (lexeme->value == "CHR$") {
@@ -3510,15 +3565,15 @@ int Compiler::evalFunction(ActionNode* action) {
             // ld hl, temporary string
             addTempStr(true);
             // inc d
-            addIncD();
+            cpuWriter->addIncD();
             // ld (hl), d
-            addLdiHLD();
+            cpuWriter->addLdiHLD();
             // inc hl
-            addIncHL();
+            cpuWriter->addIncHL();
             // ld (hl), e
-            addLdiHLE();
+            cpuWriter->addLdiHLE();
             // dec hl
-            addDecHL();
+            cpuWriter->addDecHL();
 
             result[0] = Lexeme::subtype_string;
 
@@ -3535,14 +3590,14 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // ld a, 0x20      ; space
-            addLdA(0x20);
+            cpuWriter->addLdA(0x20);
             // ld b, l
-            addLdBL();
+            cpuWriter->addLdBL();
             // ld hl, temporary string
             addTempStr(true);
             // call 0x7e4c    ; STRING$ (hl=destination, b=number of chars,
             // a=char)
-            addCall(def_XBASIC_STRING);
+            cpuWriter->addCall(def_XBASIC_STRING);
 
             result[0] = Lexeme::subtype_string;
 
@@ -3559,7 +3614,7 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // call tab function
-            addCall(def_XBASIC_TAB);
+            cpuWriter->addCall(def_XBASIC_TAB);
 
             result[0] = Lexeme::subtype_string;
 
@@ -3585,23 +3640,23 @@ int Compiler::evalFunction(ActionNode* action) {
             // ld hl, temporary string
             addTempStr(true);
             // push hl
-            addPushHL();
+            cpuWriter->addPushHL();
             //   ld (hl), e
-            addLdiHLE();
+            cpuWriter->addLdiHLE();
             //   inc hl
-            addIncHL();
+            cpuWriter->addIncHL();
             //     call 0x009F        ; CHGET
-            addCall(0x009F);
+            cpuWriter->addCall(0x009F);
             //     ld (hl), a
-            addLdiHLA();
+            cpuWriter->addLdiHLA();
             //     inc hl
-            addIncHL();
+            cpuWriter->addIncHL();
             //     dec e
-            addDecE();
+            cpuWriter->addDecE();
             //   jr nz,$-8
-            addJrNZ((unsigned char)(0xFF - 7));
+            cpuWriter->addJrNZ((unsigned char)(0xFF - 7));
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
 
             result[0] = Lexeme::subtype_string;
 
@@ -3618,19 +3673,19 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // ld c, 1
-            addLdC(0x01);
+            cpuWriter->addLdC(0x01);
             // call 0x7e22    ; xbasic OCT$/HEX$/BIN$ (in: hl=integer, de=BUF,
             // c=mode [1=bin, 3=oct, 4=hex]; out: hl destination corrected)
-            addCall(def_XBASIC_OCT_HEX_BIN);
+            cpuWriter->addCall(def_XBASIC_OCT_HEX_BIN);
             // ld de, temporary string
             addTempStr(false);
             // push de
-            addPushDE();
+            cpuWriter->addPushDE();
             //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
             //   out: hl end of string)
-            addCall(def_XBASIC_COPY_STRING);
+            cpuWriter->addCall(def_XBASIC_COPY_STRING);
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
 
             result[0] = Lexeme::subtype_string;
 
@@ -3647,19 +3702,19 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // ld c, 3
-            addLdC(0x03);
+            cpuWriter->addLdC(0x03);
             // call 0x7e22    ; xbasic OCT$/HEX$/BIN$ (in: hl=integer, de=BUF,
             // c=mode [1=bin, 3=oct, 4=hex]; out: hl destination corrected)
-            addCall(def_XBASIC_OCT_HEX_BIN);
+            cpuWriter->addCall(def_XBASIC_OCT_HEX_BIN);
             // ld de, temporary string
             addTempStr(false);
             // push de
-            addPushDE();
+            cpuWriter->addPushDE();
             //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
             //   out: hl end of string)
-            addCall(def_XBASIC_COPY_STRING);
+            cpuWriter->addCall(def_XBASIC_COPY_STRING);
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
 
             result[0] = Lexeme::subtype_string;
 
@@ -3676,19 +3731,19 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (result[0] == Lexeme::subtype_numeric) {
             // ld c, 4
-            addLdC(0x04);
+            cpuWriter->addLdC(0x04);
             // call 0x7e22    ; xbasic OCT$/HEX$/BIN$ (in: hl=integer, de=BUF,
             // c=mode [1=bin, 3=oct, 4=hex]; out: hl destination corrected)
-            addCall(def_XBASIC_OCT_HEX_BIN);
+            cpuWriter->addCall(def_XBASIC_OCT_HEX_BIN);
             // ld de, temporary string
             addTempStr(false);
             // push de
-            addPushDE();
+            cpuWriter->addPushDE();
             //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
             //   out: hl end of string)
-            addCall(def_XBASIC_COPY_STRING);
+            cpuWriter->addCall(def_XBASIC_COPY_STRING);
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
 
             result[0] = Lexeme::subtype_string;
 
@@ -3701,7 +3756,7 @@ int Compiler::evalFunction(ActionNode* action) {
           result[0] = Lexeme::subtype_numeric;
 
           // call usr0
-          addCall(def_usr0);
+          cpuWriter->addCall(def_usr0);
 
         } else if (lexeme->value == "RESOURCESIZE") {
           // cast
@@ -3709,7 +3764,7 @@ int Compiler::evalFunction(ActionNode* action) {
           result[0] = Lexeme::subtype_numeric;
 
           // call usr1
-          addCall(def_usr1);
+          cpuWriter->addCall(def_usr1);
 
         } else if (lexeme->value == "COLLISION") {
           // cast
@@ -3717,7 +3772,7 @@ int Compiler::evalFunction(ActionNode* action) {
           result[0] = Lexeme::subtype_numeric;
 
           // call SUB_SPRCOL_ONE
-          addCall(def_usr3_COLLISION_ONE);
+          cpuWriter->addCall(def_usr3_COLLISION_ONE);
 
         } else if (lexeme->value == "USR" || lexeme->value == "USR0") {
           // cast
@@ -3726,12 +3781,12 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (has_defusr) {
             // xor a
-            addXorA();
+            cpuWriter->addXorA();
             // call XBASIC_USR
-            addCall(def_XBASIC_USR);
+            cpuWriter->addCall(def_XBASIC_USR);
           } else {
             // call usr0
-            addCall(def_usr0);
+            cpuWriter->addCall(def_usr0);
           }
 
         } else if (lexeme->value == "USR1") {
@@ -3741,12 +3796,12 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (has_defusr) {
             // ld a, 1
-            addLdA(0x01);
+            cpuWriter->addLdA(0x01);
             // call XBASIC_USR
-            addCall(def_XBASIC_USR);
+            cpuWriter->addCall(def_XBASIC_USR);
           } else {
             // call usr1
-            addCall(def_usr1);
+            cpuWriter->addCall(def_usr1);
           }
 
         } else if (lexeme->value == "USR2") {
@@ -3756,12 +3811,12 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (has_defusr) {
             // ld a, 2
-            addLdA(0x02);
+            cpuWriter->addLdA(0x02);
             // call XBASIC_USR
-            addCall(def_XBASIC_USR);
+            cpuWriter->addCall(def_XBASIC_USR);
           } else {
             // call usr2
-            addCall(def_usr2);
+            cpuWriter->addCall(def_usr2);
           }
 
         } else if (lexeme->value == "USR3") {
@@ -3771,12 +3826,12 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (has_defusr) {
             // ld a, 3
-            addLdA(0x03);
+            cpuWriter->addLdA(0x03);
             // call XBASIC_USR
-            addCall(def_XBASIC_USR);
+            cpuWriter->addCall(def_XBASIC_USR);
           } else {
             // call usr3
-            addCall(def_usr3);
+            cpuWriter->addCall(def_usr3);
           }
 
         } else if (lexeme->value == "USR4") {
@@ -3786,9 +3841,9 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (has_defusr) {
             // ld a, 4
-            addLdA(0x04);
+            cpuWriter->addLdA(0x04);
             // call XBASIC_USR
-            addCall(def_XBASIC_USR);
+            cpuWriter->addCall(def_XBASIC_USR);
           }
 
         } else if (lexeme->value == "USR5") {
@@ -3798,9 +3853,9 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (has_defusr) {
             // ld a, 5
-            addLdA(0x05);
+            cpuWriter->addLdA(0x05);
             // call XBASIC_USR
-            addCall(def_XBASIC_USR);
+            cpuWriter->addCall(def_XBASIC_USR);
           }
 
         } else if (lexeme->value == "USR6") {
@@ -3810,9 +3865,9 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (has_defusr) {
             // ld a, 6
-            addLdA(0x06);
+            cpuWriter->addLdA(0x06);
             // call XBASIC_USR
-            addCall(def_XBASIC_USR);
+            cpuWriter->addCall(def_XBASIC_USR);
           }
 
         } else if (lexeme->value == "USR7") {
@@ -3822,9 +3877,9 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (has_defusr) {
             // ld a, 7
-            addLdA(0x07);
+            cpuWriter->addLdA(0x07);
             // call XBASIC_USR
-            addCall(def_XBASIC_USR);
+            cpuWriter->addCall(def_XBASIC_USR);
           }
 
         } else if (lexeme->value == "USR8") {
@@ -3834,9 +3889,9 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (has_defusr) {
             // ld a, 8
-            addLdA(0x08);
+            cpuWriter->addLdA(0x08);
             // call XBASIC_USR
-            addCall(def_XBASIC_USR);
+            cpuWriter->addCall(def_XBASIC_USR);
           }
 
         } else if (lexeme->value == "USR9") {
@@ -3846,9 +3901,9 @@ int Compiler::evalFunction(ActionNode* action) {
 
           if (has_defusr) {
             // ld a, 9
-            addLdA(0x09);
+            cpuWriter->addLdA(0x09);
             // call XBASIC_USR
-            addCall(def_XBASIC_USR);
+            cpuWriter->addCall(def_XBASIC_USR);
           }
 
         } else
@@ -3870,30 +3925,30 @@ int Compiler::evalFunction(ActionNode* action) {
             // ex de,hl
             addByteOptimized(0xEB);
             // pop bc
-            addPopBC();
+            cpuWriter->addPopBC();
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
             // push de
-            addPushDE();
+            cpuWriter->addPushDE();
 
             // cast
             addCast(result[1], Lexeme::subtype_numeric);
             result[1] = Lexeme::subtype_numeric;
 
             // pop de
-            addPopDE();
+            cpuWriter->addPopDE();
             // ex de,hl
-            addExDEHL();
+            cpuWriter->addExDEHL();
 
           } else {
             // pop de
-            addPopDE();
+            cpuWriter->addPopDE();
           }
 
           if (result[1] == Lexeme::subtype_numeric &&
               result[0] == Lexeme::subtype_numeric) {
             // call 0x6fa7     ; xbasic POINT (in: de=x, hl=y; out: hl=color)
-            addCall(def_XBASIC_POINT);
+            cpuWriter->addCall(def_XBASIC_POINT);
 
             result[0] = Lexeme::subtype_numeric;
 
@@ -3913,40 +3968,40 @@ int Compiler::evalFunction(ActionNode* action) {
             // ex de,hl
             addByteOptimized(0xEB);
             // pop bc
-            addPopBC();
+            cpuWriter->addPopBC();
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
             // push de
-            addPushDE();
+            cpuWriter->addPushDE();
 
             // cast
             addCast(result[1], Lexeme::subtype_numeric);
             result[1] = Lexeme::subtype_numeric;
 
             // pop de
-            addPopDE();
+            cpuWriter->addPopDE();
             // ex de,hl
-            addExDEHL();
+            cpuWriter->addExDEHL();
 
           } else {
             // pop de
-            addPopDE();
+            cpuWriter->addPopDE();
           }
 
           if (result[1] == Lexeme::subtype_numeric &&
               result[0] == Lexeme::subtype_numeric) {
             // ld h, e
-            addLdHE();
+            cpuWriter->addLdHE();
             // inc l
-            addIncL();
+            cpuWriter->addIncL();
             // inc h     ; bios based coord system (home=1,1)
-            addIncH();
+            cpuWriter->addIncH();
 
             // call def_tileAddress (in: hl=xy; out: hl=address)
-            addCall(def_tileAddress);
+            cpuWriter->addCall(def_tileAddress);
 
             // call 0x70a1    ; xbasic VPEEK (in:hl, out:hl)
-            addCall(def_XBASIC_VPEEK);
+            cpuWriter->addCall(def_XBASIC_VPEEK);
 
             result[0] = Lexeme::subtype_numeric;
 
@@ -3966,30 +4021,30 @@ int Compiler::evalFunction(ActionNode* action) {
             // ex de,hl
             addByteOptimized(0xEB);
             // pop bc
-            addPopBC();
+            cpuWriter->addPopBC();
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
             // push de
-            addPushDE();
+            cpuWriter->addPushDE();
 
             // cast
             addCast(result[1], Lexeme::subtype_numeric);
             result[1] = Lexeme::subtype_numeric;
 
             // pop de
-            addPopDE();
+            cpuWriter->addPopDE();
             // ex de,hl
-            addExDEHL();
+            cpuWriter->addExDEHL();
 
           } else {
             // pop de
-            addPopDE();
+            cpuWriter->addPopDE();
           }
 
           if (result[1] == Lexeme::subtype_numeric &&
               result[0] == Lexeme::subtype_numeric) {
             // call SUB_SPRCOL_COUPLE
-            addCall(def_usr3_COLLISION_COUPLE);
+            cpuWriter->addCall(def_usr3_COLLISION_COUPLE);
 
             result[0] = Lexeme::subtype_numeric;
 
@@ -4004,33 +4059,33 @@ int Compiler::evalFunction(ActionNode* action) {
             result[0] = Lexeme::subtype_numeric;
           } else if (result[0] == Lexeme::subtype_string) {
             // inc hl
-            addIncHL();
+            cpuWriter->addIncHL();
             // ld l, (hl)
-            addLdLiHL();
+            cpuWriter->addLdLiHL();
             // ld h, 0
-            addLdH(0x00);
+            cpuWriter->addLdH(0x00);
             result[0] = Lexeme::subtype_numeric;
           }
 
           if (result[1] == Lexeme::subtype_numeric) {
             // pop de
-            addPopDE();
+            cpuWriter->addPopDE();
           } else if (result[1] == Lexeme::subtype_single_decimal ||
                      result[1] == Lexeme::subtype_double_decimal) {
             // pop bc
-            addPopAF();
+            cpuWriter->addPopAF();
             // pop de
-            addPopDE();
+            cpuWriter->addPopDE();
             // push hl
-            addPushHL();
+            cpuWriter->addPushHL();
             //   ex de,hl
-            addExDEHL();
+            cpuWriter->addExDEHL();
             // cast
             addCast(result[1], Lexeme::subtype_numeric);
             //   ex de,hl
-            addExDEHL();
+            cpuWriter->addExDEHL();
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
             result[1] = Lexeme::subtype_numeric;
           } else
             result[1] = Lexeme::subtype_unknown;
@@ -4038,14 +4093,14 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[0] == Lexeme::subtype_numeric &&
               result[1] == Lexeme::subtype_numeric) {
             // ld a, l
-            addLdAL();
+            cpuWriter->addLdAL();
             // ld b, e
-            addLdBE();
+            cpuWriter->addLdBE();
             // ld hl, temporary string
             addTempStr(true);
             // call 0x7e4c    ; STRING$ (hl=destination, b=number of chars,
             // a=char)
-            addCall(def_XBASIC_STRING);
+            cpuWriter->addCall(def_XBASIC_STRING);
 
             result[0] = Lexeme::subtype_string;
 
@@ -4063,22 +4118,22 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[1] == Lexeme::subtype_string &&
               result[0] == Lexeme::subtype_numeric) {
             // ld a, l
-            addLdAL();
+            cpuWriter->addLdAL();
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
 
             // call 0x7d99     ; xbasic left string (in: a=size, hl=source; out:
             // hl=BUF)
-            addCall(def_XBASIC_LEFT);
+            cpuWriter->addCall(def_XBASIC_LEFT);
             // ld de, temporary string
             addTempStr(false);
             // push de
-            addPushDE();
+            cpuWriter->addPushDE();
             //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
             //   out: hl end of string)
-            addCall(def_XBASIC_COPY_STRING);
+            cpuWriter->addCall(def_XBASIC_COPY_STRING);
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
 
             result[0] = Lexeme::subtype_string;
 
@@ -4096,22 +4151,22 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[1] == Lexeme::subtype_string &&
               result[0] == Lexeme::subtype_numeric) {
             // ld a, l
-            addLdAL();
+            cpuWriter->addLdAL();
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
 
             // call 0x7da0     ; xbasic right string (in: a=size, hl=source;
             // out: hl=BUF)
-            addCall(def_XBASIC_RIGHT);
+            cpuWriter->addCall(def_XBASIC_RIGHT);
             // ld de, temporary string
             addTempStr(false);
             // push de
-            addPushDE();
+            cpuWriter->addPushDE();
             //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
             //   out: hl end of string)
-            addCall(def_XBASIC_COPY_STRING);
+            cpuWriter->addCall(def_XBASIC_COPY_STRING);
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
 
             result[0] = Lexeme::subtype_string;
 
@@ -4129,26 +4184,26 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[1] == Lexeme::subtype_string &&
               result[0] == Lexeme::subtype_numeric) {
             // ld b, l         ; start char
-            addLdBL();
+            cpuWriter->addLdBL();
             // pop hl          ; source string
-            addPopHL();
+            cpuWriter->addPopHL();
 
             // ld a, 0xff      ; number of chars (all left on source string)
-            addLdA(0xff);
+            cpuWriter->addLdA(0xff);
 
             // call 0x7db1     ; xbasic mid string (in: b=start, a=size,
             // hl=source; out: hl=BUF)
-            addCall(def_XBASIC_MID);
+            cpuWriter->addCall(def_XBASIC_MID);
 
             // ld de, temporary string
             addTempStr(false);
             // push de
-            addPushDE();
+            cpuWriter->addPushDE();
             //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
             //   out: hl end of string)
-            addCall(def_XBASIC_COPY_STRING);
+            cpuWriter->addCall(def_XBASIC_COPY_STRING);
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
 
             result[0] = Lexeme::subtype_string;
 
@@ -4166,68 +4221,68 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[1] == Lexeme::subtype_string &&
               result[0] == Lexeme::subtype_single_decimal) {
             // ld c, b
-            addLdCB();
+            cpuWriter->addLdCB();
             // ex de, hl
-            addExDEHL();
+            cpuWriter->addExDEHL();
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
 
             // call XBASIC_USING    ; hl = item format string, c:de = float, out
             // hl=string
-            addCall(def_XBASIC_USING);
+            cpuWriter->addCall(def_XBASIC_USING);
             // ld de, temporary string
             addTempStr(false);
             // push de
-            addPushDE();
+            cpuWriter->addPushDE();
             //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
             //   out: hl end of string)
-            addCall(def_XBASIC_COPY_STRING);
+            cpuWriter->addCall(def_XBASIC_COPY_STRING);
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
 
             result[0] = Lexeme::subtype_string;
 
           } else if (result[1] == Lexeme::subtype_numeric &&
                      result[0] == Lexeme::subtype_single_decimal) {
             // pop de
-            addPopDE();
+            cpuWriter->addPopDE();
             // push de
-            addPushDE();
+            cpuWriter->addPushDE();
             //   ld a, e
-            addLdAE();
+            cpuWriter->addLdAE();
             //   rrca
-            addRRCA();
+            cpuWriter->addRRCA();
             //   rrca
-            addRRCA();
+            cpuWriter->addRRCA();
             //   rrca
-            addRRCA();
+            cpuWriter->addRRCA();
             //   rrca
-            addRRCA();
+            cpuWriter->addRRCA();
             //   and 0x0F
-            addAnd(0x0F);
+            cpuWriter->addAnd(0x0F);
             //   ld d, a
-            addLdDA();
+            cpuWriter->addLdDA();
             //   ld a, e
-            addLdAE();
+            cpuWriter->addLdAE();
             //   and 0x0F
-            addAnd(0x0F);
+            cpuWriter->addAnd(0x0F);
             //   ld e, a
-            addLdEA();
+            cpuWriter->addLdEA();
             // pop af
-            addPopAF();
+            cpuWriter->addPopAF();
 
             // call XBASIC_USING_DO    ; a=format, d=thousand digits, e=decimal
             // digits, b:hl=number, out hl=string
-            addCall(def_XBASIC_USING_DO);
+            cpuWriter->addCall(def_XBASIC_USING_DO);
             // ld de, temporary string
             addTempStr(false);
             // push de
-            addPushDE();
+            cpuWriter->addPushDE();
             //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
             //   out: hl end of string)
-            addCall(def_XBASIC_COPY_STRING);
+            cpuWriter->addCall(def_XBASIC_COPY_STRING);
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
 
             result[0] = Lexeme::subtype_string;
 
@@ -4238,16 +4293,16 @@ int Compiler::evalFunction(ActionNode* action) {
           if (result[0] == Lexeme::subtype_string &&
               result[1] == Lexeme::subtype_string) {
             // ex de,hl        ; search string
-            addExDEHL();
+            cpuWriter->addExDEHL();
             // pop hl          ; source string
-            addPopHL();
+            cpuWriter->addPopHL();
 
             // ld a, 0x01      ; search start
-            addLdA(0x01);
+            cpuWriter->addLdA(0x01);
 
             // call 0x7e6c     ; xbasic INSTR (in: a=start, hl=source,
             // de=search; out: hl=position)
-            addCall(def_XBASIC_INSTR);
+            cpuWriter->addCall(def_XBASIC_INSTR);
 
             result[0] = Lexeme::subtype_numeric;
 
@@ -4269,47 +4324,47 @@ int Compiler::evalFunction(ActionNode* action) {
           }
 
           // ld a, l             ; number of chars
-          addLdAL();
+          cpuWriter->addLdAL();
 
           if (result[1] == Lexeme::subtype_single_decimal ||
               result[1] == Lexeme::subtype_double_decimal) {
             // pop bc
-            addPopBC();
+            cpuWriter->addPopBC();
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
             // push af
-            addPushAF();
+            cpuWriter->addPushAF();
             // cast
             addCast(result[1], Lexeme::subtype_numeric);
             // pop af
-            addPopAF();
+            cpuWriter->addPopAF();
             result[1] = Lexeme::subtype_numeric;
           } else {
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
           }
 
           if (result[2] == Lexeme::subtype_string &&
               result[1] == Lexeme::subtype_numeric &&
               result[0] == Lexeme::subtype_numeric) {
             // ld b, l         ; start char
-            addLdBL();
+            cpuWriter->addLdBL();
             // pop hl          ; source string
-            addPopHL();
+            cpuWriter->addPopHL();
 
             // call 0x7db1     ; xbasic mid string (in: b=start, a=size,
             // hl=source; out: hl=BUF)
-            addCall(def_XBASIC_MID);
+            cpuWriter->addCall(def_XBASIC_MID);
 
             // ld de, temporary string
             addTempStr(false);
             // push de
-            addPushDE();
+            cpuWriter->addPushDE();
             //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
             //   out: hl end of string)
-            addCall(def_XBASIC_COPY_STRING);
+            cpuWriter->addCall(def_XBASIC_COPY_STRING);
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
 
             result[0] = Lexeme::subtype_string;
 
@@ -4318,38 +4373,38 @@ int Compiler::evalFunction(ActionNode* action) {
 
         } else if (lexeme->value == "INSTR") {
           // ex de,hl        ; search string
-          addExDEHL();
+          cpuWriter->addExDEHL();
           // pop hl          ; source string
-          addPopHL();
+          cpuWriter->addPopHL();
           // pop bc          ; search start
-          addPopBC();
+          cpuWriter->addPopBC();
 
           if (result[2] == Lexeme::subtype_single_decimal ||
               result[2] == Lexeme::subtype_double_decimal) {
             // ex (sp),hl
-            addExiSPHL();
+            cpuWriter->addExiSPHL();
             // push de
-            addPushDE();
+            cpuWriter->addPushDE();
             //   cast
             addCast(result[2], Lexeme::subtype_numeric);
             //   ld c, l
-            addLdCL();
+            cpuWriter->addLdCL();
             // pop de
-            addPopDE();
+            cpuWriter->addPopDE();
             // pop hl
-            addPopHL();
+            cpuWriter->addPopHL();
             result[2] = Lexeme::subtype_numeric;
           }
 
           // ld a, c             ; search start
-          addLdAC();
+          cpuWriter->addLdAC();
 
           if (result[0] == Lexeme::subtype_string &&
               result[1] == Lexeme::subtype_string &&
               result[2] == Lexeme::subtype_numeric) {
             // call 0x7e6c     ; xbasic INSTR (in: a=start, hl=source,
             // de=search; out: hl=position)
-            addCall(def_XBASIC_INSTR);
+            cpuWriter->addCall(def_XBASIC_INSTR);
 
             result[0] = Lexeme::subtype_numeric;
 
@@ -4402,7 +4457,7 @@ bool Compiler::addVarAddress(ActionNode* action) {
 
             // ld hl, variable_address +  (x_index * x_factor)
             addFix(lexeme)->step = i;
-            addLdHL(0x0000);
+            cpuWriter->addLdHL(0x0000);
 
           } else {
             syntaxError("Invalid array index type");
@@ -4415,35 +4470,35 @@ bool Compiler::addVarAddress(ActionNode* action) {
 
           if (lexeme->x_factor == 2) {
             // add hl, hl
-            addAddHLHL();
+            cpuWriter->addAddHLHL();
           } else if (lexeme->x_factor == 3) {
             // ld d, h
-            addLdDH();
+            cpuWriter->addLdDH();
             // ld e, l
-            addLdEL();
+            cpuWriter->addLdEL();
             // add hl, hl
-            addAddHLHL();
+            cpuWriter->addAddHLHL();
             // add hl, de
-            addAddHLDE();
+            cpuWriter->addAddHLDE();
           } else if (lexeme->x_factor == 256) {
             // ld h, l
-            addLdHL();
+            cpuWriter->addLdHL();
             // ld l, 0
-            addLdL(0x00);
+            cpuWriter->addLdL(0x00);
           } else {
             // ld de, x_factor
-            addLdDE(lexeme->x_factor);
+            cpuWriter->addLdDE(lexeme->x_factor);
 
             // call 0x761b    ; integer multiplication (hl = hl * de)
-            addCall(def_XBASIC_MULTIPLY_INTEGERS);
+            cpuWriter->addCall(def_XBASIC_MULTIPLY_INTEGERS);
           }
 
           // ld de, variable
           addFix(lexeme);
-          addLdDE(0x0000);
+          cpuWriter->addLdDE(0x0000);
 
           // add hl, de   ; hl = variable_address +  (x_index * x_factor)
-          addAddHLDE();
+          cpuWriter->addAddHLDE();
         }
 
       } break;
@@ -4481,7 +4536,7 @@ bool Compiler::addVarAddress(ActionNode* action) {
               // ld hl, variable_address +  (x_index * x_factor) + (y_index *
               // y_factor)
               addFix(lexeme)->step = i;
-              addLdHL(0x0000);
+              cpuWriter->addLdHL(0x0000);
 
             } else {
               syntaxError("Invalid array 2nd index type");
@@ -4498,31 +4553,31 @@ bool Compiler::addVarAddress(ActionNode* action) {
 
           if (lexeme->x_factor == 2) {
             // add hl, hl
-            addAddHLHL();
+            cpuWriter->addAddHLHL();
           } else if (lexeme->x_factor == 3) {
             // ld d, h
-            addLdDH();
+            cpuWriter->addLdDH();
             // ld e, l
-            addLdEL();
+            cpuWriter->addLdEL();
             // add hl, hl
-            addAddHLHL();
+            cpuWriter->addAddHLHL();
             // add hl, de
-            addAddHLDE();
+            cpuWriter->addAddHLDE();
           } else if (lexeme->x_factor == 256) {
             // ld h, l
-            addLdHL();
+            cpuWriter->addLdHL();
             // ld l, 0
-            addLdL(0x00);
+            cpuWriter->addLdL(0x00);
           } else {
             // ld de, x_factor
-            addLdDE(lexeme->x_factor);
+            cpuWriter->addLdDE(lexeme->x_factor);
 
             // call 0x761b    ; integer multiplication (hl = hl * de)
-            addCall(def_XBASIC_MULTIPLY_INTEGERS);
+            cpuWriter->addCall(def_XBASIC_MULTIPLY_INTEGERS);
           }
 
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
 
           // ld hl, y index
           result_subtype = evalExpression(action2);
@@ -4533,7 +4588,7 @@ bool Compiler::addVarAddress(ActionNode* action) {
           // ld de, y_factor
           // addLdDEnn(lexeme->y_factor);
           // call 0x761b    ; integer multiplication (hl = hl * de)
-          // addCall(def_XBASIC_MULTIPLY_INTEGERS);
+          // cpuWriter->addCall(def_XBASIC_MULTIPLY_INTEGERS);
           //--------------------
 
           factor = lexeme->y_factor;
@@ -4550,26 +4605,26 @@ bool Compiler::addVarAddress(ActionNode* action) {
           }
           if (diff != factor) {
             // ld b, h           ; save index in bc
-            addLdBH();
+            cpuWriter->addLdBH();
             // ld c, l
-            addLdCL();
+            cpuWriter->addLdCL();
           }
 
           while (factor) {
             if (!first) {
               // ex de, hl     ; save current total
-              addExDEHL();
+              cpuWriter->addExDEHL();
               // ld h, b       ; restore index from bc
-              addLdHB();
+              cpuWriter->addLdHB();
               // ld l, c
-              addLdLC();
+              cpuWriter->addLdLC();
             }
 
             diff = 1;
 
             while (factor >= (diff << 1)) {
               // add hl, hl    ; x 2
-              addAddHLHL();
+              cpuWriter->addAddHLHL();
 
               diff <<= 1;  // diff *= 2;
             }
@@ -4578,7 +4633,7 @@ bool Compiler::addVarAddress(ActionNode* action) {
               first = false;
             } else {
               // add hl, de    ; add last total
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
             }
 
             factor -= diff;
@@ -4586,21 +4641,21 @@ bool Compiler::addVarAddress(ActionNode* action) {
 
           if (lexeme->x_factor == 2) {
             // add hl, hl    ; x 2
-            addAddHLHL();
+            cpuWriter->addAddHLHL();
           }
 
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
 
           // add hl, de     ; hl = (x_index * x_factor) + (y_index * y_factor)
-          addAddHLDE();
+          cpuWriter->addAddHLDE();
 
           // ld de, variable
           addFix(lexeme);
-          addLdDE(0x0000);
+          cpuWriter->addLdDE(0x0000);
 
           // add hl, de    ; hl += variable_adress
-          addAddHLDE();
+          cpuWriter->addAddHLDE();
         }
 
       } break;
@@ -4618,7 +4673,7 @@ bool Compiler::addVarAddress(ActionNode* action) {
     } else {
       // ld hl, variable
       addFix(lexeme);
-      addLdHL(0x0000);
+      cpuWriter->addLdHL(0x0000);
     }
   }
 
@@ -4628,12 +4683,12 @@ bool Compiler::addVarAddress(ActionNode* action) {
 void Compiler::addTempStr(bool atHL) {
   if (atHL) {
     // call GET_NEXT_TEMP_STRING_ADDRESS
-    addCall(def_GET_NEXT_TEMP_STRING_ADDRESS);
+    cpuWriter->addCall(def_GET_NEXT_TEMP_STRING_ADDRESS);
   } else {
     // ex de, hl
-    addExDEHL();
+    cpuWriter->addExDEHL();
     // call GET_NEXT_TEMP_STRING_ADDRESS
-    addCall(def_GET_NEXT_TEMP_STRING_ADDRESS);
+    cpuWriter->addCall(def_GET_NEXT_TEMP_STRING_ADDRESS);
     // ex de, hl
     addByteOptimized(0xEB);
   }
@@ -4646,37 +4701,37 @@ void Compiler::addCast(int from, int to) {
         return;
       } else if (to == Lexeme::subtype_string) {
         // call 0x7b26   ; xbasic int to string (in hl, out hl)
-        addCall(def_XBASIC_CAST_INTEGER_TO_STRING);
+        cpuWriter->addCall(def_XBASIC_CAST_INTEGER_TO_STRING);
       } else if (to == Lexeme::subtype_single_decimal ||
                  to == Lexeme::subtype_double_decimal) {
         // call 0x782d   ; xbasic int to float (in hl, out b:hl)
-        addCall(def_XBASIC_CAST_INTEGER_TO_FLOAT);
+        cpuWriter->addCall(def_XBASIC_CAST_INTEGER_TO_FLOAT);
       }
 
     } else if (from == Lexeme::subtype_string) {
       if (to == Lexeme::subtype_numeric) {
         // call 0x7e07   ; VAL function - xbasic string to float (in hl, out
         // b:hl)
-        addCall(def_XBASIC_CAST_STRING_TO_FLOAT);
+        cpuWriter->addCall(def_XBASIC_CAST_STRING_TO_FLOAT);
         // call 0x784f   ; xbasic float to integer (in b:hl, out hl)
-        addCall(def_XBASIC_CAST_FLOAT_TO_INTEGER);
+        cpuWriter->addCall(def_XBASIC_CAST_FLOAT_TO_INTEGER);
       } else if (to == Lexeme::subtype_string) {
         return;
       } else if (to == Lexeme::subtype_single_decimal ||
                  to == Lexeme::subtype_double_decimal) {
         // call 0x7e07   ; VAL function - xbasic string to float (in hl, out
         // b:hl)
-        addCall(def_XBASIC_CAST_STRING_TO_FLOAT);
+        cpuWriter->addCall(def_XBASIC_CAST_STRING_TO_FLOAT);
       }
 
     } else if (from == Lexeme::subtype_single_decimal ||
                from == Lexeme::subtype_double_decimal) {
       if (to == Lexeme::subtype_numeric) {
         // call 0x784f   ; xbasic float to integer (in b:hl, out hl)
-        addCall(def_XBASIC_CAST_FLOAT_TO_INTEGER);
+        cpuWriter->addCall(def_XBASIC_CAST_FLOAT_TO_INTEGER);
       } else if (to == Lexeme::subtype_string) {
         // call 0x7b80   ; xbasic float to string (in b:hl, out hl)
-        addCall(def_XBASIC_CAST_FLOAT_TO_STRING);
+        cpuWriter->addCall(def_XBASIC_CAST_FLOAT_TO_STRING);
       } else if (to == Lexeme::subtype_single_decimal ||
                  to == Lexeme::subtype_double_decimal) {
         return;

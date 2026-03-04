@@ -21,12 +21,14 @@
 #include <queue>
 
 #include "compiler_statement_strategy_factory.h"
+#include "cpu_opcode_writer.h"
 #include "fswrapper.h"
 #include "parser.h"
 #include "pletter.h"
 #include "resources.h"
 #include "symbols.h"
-#include "z80.h"
+
+using namespace std;
 
 #define COMPILE_MAX_PAGES (16 * 4)
 #define COMPILE_CODE_SIZE (COMPILE_MAX_PAGES * 0x4000)
@@ -39,8 +41,11 @@ extern unsigned char bin_header_bin[];
  * @brief Compiler class for semantic analysis,
  * specialized as a Z80 code builder for MSX system
  */
-class Compiler : public IZ80 {
+class Compiler {
  private:
+  ICpuOpcodeWriter* cpuWriter;
+  CpuWorkspaceContext* cpuContext;
+
   /***
    * @brief Perform a semanthic analysis on the specified tag node
    * @param tag TagNode object (action list)
@@ -244,7 +249,7 @@ class Compiler : public IZ80 {
   void syntaxError(string msg);
 
  public:
-  Compiler();
+  explicit Compiler(ICpuOpcodeWriter* cpuWriter);
   virtual ~Compiler();
 
   /***
@@ -255,7 +260,31 @@ class Compiler : public IZ80 {
   bool build(Parser* parser);
   int write(unsigned char* dest, int start_address);
 
-  float ramMemoryPerc;
+  int getCodeSize() const;
+  float getRamMemoryPerc() const;
+  bool getPt3() const;
+  bool getAkm() const;
+  bool getFont() const;
+  bool getHasTinySprite() const;
+
+  SymbolManager& getSymbolManager();
+  const SymbolManager& getSymbolManager() const;
+
+  ResourceManager& getResourceManager();
+  const ResourceManager& getResourceManager() const;
+
+  int getRamSize() const;
+
+  const string& getErrorMessage() const;
+
+  TagNode* getCurrentTag() const;
+
+  Parser* getParser() const;
+  BuildOptions* getOpts() const;
+
+  bool isCompiled() const;
+
+ private:
   bool pt3, akm, font, file_support, has_defusr;
   bool has_open_grp;
   bool has_tiny_sprite;
@@ -263,9 +292,6 @@ class Compiler : public IZ80 {
   SymbolManager symbolManager;
   ResourceManager resourceManager;
 
-  int code_start, ram_start, ram_page;
-  int ram_size;
-  int segm_last, segm_total;
   string error_message;
 
   TagNode* current_tag;
@@ -275,10 +301,6 @@ class Compiler : public IZ80 {
 
   bool compiled;
 
- protected:
-  unsigned char* ram;  //[0xFFFF];
-
-  int ram_pointer;
   int mark_count, for_count;
 
   SymbolNode *heap_mark, *temp_str_mark;

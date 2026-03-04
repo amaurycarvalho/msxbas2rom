@@ -5,157 +5,157 @@
  */
 
 #include "compiler.h"
-
 #include "compiler_hooks.h"
 
 void Compiler::cmd_start() {
   // ld (SAVSTK), sp
-  addLdiiSP(0xf6b1);
+  cpuWriter->addLdiiSP(0xf6b1);
 
   // ld a, (SLTSTR)     ; start slot
-  addLdAii(def_SLTSTR);
+  cpuWriter->addLdAii(def_SLTSTR);
 
   // ld h, 0x40
-  addLdH(0x40);
+  cpuWriter->addLdH(0x40);
 
   // call ENASLT        ; enable xbasic page
-  addCall(def_ENASLT);
+  cpuWriter->addCall(def_ENASLT);
 
   // ld hl, HEAP START ADDRESS
   addFix(heap_mark);
-  addLdHL(0x0000);
+  cpuWriter->addLdHL(0x0000);
 
   // ld de, TEMPORARY STRING START ADDRESS
   addFix(temp_str_mark);
-  addLdDE(0x0000);
+  cpuWriter->addLdDE(0x0000);
 
   if (parser->getHasFont()) {
     // ld ix, FONT BUFFER START ADDRESS
-    addByte(0xDD);
+    cpuWriter->addByte(0xDD);
     addFix(heap_mark)->step = -def_RAM_BUFSIZ;
-    addLdHL(0x0000);
+    cpuWriter->addLdHL(0x0000);
   } else {
     // push hl
-    addPushHL();
+    cpuWriter->addPushHL();
     // pop ix
-    addPopIX();
+    cpuWriter->addPopIX();
   }
 
   // call XBASIC INIT                  ; hl=heap start address, de=temporary
   // string start address, bc=data address, ix=font address, a=data segment
-  addCall(def_XBASIC_INIT);
+  cpuWriter->addCall(def_XBASIC_INIT);
 
   if (parser->getHasTraps()) {
     if (opts->megaROM) {
       // ld a, 0xFF
-      addLdA(0xFF);
+      cpuWriter->addLdA(0xFF);
     } else {
       // xor a
-      addXorA();
+      cpuWriter->addXorA();
     }
     // ld (0xFC82), a          ; start of TRPTBL reserved area (megaROM flag to
     // traps)
-    addLdiiA(def_MR_TRAP_FLAG);
+    cpuWriter->addLdiiA(def_MR_TRAP_FLAG);
   }
 
   if (opts->megaROM) {
     // ld a, 2
-    addLdA(0x02);
+    cpuWriter->addLdA(0x02);
     // call MR_CHANGE_SGM
-    addCall(def_MR_CHANGE_SGM);
+    cpuWriter->addCall(def_MR_CHANGE_SGM);
   }
 
   if (parser->getHasData() || parser->getHasIData()) {
     // ld hl, data resource number
-    addLdHL(parser->getResourceCount());
+    cpuWriter->addLdHL(parser->getResourceCount());
     // ld (DAC), hl
-    addLdiiHL(def_DAC);
+    cpuWriter->addLdiiHL(def_DAC);
     // call cmd_restore
-    addCall(def_cmd_restore);  // MSXBAS2ROM resource RESTORE statement
+    cpuWriter->addCall(
+        def_cmd_restore);  // MSXBAS2ROM resource RESTORE statement
   }
 
   if (parser->getHasAkm()) {
     // initialize AKM player
-    addCall(def_player_initialize);
+    cpuWriter->addCall(def_player_initialize);
   }
 
   // ei
-  addEI();
+  cpuWriter->addEI();
 }
 
 void Compiler::cmd_end(bool doCodeRegistering) {
   if (doCodeRegistering) {
     /// @remark first instruction needs to be a skip to the program start code
     if (parser->getHasAkm()) {
-      addJr(1 + 3 + 10);
+      cpuWriter->addJr(1 + 3 + 10);
     } else
-      addJr(1 + 10);
+      cpuWriter->addJr(1 + 10);
 
     /// mark the END statement start code
     end_mark = addPreMark();
-    end_mark->address = code_pointer;
+    end_mark->address = cpuContext->code_pointer;
 
     /// write the END statement code
     if (parser->getHasAkm()) {
       // disable AKM player
-      addCall(def_player_unhook);
+      cpuWriter->addCall(def_player_unhook);
     }
 
     // call XBASIC_END
-    addCall(def_XBASIC_END);
+    cpuWriter->addCall(def_XBASIC_END);
 
     // ld sp, (SAVSTK)
-    addLdSPii(0xf6b1);
+    cpuWriter->addLdSPii(0xf6b1);
 
     // ld hl, fake empty line
-    addLdHL(def_ENDPRG);
+    cpuWriter->addLdHL(def_ENDPRG);
 
     // ret               ; return to basic
-    addRet();
+    cpuWriter->addRet();
 
   } else {
     /// jump to the real END statement
     // jp end_mark
     if (end_mark) {
       addFix(end_mark);
-      addJp(0x0000);
+      cpuWriter->addJp(0x0000);
     }
   }
 }
 
 void Compiler::cmd_cls() {
-  addCall(def_XBASIC_CLS);  // call cls
+  cpuWriter->addCall(def_XBASIC_CLS);  // call cls
 }
 
 void Compiler::cmd_clear() {
   /// clear variables workarea
-  addXorA();                //! A = 0
-  addLdHLii(def_HEAPSTR);   //! HL = heap start address
-  addLdDE(def_RAM_BOTTOM);  //! DE = variables start address
-  addSbcHLDE();             //! HL -= DE
-  addLdCL();
-  addLdBH();  //! BC = HL (variables workarea size)
-  addLdLE();
-  addLdHD();    //! HL = DE
-  addIncDE();   //! DE = HL + 1
-  addLdiHLA();  //! (HL) = A
-  addLDIR();    //! (DE++) = (HL++), until BC-- = 0
+  cpuWriter->addXorA();                //! A = 0
+  cpuWriter->addLdHLii(def_HEAPSTR);   //! HL = heap start address
+  cpuWriter->addLdDE(def_RAM_BOTTOM);  //! DE = variables start address
+  cpuWriter->addSbcHLDE();             //! HL -= DE
+  cpuWriter->addLdCL();
+  cpuWriter->addLdBH();  //! BC = HL (variables workarea size)
+  cpuWriter->addLdLE();
+  cpuWriter->addLdHD();    //! HL = DE
+  cpuWriter->addIncDE();   //! DE = HL + 1
+  cpuWriter->addLdiHLA();  //! (HL) = A
+  cpuWriter->addLDIR();    //! (DE++) = (HL++), until BC-- = 0
 }
 
 void Compiler::cmd_beep() {
-  addCall(0x00c0);  // call beep
+  cpuWriter->addCall(0x00c0);  // call beep
 }
 
 void Compiler::cmd_randomize() {
   // ld hl, 0x3579      ; RANDOMIZE 1 - FIX
-  addLdHL(0x3579);
+  cpuWriter->addLdHL(0x3579);
   // ld (0xF7BC+0), hl  ; SWPTMP+0
-  addLdiiHL(0xF7BC);
+  cpuWriter->addLdiiHL(0xF7BC);
 
   // ld hl, (0xFC9E)    ; RANDOMIZE 2 - JIFFY
-  addLdHLii(0xFC9E);
+  cpuWriter->addLdHLii(0xFC9E);
   // ld (0xF7BC+2), hl  ; SWPTMP+2
-  addLdiiHL(0xF7BE);
+  cpuWriter->addLdiiHL(0xF7BE);
 }
 
 void Compiler::cmd_goto() {
@@ -173,7 +173,7 @@ void Compiler::cmd_goto() {
 
         // jp address
         addFix(lexeme->value);
-        addJp(0x0000);
+        cpuWriter->addJp(0x0000);
         return;
       }
     }
@@ -197,7 +197,7 @@ void Compiler::cmd_gosub() {
 
         // call address
         addFix(lexeme->value);
-        addCall(0x0000);
+        cpuWriter->addCall(0x0000);
         return;
       }
     }
@@ -212,7 +212,7 @@ void Compiler::cmd_return() {
 
   if (t == 0) {
     // ret
-    addRet();
+    cpuWriter->addRet();
     return;
 
   } else if (t == 1) {
@@ -227,65 +227,65 @@ void Compiler::cmd_return() {
 
         if (opts->megaROM) {
           // pop bc           ; delete old return segment/address
-          addPopBC();
+          cpuWriter->addPopBC();
           // pop de           ; delete old return segment/address
-          addPopDE();
+          cpuWriter->addPopDE();
           // ld a, 0x48       ; verify if running on trap (MR_CALL_TRAP)
-          addLdA(0x48);
+          cpuWriter->addLdA(0x48);
           // cp b
-          addCpB();
+          cpuWriter->addCpB();
           // jp nz, address   ; if not, jump to new address and segment
           addFix(lexeme->value);
-          addJpNZ(0x0000);
+          cpuWriter->addJpNZ(0x0000);
 
           // pop de           ; fix trap return control
-          addPopDE();
+          cpuWriter->addPopDE();
           // pop hl
-          addPopHL();
+          cpuWriter->addPopHL();
           // exx
-          addExx();
+          cpuWriter->addExx();
           // special ld hl, address
           addFix(lexeme->value);
           addLdHLmegarom();
           // ex (sp), hl      ; new return address
-          addExiSPHL();
+          cpuWriter->addExiSPHL();
           // exx
-          addExx();
+          cpuWriter->addExx();
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
           // push de
-          addPushDE();
+          cpuWriter->addPushDE();
           // push af          ; new return segment
-          addPushAF();
+          cpuWriter->addPushAF();
           // push bc          ; trap return
-          addPushBC();
+          cpuWriter->addPushBC();
           // ret
-          addRet();
+          cpuWriter->addRet();
 
         } else {
           // pop bc           ; delete old return address
-          addPopBC();
+          cpuWriter->addPopBC();
           // ld a, 0x6C       ; verify if running on trap
-          addLdA(0x6C);
+          cpuWriter->addLdA(0x6C);
           // cp b
-          addCpB();
+          cpuWriter->addCpB();
           // jp nz, address   ; jump to new address
           addFix(lexeme->value);
-          addJpNZ(0x0000);
+          cpuWriter->addJpNZ(0x0000);
 
           // pop de           ; fix trap return control
-          addPopDE();
+          cpuWriter->addPopDE();
           // ld hl, address
           addFix(lexeme->value);
-          addLdHL(0x0000);
+          cpuWriter->addLdHL(0x0000);
           // ex (sp), hl
-          addExiSPHL();
+          cpuWriter->addExiSPHL();
           // push de
-          addPushDE();
+          cpuWriter->addPushDE();
           // push bc
-          addPushBC();
+          cpuWriter->addPushBC();
           // ret
-          addRet();
+          cpuWriter->addRet();
         }
 
         return;
@@ -312,7 +312,7 @@ void Compiler::cmd_print() {
       if (lexeme) {
         if (lexeme->type == Lexeme::type_separator) {
           if (lexeme->value == ",") {
-            addCall(def_XBASIC_PRINT_TAB);  // call print_tab
+            cpuWriter->addCall(def_XBASIC_PRINT_TAB);  // call print_tab
           } else if (lexeme->value == ";") {
             continue;
           } else if (lexeme->value == "#") {
@@ -328,7 +328,7 @@ void Compiler::cmd_print() {
               addFix(io_redirect_mark->symbol);
             else
               io_redirect_mark = addMark();
-            addCall(0x0000);
+            cpuWriter->addCall(0x0000);
 
             continue;
           } else {
@@ -339,14 +339,14 @@ void Compiler::cmd_print() {
           result_subtype = evalExpression(action);
 
           if (result_subtype == Lexeme::subtype_string) {
-            addCall(def_XBASIC_PRINT_STR);  // call print_str
+            cpuWriter->addCall(def_XBASIC_PRINT_STR);  // call print_str
 
           } else if (result_subtype == Lexeme::subtype_numeric) {
-            addCall(def_XBASIC_PRINT_INT);  // call print_int
+            cpuWriter->addCall(def_XBASIC_PRINT_INT);  // call print_int
 
           } else if (result_subtype == Lexeme::subtype_single_decimal ||
                      result_subtype == Lexeme::subtype_double_decimal) {
-            addCall(def_XBASIC_PRINT_FLOAT);  // call print_float
+            cpuWriter->addCall(def_XBASIC_PRINT_FLOAT);  // call print_float
 
           } else {
             syntaxError("Invalid PRINT parameter");
@@ -357,13 +357,13 @@ void Compiler::cmd_print() {
     }
 
   } else {
-    addCall(def_XBASIC_PRINT_CRLF);  // call print_crlf
+    cpuWriter->addCall(def_XBASIC_PRINT_CRLF);  // call print_crlf
   }
 
   if (last_lexeme) {
     if (last_lexeme->type != Lexeme::type_separator ||
         (last_lexeme->value != ";" && last_lexeme->value != ",")) {
-      addCall(def_XBASIC_PRINT_CRLF);  // call print_crlf
+      cpuWriter->addCall(def_XBASIC_PRINT_CRLF);  // call print_crlf
     }
   }
 
@@ -373,7 +373,7 @@ void Compiler::cmd_print() {
       addFix(io_screen_mark->symbol);
     else
       io_screen_mark = addMark();
-    addCall(0x0000);
+    cpuWriter->addCall(0x0000);
   }
 }
 
@@ -391,7 +391,7 @@ void Compiler::cmd_input(bool question) {
       if (lexeme) {
         if (lexeme->type == Lexeme::type_separator) {
           if (lexeme->value == ",") {
-            addCall(def_XBASIC_PRINT_TAB);  // call print_tab
+            cpuWriter->addCall(def_XBASIC_PRINT_TAB);  // call print_tab
           } else if (lexeme->value == ";") {
             continue;
           } else if (lexeme->value == "#") {
@@ -405,7 +405,7 @@ void Compiler::cmd_input(bool question) {
               addFix(io_redirect_mark->symbol);
             else
               io_redirect_mark = addMark();
-            addCall(0x0000);
+            cpuWriter->addCall(0x0000);
 
             continue;
           } else {
@@ -417,9 +417,9 @@ void Compiler::cmd_input(bool question) {
             // call INPUT or LINE INPUT
 
             if (question) {
-              addCall(def_XBASIC_INPUT_1);
+              cpuWriter->addCall(def_XBASIC_INPUT_1);
             } else {
-              addCall(def_XBASIC_INPUT_2);
+              cpuWriter->addCall(def_XBASIC_INPUT_2);
             }
 
             // do assignment
@@ -432,14 +432,14 @@ void Compiler::cmd_input(bool question) {
             result_subtype = evalExpression(action);
 
             if (result_subtype == Lexeme::subtype_string) {
-              addCall(def_XBASIC_PRINT_STR);  // call print_str
+              cpuWriter->addCall(def_XBASIC_PRINT_STR);  // call print_str
 
             } else if (result_subtype == Lexeme::subtype_numeric) {
-              addCall(def_XBASIC_PRINT_INT);  // call print_int
+              cpuWriter->addCall(def_XBASIC_PRINT_INT);  // call print_int
 
             } else if (result_subtype == Lexeme::subtype_single_decimal ||
                        result_subtype == Lexeme::subtype_double_decimal) {
-              addCall(def_XBASIC_PRINT_FLOAT);  // call print_float
+              cpuWriter->addCall(def_XBASIC_PRINT_FLOAT);  // call print_float
 
             } else {
               syntaxError("Invalid INPUT parameter");
@@ -456,7 +456,7 @@ void Compiler::cmd_input(bool question) {
         addFix(io_screen_mark->symbol);
       else
         io_screen_mark = addMark();
-      addCall(0x0000);
+      cpuWriter->addCall(0x0000);
     }
 
   } else {
@@ -498,17 +498,17 @@ void Compiler::cmd_line() {
 
             if (result_subtype == Lexeme::subtype_null) {
               // ld hl, (0xFCB7)  ;GRPACX
-              addLdHLii(0xFCB7);
+              cpuWriter->addLdHLii(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_x0_coord = true;
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_x0_coord = true;
             }
 
@@ -518,17 +518,17 @@ void Compiler::cmd_line() {
 
             if (result_subtype == Lexeme::subtype_null) {
               // ld hl, (0xFCB9)  ;GRPACY
-              addLdHLii(0xFCB9);
+              cpuWriter->addLdHLii(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_y0_coord = true;
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_y0_coord = true;
             }
 
@@ -539,20 +539,20 @@ void Compiler::cmd_line() {
 
             if (result_subtype == Lexeme::subtype_null) {
               // ld hl, (0xFCB7)  ;GRPACX
-              addLdHLii(0xFCB7);
+              cpuWriter->addLdHLii(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_x0_coord = true;
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB7)  ;GRPACX
-              addLdDEii(0xFCB7);
+              cpuWriter->addLdDEii(0xFCB7);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_x0_coord = true;
             }
 
@@ -562,20 +562,20 @@ void Compiler::cmd_line() {
 
             if (result_subtype == Lexeme::subtype_null) {
               // ld hl, (0xFCB9)  ;GRPACY
-              addLdHLii(0xFCB9);
+              cpuWriter->addLdHLii(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_y0_coord = true;
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB9)  ;GRPACY
-              addLdDEii(0xFCB9);
+              cpuWriter->addLdDEii(0xFCB9);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_y0_coord = true;
             }
 
@@ -584,17 +584,17 @@ void Compiler::cmd_line() {
 
             if (!has_x0_coord) {
               // ex de,hl
-              addExDEHL();
+              cpuWriter->addExDEHL();
               // ld hl, (0xFCB7)  ;GRPACX
-              addLdHLii(0xFCB7);
+              cpuWriter->addLdHLii(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               // ld hl, (0xFCB9)  ;GRPACY
-              addLdHLii(0xFCB9);
+              cpuWriter->addLdHLii(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               // ex de,hl
-              addExDEHL();
+              cpuWriter->addExDEHL();
               has_x0_coord = true;
               has_y0_coord = true;
             }
@@ -608,9 +608,9 @@ void Compiler::cmd_line() {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_x1_coord = true;
             }
 
@@ -623,9 +623,9 @@ void Compiler::cmd_line() {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_y1_coord = true;
             }
 
@@ -634,17 +634,17 @@ void Compiler::cmd_line() {
 
             if (!has_x0_coord) {
               // ex de,hl
-              addExDEHL();
+              cpuWriter->addExDEHL();
               // ld hl, (0xFCB7)  ;GRPACX
-              addLdHLii(0xFCB7);
+              cpuWriter->addLdHLii(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               // ld hl, (0xFCB9)  ;GRPACY
-              addLdHLii(0xFCB9);
+              cpuWriter->addLdHLii(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               // ex de,hl
-              addExDEHL();
+              cpuWriter->addExDEHL();
               has_x0_coord = true;
               has_y0_coord = true;
             }
@@ -657,13 +657,13 @@ void Compiler::cmd_line() {
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB7)  ;GRPACX
-              addLdDEii(0xFCB7);
+              cpuWriter->addLdDEii(0xFCB7);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_x1_coord = true;
             }
 
@@ -675,13 +675,13 @@ void Compiler::cmd_line() {
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB9)  ;GRPACY
-              addLdDEii(0xFCB9);
+              cpuWriter->addLdDEii(0xFCB9);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_y1_coord = true;
             }
 
@@ -702,7 +702,7 @@ void Compiler::cmd_line() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
 
           has_color = true;
 
@@ -740,7 +740,7 @@ void Compiler::cmd_line() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld b, l
-          addLdBL();
+          cpuWriter->addLdBL();
 
           has_operator = true;
 
@@ -755,58 +755,58 @@ void Compiler::cmd_line() {
 
     if (!has_color) {
       // ld a, (0xF3E9)       ; FORCLR
-      addLdAii(0xF3E9);
+      cpuWriter->addLdAii(0xF3E9);
     }
 
     if (!has_operator) {
       // ld b, 0
-      addLdB(0x00);
+      cpuWriter->addLdB(0x00);
     }
 
     if (has_y1_coord) {
       // pop hl
-      addPopHL();
+      cpuWriter->addPopHL();
     } else {
       // ld hl, (0xFCB9)  ;GRPACY
-      addLdHLii(0xFCB9);
+      cpuWriter->addLdHLii(0xFCB9);
     }
 
     if (has_x1_coord) {
       // pop de
-      addPopDE();
+      cpuWriter->addPopDE();
     } else {
       // ld de, (0xFCB7)  ;GRPACX
-      addLdDEii(0xFCB7);
+      cpuWriter->addLdDEii(0xFCB7);
     }
 
     if (has_y0_coord) {
       // pop iy
-      addPopIY();
+      cpuWriter->addPopIY();
     } else {
       // ld iy, (0xFCB9)  ;GRPACY
-      addLdIYii(0xFCB9);
+      cpuWriter->addLdIYii(0xFCB9);
     }
 
     if (has_x0_coord) {
       // pop ix
-      addPopIX();
+      cpuWriter->addPopIX();
     } else {
       // ld ix, (0xFCB7)  ;GRPACX
-      addLdIXii(0xFCB7);
+      cpuWriter->addLdIXii(0xFCB7);
     }
 
     if (line_type == 0 || !has_line_type) {
       // call 0x6DA7   ; xbasic LINE (in: ix=x0, iy=y0, de=x1, hl=y1, a=color,
       // b=operator)
-      addCall(def_XBASIC_LINE);
+      cpuWriter->addCall(def_XBASIC_LINE);
     } else if (line_type == 1) {
       // call 0x6D49   ; xbasic BOX (in: ix=x0, iy=y0, de=x1, hl=y1, a=color,
       // b=operator)
-      addCall(def_XBASIC_BOX);
+      cpuWriter->addCall(def_XBASIC_BOX);
     } else {
       // call 0x6E27   ; xbasic BOX FILLED (in: ix=x0, iy=y0, de=x1, hl=y1,
       // a=color, b=operator)
-      addCall(def_XBASIC_BOXF);
+      cpuWriter->addCall(def_XBASIC_BOXF);
     }
 
   } else {
@@ -848,17 +848,17 @@ void Compiler::cmd_copy() {
 
             if (result_subtype == Lexeme::subtype_null) {
               // ld hl, (0xFCB7)  ;GRPACX
-              addLdHLii(0xFCB7);
+              cpuWriter->addLdHLii(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_x0_coord = true;
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_x0_coord = true;
             }
 
@@ -868,17 +868,17 @@ void Compiler::cmd_copy() {
 
             if (result_subtype == Lexeme::subtype_null) {
               // ld hl, (0xFCB9)  ;GRPACY
-              addLdHLii(0xFCB9);
+              cpuWriter->addLdHLii(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_y0_coord = true;
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_y0_coord = true;
             }
 
@@ -889,20 +889,20 @@ void Compiler::cmd_copy() {
 
             if (result_subtype == Lexeme::subtype_null) {
               // ld hl, (0xFCB7)  ;GRPACX
-              addLdHLii(0xFCB7);
+              cpuWriter->addLdHLii(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_x0_coord = true;
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB7)  ;GRPACX
-              addLdDEii(0xFCB7);
+              cpuWriter->addLdDEii(0xFCB7);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_x0_coord = true;
             }
 
@@ -912,20 +912,20 @@ void Compiler::cmd_copy() {
 
             if (result_subtype == Lexeme::subtype_null) {
               // ld hl, (0xFCB9)  ;GRPACY
-              addLdHLii(0xFCB9);
+              cpuWriter->addLdHLii(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_y0_coord = true;
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB9)  ;GRPACY
-              addLdDEii(0xFCB9);
+              cpuWriter->addLdDEii(0xFCB9);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_y0_coord = true;
             }
 
@@ -941,9 +941,9 @@ void Compiler::cmd_copy() {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_x1_coord = true;
             }
 
@@ -956,9 +956,9 @@ void Compiler::cmd_copy() {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_y1_coord = true;
             }
 
@@ -973,13 +973,13 @@ void Compiler::cmd_copy() {
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB7)  ;GRPACX
-              addLdDEii(0xFCB7);
+              cpuWriter->addLdDEii(0xFCB7);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_x1_coord = true;
             }
 
@@ -991,13 +991,13 @@ void Compiler::cmd_copy() {
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB9)  ;GRPACY
-              addLdDEii(0xFCB9);
+              cpuWriter->addLdDEii(0xFCB9);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_y1_coord = true;
             }
 
@@ -1009,7 +1009,7 @@ void Compiler::cmd_copy() {
               if (lexeme->type == Lexeme::type_identifier && lexeme->isArray) {
                 // ld hl, variable
                 addFix(lexeme);
-                addLdHL(0x0000);
+                cpuWriter->addLdHL(0x0000);
                 result_subtype = Lexeme::subtype_numeric;
               } else {
                 result_subtype = evalExpression(action);
@@ -1026,7 +1026,7 @@ void Compiler::cmd_copy() {
             }
 
             // push hl
-            addPushHL();
+            cpuWriter->addPushHL();
 
             state++;
           }
@@ -1043,9 +1043,9 @@ void Compiler::cmd_copy() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
           // push af
-          addPushAF();
+          cpuWriter->addPushAF();
 
           has_src_page = true;
 
@@ -1064,9 +1064,9 @@ void Compiler::cmd_copy() {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_x2_coord = true;
             }
 
@@ -1079,9 +1079,9 @@ void Compiler::cmd_copy() {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
               has_y2_coord = true;
             }
 
@@ -1093,7 +1093,7 @@ void Compiler::cmd_copy() {
               if (lexeme->type == Lexeme::type_identifier && lexeme->isArray) {
                 // ld hl, variable
                 addFix(lexeme);
-                addLdHL(0x0000);
+                cpuWriter->addLdHL(0x0000);
                 result_subtype = Lexeme::subtype_numeric;
               } else {
                 result_subtype = evalExpression(action);
@@ -1124,9 +1124,9 @@ void Compiler::cmd_copy() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
           // push af
-          addPushAF();
+          cpuWriter->addPushAF();
 
           has_dest_page = true;
 
@@ -1142,8 +1142,8 @@ void Compiler::cmd_copy() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld a, l
-          addLdAL();
-          addPushAF();
+          cpuWriter->addLdAL();
+          cpuWriter->addPushAF();
 
           has_operator = true;
 
@@ -1159,193 +1159,193 @@ void Compiler::cmd_copy() {
     if (has_address_from) {
       if (!has_operator) {
         // xor a
-        addXorA();
+        cpuWriter->addXorA();
       } else {
-        addPopAF();
+        cpuWriter->addPopAF();
       }
       // ld b, a
-      addLdBA();
+      cpuWriter->addLdBA();
       // ld (LOGOP), a
-      addLdiiA(def_LOGOP);
+      cpuWriter->addLdiiA(def_LOGOP);
 
       if (has_dest_page) {
         // pop af
-        addPopAF();
+        cpuWriter->addPopAF();
         // ld (ACPAGE), a
-        addLdiiA(def_ACPAGE);
+        cpuWriter->addLdiiA(def_ACPAGE);
       }
 
       if (has_y2_coord) {
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
       } else {
         // ld hl, (0xFCB9)  ;GRPACY
-        addLdHLii(0xFCB9);
+        cpuWriter->addLdHLii(0xFCB9);
       }
       // ld (DY), hl
-      addLdiiHL(def_DY);
+      cpuWriter->addLdiiHL(def_DY);
 
       if (has_x2_coord) {
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
       } else {
         // ld hl, (0xFCB7)  ;GRPACX
-        addLdHLii(0xFCB7);
+        cpuWriter->addLdHLii(0xFCB7);
       }
       // ld (DX), hl
-      addLdiiHL(def_DX);
+      cpuWriter->addLdiiHL(def_DX);
 
       if (has_src_page) {
         // pop af
-        addPopAF();
+        cpuWriter->addPopAF();
         // add a,a
-        addAddA();
+        cpuWriter->addAddA();
         // add a,a
-        addAddA();
+        cpuWriter->addAddA();
         // ld (ARGT), a    ; direction/expansion (0000DDEE)
-        addLdiiA(def_ARGT);
+        cpuWriter->addLdiiA(def_ARGT);
       }
 
       // pop hl
-      addPopHL();
+      cpuWriter->addPopHL();
 
       // call XBASIC_COPY_FROM
-      addCall(def_XBASIC_COPY_FROM);
+      cpuWriter->addCall(def_XBASIC_COPY_FROM);
 
     } else if (has_address_to) {
       // ex de,hl      ; address to (hl to de)
-      addExDEHL();
+      cpuWriter->addExDEHL();
 
       if (has_src_page) {
         // pop af
-        addPopAF();
+        cpuWriter->addPopAF();
         // ld (ACPAGE), a
-        addLdiiA(def_ACPAGE);
+        cpuWriter->addLdiiA(def_ACPAGE);
       }
 
       if (has_y1_coord) {
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
       } else {
         // ld hl, (0xFCB9)  ;GRPACY
-        addLdHLii(0xFCB9);
+        cpuWriter->addLdHLii(0xFCB9);
       }
       // ld (NY), hl
-      addLdiiHL(def_NY);
+      cpuWriter->addLdiiHL(def_NY);
 
       if (has_x1_coord) {
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
       } else {
         // ld hl, (0xFCB7)  ;GRPACX
-        addLdHLii(0xFCB7);
+        cpuWriter->addLdHLii(0xFCB7);
       }
       // ld (NX), hl
-      addLdiiHL(def_NX);
+      cpuWriter->addLdiiHL(def_NX);
 
       if (has_y0_coord) {
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
       } else {
         // ld hl, (0xFCB9)  ;GRPACY
-        addLdHLii(0xFCB9);
+        cpuWriter->addLdHLii(0xFCB9);
       }
       // ld (SY), hl
-      addLdiiHL(def_SY);
+      cpuWriter->addLdiiHL(def_SY);
 
       if (has_x0_coord) {
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
       } else {
         // ld hl, (0xFCB7)  ;GRPACX
-        addLdHLii(0xFCB7);
+        cpuWriter->addLdHLii(0xFCB7);
       }
       // ld (SX), hl
-      addLdiiHL(def_SX);
+      cpuWriter->addLdiiHL(def_SX);
 
       // ex de,hl
-      addExDEHL();
+      cpuWriter->addExDEHL();
 
       // call XBASIC_COPY_TO
-      addCall(def_XBASIC_COPY_TO);
+      cpuWriter->addCall(def_XBASIC_COPY_TO);
 
     } else {
       if (!has_operator) {
         // ld b, 0
-        addLdB(0x00);
+        cpuWriter->addLdB(0x00);
       } else {
-        addPopBC();
+        cpuWriter->addPopBC();
       }
 
       if (has_dest_page) {
         // pop af
-        addPopAF();
+        cpuWriter->addPopAF();
       } else {
         // ld a, (ACPAGE)
-        addLdAii(def_ACPAGE);
+        cpuWriter->addLdAii(def_ACPAGE);
       }
       // ld (0xFC19), a
-      addLdiiA(0xFC19);
+      cpuWriter->addLdiiA(0xFC19);
 
       if (has_y2_coord) {
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
         // ld (0xFCB9), hl  ;GRPACY
-        addLdiiHL(0xFCB9);
+        cpuWriter->addLdiiHL(0xFCB9);
       }
 
       if (has_x2_coord) {
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
         // ld (0xFCB7), hl  ;GRPACX
-        addLdiiHL(0xFCB7);
+        cpuWriter->addLdiiHL(0xFCB7);
       }
 
       if (has_src_page) {
         // pop af
-        addPopAF();
+        cpuWriter->addPopAF();
       } else {
         // ld a, (ACPAGE)
-        addLdAii(def_ACPAGE);
+        cpuWriter->addLdAii(def_ACPAGE);
       }
       // ld (0xFC18), a
-      addLdiiA(0xFC18);
+      cpuWriter->addLdiiA(0xFC18);
 
       if (has_y1_coord) {
         // pop iy
-        addPopIY();
+        cpuWriter->addPopIY();
       } else {
         // ld iy, (0xFCB9)  ;GRPACY
-        addLdIYii(0xFCB9);
+        cpuWriter->addLdIYii(0xFCB9);
       }
 
       if (has_x1_coord) {
         // pop ix
-        addPopIX();
+        cpuWriter->addPopIX();
       } else {
         // ld ix, (0xFCB7)  ;GRPACX
-        addLdIXii(0xFCB7);
+        cpuWriter->addLdIXii(0xFCB7);
       }
 
       if (has_y0_coord) {
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
       } else {
         // ld hl, (0xFCB9)  ;GRPACY
-        addLdHLii(0xFCB9);
+        cpuWriter->addLdHLii(0xFCB9);
       }
 
       if (has_x0_coord) {
         // pop de
-        addPopDE();
+        cpuWriter->addPopDE();
       } else {
         // ld de, (0xFCB7)  ;GRPACX
-        addLdDEii(0xFCB7);
+        cpuWriter->addLdDEii(0xFCB7);
       }
 
       // call COPY    ; in: de=x0, hl=y0, ix=x1, iy=y1, 0xFC18=srcpg, 0xFCB7=x2,
       // 0xFCB9=y2, 0xFC19=destpg, b=operator
-      addCall(def_XBASIC_COPY);
+      cpuWriter->addCall(def_XBASIC_COPY);
     }
 
   } else {
@@ -1371,53 +1371,53 @@ void Compiler::cmd_copy_screen() {
       addCast(result_subtype, Lexeme::subtype_numeric);
 
       // ld a, l
-      addLdAL();
+      cpuWriter->addLdAL();
     }
 
     // and 1
-    addAnd(0x01);
+    cpuWriter->addAnd(0x01);
     // inc a
-    addIncA();
+    cpuWriter->addIncA();
     // or 0x10
-    addOr(0x10);
+    cpuWriter->addOr(0x10);
     // ld hl, BUF
-    addLdHL(def_BUF);
+    cpuWriter->addLdHL(def_BUF);
     // push hl
-    addPushHL();
+    cpuWriter->addPushHL();
     //   ld (hl), 0xC5  ; SCREEN token
-    addLdiHL(0xC5);
+    cpuWriter->addLdiHL(0xC5);
     //   inc hl
-    addIncHL();
+    cpuWriter->addIncHL();
     //   ld (hl), a
-    addLdiHLA();
+    cpuWriter->addLdiHLA();
     //   inc hl
-    addIncHL();
+    cpuWriter->addIncHL();
     //   xor a
-    addXorA();
+    cpuWriter->addXorA();
     //   ld (hl), a
-    addLdiHLA();
+    cpuWriter->addLdiHLA();
     //   inc hl
-    addIncHL();
+    cpuWriter->addIncHL();
     //   ld (hl), a
-    addLdiHLA();
+    cpuWriter->addLdiHLA();
     // pop hl
-    addPopHL();
+    cpuWriter->addPopHL();
 
     // ld a, (VERSION)
-    addLdAii(def_VERSION);
+    cpuWriter->addLdAii(def_VERSION);
     // and a
-    addAndA();
+    cpuWriter->addAndA();
     // jr z, skip
-    addJrZ(9);
+    cpuWriter->addJrZ(9);
 
     //   ld a, (hl)       ; first character
-    addLdAiHL();
+    cpuWriter->addLdAiHL();
     //   ld ix, (COPY)    ; COPY
-    addLdIXii(def_COPY_STMT);
+    cpuWriter->addLdIXii(def_COPY_STMT);
     //   call CALBAS
-    addCall(def_CALBAS);
+    cpuWriter->addCall(def_CALBAS);
     //   ei
-    addEI();
+    cpuWriter->addEI();
 
     // skip:
   }
@@ -1443,17 +1443,17 @@ void Compiler::cmd_sound() {
 
         if (i == 0) {
           // ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
           // push af
-          addPushAF();
+          cpuWriter->addPushAF();
         } else {
           // ld e, l
-          addLdEL();
+          cpuWriter->addLdEL();
           // pop af
-          addPopAF();
+          cpuWriter->addPopAF();
 
           // call sound function
-          addCall(def_XBASIC_SOUND);
+          cpuWriter->addCall(def_XBASIC_SOUND);
         }
       }
     }
@@ -1496,17 +1496,17 @@ void Compiler::cmd_bload() {
             // execute a resource screen load
 
             // ld hl, resource number
-            addLdHL(resource_number);
+            cpuWriter->addLdHL(resource_number);
 
             // ld (DAC), hl
-            addLdiiHL(def_DAC);
+            cpuWriter->addLdiiHL(def_DAC);
 
             if (isTinySprite) {
               // call cmd_wrtspr                    ; tiny sprite loader
-              addCall(def_cmd_wrtspr);
+              cpuWriter->addCall(def_cmd_wrtspr);
             } else {
               // call screen_load
-              addCall(def_cmd_screen_load);
+              cpuWriter->addCall(def_cmd_screen_load);
             }
 
           } else {
@@ -1546,26 +1546,26 @@ void Compiler::cmd_play() {
           return;
         }
         // push hl
-        addPushHL();
+        cpuWriter->addPushHL();
       } else {
         if (xor_a) {
           // xor a
-          addXorA();
+          cpuWriter->addXorA();
           xor_a = false;
         }
         // push af
-        addPushAF();
+        cpuWriter->addPushAF();
       }
     }
 
     // pop bc
-    addPopBC();
+    cpuWriter->addPopBC();
     // pop de
-    addPopDE();
+    cpuWriter->addPopDE();
     // pop hl
-    addPopHL();
+    cpuWriter->addPopHL();
 
-    addCall(def_XBASIC_PLAY);
+    cpuWriter->addCall(def_XBASIC_PLAY);
 
   } else {
     syntaxError("Invalid PLAY parameters");
@@ -1591,7 +1591,7 @@ void Compiler::cmd_draw() {
           addFix(draw_mark->symbol);
         else
           draw_mark = addMark();
-        addCall(0x0000);
+        cpuWriter->addCall(0x0000);
 
       } else {
         syntaxError("Invalid DRAW parameter");
@@ -1729,7 +1729,7 @@ void Compiler::cmd_let() {
     addCast(result_subtype, Lexeme::subtype_string);
 
     // push hl
-    addPushHL();
+    cpuWriter->addPushHL();
 
     t = lex_action->actions.size();
 
@@ -1757,18 +1757,18 @@ void Compiler::cmd_let() {
       if (result[1] == Lexeme::subtype_string &&
           result[0] == Lexeme::subtype_numeric) {
         // ld a, l         ; start char
-        addLdAL();
+        cpuWriter->addLdAL();
         // pop de          ; de=destination string
-        addPopDE();
+        cpuWriter->addPopDE();
         // pop hl          ; hl=source string
-        addPopHL();
+        cpuWriter->addPopHL();
 
         // ld b, (hl)      ; number of chars (all from source)
-        addLdBiHL();
+        cpuWriter->addLdBiHL();
 
         // call 0x7dd8    ; mid assignment (in: hl=source string, b=size,
         // a=start, de=destination string)
-        addCall(def_XBASIC_MID_ASSIGN);
+        cpuWriter->addCall(def_XBASIC_MID_ASSIGN);
 
         return;
       }
@@ -1784,42 +1784,42 @@ void Compiler::cmd_let() {
       }
 
       // ld b, l             ; number of chars
-      addLdBL();
+      cpuWriter->addLdBL();
 
       if (result[1] == Lexeme::subtype_single_decimal ||
           result[1] == Lexeme::subtype_double_decimal) {
         // ld a, b
-        addLdAB();
+        cpuWriter->addLdAB();
         // pop bc
-        addPopBC();
+        cpuWriter->addPopBC();
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
         // push af
-        addPushAF();
+        cpuWriter->addPushAF();
         // cast
         addCast(result[1], Lexeme::subtype_numeric);
         // pop bc
-        addPopBC();
+        cpuWriter->addPopBC();
         result[1] = Lexeme::subtype_numeric;
       } else {
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
       }
 
       // ld a, l         ; start char
-      addLdAL();
+      cpuWriter->addLdAL();
 
       if (result[2] == Lexeme::subtype_string &&
           result[1] == Lexeme::subtype_numeric &&
           result[0] == Lexeme::subtype_numeric) {
         // pop de          ; de=destination string
-        addPopDE();
+        cpuWriter->addPopDE();
         // pop hl          ; hl=source string
-        addPopHL();
+        cpuWriter->addPopHL();
 
         // call 0x7dd8    ; mid assignment (in: hl=source string, b=size,
         // a=start, de=destination string)
-        addCall(def_XBASIC_MID_ASSIGN);
+        cpuWriter->addCall(def_XBASIC_MID_ASSIGN);
 
         return;
       }
@@ -1832,7 +1832,7 @@ void Compiler::cmd_let() {
     addCast(result_subtype, Lexeme::subtype_numeric);
 
     // push hl          ; data
-    addPushHL();
+    cpuWriter->addPushHL();
 
     t = lex_action->actions.size();
 
@@ -1853,17 +1853,17 @@ void Compiler::cmd_let() {
     result[0] = Lexeme::subtype_numeric;
 
     // pop bc           ; data
-    addPopBC();
+    cpuWriter->addPopBC();
 
     // call VDP.set     ; VDP assignment (in: bc=data, hl=register)
-    addCall(def_vdp_set);
+    cpuWriter->addCall(def_vdp_set);
 
   } else if (lexeme->value == "SPRITE$") {
     // cast
     addCast(result_subtype, Lexeme::subtype_string);
 
     // push hl
-    addPushHL();
+    cpuWriter->addPushHL();
 
     t = lex_action->actions.size();
 
@@ -1884,13 +1884,13 @@ void Compiler::cmd_let() {
     result[0] = Lexeme::subtype_numeric;
 
     // ld a, l
-    addLdAL();
+    cpuWriter->addLdAL();
     // pop hl
-    addPopHL();
+    cpuWriter->addPopHL();
 
     // call 0x7143     ; xbasic SPRITE assignment (in: a=sprite pattern,
     // hl=string)
-    addCall(def_XBASIC_SPRITE_ASSIGN);
+    cpuWriter->addCall(def_XBASIC_SPRITE_ASSIGN);
 
   } else {
     // cast
@@ -1907,17 +1907,17 @@ bool Compiler::addAssignment(ActionNode* action) {
   if (action->lexeme->type == Lexeme::type_keyword) {
     if (action->lexeme->value == "TIME") {
       // ld (0xFC9E), hl    ; JIFFY
-      addLdiiHL(0xFC9E);
+      cpuWriter->addLdiiHL(0xFC9E);
 
     } else if (action->lexeme->value == "MAXFILES") {
       // ld a, l
-      addLdAL();
+      cpuWriter->addLdAL();
       // ld ix, MAXFILES
-      addLdIX(def_MAXFILES);
+      cpuWriter->addLdIX(def_MAXFILES);
       // call CALBAS
-      addCall(def_CALBAS);
+      cpuWriter->addCall(def_CALBAS);
       // ei
-      addEI();
+      cpuWriter->addEI();
 
     } else {
       syntaxError("Invalid KEYWORD/FUNCTION assignment");
@@ -1927,52 +1927,52 @@ bool Compiler::addAssignment(ActionNode* action) {
     if (action->lexeme->isArray ||
         action->lexeme->subtype == Lexeme::subtype_string) {
       // push hl
-      addPushHL();
+      cpuWriter->addPushHL();
 
       if (action->lexeme->subtype == Lexeme::subtype_single_decimal ||
           action->lexeme->subtype == Lexeme::subtype_double_decimal) {
         // push bc
-        addPushBC();
+        cpuWriter->addPushBC();
       }
 
       if (!addVarAddress(action)) return false;
 
       if (action->lexeme->subtype == Lexeme::subtype_string) {
         // pop de
-        addPopDE();
+        cpuWriter->addPopDE();
         // ex de,hl
-        addExDEHL();
+        cpuWriter->addExDEHL();
 
         // call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest; out: hl
         // end of string)
-        addCall(def_XBASIC_COPY_STRING);
+        cpuWriter->addCall(def_XBASIC_COPY_STRING);
 
       } else if (action->lexeme->subtype == Lexeme::subtype_numeric) {
         // pop de
-        addPopDE();
+        cpuWriter->addPopDE();
         // ld (hl),e
-        addLdiHLE();
+        cpuWriter->addLdiHLE();
         // inc hl
-        addIncHL();
+        cpuWriter->addIncHL();
         // ld (hl),d
-        addLdiHLD();
+        cpuWriter->addLdiHLD();
 
       } else if (action->lexeme->subtype == Lexeme::subtype_single_decimal ||
                  action->lexeme->subtype == Lexeme::subtype_double_decimal) {
         // pop bc
-        addPopBC();
+        cpuWriter->addPopBC();
         // pop de
-        addPopDE();
+        cpuWriter->addPopDE();
         // ld (hl),b
-        addLdiHLB();
+        cpuWriter->addLdiHLB();
         // inc hl
-        addIncHL();
+        cpuWriter->addIncHL();
         // ld (hl),e
-        addLdiHLE();
+        cpuWriter->addLdiHLE();
         // inc hl
-        addIncHL();
+        cpuWriter->addIncHL();
         // ld (hl),d
-        addLdiHLD();
+        cpuWriter->addLdiHLD();
 
       } else {
         syntaxError("Invalid assignment");
@@ -1985,18 +1985,18 @@ bool Compiler::addAssignment(ActionNode* action) {
       if (action->lexeme->subtype == Lexeme::subtype_numeric) {
         // ld (var), hl
         addFix(action->lexeme);
-        addLdiiHL(0x0000);
+        cpuWriter->addLdiiHL(0x0000);
 
       } else if (action->lexeme->subtype == Lexeme::subtype_single_decimal ||
                  action->lexeme->subtype == Lexeme::subtype_double_decimal) {
         // ld a, b
-        addLdAB();
+        cpuWriter->addLdAB();
         // ld (var), a
         addFix(action->lexeme);
-        addLdiiA(0x0000);
+        cpuWriter->addLdiiA(0x0000);
         // ld (var+1), hl
         addFix(action->lexeme)->step = 1;
-        addLdiiHL(0x0000);
+        cpuWriter->addLdiiHL(0x0000);
 
       } else {
         syntaxError("Invalid assignment");
@@ -2035,12 +2035,12 @@ void Compiler::cmd_if() {
 
           if (result_subtype == Lexeme::subtype_numeric) {
             // ld a, l
-            addLdAL();
+            cpuWriter->addLdAL();
             // or h
-            addOrH();
+            cpuWriter->addOrH();
             // jp z, ELSE or ENDIF
             mark_else = addMark();
-            addJpZ(0x0000);
+            cpuWriter->addJpZ(0x0000);
 
           } else {
             syntaxError("Invalid condition expression");
@@ -2070,7 +2070,7 @@ void Compiler::cmd_if() {
           if (!isLastActionGoto) {
             // jp ENDIF
             mark_endif = addMark();
-            addJp(0x0000);
+            cpuWriter->addJp(0x0000);
           }
 
           isLastActionGoto = false;
@@ -2103,7 +2103,8 @@ void Compiler::cmd_if() {
 
           } else {
             // mark ELSE position
-            if (mark_else) mark_else->symbol->address = code_pointer;
+            if (mark_else)
+              mark_else->symbol->address = cpuContext->code_pointer;
 
             if (!evalActions(action)) break;
           }
@@ -2121,9 +2122,10 @@ void Compiler::cmd_if() {
 
     // mark ENDIF position
     if (mark_endif)
-      mark_endif->symbol->address = code_pointer;
+      mark_endif->symbol->address = cpuContext->code_pointer;
     else if (mark_else)
-      if (isElseLikeEndif) mark_else->symbol->address = code_pointer;
+      if (isElseLikeEndif)
+        mark_else->symbol->address = cpuContext->code_pointer;
   }
 }
 
@@ -2244,7 +2246,7 @@ void Compiler::cmd_for() {
     if (has_let && has_to) {
       if (!has_step && lex_var->subtype != Lexeme::subtype_numeric) {
         // ld hl, 1
-        addLdHL(0x0001);
+        cpuWriter->addLdHL(0x0001);
 
         addCast(Lexeme::subtype_numeric, forNext->for_step->subtype);
 
@@ -2254,162 +2256,162 @@ void Compiler::cmd_for() {
       if (lex_var->subtype == Lexeme::subtype_numeric) {
         // ld hl, (variable)
         addFix(forNext->for_var);
-        addLdHLii(0x0000);
+        cpuWriter->addLdHLii(0x0000);
 
         // jr $+12      ; jump to check code
         if (has_step) {
-          addJr(0x0B);
+          cpuWriter->addJr(0x0B);
         } else {
-          addJr(0x07);
+          cpuWriter->addJr(0x07);
         }
 
         // ;step code
         forNext->for_step_mark = addPreMark();
-        forNext->for_step_mark->address = code_pointer;
+        forNext->for_step_mark->address = cpuContext->code_pointer;
 
         // ld hl, (variable)
         addFix(forNext->for_var);
-        addLdHLii(0x0000);
+        cpuWriter->addLdHLii(0x0000);
 
         if (has_step) {
           // ld de, (step)
-          addByte(0xED);
+          cpuWriter->addByte(0xED);
           addFix(forNext->for_step);
-          addCmd(0x5B, 0x0000);
+          cpuWriter->addCmd(0x5B, 0x0000);
           // add hl,de
-          addAddHLDE();
+          cpuWriter->addAddHLDE();
         } else {
           // inc hl
-          addIncHL();
+          cpuWriter->addIncHL();
         }
 
         // ld (variable), hl
         addFix(forNext->for_var);
-        addLdiiHL(0x0000);
+        cpuWriter->addLdiiHL(0x0000);
 
         // ;check code
 
         // ex de, hl         ; after, de = (variable)
-        addExDEHL();
+        cpuWriter->addExDEHL();
 
         // ld hl, (to)
         addFix(forNext->for_to);
-        addLdHLii(0x0000);
+        cpuWriter->addLdHLii(0x0000);
 
         if (has_step) {
           // ld a, (step+1)
           addFix(forNext->for_step)->step = 1;
-          addLdAii(0x0000);
+          cpuWriter->addLdAii(0x0000);
 
           // bit 7, a
-          addWord(0xCB, 0x7F);
+          cpuWriter->addWord(0xCB, 0x7F);
           // jr z, $+2
-          addJrZ(0x01);
+          cpuWriter->addJrZ(0x01);
           //   ex de,hl
-          addExDEHL();
+          cpuWriter->addExDEHL();
         }
 
         // ;var > to? goto end for
 
         // call intCompareGT
-        // addCall(def_intCompareGT);
+        // cpuOpcodeWriter->addCall(def_intCompareGT);
         addKernelCall(def_intCompareGT);
 
         // jp nz, end_for
         forNext->for_end_mark = addMark();
-        addJpNZ(0x0000);
+        cpuWriter->addJpNZ(0x0000);
 
         // body start
 
       } else {
         // jr $+26      ; jump to check code
-        addJr(0x19);
+        cpuWriter->addJr(0x19);
 
         // ;step code
         forNext->for_step_mark = addPreMark();
-        forNext->for_step_mark->address = code_pointer;
+        forNext->for_step_mark->address = cpuContext->code_pointer;
 
         // ld a, (variable)
         addFix(forNext->for_var);
-        addLdAii(0x0000);
+        cpuWriter->addLdAii(0x0000);
         // ld b, a
-        addLdBA();
+        cpuWriter->addLdBA();
         // ld hl, (variable+1)
         addFix(forNext->for_var)->step = 1;
-        addLdHLii(0x0000);
+        cpuWriter->addLdHLii(0x0000);
 
         // ld a, (step)
         addFix(forNext->for_step);
-        addLdAii(0x0000);
+        cpuWriter->addLdAii(0x0000);
         // ld c, a
-        addLdCA();
+        cpuWriter->addLdCA();
         // ld de, (step)
-        addByte(0xED);
+        cpuWriter->addByte(0xED);
         addFix(forNext->for_step)->step = 1;
-        addCmd(0x5B, 0x0000);
+        cpuWriter->addCmd(0x5B, 0x0000);
         // call 0x76c1     ; add floats (b:hl + c:de = b:hl)
-        addCall(def_XBASIC_ADD_FLOATS);
+        cpuWriter->addCall(def_XBASIC_ADD_FLOATS);
 
         // ld a, b
-        addLdAB();
+        cpuWriter->addLdAB();
         // ld (variable), a
         addFix(forNext->for_var);
-        addLdiiA(0x0000);
+        cpuWriter->addLdiiA(0x0000);
         // ld (variable+1), hl
         addFix(forNext->for_var)->step = 1;
-        addLdiiHL(0x0000);
+        cpuWriter->addLdiiHL(0x0000);
 
         // ;check code
 
         // ld a, (to)
         addFix(forNext->for_to);
-        addLdAii(0x0000);
+        cpuWriter->addLdAii(0x0000);
         // ld b, a
-        addLdBA();
+        cpuWriter->addLdBA();
         // ld hl, (to+1)
         addFix(forNext->for_to)->step = 1;
-        addLdHLii(0x0000);
+        cpuWriter->addLdHLii(0x0000);
 
         // ld a, (variable)
         addFix(forNext->for_var);
-        addLdAii(0x0000);
+        cpuWriter->addLdAii(0x0000);
         // ld c, a
-        addLdCA();
+        cpuWriter->addLdCA();
         // ld de, (variable+1)
-        addByte(0xED);
+        cpuWriter->addByte(0xED);
         addFix(forNext->for_var)->step = 1;
-        addCmd(0x5B, 0x0000);
+        cpuWriter->addCmd(0x5B, 0x0000);
 
         // ld a, (step+2)
         addFix(forNext->for_step)->step = 2;
-        addLdAii(0x0000);
+        cpuWriter->addLdAii(0x0000);
 
         // bit 7, a
-        addWord(0xCB, 0x7F);
+        cpuWriter->addWord(0xCB, 0x7F);
         // jr nz, $+5
-        addJrNZ(0x04);
+        cpuWriter->addJrNZ(0x04);
         //   ex de,hl
-        addExDEHL();
+        cpuWriter->addExDEHL();
         //   ld a, c
-        addLdAC();
+        cpuWriter->addLdAC();
         //   ld c, b
-        addLdCB();
+        cpuWriter->addLdCB();
         //   ld b, a
-        addLdBA();
+        cpuWriter->addLdBA();
 
         // ;var > to? goto end for
 
         // 78a4 xbasic compare floats (<=)
-        addCall(def_XBASIC_COMPARE_FLOATS_LE);
+        cpuWriter->addCall(def_XBASIC_COMPARE_FLOATS_LE);
 
         // ld a, l
-        addLdAL();
+        cpuWriter->addLdAL();
         // or h
-        addOrH();
+        cpuWriter->addOrH();
 
         // jp z, end_for
         forNext->for_end_mark = addMark();
-        addJpZ(0x0000);
+        cpuWriter->addJpZ(0x0000);
 
         // body start
       }
@@ -2429,10 +2431,10 @@ void Compiler::cmd_next() {
 
     // jp step
     addFix(forNext->for_step_mark);
-    addJp(0x0000);
+    cpuWriter->addJp(0x0000);
 
     if (forNext->for_end_mark)
-      forNext->for_end_mark->symbol->address = code_pointer;
+      forNext->for_end_mark->symbol->address = cpuContext->code_pointer;
 
   } else {
     syntaxError("NEXT without a FOR");
@@ -2453,7 +2455,7 @@ void Compiler::cmd_locate() {
     addCast(result_subtype, Lexeme::subtype_numeric);
 
     // push hl
-    addPushHL();
+    cpuWriter->addPushHL();
 
     action = current_action->actions[1];
     result_subtype = evalExpression(action);
@@ -2463,7 +2465,7 @@ void Compiler::cmd_locate() {
     // pop de
     addByteOptimized(0xD1);
     // call XBASIC_LOCATE    ; hl = y, de = x
-    addCall(def_XBASIC_LOCATE);
+    cpuWriter->addCall(def_XBASIC_LOCATE);
   }
 }
 
@@ -2512,7 +2514,7 @@ void Compiler::cmd_screen() {
 
       if (i != 5) {
         // ld a, l
-        addLdAL();
+        cpuWriter->addLdAL();
       }
 
       switch (i) {
@@ -2520,87 +2522,87 @@ void Compiler::cmd_screen() {
         case 0: {
           // call XBASIC_SCREEN ; xbasic SCREEN change mode (in: a, l = screen
           // mode)
-          addCall(def_XBASIC_SCREEN);
+          cpuWriter->addCall(def_XBASIC_SCREEN);
         } break;
 
         // sprite size
         case 1: {
           // call 0x70bc    ; xbasic SCREEN sprite (in: a = sprite mode)
-          addCall(def_XBASIC_SCREEN_SPRITE);
+          cpuWriter->addCall(def_XBASIC_SCREEN_SPRITE);
         } break;
 
         // key click
         case 2: {
           // ld (CLIKSW), a   ; 0=keyboard click off, 1=keyboard click on
-          addLdiiA(def_CLIKSW);
+          cpuWriter->addLdiiA(def_CLIKSW);
         } break;
 
         // baud rate
         case 3: {
           // ; original code: C1F63 on subrom of TurboR and A7A2D on main rom of
           // the rest ld bc,5
-          addLdBC(0x0005);
+          cpuWriter->addLdBC(0x0005);
           // and a
-          addAndA();
+          cpuWriter->addAndA();
           // ld hl,CS1200
-          addLdHL(def_CS1200);
+          cpuWriter->addLdHL(def_CS1200);
           // jr z,skip
-          addJrZ(0x01);
+          cpuWriter->addJrZ(0x01);
           //   add hl,bc
-          addAddHLBC();
+          cpuWriter->addAddHLBC();
           // skip:
           // ld de,LOW
-          addLdDE(def_LOW);
+          cpuWriter->addLdDE(def_LOW);
           // ldir
-          addLDIR();
+          cpuWriter->addLDIR();
         } break;
 
         // printer type
         case 4: {
           // ld (NTMSXP), a   ; printer type (0=default)
-          addLdiiA(def_NTMSXP);
+          cpuWriter->addLdiiA(def_NTMSXP);
         } break;
 
         // interlace mode
         case 5: {
           // ld a, (VERSION)
-          addLdAii(def_VERSION);
+          cpuWriter->addLdAii(def_VERSION);
           // and a
-          addAndA();
+          cpuWriter->addAndA();
           // jr z, skip1
-          addJrZ(25);
+          cpuWriter->addJrZ(25);
 
           //   ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
 
           //   ; original code: J1F45 on subrom of MSX2 and above
           //   and 3     ; must be 0 to 3
-          addAnd(0x03);
+          cpuWriter->addAnd(0x03);
           //   add a, a
-          addAddA();
+          cpuWriter->addAddA();
           //   bit 1, a
-          addWord(0xCB, 0x4F);
+          cpuWriter->addWord(0xCB, 0x4F);
           //   jr z, skip2
-          addJrZ(0x02);
+          cpuWriter->addJrZ(0x02);
           //     set 3, a
-          addWord(0xCB, 0xDF);
+          cpuWriter->addWord(0xCB, 0xDF);
           //   skip2:
           //   and 0x0C
-          addAnd(0x0C);
+          cpuWriter->addAnd(0x0C);
           //   ld b, a
-          addLdBA();
+          cpuWriter->addLdBA();
           //   ld a, (RG9SAV)
-          addLdAii(def_RG9SAV);
+          cpuWriter->addLdAii(def_RG9SAV);
           //   and 0xF3
-          addAnd(0xF3);
+          cpuWriter->addAnd(0xF3);
           //   or b
-          addOrB();
+          cpuWriter->addOrB();
           //   ld c, 9
-          addLdC(0x09);
+          cpuWriter->addLdC(0x09);
           //   ld b, a
-          addLdBA();
+          cpuWriter->addLdBA();
           //   call WRTVDP
-          addCall(def_WRTVDP);
+          cpuWriter->addCall(def_WRTVDP);
 
           // skip1:
         } break;
@@ -2635,21 +2637,21 @@ void Compiler::cmd_screen_copy() {
 
       if (i) {
         // push hl
-        addPushHL();
+        cpuWriter->addPushHL();
 
         result_subtype = evalExpression(action);
         addCast(result_subtype, Lexeme::subtype_numeric);
 
         // ld a, l                 ; copy parameter to A
-        addLdAL();
+        cpuWriter->addLdAL();
 
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
       } else {
         if (lexeme->type == Lexeme::type_identifier) {
           // ld hl, variable
           addFix(lexeme);
-          addLdHL(0x0000);
+          cpuWriter->addLdHL(0x0000);
           result_subtype = Lexeme::subtype_numeric;
         } else {
           result_subtype = evalExpression(action);
@@ -2657,13 +2659,13 @@ void Compiler::cmd_screen_copy() {
         addCast(result_subtype, Lexeme::subtype_numeric);
         if (t == 1) {
           // xor a
-          addXorA();
+          cpuWriter->addXorA();
         }
       }
     }
 
     // call screen_copy
-    addCall(def_cmd_screen_copy);
+    cpuWriter->addCall(def_cmd_screen_copy);
 
   } else {
     syntaxError("SCREEN COPY with empty parameters");
@@ -2689,7 +2691,7 @@ void Compiler::cmd_screen_paste() {
       if (lexeme->type == Lexeme::type_identifier) {
         // ld hl, variable
         addFix(lexeme);
-        addLdHL(0x0000);
+        cpuWriter->addLdHL(0x0000);
         result_subtype = Lexeme::subtype_numeric;
       } else {
         result_subtype = evalExpression(action);
@@ -2698,7 +2700,7 @@ void Compiler::cmd_screen_paste() {
     }
 
     // call screen_paste
-    addCall(def_cmd_screen_paste);
+    cpuWriter->addCall(def_cmd_screen_paste);
 
   } else {
     syntaxError("SCREEN PASTE with empty parameters");
@@ -2722,22 +2724,22 @@ void Compiler::cmd_screen_scroll() {
       addCast(result_subtype, Lexeme::subtype_numeric);
 
       // ld a, l                 ; copy parameter to A
-      addLdAL();
+      cpuWriter->addLdAL();
 
       // ld hl, (HEAPSTR)
-      addLdHLii(def_HEAPSTR);
+      cpuWriter->addLdHLii(def_HEAPSTR);
 
       // push hl
-      addPushHL();
+      cpuWriter->addPushHL();
 
       // call screen_copy
-      addCall(def_cmd_screen_copy);
+      cpuWriter->addCall(def_cmd_screen_copy);
 
       // pop hl
-      addPopHL();
+      cpuWriter->addPopHL();
 
       // call screen_paste
-      addCall(def_cmd_screen_paste);
+      cpuWriter->addCall(def_cmd_screen_paste);
     }
 
   } else {
@@ -2757,10 +2759,10 @@ void Compiler::cmd_screen_load() {
       addCast(result_subtype, Lexeme::subtype_numeric);
 
       // ld (DAC), hl
-      addLdiiHL(def_DAC);
+      cpuWriter->addLdiiHL(def_DAC);
 
       // call screen_load
-      addCall(def_cmd_screen_load);
+      cpuWriter->addCall(def_cmd_screen_load);
     }
 
   } else {
@@ -2770,12 +2772,12 @@ void Compiler::cmd_screen_load() {
 
 void Compiler::cmd_screen_on() {
   // call cmd_enascr
-  addCall(def_cmd_enascr);
+  cpuWriter->addCall(def_cmd_enascr);
 }
 
 void Compiler::cmd_screen_off() {
   // call cmd_disscr
-  addCall(def_cmd_disscr);
+  cpuWriter->addCall(def_cmd_disscr);
 }
 
 void Compiler::cmd_width() {
@@ -2790,7 +2792,7 @@ void Compiler::cmd_width() {
     addCast(result_subtype, Lexeme::subtype_numeric);
 
     // call XBASIC WIDTH   ; xbasic WIDTH (in: l = size)
-    addCall(def_XBASIC_WIDTH);
+    cpuWriter->addCall(def_XBASIC_WIDTH);
 
   } else {
     syntaxError("WIDTH syntax error");
@@ -2810,32 +2812,32 @@ void Compiler::cmd_color() {
     if (lexeme->type == Lexeme::type_keyword) {
       if (lexeme->value == "NEW") {
         // ld a, (VERSION)
-        addLdAii(def_VERSION);
+        cpuWriter->addLdAii(def_VERSION);
         // and a
-        addAndA();
+        cpuWriter->addAndA();
         // jr z, skip
-        addJrZ(8);
+        cpuWriter->addJrZ(8);
         //   ld ix, 0x0141
-        addLdIX(0x0141);
+        cpuWriter->addLdIX(0x0141);
         //   call EXTROM
-        addCall(def_EXTROM);
+        cpuWriter->addCall(def_EXTROM);
         //   ei
-        addEI();
+        cpuWriter->addEI();
         // skip:
 
       } else if (lexeme->value == "RESTORE") {
         // ld a, (VERSION)
-        addLdAii(def_VERSION);
+        cpuWriter->addLdAii(def_VERSION);
         // and a
-        addAndA();
+        cpuWriter->addAndA();
         // jr z, skip
-        addJrZ(8);
+        cpuWriter->addJrZ(8);
         //   ld ix, 0x0145
-        addLdIX(def_RSTPLT);
+        cpuWriter->addLdIX(def_RSTPLT);
         //   call EXTROM
-        addCall(def_EXTROM);
+        cpuWriter->addCall(def_EXTROM);
         //   ei
-        addEI();
+        cpuWriter->addEI();
         // skip:
 
       } else if (lexeme->value == "SPRITE") {
@@ -2854,19 +2856,19 @@ void Compiler::cmd_color() {
             addCast(result_subtype, Lexeme::subtype_numeric);
 
             // ld a, l
-            addLdAL();
+            cpuWriter->addLdAL();
           }
 
           if (i < 1) {
             // push af
-            addPushAF();
+            cpuWriter->addPushAF();
           }
         }
 
         // pop bc
-        addPopBC();
+        cpuWriter->addPopBC();
         // call COLOR_SPRITE   ; in: b, a
-        addCall(def_XBASIC_COLOR_SPRITE);
+        cpuWriter->addCall(def_XBASIC_COLOR_SPRITE);
 
       } else if (lexeme->value == "SPRITE$") {
         t = action->actions.size();
@@ -2884,16 +2886,16 @@ void Compiler::cmd_color() {
             addCast(result_subtype, Lexeme::subtype_numeric);
 
             // ld a, l
-            addLdAL();
+            cpuWriter->addLdAL();
             // push af
-            addPushAF();
+            cpuWriter->addPushAF();
           }
         }
 
         // pop bc
-        addPopBC();
+        cpuWriter->addPopBC();
         // call COLOR_SPRSTR   ; in: b, hl
-        addCall(def_XBASIC_COLOR_SPRSTR);
+        cpuWriter->addCall(def_XBASIC_COLOR_SPRSTR);
 
       } else if (lexeme->value == "RGB") {
         t = action->actions.size();
@@ -2911,37 +2913,37 @@ void Compiler::cmd_color() {
             addCast(result_subtype, Lexeme::subtype_numeric);
 
             // ld a, l
-            addLdAL();
+            cpuWriter->addLdAL();
           }
 
           if (i < 3) {
             // push af
-            addPushAF();
+            cpuWriter->addPushAF();
           }
         }
 
         if (t < 4) {
           // xor a
-          addXorA();
+          cpuWriter->addXorA();
         }
         // ld b, a
-        addLdBA();
+        cpuWriter->addLdBA();
 
         if (t < 3) {
           // ld h, a
-          addLdHA();
+          cpuWriter->addLdHA();
         } else {
           // pop hl
-          addPopHL();
+          cpuWriter->addPopHL();
         }
 
         // pop de
-        addPopDE();
+        cpuWriter->addPopDE();
         // pop af
-        addPopAF();
+        cpuWriter->addPopAF();
 
         // call COLOR_RGB   ; in: a, d, h, b
-        addCall(def_XBASIC_COLOR_RGB);
+        cpuWriter->addCall(def_XBASIC_COLOR_RGB);
 
       } else {
         syntaxError("Invalid COLOR parameters");
@@ -2957,24 +2959,24 @@ void Compiler::cmd_color() {
         addCast(result_subtype, Lexeme::subtype_numeric);
 
         // ld a, l
-        addLdAL();
+        cpuWriter->addLdAL();
 
         switch (i) {
           case 0: {
             // ld (0xF3E9), a   ; FORCLR
-            addLdiiA(0xF3E9);
+            cpuWriter->addLdiiA(0xF3E9);
             // ld (ATRBYT), a   ; ATRBYT
-            addLdiiA(def_ATRBYT);
+            cpuWriter->addLdiiA(def_ATRBYT);
           } break;
 
           case 1: {
             // ld (0xF3EA), a   ; BAKCLR
-            addLdiiA(0xF3EA);
+            cpuWriter->addLdiiA(0xF3EA);
           } break;
 
           case 2: {
             // ld (0xF3EB), a   ; BDRCLR
-            addLdiiA(0xF3EB);
+            cpuWriter->addLdiiA(0xF3EB);
           } break;
 
           default: {
@@ -2985,10 +2987,10 @@ void Compiler::cmd_color() {
       }
 
       // ld a, (SCRMOD)
-      addLdAii(def_SCRMOD);
+      cpuWriter->addLdAii(def_SCRMOD);
 
       // call 0x0062   ; CHGCLR
-      addCall(0x0062);
+      cpuWriter->addCall(0x0062);
     }
 
   } else {
@@ -3025,9 +3027,9 @@ void Compiler::cmd_pset(bool forecolor) {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_x_coord = true;
             }
@@ -3041,10 +3043,10 @@ void Compiler::cmd_pset(bool forecolor) {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
 
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_y_coord = true;
             }
@@ -3058,13 +3060,13 @@ void Compiler::cmd_pset(bool forecolor) {
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB7)  ;GRPACX
-              addLdDEii(0xFCB7);
+              cpuWriter->addLdDEii(0xFCB7);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_x_coord = true;
             }
@@ -3077,13 +3079,13 @@ void Compiler::cmd_pset(bool forecolor) {
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB9)  ;GRPACY
-              addLdDEii(0xFCB9);
+              cpuWriter->addLdDEii(0xFCB9);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_y_coord = true;
             }
@@ -3106,10 +3108,10 @@ void Compiler::cmd_pset(bool forecolor) {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
 
           // push af       ; save color
-          addPushAF();
+          cpuWriter->addPushAF();
 
           has_color = true;
 
@@ -3123,11 +3125,11 @@ void Compiler::cmd_pset(bool forecolor) {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
 
           // ld (LOGOPR), a          ; save new logical operator to basic
           // interpreter
-          addLdiiA(def_LOGOPR);
+          cpuWriter->addLdiiA(def_LOGOPR);
 
           has_operator = true;
 
@@ -3145,43 +3147,43 @@ void Compiler::cmd_pset(bool forecolor) {
 
     if (!has_operator) {
       // ld a, (LOGOPR)      ; get default operator from basic interpreter
-      addLdAii(def_LOGOPR);
+      cpuWriter->addLdAii(def_LOGOPR);
     }
 
     // ld b, a      ; get operator
-    addLdBA();
+    cpuWriter->addLdBA();
 
     if (has_color) {
       // pop af       ; color
-      addPopAF();
+      cpuWriter->addPopAF();
     } else {
       if (forecolor) {
         // ld a, (0xF3E9)       ; FORCLR
-        addLdAii(def_FORCLR);
+        cpuWriter->addLdAii(def_FORCLR);
       } else {
         // ld a, (0xF3EA)       ; BAKCLR
-        addLdAii(def_BAKCLR);
+        cpuWriter->addLdAii(def_BAKCLR);
       }
     }
 
     if (has_y_coord) {
       // pop hl
-      addPopHL();
+      cpuWriter->addPopHL();
     } else {
       // ld hl, (0xFCB9)  ;GRPACY
-      addLdHLii(0xFCB9);
+      cpuWriter->addLdHLii(0xFCB9);
     }
 
     if (has_x_coord) {
       // pop de
-      addPopDE();
+      cpuWriter->addPopDE();
     } else {
       // ld de, (0xFCB7)  ;GRPACX
-      addLdDEii(0xFCB7);
+      cpuWriter->addLdDEii(0xFCB7);
     }
 
     // call 0x6F71   ; xbasic PSET (in: hl=y, de=x, a=color, b=operator)
-    addCall(def_XBASIC_PSET);
+    cpuWriter->addCall(def_XBASIC_PSET);
 
   } else {
     if (forecolor)
@@ -3217,9 +3219,9 @@ void Compiler::cmd_paint() {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_x_coord = true;
             }
@@ -3233,10 +3235,10 @@ void Compiler::cmd_paint() {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
 
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_y_coord = true;
             }
@@ -3250,13 +3252,13 @@ void Compiler::cmd_paint() {
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB7)  ;GRPACX
-              addLdDEii(0xFCB7);
+              cpuWriter->addLdDEii(0xFCB7);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_x_coord = true;
             }
@@ -3269,13 +3271,13 @@ void Compiler::cmd_paint() {
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB9)  ;GRPACY
-              addLdDEii(0xFCB9);
+              cpuWriter->addLdDEii(0xFCB9);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_y_coord = true;
             }
@@ -3295,7 +3297,7 @@ void Compiler::cmd_paint() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld b, l       ; paint color
-          addLdBL();
+          cpuWriter->addLdBL();
 
           has_color = true;
 
@@ -3304,7 +3306,7 @@ void Compiler::cmd_paint() {
         case 2: {
           if (has_color) {
             // push bc    ; save paint color
-            addPushBC();
+            cpuWriter->addPushBC();
           }
 
           result_subtype = evalExpression(action);
@@ -3327,47 +3329,47 @@ void Compiler::cmd_paint() {
     if (has_border) {
       if (has_color) {
         // pop bc               ; restore paint color
-        addPopBC();
+        cpuWriter->addPopBC();
       } else {
         // ld a, (ATRBYT)
-        addLdAii(def_ATRBYT);
+        cpuWriter->addLdAii(def_ATRBYT);
         // ld b, a              ; paint color = default color
-        addLdBA();
+        cpuWriter->addLdBA();
       }
       //   ld a, l                ; border color
-      addLdAL();
+      cpuWriter->addLdAL();
 
     } else {
       if (has_color) {
         // ld a, l              ; border color = paint color
-        addLdAL();
+        cpuWriter->addLdAL();
       } else {
         // ld a, (ATRBYT)       ; border color = default color
-        addLdAii(def_ATRBYT);
+        cpuWriter->addLdAii(def_ATRBYT);
         // ld b, a              ; paint color = default color
-        addLdBA();
+        cpuWriter->addLdBA();
       }
     }
 
     if (has_y_coord) {
       // pop hl
-      addPopHL();
+      cpuWriter->addPopHL();
     } else {
       // ld hl, (0xFCB9)  ;GRPACY
-      addLdHLii(0xFCB9);
+      cpuWriter->addLdHLii(0xFCB9);
     }
 
     if (has_x_coord) {
       // pop de
-      addPopDE();
+      cpuWriter->addPopDE();
     } else {
       // ld de, (0xFCB7)  ;GRPACX
-      addLdDEii(0xFCB7);
+      cpuWriter->addLdDEii(0xFCB7);
     }
 
     // call 0x74B3   ; xbasic PAINT (in: hl=y, de=x, b=filling color, a=border
     // color)
-    addCall(def_XBASIC_PAINT);
+    cpuWriter->addCall(def_XBASIC_PAINT);
 
   } else {
     syntaxError("PAINT with empty parameters");
@@ -3402,7 +3404,7 @@ void Compiler::cmd_circle() {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
 
               has_x_coord = true;
             }
@@ -3416,7 +3418,7 @@ void Compiler::cmd_circle() {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
 
               has_y_coord = true;
             }
@@ -3430,11 +3432,11 @@ void Compiler::cmd_circle() {
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB7)  ;GRPACX
-              addLdDEii(0xFCB7);
+              cpuWriter->addLdDEii(0xFCB7);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
 
               has_x_coord = true;
             }
@@ -3447,11 +3449,11 @@ void Compiler::cmd_circle() {
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB9)  ;GRPACY
-              addLdDEii(0xFCB9);
+              cpuWriter->addLdDEii(0xFCB9);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
 
               has_y_coord = true;
             }
@@ -3479,15 +3481,15 @@ void Compiler::cmd_circle() {
         case 2: {
           if (has_radius) {
             // push hl
-            addPushHL();
+            cpuWriter->addPushHL();
           }
 
           result_subtype = evalExpression(action);
 
           if (result_subtype == Lexeme::subtype_null) {
             if (has_radius) {
-              code_pointer--;
-              code_size--;
+              cpuContext->code_pointer--;
+              cpuContext->code_size--;
             }
             continue;
           }
@@ -3495,7 +3497,7 @@ void Compiler::cmd_circle() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
 
           has_color = true;
 
@@ -3506,61 +3508,61 @@ void Compiler::cmd_circle() {
           if (has_radius) {
             if (has_color) {
               // pop hl
-              addPopHL();
+              cpuWriter->addPopHL();
             }
             // ld c, l
-            addLdCL();
+            cpuWriter->addLdCL();
           }
 
           // ld hl, BUF
-          addLdHL(def_BUF);
+          cpuWriter->addLdHL(def_BUF);
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
           //   ld (hl), 0x2C  ; comma
-          // addLdiHL(0x2C);
+          // cpuOpcodeWriter->addLdiHL(0x2C);
           //   inc hl
-          // addIncHL();
+          // cpuOpcodeWriter->addIncHL();
 
           if (has_radius) {
             //   ld (hl), 0x0F  ; short interger marker
-            addLdiHL(0x0F);
+            cpuWriter->addLdiHL(0x0F);
             //   inc hl
-            addIncHL();
+            cpuWriter->addIncHL();
             //   ld (hl), c     ; radius
-            addLdiHLC();
+            cpuWriter->addLdiHLC();
             //   inc hl
-            addIncHL();
+            cpuWriter->addIncHL();
           }
 
           //   ld (hl), 0x2C  ; comma
-          addLdiHL(0x2C);
+          cpuWriter->addLdiHL(0x2C);
           //   inc hl
-          addIncHL();
+          cpuWriter->addIncHL();
 
           if (has_color) {
             //   ld (hl), 0x0F  ; short interger marker
-            addLdiHL(0x0F);
+            cpuWriter->addLdiHL(0x0F);
             //   inc hl
-            addIncHL();
+            cpuWriter->addIncHL();
             //   ld (hl), a     ; color
-            addLdiHLA();
+            cpuWriter->addLdiHLA();
             //   inc hl
-            addIncHL();
+            cpuWriter->addIncHL();
           }
 
           //   ld (hl), 0x2C  ; comma
-          addLdiHL(0x2C);
+          cpuWriter->addLdiHL(0x2C);
           //   inc hl
-          addIncHL();
+          cpuWriter->addIncHL();
 
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
 
           result_subtype = evalExpression(action);
 
           if (result_subtype == Lexeme::subtype_null) {
-            code_pointer--;
-            code_size--;
+            cpuContext->code_pointer--;
+            cpuContext->code_size--;
             continue;
           }
 
@@ -3570,7 +3572,7 @@ void Compiler::cmd_circle() {
           addByteOptimized(0xD1);
 
           // call WriteParamBCD             ; b:hl, de -> hl
-          addCall(def_WriteParamBCD);
+          cpuWriter->addCall(def_WriteParamBCD);
 
           has_trace1 = true;
 
@@ -3579,18 +3581,18 @@ void Compiler::cmd_circle() {
         // tracing end
         case 4: {
           //   ld (hl), 0x2C  ; comma
-          addLdiHL(0x2C);
+          cpuWriter->addLdiHL(0x2C);
           //   inc hl
-          addIncHL();
+          cpuWriter->addIncHL();
 
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
 
           result_subtype = evalExpression(action);
 
           if (result_subtype == Lexeme::subtype_null) {
-            code_pointer--;
-            code_size--;
+            cpuContext->code_pointer--;
+            cpuContext->code_size--;
             continue;
           }
 
@@ -3600,7 +3602,7 @@ void Compiler::cmd_circle() {
           addByteOptimized(0xD1);
 
           // call WriteParamBCD             ; b:hl, de -> hl
-          addCall(def_WriteParamBCD);
+          cpuWriter->addCall(def_WriteParamBCD);
 
           has_trace2 = true;
         } break;
@@ -3608,18 +3610,18 @@ void Compiler::cmd_circle() {
         // aspect ratio
         case 5: {
           //   ld (hl), 0x2C  ; comma
-          addLdiHL(0x2C);
+          cpuWriter->addLdiHL(0x2C);
           //   inc hl
-          addIncHL();
+          cpuWriter->addIncHL();
 
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
 
           result_subtype = evalExpression(action);
 
           if (result_subtype == Lexeme::subtype_null) {
-            code_pointer -= 3;
-            code_size -= 3;
+            cpuContext->code_pointer -= 3;
+            cpuContext->code_size -= 3;
             continue;
           }
 
@@ -3629,7 +3631,7 @@ void Compiler::cmd_circle() {
           addByteOptimized(0xD1);
 
           // call WriteParamBCD             ; b:hl, de -> hl
-          addCall(def_WriteParamBCD);
+          cpuWriter->addCall(def_WriteParamBCD);
 
           has_aspect = true;
         } break;
@@ -3643,32 +3645,32 @@ void Compiler::cmd_circle() {
 
     if (has_trace1 || has_trace2 || has_aspect) {
       //   ld (hl), 0x00
-      addLdiHL(0x00);
+      cpuWriter->addLdiHL(0x00);
       //   inc hl
-      addIncHL();
+      cpuWriter->addIncHL();
 
       // pop hl
-      addPopHL();
+      cpuWriter->addPopHL();
 
       // ld a, (hl)         ; first character
-      addLdAiHL();
+      cpuWriter->addLdAiHL();
       // ld ix, M5B16       ; rom basic circle without coords
-      addLdIX(0x5B16);
+      cpuWriter->addLdIX(0x5B16);
       // call xbasic CIRCLE2 (in: hl = basic line starting on radius parameter)
-      addCall(def_XBASIC_CIRCLE2);
+      cpuWriter->addCall(def_XBASIC_CIRCLE2);
 
     } else {
       if (has_color && has_radius) {
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
       } else if (!has_color) {
         // ld a, (0xF3E9)       ; FORCLR
-        addLdAii(0xF3E9);
+        cpuWriter->addLdAii(0xF3E9);
       }
 
       if (!has_radius) {
         // ld hl, 0
-        addLdHL(0x0000);
+        cpuWriter->addLdHL(0x0000);
       }
 
       if (!has_y_coord) {
@@ -3678,7 +3680,7 @@ void Compiler::cmd_circle() {
       }
 
       // call xbasic CIRCLE (in: GRPACX/GRPACY, hl=radius, a=color)
-      addCall(def_XBASIC_CIRCLE);
+      cpuWriter->addCall(def_XBASIC_CIRCLE);
     }
 
   } else {
@@ -3731,9 +3733,9 @@ void Compiler::cmd_put_sprite() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
           // push af
-          addPushAF();
+          cpuWriter->addPushAF();
 
           has_sprite = true;
 
@@ -3753,10 +3755,10 @@ void Compiler::cmd_put_sprite() {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
 
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_x_coord = true;
             }
@@ -3770,10 +3772,10 @@ void Compiler::cmd_put_sprite() {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
 
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_y_coord = true;
             }
@@ -3787,14 +3789,14 @@ void Compiler::cmd_put_sprite() {
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB7)  ;GRPACX
-              addLdDEii(0xFCB7);
+              cpuWriter->addLdDEii(0xFCB7);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
 
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_x_coord = true;
             }
@@ -3807,14 +3809,14 @@ void Compiler::cmd_put_sprite() {
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB9)  ;GRPACY
-              addLdDEii(0xFCB9);
+              cpuWriter->addLdDEii(0xFCB9);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
 
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_y_coord = true;
             }
@@ -3834,9 +3836,9 @@ void Compiler::cmd_put_sprite() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
           // push af
-          addPushAF();
+          cpuWriter->addPushAF();
 
           has_color = true;
 
@@ -3850,9 +3852,9 @@ void Compiler::cmd_put_sprite() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
           // push af
-          addPushAF();
+          cpuWriter->addPushAF();
 
           has_pattern = true;
 
@@ -3867,7 +3869,7 @@ void Compiler::cmd_put_sprite() {
 
     if (has_pattern) {
       // pop hl
-      addPopHL();
+      cpuWriter->addPopHL();
       parm_flag |= 0x20;
     } else {
       // ld h, 0
@@ -3876,25 +3878,25 @@ void Compiler::cmd_put_sprite() {
 
     if (has_color) {
       // pop de
-      addPopDE();
+      cpuWriter->addPopDE();
       parm_flag |= 0x40;
     } else {
       // ld d, 0
-      // addWord(0x16, 0x00);
+      // cpuOpcodeWriter->addWord(0x16, 0x00);
     }
 
     if (has_y_coord) {
       // pop iy
-      addPopIY();
+      cpuWriter->addPopIY();
       parm_flag |= 0x80;
     } else {
       // ld iy, 0x0000
-      // addLdIYii(0x0000);
+      // cpuOpcodeWriter->addLdIYii(0x0000);
     }
 
     if (has_x_coord) {
       // pop ix
-      addPopIX();
+      cpuWriter->addPopIX();
       parm_flag |= 0x80;
     } else {
       // ld ix, 0x0000
@@ -3903,18 +3905,18 @@ void Compiler::cmd_put_sprite() {
 
     if (has_sprite) {
       // pop af
-      addPopAF();
+      cpuWriter->addPopAF();
     } else {
       // xor a
-      addXorA();
+      cpuWriter->addXorA();
     }
 
     // ld b, parameters flag
-    addLdB(parm_flag);
+    cpuWriter->addLdB(parm_flag);
 
     // call xbasic PUT SPRITE (in: ix=x, iy=y, d=color, a=sprite number,
     // h=pattern number, b=parameters flag (b11100000)
-    addCall(def_XBASIC_PUT_SPRITE);
+    cpuWriter->addCall(def_XBASIC_PUT_SPRITE);
 
   } else {
     syntaxError("PUT SPRITE with empty parameters");
@@ -3940,9 +3942,9 @@ void Compiler::cmd_put_tile() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
           // push af
-          addPushAF();
+          cpuWriter->addPushAF();
 
           has_tile = true;
 
@@ -3962,10 +3964,10 @@ void Compiler::cmd_put_tile() {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
 
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_x_coord = true;
             }
@@ -3979,10 +3981,10 @@ void Compiler::cmd_put_tile() {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
 
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_y_coord = true;
             }
@@ -3996,14 +3998,14 @@ void Compiler::cmd_put_tile() {
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB7)  ;GRPACX
-              addLdDEii(0xFCB7);
+              cpuWriter->addLdDEii(0xFCB7);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB7), hl  ;GRPACX
-              addLdiiHL(0xFCB7);
+              cpuWriter->addLdiiHL(0xFCB7);
 
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_x_coord = true;
             }
@@ -4016,14 +4018,14 @@ void Compiler::cmd_put_tile() {
             } else {
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld de, (0xFCB9)  ;GRPACY
-              addLdDEii(0xFCB9);
+              cpuWriter->addLdDEii(0xFCB9);
               // add hl, de
-              addAddHLDE();
+              cpuWriter->addAddHLDE();
               // ld (0xFCB9), hl  ;GRPACY
-              addLdiiHL(0xFCB9);
+              cpuWriter->addLdiiHL(0xFCB9);
 
               // push hl
-              addPushHL();
+              cpuWriter->addPushHL();
 
               has_y_coord = true;
             }
@@ -4044,43 +4046,43 @@ void Compiler::cmd_put_tile() {
 
     if (has_y_coord) {
       // pop hl
-      addPopHL();
+      cpuWriter->addPopHL();
       // inc l        ; y coord (1 based for bios)
-      addIncL();
+      cpuWriter->addIncL();
     } else {
       // ld a, (CSRY)
-      addLdAii(def_CSRY);
+      cpuWriter->addLdAii(def_CSRY);
       // ld l, a
-      addLdLA();
+      cpuWriter->addLdLA();
     }
 
     if (has_x_coord) {
       // pop bc
-      addPopBC();
+      cpuWriter->addPopBC();
       // ld h, c
-      addLdHC();
+      cpuWriter->addLdHC();
       // inc h        ; x coord (1 based for bios)
-      addIncH();
+      cpuWriter->addIncH();
     } else {
       // ld a, (CSRX)
-      addLdAii(def_CSRX);
+      cpuWriter->addLdAii(def_CSRX);
       // ld h, a
-      addLdHA();
+      cpuWriter->addLdHA();
     }
 
     //   call TileAddress   ; in hl=xy, out: hl
-    addCall(def_tileAddress);
+    cpuWriter->addCall(def_tileAddress);
 
     if (has_tile) {
       // pop af
-      addPopAF();
+      cpuWriter->addPopAF();
     } else {
       // xor a
-      addXorA();
+      cpuWriter->addXorA();
     }
 
     // call 0x70b5                  ; xbasic VPOKE (in: hl=address, a=byte)
-    addCall(def_XBASIC_VPOKE);
+    cpuWriter->addCall(def_XBASIC_VPOKE);
 
   } else {
     syntaxError("PUT TILE with empty parameters");
@@ -4111,12 +4113,12 @@ void Compiler::cmd_set() {
     }
 
     // ld a, (BIOS VERSION)
-    addLdAii(def_VERSION);
+    cpuWriter->addLdAii(def_VERSION);
     // and a
-    addAndA();
+    cpuWriter->addAndA();
     // jp z, $                ; skip if MSX1
     mark = addMark();
-    addJpZ(0x0000);
+    cpuWriter->addJpZ(0x0000);
 
     if (next_lexeme->type == Lexeme::type_keyword &&
         next_lexeme->value == "ADJUST") {
@@ -4155,7 +4157,7 @@ void Compiler::cmd_set() {
       syntaxError("Invalid SET statement");
     }
 
-    mark->symbol->address = code_pointer;
+    mark->symbol->address = cpuContext->code_pointer;
 
   } else {
     syntaxError("Wrong SET parameters count");
@@ -4167,9 +4169,9 @@ void Compiler::beginBasicSetStmt(string name) {
   char* s = (char*)name.c_str();
 
   // ld hl, BUF
-  addLdHL(def_BUF);
+  cpuWriter->addLdHL(def_BUF);
   // push hl
-  addPushHL();
+  cpuWriter->addPushHL();
 
   // ; set subcommand
   for (i = 0; i < l; i++) {
@@ -4179,41 +4181,41 @@ void Compiler::beginBasicSetStmt(string name) {
 
 void Compiler::endBasicSetStmt() {
   //   xor a
-  addXorA();
+  cpuWriter->addXorA();
   //   ld (hl), a
-  addLdiHLA();
+  cpuWriter->addLdiHLA();
   //   inc hl
-  addIncHL();
+  cpuWriter->addIncHL();
   //   ld (hl), a
-  addLdiHLA();
+  cpuWriter->addLdiHLA();
 
   // pop hl
-  addPopHL();
+  cpuWriter->addPopHL();
 
   // ld a, (VERSION)
-  addLdAii(def_VERSION);
+  cpuWriter->addLdAii(def_VERSION);
   // and a
-  addAndA();
+  cpuWriter->addAndA();
   // jr z, skip
-  addJrZ(9);
+  cpuWriter->addJrZ(9);
 
   //   ld a, (hl)      ; first character
-  addLdAiHL();
+  cpuWriter->addLdAiHL();
   //   ld ix, (SET)    ; SET
-  addLdIXii(def_SET_STMT);
+  cpuWriter->addLdIXii(def_SET_STMT);
   //   call CALBAS
-  addCall(def_CALBAS);
+  cpuWriter->addCall(def_CALBAS);
   //   ei
-  addEI();
+  cpuWriter->addEI();
 
   // skip:
 }
 
 void Compiler::addBasicChar(char c) {
   // ld (hl), char
-  addLdiHL(c);
+  cpuWriter->addLdiHL(c);
   // inc hl
-  addIncHL();
+  cpuWriter->addIncHL();
 }
 
 void Compiler::cmd_set_video() {
@@ -4236,35 +4238,35 @@ void Compiler::cmd_set_video() {
       }
 
       // push hl
-      addPushHL();
+      cpuWriter->addPushHL();
 
       sub_action = action->actions[i];
       result_subtype = evalExpression(sub_action);
 
       if (result_subtype == Lexeme::subtype_null) {
-        code_pointer--;
-        code_size--;
+        cpuContext->code_pointer--;
+        cpuContext->code_size--;
         continue;
       }
 
       addCast(result_subtype, Lexeme::subtype_numeric);
 
       //   ld a, l
-      addLdAL();
+      cpuWriter->addLdAL();
       //   and 3
-      addAnd(0x03);
+      cpuWriter->addAnd(0x03);
       //   inc a
-      addIncA();
+      cpuWriter->addIncA();
       //   or 0x10
-      addOr(0x10);
+      cpuWriter->addOr(0x10);
 
       // pop hl
-      addPopHL();
+      cpuWriter->addPopHL();
 
       // ld (hl), a
-      addLdiHLA();
+      cpuWriter->addLdiHLA();
       // inc hl
-      addIncHL();
+      cpuWriter->addIncHL();
     }
 
     endBasicSetStmt();
@@ -4285,7 +4287,7 @@ void Compiler::cmd_set_adjust() {
     for (i = 0; i < t; i++) {
       if (i) {
         // push hl
-        addPushHL();
+        cpuWriter->addPushHL();
       }
       // ld hl, parameter value
       sub_action = action->actions[i];
@@ -4294,9 +4296,9 @@ void Compiler::cmd_set_adjust() {
     }
 
     // ex de,hl   ; DE = second parameter
-    addExDEHL();
+    cpuWriter->addExDEHL();
     // pop bc     ; BC = first parameter
-    addPopBC();
+    cpuWriter->addPopBC();
 
     // build command string
 
@@ -4308,13 +4310,13 @@ void Compiler::cmd_set_adjust() {
     // integer prefix
     addBasicChar(0x1C);
     // ld (hl), c      ; first parameter
-    addLdiHLC();
+    cpuWriter->addLdiHLC();
     // inc hl
-    addIncHL();
+    cpuWriter->addIncHL();
     // ld (hl), b
-    addLdiHLB();
+    cpuWriter->addLdiHLB();
     // inc hl
-    addIncHL();
+    cpuWriter->addIncHL();
 
     // comma
     addBasicChar(',');
@@ -4322,13 +4324,13 @@ void Compiler::cmd_set_adjust() {
     // integer prefix
     addBasicChar(0x1C);
     // ld (hl), e      ; second parameter
-    addLdiHLE();
+    cpuWriter->addLdiHLE();
     // inc hl
-    addIncHL();
+    cpuWriter->addIncHL();
     // ld (hl), d
-    addLdiHLD();
+    cpuWriter->addLdiHLD();
     // inc hl
-    addIncHL();
+    cpuWriter->addIncHL();
 
     // )
     addBasicChar(')');
@@ -4368,7 +4370,7 @@ void Compiler::cmd_set_beep() {
     for (i = 0; i < t; i++) {
       if (i) {
         // push hl
-        addPushHL();
+        cpuWriter->addPushHL();
       }
       // ld hl, parameter value
       sub_action = action->actions[i];
@@ -4377,9 +4379,9 @@ void Compiler::cmd_set_beep() {
     }
 
     // ex de,hl   ; DE = second parameter
-    addExDEHL();
+    cpuWriter->addExDEHL();
     // pop bc     ; BC = first parameter
-    addPopBC();
+    cpuWriter->addPopBC();
 
     // build command string
 
@@ -4389,9 +4391,9 @@ void Compiler::cmd_set_beep() {
     // short integer prefix
     addBasicChar(0x0F);
     // ld (hl), c      ; first parameter
-    addLdiHLC();
+    cpuWriter->addLdiHLC();
     // inc hl
-    addIncHL();
+    cpuWriter->addIncHL();
 
     // comma
     addBasicChar(',');
@@ -4399,9 +4401,9 @@ void Compiler::cmd_set_beep() {
     // short integer prefix
     addBasicChar(0x0F);
     // ld (hl), e      ; second parameter
-    addLdiHLE();
+    cpuWriter->addLdiHLE();
     // inc hl
-    addIncHL();
+    cpuWriter->addIncHL();
 
     endBasicSetStmt();
 
@@ -4424,7 +4426,7 @@ void Compiler::cmd_set_title() {
     addCast(result_subtype, Lexeme::subtype_numeric);
 
     // push hl
-    addPushHL();
+    cpuWriter->addPushHL();
 
     // ld hl, parameter value
     sub_action = action->actions[0];
@@ -4432,9 +4434,9 @@ void Compiler::cmd_set_title() {
     addCast(result_subtype, Lexeme::subtype_string);
 
     // ex de,hl   ; DE = first parameter
-    addExDEHL();
+    cpuWriter->addExDEHL();
     // pop bc     ; BC = second parameter
-    addPopBC();
+    cpuWriter->addPopBC();
 
     // build command string
 
@@ -4443,21 +4445,21 @@ void Compiler::cmd_set_title() {
     // double quote
     addBasicChar('"');
     // push bc
-    addPushBC();
+    cpuWriter->addPushBC();
     // ex de,hl
-    addExDEHL();
+    cpuWriter->addExDEHL();
     //   ld c, (hl)  ; string size
-    addLdCiHL();
+    cpuWriter->addLdCiHL();
     //   ld b, 0
-    addLdB(0x00);
+    cpuWriter->addLdB(0x00);
     //   inc hl
-    addIncHL();
+    cpuWriter->addIncHL();
     //   ldir
-    addLDIR();
+    cpuWriter->addLDIR();
     // ex de,hl
-    addExDEHL();
+    cpuWriter->addExDEHL();
     // pop bc
-    addPopBC();
+    cpuWriter->addPopBC();
     // double quote
     addBasicChar('"');
 
@@ -4467,9 +4469,9 @@ void Compiler::cmd_set_title() {
     // short integer prefix
     addBasicChar(0x0F);
     // ld (hl), c      ; second parameter
-    addLdiHLC();
+    cpuWriter->addLdiHLC();
     // inc hl
-    addIncHL();
+    cpuWriter->addIncHL();
 
     endBasicSetStmt();
 
@@ -4492,7 +4494,7 @@ void Compiler::cmd_set_prompt() {
     addCast(result_subtype, Lexeme::subtype_string);
 
     // ex de,hl   ; DE = first parameter
-    addExDEHL();
+    cpuWriter->addExDEHL();
 
     // build command string
 
@@ -4501,17 +4503,17 @@ void Compiler::cmd_set_prompt() {
     // double quote
     addBasicChar('"');
     // ex de,hl
-    addExDEHL();
+    cpuWriter->addExDEHL();
     //   ld c, (hl)  ; string size
-    addLdCiHL();
+    cpuWriter->addLdCiHL();
     //   ld b, 0
-    addLdB(0x00);
+    cpuWriter->addLdB(0x00);
     //   inc hl
-    addIncHL();
+    cpuWriter->addIncHL();
     //   ldir
-    addLDIR();
+    cpuWriter->addLDIR();
     // ex de,hl
-    addExDEHL();
+    cpuWriter->addExDEHL();
     // double quote
     addBasicChar('"');
 
@@ -4539,10 +4541,10 @@ void Compiler::cmd_set_page() {
       addCast(result_subtype, Lexeme::subtype_numeric);
 
       // ld a,l
-      addLdAL();
+      cpuWriter->addLdAL();
 
       // call SET_PAGE       ; in: a = display page
-      addCall(def_XBASIC_SET_PAGE);
+      cpuWriter->addCall(def_XBASIC_SET_PAGE);
     }
 
     if (t == 2) {
@@ -4551,9 +4553,9 @@ void Compiler::cmd_set_page() {
       addCast(result_subtype, Lexeme::subtype_numeric);
 
       //   ld a,l
-      addLdAL();
+      cpuWriter->addLdAL();
       //   ld (ACPAGE), a    ; in: a = active page (write and read)
-      addLdiiA(def_ACPAGE);
+      cpuWriter->addLdiiA(def_ACPAGE);
     }
 
   } else {
@@ -4575,7 +4577,7 @@ void Compiler::cmd_set_scroll() {
       if (lexeme->type == Lexeme::type_literal &&
           lexeme->subtype == Lexeme::subtype_null) {
         // ld hl, 0xffff
-        addLdHL(0xFFFF);
+        cpuWriter->addLdHL(0xFFFF);
       } else {
         // ld hl, parameter value
         result_subtype = evalExpression(sub_action);
@@ -4584,42 +4586,42 @@ void Compiler::cmd_set_scroll() {
 
       if (i > 1) {
         // ld h, l
-        addLdHL();
+        cpuWriter->addLdHL();
       }
 
       // push hl
-      addPushHL();
+      cpuWriter->addPushHL();
     }
 
     if (t == 4) {
       // pop af
-      addPopAF();
+      cpuWriter->addPopAF();
     } else {
       // ld a, 0xff
-      addLdA(0xFF);
+      cpuWriter->addLdA(0xFF);
     }
 
     if (t >= 3) {
       // pop bc
-      addPopBC();
+      cpuWriter->addPopBC();
     } else {
       // ld b, 0xff
-      addLdB(0xFF);
+      cpuWriter->addLdB(0xFF);
     }
 
     if (t >= 2) {
       // pop hl
-      addPopHL();
+      cpuWriter->addPopHL();
     } else {
       // ld hl, 0xffff
-      addLdHL(0xFFFF);
+      cpuWriter->addLdHL(0xFFFF);
     }
 
     // pop de
-    addPopDE();
+    cpuWriter->addPopDE();
 
     // call SET_SCROLL      ; in: de=x, hl=y, b=mask mode, a=page mode
-    addCall(def_XBASIC_SET_SCROLL);
+    cpuWriter->addCall(def_XBASIC_SET_SCROLL);
 
   } else {
     syntaxError("Wrong parameters count on SET SCROLL statement");
@@ -4640,33 +4642,33 @@ void Compiler::cmd_set_tile() {
 
     if (lexeme->value == "ON") {
       // ld a, 2                   ; tiled mode
-      addLdA(2);
+      cpuWriter->addLdA(2);
       // ld (SOMODE), a
-      addLdiiA(def_SOMODE);
+      cpuWriter->addLdiiA(def_SOMODE);
       // clear screen, set font to default and put cursor on home
       cmd_cls();
       // ld hl, 0
-      addLdHL(0x0000);
+      cpuWriter->addLdHL(0x0000);
       // ld (DAC), hl
-      addLdiiHL(def_DAC);
+      cpuWriter->addLdiiHL(def_DAC);
       // ld d, h
-      addLdDH();
+      cpuWriter->addLdDH();
       // ld e, l
-      addLdEL();
+      cpuWriter->addLdEL();
       // call XBASIC_LOCATE    ; hl = y, de = x
-      addCall(def_XBASIC_LOCATE);
+      cpuWriter->addCall(def_XBASIC_LOCATE);
       // ld a, 0xff                ; it means all screen banks
-      addLdA(0xFF);
+      cpuWriter->addLdA(0xFF);
       // ld (ARG), a
-      addLdiiA(def_ARG);
+      cpuWriter->addLdiiA(def_ARG);
       // call cmd_setfnt
-      addCall(def_cmd_setfnt);
+      cpuWriter->addCall(def_cmd_setfnt);
 
     } else if (lexeme->value == "OFF") {
       // ld a, 1      ; graphical mode
-      addLdA(1);
+      cpuWriter->addLdA(1);
       // ld (SOMODE), a
-      addLdiiA(def_SOMODE);
+      cpuWriter->addLdiiA(def_SOMODE);
 
     } else if (lexeme->value == "FLIP") {
       if (t == 2) {
@@ -4676,7 +4678,7 @@ void Compiler::cmd_set_tile() {
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
         // push hl
-        addPushHL();
+        cpuWriter->addPushHL();
 
         // direction
         sub_action = action->actions[1];
@@ -4684,9 +4686,9 @@ void Compiler::cmd_set_tile() {
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
         // pop de
-        addPopDE();
+        cpuWriter->addPopDE();
 
-        addCall(def_set_tile_flip);
+        cpuWriter->addCall(def_set_tile_flip);
 
       } else {
         syntaxError("Wrong parameters count on SET TILE FLIP statement");
@@ -4700,7 +4702,7 @@ void Compiler::cmd_set_tile() {
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
         // push hl
-        addPushHL();
+        cpuWriter->addPushHL();
 
         // direction
         sub_action = action->actions[1];
@@ -4708,9 +4710,9 @@ void Compiler::cmd_set_tile() {
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
         // pop de
-        addPopDE();
+        cpuWriter->addPopDE();
 
-        addCall(def_set_tile_rotate);
+        cpuWriter->addCall(def_set_tile_rotate);
 
       } else {
         syntaxError("Wrong parameters count on SET TILE ROTATE statement");
@@ -4726,8 +4728,8 @@ void Compiler::cmd_set_tile() {
           // ld hl, parameter value    ; tile number
           result_subtype = evalExpression(sub_action);
           addCast(result_subtype, Lexeme::subtype_numeric);
-          addLdAL();
-          addPushAF();
+          cpuWriter->addLdAL();
+          cpuWriter->addPushAF();
 
           // tile buffer pointer (8 bytes)
           sub_action = action->actions[1];
@@ -4735,18 +4737,18 @@ void Compiler::cmd_set_tile() {
           if (sub_lexeme->type == Lexeme::type_identifier) {
             // ld hl, variable
             addFix(sub_lexeme);
-            addLdHL(0x0000);
+            cpuWriter->addLdHL(0x0000);
             result_subtype = Lexeme::subtype_numeric;
           } else {
             result_subtype = evalExpression(sub_action);
           }
           addCast(result_subtype, Lexeme::subtype_numeric);
-          addPopAF();
+          cpuWriter->addPopAF();
 
           // call set_tile_pattern
           //   a = tile number
           //   hl = pointer to an 8 bytes buffer
-          addCall(def_set_tile_pattern);
+          cpuWriter->addCall(def_set_tile_pattern);
         } else if (t <= 3) {
           // tile number
           sub_action = action->actions[0];
@@ -4754,7 +4756,7 @@ void Compiler::cmd_set_tile() {
           result_subtype = evalExpression(sub_action);
           addCast(result_subtype, Lexeme::subtype_numeric);
           // ld (ARG), hl
-          addLdiiHL(def_ARG);
+          cpuWriter->addLdiiHL(def_ARG);
 
           // bank number
           if (t == 3) {
@@ -4763,13 +4765,13 @@ void Compiler::cmd_set_tile() {
             result_subtype = evalExpression(sub_action);
             addCast(result_subtype, Lexeme::subtype_numeric);
             // ld h, l
-            addLdHL();
+            cpuWriter->addLdHL();
           } else {
             // ld h, 0x03
-            addLdH(0x03);
+            cpuWriter->addLdH(0x03);
           }
           // ld (ARG2), hl
-          addLdiiHL(def_ARG2);
+          cpuWriter->addLdiiHL(def_ARG2);
 
           // pattern data
           sub_action = action->actions[1];
@@ -4792,17 +4794,17 @@ void Compiler::cmd_set_tile() {
                 addCast(result_subtype, Lexeme::subtype_numeric);
 
                 // ld bc, (ARG2)
-                addLdBCii(def_ARG2);
+                cpuWriter->addLdBCii(def_ARG2);
                 // ld c, l
-                addLdCL();
+                cpuWriter->addLdCL();
                 // ld de, *i*
-                addLdDE(i);
+                cpuWriter->addLdDE(i);
                 // ld hl, (ARG)
-                addLdHLii(def_ARG);
+                cpuWriter->addLdHLii(def_ARG);
 
                 // call set_tile_pattern ; hl = tile number, de = line number, b
                 // = bank number (3=all), c = pattern data
-                addCall(def_set_tile_pattern);
+                cpuWriter->addCall(def_set_tile_pattern);
               }
             }
 
@@ -4824,8 +4826,8 @@ void Compiler::cmd_set_tile() {
         // ld hl, parameter value    ; tile number
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
-        addLdAL();
-        addPushAF();
+        cpuWriter->addLdAL();
+        cpuWriter->addPushAF();
 
         // tile buffer pointer (8 bytes)
         sub_action = action->actions[1];
@@ -4833,18 +4835,18 @@ void Compiler::cmd_set_tile() {
         if (sub_lexeme->type == Lexeme::type_identifier) {
           // ld hl, variable
           addFix(sub_lexeme);
-          addLdHL(0x0000);
+          cpuWriter->addLdHL(0x0000);
           result_subtype = Lexeme::subtype_numeric;
         } else {
           result_subtype = evalExpression(sub_action);
         }
         addCast(result_subtype, Lexeme::subtype_numeric);
-        addPopAF();
+        cpuWriter->addPopAF();
 
         // call set_tile_color
         //   a = tile number
         //   hl = pointer to an 8 bytes buffer
-        addCall(def_set_tile_color);
+        cpuWriter->addCall(def_set_tile_color);
       } else if (t >= 2 && t <= 4) {
         // tile number
         sub_action = action->actions[0];
@@ -4852,7 +4854,7 @@ void Compiler::cmd_set_tile() {
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
         // ld (ARG), hl
-        addLdiiHL(def_ARG);
+        cpuWriter->addLdiiHL(def_ARG);
 
         // bank number
         if (t == 4) {
@@ -4861,13 +4863,13 @@ void Compiler::cmd_set_tile() {
           result_subtype = evalExpression(sub_action);
           addCast(result_subtype, Lexeme::subtype_numeric);
           // ld h, l
-          addLdHL();
+          cpuWriter->addLdHL();
         } else {
           // ld h, 0x03
-          addLdH(0x03);
+          cpuWriter->addLdH(0x03);
         }
         // ld (ARG2), hl
-        addLdiiHL(def_ARG2);
+        cpuWriter->addLdiiHL(def_ARG2);
 
         // color data
         sub_action = action->actions[1];
@@ -4889,17 +4891,17 @@ void Compiler::cmd_set_tile() {
               result_subtype = evalExpression(sub_sub_action);
               addCast(result_subtype, Lexeme::subtype_numeric);
               // ld a, l
-              addLdAL();
+              cpuWriter->addLdAL();
               // rla
-              addRLA();
+              cpuWriter->addRLA();
               // rla
-              addRLA();
+              cpuWriter->addRLA();
               // rla
-              addRLA();
+              cpuWriter->addRLA();
               // rla
-              addRLA();
+              cpuWriter->addRLA();
               // and 0xF0
-              addAnd(0xF0);
+              cpuWriter->addAnd(0xF0);
 
               if (t >= 3) {
                 // color data
@@ -4916,30 +4918,30 @@ void Compiler::cmd_set_tile() {
                   if (!(lexeme->type == Lexeme::type_literal &&
                         lexeme->subtype == Lexeme::subtype_null)) {
                     // push af
-                    addPushAF();
+                    cpuWriter->addPushAF();
                     // ld hl, parameter value    ; color BC data parameter
                     result_subtype = evalExpression(sub_sub_action);
                     addCast(result_subtype, Lexeme::subtype_numeric);
                     // pop af
-                    addPopAF();
+                    cpuWriter->addPopAF();
                     // or l
-                    addOrL();
+                    cpuWriter->addOrL();
                   }
                 }
               }
 
               // ld bc, (ARG2)
-              addLdBCii(def_ARG2);
+              cpuWriter->addLdBCii(def_ARG2);
               // ld c, a
-              addLdCA();
+              cpuWriter->addLdCA();
               // ld de, *i*
-              addLdDE(i);
+              cpuWriter->addLdDE(i);
               // ld hl, (ARG)        ; tile number
-              addLdHLii(def_ARG);
+              cpuWriter->addLdHLii(def_ARG);
 
               // call set_tile_color ; hl = tile number, de = line number
               // (15=all), b = bank number (3=all), c = color data (FC,BC)
-              addCall(def_set_tile_color);
+              cpuWriter->addCall(def_set_tile_color);
             }
           }
 
@@ -4948,17 +4950,17 @@ void Compiler::cmd_set_tile() {
           result_subtype = evalExpression(sub_action);
           addCast(result_subtype, Lexeme::subtype_numeric);
           // ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
           // rla
-          addRLA();
+          cpuWriter->addRLA();
           // rla
-          addRLA();
+          cpuWriter->addRLA();
           // rla
-          addRLA();
+          cpuWriter->addRLA();
           // rla
-          addRLA();
+          cpuWriter->addRLA();
           // and 0xF0
-          addAnd(0xF0);
+          cpuWriter->addAnd(0xF0);
 
           if (t >= 3) {
             // color data
@@ -4969,28 +4971,28 @@ void Compiler::cmd_set_tile() {
               return;
             }
             // push af
-            addPushAF();
+            cpuWriter->addPushAF();
             // ld hl, parameter value    ; color BC data parameter
             result_subtype = evalExpression(sub_sub_action);
             addCast(result_subtype, Lexeme::subtype_numeric);
             // pop af
-            addPopAF();
+            cpuWriter->addPopAF();
             // or l
-            addOrL();
+            cpuWriter->addOrL();
           }
 
           // ld bc, (ARG2)
-          addLdBCii(def_ARG2);
+          cpuWriter->addLdBCii(def_ARG2);
           // ld c, a
-          addLdCA();
+          cpuWriter->addLdCA();
           // ld de, 0x000F         ; all lines
-          addLdDE(0x000F);
+          cpuWriter->addLdDE(0x000F);
           // ld hl, (ARG)        ; tile number
-          addLdHLii(def_ARG);
+          cpuWriter->addLdHLii(def_ARG);
 
           // call set_tile_color ; hl = tile number, de = line number
           // (15=all), b = bank number (3=all), c = color data (FC,BC)
-          addCall(def_set_tile_color);
+          cpuWriter->addCall(def_set_tile_color);
         }
 
       } else {
@@ -5021,15 +5023,15 @@ void Compiler::cmd_set_font() {
       addCast(result_subtype, Lexeme::subtype_numeric);
 
       // ld (DAC), hl
-      addLdiiHL(def_DAC);
+      cpuWriter->addLdiiHL(def_DAC);
 
       // ld a, 0xff                ; it means all screen banks
-      addLdA(0xFF);
+      cpuWriter->addLdA(0xFF);
       // ld (ARG), a
-      addLdiiA(def_ARG);
+      cpuWriter->addLdiiA(def_ARG);
 
       // call cmd_setfnt
-      addCall(def_cmd_setfnt);
+      cpuWriter->addCall(def_cmd_setfnt);
 
     } else if (t == 2) {
       sub_action1 = action->actions[0];
@@ -5037,17 +5039,17 @@ void Compiler::cmd_set_font() {
       addCast(result_subtype, Lexeme::subtype_numeric);
 
       // ld (DAC), hl
-      addLdiiHL(def_DAC);
+      cpuWriter->addLdiiHL(def_DAC);
 
       sub_action2 = action->actions[1];
       result_subtype = evalExpression(sub_action2);
       addCast(result_subtype, Lexeme::subtype_numeric);
 
       // ld (ARG), hl             ; screen font bank number
-      addLdiiHL(def_ARG);
+      cpuWriter->addLdiiHL(def_ARG);
 
       // call cmd_setfnt
-      addCall(def_cmd_setfnt);
+      cpuWriter->addCall(def_cmd_setfnt);
 
     } else {
       syntaxError("Wrong number of parameters on SET FONT");
@@ -5078,7 +5080,7 @@ void Compiler::cmd_set_sprite() {
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
         // push hl
-        addPushHL();
+        cpuWriter->addPushHL();
 
         // direction
         sub_action = action->actions[1];
@@ -5086,9 +5088,9 @@ void Compiler::cmd_set_sprite() {
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
         // pop de
-        addPopDE();
+        cpuWriter->addPopDE();
 
-        addCall(def_set_sprite_flip);
+        cpuWriter->addCall(def_set_sprite_flip);
 
       } else {
         syntaxError("Wrong parameters count on SET SPRITE FLIP statement");
@@ -5102,7 +5104,7 @@ void Compiler::cmd_set_sprite() {
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
         // push hl
-        addPushHL();
+        cpuWriter->addPushHL();
 
         // direction
         sub_action = action->actions[1];
@@ -5111,9 +5113,9 @@ void Compiler::cmd_set_sprite() {
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
         // pop de
-        addPopDE();
+        cpuWriter->addPopDE();
 
-        addCall(def_set_sprite_rotate);
+        cpuWriter->addCall(def_set_sprite_rotate);
 
       } else {
         syntaxError("Wrong parameters count on SET SPRITE ROTATE statement");
@@ -5126,8 +5128,8 @@ void Compiler::cmd_set_sprite() {
         // ld hl, parameter value    ; sprite number
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
-        addLdAL();
-        addPushAF();
+        cpuWriter->addLdAL();
+        cpuWriter->addPushAF();
 
         // sprite buffer pointer (32 bytes)
         sub_action = action->actions[1];
@@ -5135,18 +5137,18 @@ void Compiler::cmd_set_sprite() {
         if (sub_lexeme->type == Lexeme::type_identifier) {
           // ld hl, variable
           addFix(sub_lexeme);
-          addLdHL(0x0000);
+          cpuWriter->addLdHL(0x0000);
           result_subtype = Lexeme::subtype_numeric;
         } else {
           result_subtype = evalExpression(sub_action);
         }
         addCast(result_subtype, Lexeme::subtype_numeric);
-        addPopAF();
+        cpuWriter->addPopAF();
 
         // call set_sprite_pattern
         //   a = sprite number
         //   hl = pointer to a 32 bytes buffer
-        addCall(def_set_sprite_pattern);
+        cpuWriter->addCall(def_set_sprite_pattern);
 
       } else {
         syntaxError("Wrong parameters count on SET SPRITE PATTERN statement");
@@ -5159,8 +5161,8 @@ void Compiler::cmd_set_sprite() {
         // ld hl, parameter value    ; sprite number
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
-        addLdAL();
-        addPushAF();
+        cpuWriter->addLdAL();
+        cpuWriter->addPushAF();
 
         // sprite buffer pointer (16 bytes)
         sub_action = action->actions[1];
@@ -5168,18 +5170,18 @@ void Compiler::cmd_set_sprite() {
         if (sub_lexeme->type == Lexeme::type_identifier) {
           // ld hl, variable
           addFix(sub_lexeme);
-          addLdHL(0x0000);
+          cpuWriter->addLdHL(0x0000);
           result_subtype = Lexeme::subtype_numeric;
         } else {
           result_subtype = evalExpression(sub_action);
         }
         addCast(result_subtype, Lexeme::subtype_numeric);
-        addPopAF();
+        cpuWriter->addPopAF();
 
         // call set_sprite_color
         //   a = sprite number
         //   hl = pointer to a 16 bytes buffer
-        addCall(def_set_sprite_color);
+        cpuWriter->addCall(def_set_sprite_color);
 
       } else {
         syntaxError("Wrong parameters count on SET SPRITE COLOR statement");
@@ -5209,22 +5211,22 @@ void Compiler::cmd_set_date() {
 
         switch (i) {
           case 0: {
-            addPushHL();
+            cpuWriter->addPushHL();
           } break;
           case 1: {
-            addLdDL();
-            addPushDE();
+            cpuWriter->addLdDL();
+            cpuWriter->addPushDE();
           } break;
           case 2: {
-            addPopDE();
-            addLdEL();
-            addPopHL();
+            cpuWriter->addPopDE();
+            cpuWriter->addLdEL();
+            cpuWriter->addPopHL();
           } break;
         }
       }
     }
 
-    addCall(def_set_date);
+    cpuWriter->addCall(def_set_date);
 
   } else {
     syntaxError(
@@ -5249,23 +5251,23 @@ void Compiler::cmd_set_time() {
 
         switch (i) {
           case 0: {
-            addLdHL();
-            addPushHL();
+            cpuWriter->addLdHL();
+            cpuWriter->addPushHL();
           } break;
           case 1: {
-            addPopDE();
-            addLdEL();
-            addPushDE();
+            cpuWriter->addPopDE();
+            cpuWriter->addLdEL();
+            cpuWriter->addPushDE();
           } break;
           case 2: {
-            addLdAL();
-            addPopHL();
+            cpuWriter->addLdAL();
+            cpuWriter->addPopHL();
           } break;
         }
       }
     }
 
-    addCall(def_set_time);
+    cpuWriter->addCall(def_set_time);
 
   } else {
     syntaxError(
@@ -5310,24 +5312,24 @@ void Compiler::cmd_get_date() {
   unsigned int i, t = action->actions.size();
 
   if (t >= 3 && t <= 5) {
-    addCall(def_get_date);
-    addLdB(0);
+    cpuWriter->addCall(def_get_date);
+    cpuWriter->addLdB(0);
     if (t > 4) {
-      addExAF();
-      addLdAii(0x002B);
-      addLdCA();
-      addPushBC();  // date format
-      addExAF();
+      cpuWriter->addExAF();
+      cpuWriter->addLdAii(0x002B);
+      cpuWriter->addLdCA();
+      cpuWriter->addPushBC();  // date format
+      cpuWriter->addExAF();
     }
     if (t > 3) {
-      addLdCA();
-      addPushBC();  // week
+      cpuWriter->addLdCA();
+      cpuWriter->addPushBC();  // week
     }
-    addLdCE();
-    addPushBC();  // day
-    addLdCD();
-    addPushBC();  // month
-    addPushHL();  // year
+    cpuWriter->addLdCE();
+    cpuWriter->addPushBC();  // day
+    cpuWriter->addLdCD();
+    cpuWriter->addPushBC();  // month
+    cpuWriter->addPushHL();  // year
 
     for (i = 0; i < t; i++) {
       sub_action = action->actions[i];
@@ -5336,10 +5338,10 @@ void Compiler::cmd_get_date() {
         if (lexeme->type == Lexeme::type_identifier) {
           if (lexeme->subtype == Lexeme::subtype_numeric) {
             addVarAddress(sub_action);
-            addPopDE();
-            addLdiHLE();
-            addIncHL();
-            addLdiHLD();
+            cpuWriter->addPopDE();
+            cpuWriter->addLdiHLE();
+            cpuWriter->addIncHL();
+            cpuWriter->addLdiHLD();
 
           } else {
             syntaxError(
@@ -5371,14 +5373,14 @@ void Compiler::cmd_get_time() {
   unsigned int i, t = action->actions.size();
 
   if (t == 3) {
-    addCall(def_get_time);
-    addLdB(0);
-    addLdCA();
-    addPushBC();  // seconds
-    addLdCL();
-    addPushBC();  // minutes
-    addLdCH();
-    addPushBC();  // hours
+    cpuWriter->addCall(def_get_time);
+    cpuWriter->addLdB(0);
+    cpuWriter->addLdCA();
+    cpuWriter->addPushBC();  // seconds
+    cpuWriter->addLdCL();
+    cpuWriter->addPushBC();  // minutes
+    cpuWriter->addLdCH();
+    cpuWriter->addPushBC();  // hours
 
     for (i = 0; i < t; i++) {
       sub_action = action->actions[i];
@@ -5387,10 +5389,10 @@ void Compiler::cmd_get_time() {
         if (lexeme->type == Lexeme::type_identifier) {
           if (lexeme->subtype == Lexeme::subtype_numeric) {
             addVarAddress(sub_action);
-            addPopDE();
-            addLdiHLE();
-            addIncHL();
-            addLdiHLD();
+            cpuWriter->addPopDE();
+            cpuWriter->addLdiHLE();
+            cpuWriter->addIncHL();
+            cpuWriter->addLdiHLD();
 
           } else {
             syntaxError(
@@ -5433,8 +5435,8 @@ void Compiler::cmd_get_tile() {
         // ld hl, parameter value    ; tile number
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
-        addLdAL();
-        addPushAF();
+        cpuWriter->addLdAL();
+        cpuWriter->addPushAF();
 
         // tile buffer pointer (8 bytes)
         sub_action = action->actions[1];
@@ -5442,18 +5444,18 @@ void Compiler::cmd_get_tile() {
         if (sub_lexeme->type == Lexeme::type_identifier) {
           // ld hl, variable
           addFix(sub_lexeme);
-          addLdHL(0x0000);
+          cpuWriter->addLdHL(0x0000);
           result_subtype = Lexeme::subtype_numeric;
         } else {
           result_subtype = evalExpression(sub_action);
         }
         addCast(result_subtype, Lexeme::subtype_numeric);
-        addPopAF();
+        cpuWriter->addPopAF();
 
         // call get_tile_pattern
         //   a = tile number
         //   hl = pointer to an 8 bytes buffer
-        addCall(def_get_tile_pattern);
+        cpuWriter->addCall(def_get_tile_pattern);
 
       } else {
         syntaxError("Wrong parameters count on GET TILE PATTERN statement");
@@ -5466,8 +5468,8 @@ void Compiler::cmd_get_tile() {
         // ld hl, parameter value    ; tile number
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
-        addLdAL();
-        addPushAF();
+        cpuWriter->addLdAL();
+        cpuWriter->addPushAF();
 
         // tile buffer pointer (8 bytes)
         sub_action = action->actions[1];
@@ -5475,18 +5477,18 @@ void Compiler::cmd_get_tile() {
         if (sub_lexeme->type == Lexeme::type_identifier) {
           // ld hl, variable
           addFix(sub_lexeme);
-          addLdHL(0x0000);
+          cpuWriter->addLdHL(0x0000);
           result_subtype = Lexeme::subtype_numeric;
         } else {
           result_subtype = evalExpression(sub_action);
         }
         addCast(result_subtype, Lexeme::subtype_numeric);
-        addPopAF();
+        cpuWriter->addPopAF();
 
         // call get_tile_color
         //   a = sprite number
         //   hl = pointer to an 8 bytes buffer
-        addCall(def_get_tile_color);
+        cpuWriter->addCall(def_get_tile_color);
 
       } else {
         syntaxError("Wrong parameters count on GET TILE COLOR statement");
@@ -5519,8 +5521,8 @@ void Compiler::cmd_get_sprite() {
         // ld hl, parameter value    ; sprite number
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
-        addLdAL();
-        addPushAF();
+        cpuWriter->addLdAL();
+        cpuWriter->addPushAF();
 
         // sprite buffer pointer (32 bytes)
         sub_action = action->actions[1];
@@ -5528,18 +5530,18 @@ void Compiler::cmd_get_sprite() {
         if (sub_lexeme->type == Lexeme::type_identifier) {
           // ld hl, variable
           addFix(sub_lexeme);
-          addLdHL(0x0000);
+          cpuWriter->addLdHL(0x0000);
           result_subtype = Lexeme::subtype_numeric;
         } else {
           result_subtype = evalExpression(sub_action);
         }
         addCast(result_subtype, Lexeme::subtype_numeric);
-        addPopAF();
+        cpuWriter->addPopAF();
 
         // call get_sprite_pattern
         //   a = sprite number
         //   hl = pointer to a 32 bytes buffer
-        addCall(def_get_sprite_pattern);
+        cpuWriter->addCall(def_get_sprite_pattern);
 
       } else {
         syntaxError("Wrong parameters count on GET SPRITE PATTERN statement");
@@ -5552,8 +5554,8 @@ void Compiler::cmd_get_sprite() {
         // ld hl, parameter value    ; sprite number
         result_subtype = evalExpression(sub_action);
         addCast(result_subtype, Lexeme::subtype_numeric);
-        addLdAL();
-        addPushAF();
+        cpuWriter->addLdAL();
+        cpuWriter->addPushAF();
 
         // sprite buffer pointer (16 bytes)
         sub_action = action->actions[1];
@@ -5561,18 +5563,18 @@ void Compiler::cmd_get_sprite() {
         if (sub_lexeme->type == Lexeme::type_identifier) {
           // ld hl, variable
           addFix(sub_lexeme);
-          addLdHL(0x0000);
+          cpuWriter->addLdHL(0x0000);
           result_subtype = Lexeme::subtype_numeric;
         } else {
           result_subtype = evalExpression(sub_action);
         }
         addCast(result_subtype, Lexeme::subtype_numeric);
-        addPopAF();
+        cpuWriter->addPopAF();
 
         // call get_sprite_color
         //   a = sprite number
         //   hl = pointer to a 16 bytes buffer
-        addCall(def_get_sprite_color);
+        cpuWriter->addCall(def_get_sprite_color);
 
       } else {
         syntaxError("Wrong parameters count on GET SPRITE COLOR statement");
@@ -5660,18 +5662,18 @@ void Compiler::cmd_on_interval() {
     addCast(result_subtype, Lexeme::subtype_numeric);
 
     // di
-    addDI();
+    cpuWriter->addDI();
     //   ld (0xFCA0), hl   ; INTVAL
-    addLdiiHL(0xFCA0);
+    cpuWriter->addLdiiHL(0xFCA0);
     //   xor a
-    addXorA();
+    cpuWriter->addXorA();
     //   ld (0xFC7F), a    ; ON INTERVAL STATE (0=off, 1=on)
-    addLdiiA(0xFC7F);
+    cpuWriter->addLdiiA(0xFC7F);
     //   ld (0xFCA3), a    ; INTCNT - initialize with zero (2 bytes)
-    addLdiiA(0xFCA3);
-    addLdiiA(0xFCA4);
+    cpuWriter->addLdiiA(0xFCA3);
+    cpuWriter->addLdiiA(0xFCA4);
     // ei
-    addEI();
+    cpuWriter->addEI();
 
     // GOSUB
 
@@ -5696,16 +5698,16 @@ void Compiler::cmd_on_interval() {
         addFix(parm_lexeme->value);
         addLdHLmegarom();
         // ld (0xFC80), hl                ; INTERVAL ADDRESS
-        addLdiiHL(0xFC80);
+        cpuWriter->addLdiiHL(0xFC80);
         // ld (MR_TRAP_SEGMS+17), a       ; INTERVAL segment
-        addLdiiA(def_MR_TRAP_SEGMS + 17);
+        cpuWriter->addLdiiA(def_MR_TRAP_SEGMS + 17);
 
       } else {
         // ld hl, GOSUB ADDRESS
         addFix(parm_lexeme->value);
-        addLdHL(0x0000);
+        cpuWriter->addLdHL(0x0000);
         // ld (0xFC80), hl   ; GOSUB ADDRESS
-        addLdiiHL(0xFC80);
+        cpuWriter->addLdiiHL(0xFC80);
       }
 
     } else {
@@ -5728,20 +5730,20 @@ void Compiler::cmd_interval() {
     next_lexeme = action->lexeme;
 
     // ld hl, 0xFC7F    ; INTERVAL state
-    addLdHL(0xfc7f);
+    cpuWriter->addLdHL(0xfc7f);
 
     if (next_lexeme->type == Lexeme::type_keyword &&
         next_lexeme->value == "ON") {
       // call 0x6c89   ; xbasic turn on trap (hl=trap state address)
-      addCall(def_XBASIC_TRAP_ON);
+      cpuWriter->addCall(def_XBASIC_TRAP_ON);
     } else if (next_lexeme->type == Lexeme::type_keyword &&
                next_lexeme->value == "OFF") {
       // call 0x6c9c   ; xbasic turn off trap (hl=trap state address)
-      addCall(def_XBASIC_TRAP_OFF);
+      cpuWriter->addCall(def_XBASIC_TRAP_OFF);
     } else if (next_lexeme->type == Lexeme::type_keyword &&
                next_lexeme->value == "STOP") {
       // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
-      addCall(def_XBASIC_TRAP_STOP);
+      cpuWriter->addCall(def_XBASIC_TRAP_STOP);
     } else {
       syntaxError("Invalid INTERVAL statement");
     }
@@ -5761,20 +5763,20 @@ void Compiler::cmd_stop() {
     next_lexeme = action->lexeme;
 
     // ld hl, 0xFC6A    ; STOP state
-    addLdHL(0xFC6A);
+    cpuWriter->addLdHL(0xFC6A);
 
     if (next_lexeme->type == Lexeme::type_keyword &&
         next_lexeme->value == "ON") {
       // call 0x6c89   ; xbasic turn on trap (hl=trap state address)
-      addCall(def_XBASIC_TRAP_ON);
+      cpuWriter->addCall(def_XBASIC_TRAP_ON);
     } else if (next_lexeme->type == Lexeme::type_keyword &&
                next_lexeme->value == "OFF") {
       // call 0x6c9c   ; xbasic turn off trap (hl=trap state address)
-      addCall(def_XBASIC_TRAP_OFF);
+      cpuWriter->addCall(def_XBASIC_TRAP_OFF);
     } else if (next_lexeme->type == Lexeme::type_keyword &&
                next_lexeme->value == "STOP") {
       // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
-      addCall(def_XBASIC_TRAP_STOP);
+      cpuWriter->addCall(def_XBASIC_TRAP_STOP);
     } else {
       syntaxError("Invalid STOP statement");
     }
@@ -5802,20 +5804,20 @@ void Compiler::cmd_sprite() {
     }
 
     // ld hl, 0xFC6D   ; SPRITE state
-    addLdHL(0xFC6D);
+    cpuWriter->addLdHL(0xFC6D);
 
     if (next_lexeme->type == Lexeme::type_keyword &&
         next_lexeme->value == "ON") {
       // call 0x6c89   ; xbasic turn on trap (hl=trap state address)
-      addCall(def_XBASIC_TRAP_ON);
+      cpuWriter->addCall(def_XBASIC_TRAP_ON);
     } else if (next_lexeme->type == Lexeme::type_keyword &&
                next_lexeme->value == "OFF") {
       // call 0x6c9c   ; xbasic turn off trap (hl=trap state address)
-      addCall(def_XBASIC_TRAP_OFF);
+      cpuWriter->addCall(def_XBASIC_TRAP_OFF);
     } else if (next_lexeme->type == Lexeme::type_keyword &&
                next_lexeme->value == "STOP") {
       // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
-      addCall(def_XBASIC_TRAP_STOP);
+      cpuWriter->addCall(def_XBASIC_TRAP_STOP);
     } else {
       syntaxError("Invalid SPRITE statement");
     }
@@ -5842,9 +5844,9 @@ void Compiler::cmd_sprite_load() {
       addCast(result_subtype, Lexeme::subtype_numeric);
 
       // ld (DAC), hl
-      addLdiiHL(def_DAC);
+      cpuWriter->addLdiiHL(def_DAC);
       // call cmd_wrtspr                    ; tiny sprite loader
-      addCall(def_cmd_wrtspr);
+      cpuWriter->addCall(def_cmd_wrtspr);
     }
 
   } else {
@@ -5866,11 +5868,11 @@ void Compiler::cmd_key() {
         next_lexeme->value == "ON") {
       // call 0x00CF   ; DSPFNK - (0xF3DE = CNSDFG: function keys
       // presentation)
-      addCall(0x00CF);
+      cpuWriter->addCall(0x00CF);
     } else if (next_lexeme->type == Lexeme::type_keyword &&
                next_lexeme->value == "OFF") {
       // call 0x00CC   ; ERAFNK
-      addCall(0x00CC);
+      cpuWriter->addCall(0x00CC);
     } else {
       syntaxError("Invalid KEY statement");
     }
@@ -5885,7 +5887,7 @@ void Compiler::cmd_key() {
     addCast(result_subtype, Lexeme::subtype_numeric);
 
     // dec hl
-    addDecHL();
+    cpuWriter->addDecHL();
 
     if ((next_lexeme->type == Lexeme::type_keyword &&
          next_lexeme->subtype == Lexeme::subtype_function) ||
@@ -5893,90 +5895,90 @@ void Compiler::cmd_key() {
          next_lexeme->value == "+") ||
         (next_lexeme->subtype == Lexeme::subtype_string)) {
       // add hl, hl
-      addAddHLHL();
+      cpuWriter->addAddHLHL();
       // add hl, hl
-      addAddHLHL();
+      cpuWriter->addAddHLHL();
       // add hl, hl
-      addAddHLHL();
+      cpuWriter->addAddHLHL();
       // add hl, hl      ; key number * 16
-      addAddHLHL();
+      cpuWriter->addAddHLHL();
       // ld de, 0xF87F   ; FNKSTR (10 x 16 bytes)
-      addLdDE(0xf87f);
+      cpuWriter->addLdDE(0xf87f);
       // add hl, de
-      addAddHLDE();
+      cpuWriter->addAddHLDE();
 
       // push hl
-      addPushHL();
+      cpuWriter->addPushHL();
       //   ld a, 32        ; space
-      addLdA(0x20);
+      cpuWriter->addLdA(0x20);
       //   ld (hl), a
-      addLdiHLA();
+      cpuWriter->addLdiHLA();
       //   ld e, l
-      addLdEL();
+      cpuWriter->addLdEL();
       //   ld d, h
-      addLdDH();
+      cpuWriter->addLdDH();
       //   inc de
-      addIncDE();
+      cpuWriter->addIncDE();
       //   ld bc, 15
-      addLdBC(0x000F);
+      cpuWriter->addLdBC(0x000F);
       //   ldir
-      addLDIR();
+      cpuWriter->addLDIR();
 
       //   ld hl, variable address
       result_subtype = evalExpression(action2);
       addCast(result_subtype, Lexeme::subtype_string);
 
       //   xor a
-      addXorA();
+      cpuWriter->addXorA();
       //   ld c, (hl)
-      addLdCiHL();
+      cpuWriter->addLdCiHL();
       //   ld b, a
-      addLdBA();
+      cpuWriter->addLdBA();
       //   inc hl
-      addIncHL();
+      cpuWriter->addIncHL();
 
       // pop de
-      addPopDE();
+      cpuWriter->addPopDE();
 
       // or c
-      addOrC();
+      cpuWriter->addOrC();
       // jr z, $+3
-      addJrZ(0x02);
+      cpuWriter->addJrZ(0x02);
       //   ldir
-      addLDIR();
+      cpuWriter->addLDIR();
       // ld (de), a
-      addLdiDEA();
+      cpuWriter->addLdiDEA();
       // call 0x00C9    ; FNKSB
-      addCall(0x00C9);
+      cpuWriter->addCall(0x00C9);
 
     } else {
       // ld e, l
-      addLdEL();
+      cpuWriter->addLdEL();
       // ld d, h
-      addLdDH();
+      cpuWriter->addLdDH();
       // add hl, de
-      addAddHLDE();
+      cpuWriter->addAddHLDE();
       // add hl, de       ; key number * 3
-      addAddHLDE();
+      cpuWriter->addAddHLDE();
 
       // ld de, 0xFC4C    ; KEY state position = key number * 3 + 0xFC4C
-      addLdDE(0xfc4c);
+      cpuWriter->addLdDE(0xfc4c);
 
       // add hl, de
-      addAddHLDE();
+      cpuWriter->addAddHLDE();
 
       if (next_lexeme->type == Lexeme::type_keyword &&
           next_lexeme->value == "ON") {
         // call 0x6c89   ; xbasic turn on trap (hl=trap state address)
-        addCall(def_XBASIC_TRAP_ON);
+        cpuWriter->addCall(def_XBASIC_TRAP_ON);
       } else if (next_lexeme->type == Lexeme::type_keyword &&
                  next_lexeme->value == "OFF") {
         // call 0x6c9c   ; xbasic turn off trap (hl=trap state address)
-        addCall(def_XBASIC_TRAP_OFF);
+        cpuWriter->addCall(def_XBASIC_TRAP_OFF);
       } else if (next_lexeme->type == Lexeme::type_keyword &&
                  next_lexeme->value == "STOP") {
         // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
-        addCall(def_XBASIC_TRAP_STOP);
+        cpuWriter->addCall(def_XBASIC_TRAP_STOP);
       } else {
         syntaxError("Invalid KEY statement");
       }
@@ -6003,35 +6005,35 @@ void Compiler::cmd_strig() {
     addCast(result_subtype, Lexeme::subtype_numeric);
 
     // dec hl
-    // addDecHL();
+    // cpuOpcodeWriter->addDecHL();
 
     // ld e, l
-    addLdEL();
+    cpuWriter->addLdEL();
     // ld d, h
-    addLdDH();
+    cpuWriter->addLdDH();
     // add hl, de
-    addAddHLDE();
+    cpuWriter->addAddHLDE();
     // add hl, de       ; strig number * 3
-    addAddHLDE();
+    cpuWriter->addAddHLDE();
 
     // ld de, 0xFC70    ; STRIG state position = key number * 3 + 0xFC70
-    addLdDE(0xFC70);
+    cpuWriter->addLdDE(0xFC70);
 
     // add hl, de
-    addAddHLDE();
+    cpuWriter->addAddHLDE();
 
     if (next_lexeme->type == Lexeme::type_keyword &&
         next_lexeme->value == "ON") {
       // call 0x6c89   ; xbasic turn on trap (hl=trap state address)
-      addCall(def_XBASIC_TRAP_ON);
+      cpuWriter->addCall(def_XBASIC_TRAP_ON);
     } else if (next_lexeme->type == Lexeme::type_keyword &&
                next_lexeme->value == "OFF") {
       // call 0x6c9c   ; xbasic turn off trap (hl=trap state address)
-      addCall(def_XBASIC_TRAP_OFF);
+      cpuWriter->addCall(def_XBASIC_TRAP_OFF);
     } else if (next_lexeme->type == Lexeme::type_keyword &&
                next_lexeme->value == "STOP") {
       // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
-      addCall(def_XBASIC_TRAP_STOP);
+      cpuWriter->addCall(def_XBASIC_TRAP_STOP);
     } else {
       syntaxError("Invalid STRIG statement");
     }
@@ -6044,7 +6046,7 @@ void Compiler::cmd_strig() {
 bool Compiler::addCheckTraps() {
   if (parser->getHasTraps()) {
     // call 0x6c25   ; xbasic check traps
-    addCall(def_XBASIC_TRAP_CHECK);
+    cpuWriter->addCall(def_XBASIC_TRAP_CHECK);
   }
 
   return parser->getHasTraps();
@@ -6073,7 +6075,7 @@ void Compiler::cmd_on_key() {
     // GOSUB LIST
 
     // ld hl, 0xFC4D    ; KEY first GOSUB position = 0xFC4C+1
-    addLdHL(0xfc4D);
+    cpuWriter->addLdHL(0xfc4D);
 
     for (i = 0; i < t; i++) {
       sub_action = action->actions[i];
@@ -6083,38 +6085,38 @@ void Compiler::cmd_on_key() {
           sub_lexeme->subtype == Lexeme::subtype_numeric) {
         if (opts->megaROM) {
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
           //   ld hl, GOSUB ADDRESS
           addFix(sub_lexeme->value);
           addLdHLmegarom();
           //   ld (MR_TRAP_SEGMS), a       ; KEY segment
-          addLdiiA(def_MR_TRAP_SEGMS + i);
+          cpuWriter->addLdiiA(def_MR_TRAP_SEGMS + i);
           //   ex de, hl
-          addExDEHL();
+          cpuWriter->addExDEHL();
           // pop hl
-          addPopHL();
+          cpuWriter->addPopHL();
 
         } else {
           // ld de, call address
           addFix(sub_lexeme->value);
-          addLdDE(0x0000);
+          cpuWriter->addLdDE(0x0000);
         }
 
       } else {
         // ld hl, 0x368D   ; dummy bios RET address
-        addLdHL(def_XBASIC_DUMMY_RET);
+        cpuWriter->addLdHL(def_XBASIC_DUMMY_RET);
       }
 
       // ld (hl), e
-      addLdiHLE();
+      cpuWriter->addLdiHLE();
       // inc hl
-      addIncHL();
+      cpuWriter->addIncHL();
       // ld (hl), d
-      addLdiHLD();
+      cpuWriter->addLdiHLD();
       // inc hl
-      addIncHL();
+      cpuWriter->addIncHL();
       // inc hl
-      addIncHL();
+      cpuWriter->addIncHL();
     }
 
   } else {
@@ -6151,30 +6153,30 @@ void Compiler::cmd_on_sprite() {
         sub_lexeme->subtype == Lexeme::subtype_numeric) {
       if (opts->megaROM) {
         // push hl
-        addPushHL();
+        cpuWriter->addPushHL();
         //   ld hl, GOSUB ADDRESS
         addFix(sub_lexeme->value);
         addLdHLmegarom();
         //   ld (MR_TRAP_SEGMS+11), a       ; SPRITE segment
-        addLdiiA(def_MR_TRAP_SEGMS + 11 + i);
+        cpuWriter->addLdiiA(def_MR_TRAP_SEGMS + 11 + i);
         //   ex de, hl
-        addExDEHL();
+        cpuWriter->addExDEHL();
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
 
       } else {
         // ld hl, call address
         addFix(sub_lexeme->value);
-        addLdHL(0x0000);
+        cpuWriter->addLdHL(0x0000);
       }
 
     } else {
       // ld hl, 0x368D   ; dummy bios RET address
-      addLdHL(def_XBASIC_DUMMY_RET);
+      cpuWriter->addLdHL(def_XBASIC_DUMMY_RET);
     }
 
     // ld (0xFC6E), hl     ; STOP GOSUB position = 0xFC6D+1
-    addLdiiHL(0xFC6E);
+    cpuWriter->addLdiiHL(0xFC6E);
 
   } else {
     syntaxError("ON SPRITE with wrong count of parameters");
@@ -6210,30 +6212,30 @@ void Compiler::cmd_on_stop() {
         sub_lexeme->subtype == Lexeme::subtype_numeric) {
       if (opts->megaROM) {
         // push hl
-        addPushHL();
+        cpuWriter->addPushHL();
         //   ld hl, GOSUB ADDRESS
         addFix(sub_lexeme->value);
         addLdHLmegarom();
         //   ld (MR_TRAP_SEGMS+10), a       ; STOP segment
-        addLdiiA(def_MR_TRAP_SEGMS + 10 + i);
+        cpuWriter->addLdiiA(def_MR_TRAP_SEGMS + 10 + i);
         //   ex de, hl
-        addExDEHL();
+        cpuWriter->addExDEHL();
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
 
       } else {
         // ld hl, call address
         addFix(sub_lexeme->value);
-        addLdHL(0x0000);
+        cpuWriter->addLdHL(0x0000);
       }
 
     } else {
       // ld hl, 0x368D   ; dummy bios RET address
-      addLdHL(def_XBASIC_DUMMY_RET);
+      cpuWriter->addLdHL(def_XBASIC_DUMMY_RET);
     }
 
     // ld (0xFC6B), hl     ; STOP GOSUB position = 0xFC6A+1
-    addLdiiHL(0xfc6B);
+    cpuWriter->addLdiiHL(0xfc6B);
 
   } else {
     syntaxError("ON STOP with wrong count of parameters");
@@ -6263,7 +6265,7 @@ void Compiler::cmd_on_strig() {
     // GOSUB LIST
 
     // ld hl, 0xFC71    ; STRIG first GOSUB position = 0xFC70+1
-    addLdHL(0xFC71);
+    cpuWriter->addLdHL(0xFC71);
 
     for (i = 0; i < t; i++) {
       sub_action = action->actions[i];
@@ -6273,38 +6275,38 @@ void Compiler::cmd_on_strig() {
           sub_lexeme->subtype == Lexeme::subtype_numeric) {
         if (opts->megaROM) {
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
           //   ld hl, GOSUB ADDRESS
           addFix(sub_lexeme->value);
           addLdHLmegarom();
           //   ld (MR_TRAP_SEGMS+12), a       ; STRIG segment
-          addLdiiA(def_MR_TRAP_SEGMS + 12 + i);
+          cpuWriter->addLdiiA(def_MR_TRAP_SEGMS + 12 + i);
           //   ex de, hl
-          addExDEHL();
+          cpuWriter->addExDEHL();
           // pop hl
-          addPopHL();
+          cpuWriter->addPopHL();
 
         } else {
           // ld de, call address
           addFix(sub_lexeme->value);
-          addLdDE(0x0000);
+          cpuWriter->addLdDE(0x0000);
         }
 
       } else {
         // ld de, 0x368D   ; dummy bios RET address
-        addLdDE(def_XBASIC_DUMMY_RET);
+        cpuWriter->addLdDE(def_XBASIC_DUMMY_RET);
       }
 
       // ld (hl), e
-      addLdiHLE();
+      cpuWriter->addLdiHLE();
       // inc hl
-      addIncHL();
+      cpuWriter->addIncHL();
       // ld (hl), d
-      addLdiHLD();
+      cpuWriter->addLdiHLD();
       // inc hl
-      addIncHL();
+      cpuWriter->addIncHL();
       // inc hl
-      addIncHL();
+      cpuWriter->addIncHL();
     }
 
   } else {
@@ -6342,18 +6344,18 @@ void Compiler::cmd_on_goto_gosub() {
     t = action->actions.size();
 
     // ld a, l
-    addLdAL();
+    cpuWriter->addLdAL();
 
     if (opts->megaROM) {
       // ld (TEMP), a
-      addLdiiA(def_TEMP);
+      cpuWriter->addLdiiA(def_TEMP);
     }
 
     // and a
-    addAndA();
+    cpuWriter->addAndA();
     // jp z, address
     mark = addMark();
-    addJpZ(0x0000);
+    cpuWriter->addJpZ(0x0000);
 
     for (i = 0; i < t; i++) {
       sub_action = action->actions[i];
@@ -6370,67 +6372,67 @@ void Compiler::cmd_on_goto_gosub() {
         if (lexeme->value == "GOTO") {
           if (opts->megaROM) {
             // ld a, (TEMP)
-            addLdAii(def_TEMP);
+            cpuWriter->addLdAii(def_TEMP);
           }
 
           // dec a
-          addDecA();
+          cpuWriter->addDecA();
 
           if (opts->megaROM) {
             // ld (TEMP), a
-            addLdiiA(def_TEMP);
+            cpuWriter->addLdiiA(def_TEMP);
           }
 
           // jp z, address
           addFix(sub_lexeme->value);
-          addJpZ(0x0000);
+          cpuWriter->addJpZ(0x0000);
 
         } else {
           if (opts->megaROM) {
             // ld a, (TEMP)
-            addLdAii(def_TEMP);
+            cpuWriter->addLdAii(def_TEMP);
           }
 
           // dec a
-          addDecA();
+          cpuWriter->addDecA();
 
           if (opts->megaROM) {
             // ld (TEMP), a
-            addLdiiA(def_TEMP);
+            cpuWriter->addLdiiA(def_TEMP);
           }
 
           if (opts->megaROM) {
             // jr nz, $+25
-            addJrNZ(24);
+            cpuWriter->addJrNZ(24);
           } else {
             // jr nz, $+7
-            addJrNZ(0x06);
+            cpuWriter->addJrNZ(0x06);
           }
           //   call address
           addFix(sub_lexeme->value);
-          addCall(0x0000);
+          cpuWriter->addCall(0x0000);
           //   jp address
           addFix(mark->symbol);
-          addJp(0x0000);
+          cpuWriter->addJp(0x0000);
         }
 
       } else {
         if (opts->megaROM) {
           // ld a, (TEMP)
-          addLdAii(def_TEMP);
+          cpuWriter->addLdAii(def_TEMP);
         }
 
         // dec a
-        addDecA();
+        cpuWriter->addDecA();
 
         if (opts->megaROM) {
           // ld (TEMP), a
-          addLdiiA(def_TEMP);
+          cpuWriter->addLdiiA(def_TEMP);
         }
       }
     }
 
-    mark->symbol->address = code_pointer;
+    mark->symbol->address = cpuContext->code_pointer;
 
   } else {
     syntaxError("ON GOTO/GOSUB with empty parameters");
@@ -6461,7 +6463,7 @@ void Compiler::cmd_swap() {
       // ld hl, variable
       addVarAddress(action1);
       // push hl
-      addPushHL();
+      cpuWriter->addPushHL();
       // ld hl, variable
       addVarAddress(action2);
       // pop de
@@ -6469,13 +6471,13 @@ void Compiler::cmd_swap() {
 
       if (lexeme1->subtype == Lexeme::subtype_numeric) {
         // call 0x6bf5    ; xbasic SWAP integers (in: hl=var1, de=var2)
-        addCall(def_XBASIC_SWAP_INTEGER);
+        cpuWriter->addCall(def_XBASIC_SWAP_INTEGER);
       } else if (lexeme1->subtype == Lexeme::subtype_string) {
         // call 0x6bf9    ; xbasic SWAP strings (in: hl=var1, de=var2)
-        addCall(def_XBASIC_SWAP_STRING);
+        cpuWriter->addCall(def_XBASIC_SWAP_STRING);
       } else {
         // call 0x6bfd    ; xbasic SWAP floats (in: hl=var1, de=var2)
-        addCall(def_XBASIC_SWAP_FLOAT);
+        cpuWriter->addCall(def_XBASIC_SWAP_FLOAT);
       }
 
     } else {
@@ -6507,44 +6509,44 @@ void Compiler::cmd_wait() {
         switch (i) {
           case 0: {
             // push hl
-            addPushHL();
+            cpuWriter->addPushHL();
           } break;
 
           case 1: {
             if (t == 3) {
               // ld a, l
-              addLdAL();
+              cpuWriter->addLdAL();
               // push af
-              addPushAF();
+              cpuWriter->addPushAF();
             } else {
               // ld d, l
-              addLdDL();
+              cpuWriter->addLdDL();
               // pop bc
-              addPopBC();
+              cpuWriter->addPopBC();
               //   in a,(c)
-              addWord(0xED, 0x78);
+              cpuWriter->addWord(0xED, 0x78);
               //   and d
-              addAndD();
+              cpuWriter->addAndD();
               // jr z, $-4
-              addJrZ(0xFB);
+              cpuWriter->addJrZ(0xFB);
             }
           } break;
 
           case 2: {
             // ld h, l
-            addLdHL();
+            cpuWriter->addLdHL();
             // pop de
-            addPopDE();
+            cpuWriter->addPopDE();
             // pop bc
-            addPopBC();
+            cpuWriter->addPopBC();
             //   in a,(c)
-            addWord(0xED, 0x78);
+            cpuWriter->addWord(0xED, 0x78);
             //   xor h
-            addXorH();
+            cpuWriter->addXorH();
             //   and d
-            addAndD();
+            cpuWriter->addAndD();
             // jr z, $-5
-            addJrZ(0xFA);
+            cpuWriter->addJrZ(0xFA);
 
           } break;
         }
@@ -6584,7 +6586,7 @@ void Compiler::cmd_read() {
       }
 
       // call read
-      addCall(def_XBASIC_READ);
+      cpuWriter->addCall(def_XBASIC_READ);
 
       addCast(Lexeme::subtype_string, lexeme->subtype);
 
@@ -6614,7 +6616,7 @@ void Compiler::cmd_iread() {
       }
 
       // call XBASIC_IREAD
-      addCall(def_XBASIC_IREAD);
+      cpuWriter->addCall(def_XBASIC_IREAD);
 
       addCast(Lexeme::subtype_numeric, lexeme->subtype);
 
@@ -6640,9 +6642,9 @@ void Compiler::cmd_restore() {
 
   if (t == 0) {
     // ld hl, 0
-    addLdHL(0x0000);
+    cpuWriter->addLdHL(0x0000);
     // call xbasic_restore
-    addCall(def_XBASIC_RESTORE);  // standard BASIC RESTORE statement
+    cpuWriter->addCall(def_XBASIC_RESTORE);  // standard BASIC RESTORE statement
 
   } else if (t == 1) {
     action = current_action->actions[0];
@@ -6655,7 +6657,8 @@ void Compiler::cmd_restore() {
       addCast(result_subtype, Lexeme::subtype_numeric);
 
       // call restore
-      addCall(def_XBASIC_RESTORE);  // standard BASIC RESTORE statement
+      cpuWriter->addCall(
+          def_XBASIC_RESTORE);  // standard BASIC RESTORE statement
     }
 
   } else {
@@ -6671,9 +6674,9 @@ void Compiler::cmd_irestore() {
 
   if (t == 0) {
     // ld hl, (DATLIN)
-    addLdHLii(def_DATLIN);
+    cpuWriter->addLdHLii(def_DATLIN);
     // ld (DATPTR), hl
-    addLdiiHL(def_DATPTR);
+    cpuWriter->addLdiiHL(def_DATPTR);
 
   } else if (t == 1) {
     action = current_action->actions[0];
@@ -6686,13 +6689,13 @@ void Compiler::cmd_irestore() {
       addCast(result_subtype, Lexeme::subtype_numeric);
 
       // ex de, hl
-      addExDEHL();
+      cpuWriter->addExDEHL();
       // ld hl, (DATLIN)
-      addLdHLii(def_DATLIN);
+      cpuWriter->addLdHLii(def_DATLIN);
       // add hl, de
-      addAddHLDE();
+      cpuWriter->addAddHLDE();
       // ld (DATPTR), hl
-      addLdiiHL(def_DATPTR);
+      cpuWriter->addLdiiHL(def_DATPTR);
     }
 
   } else {
@@ -6718,12 +6721,12 @@ void Compiler::cmd_out() {
 
         if (i == 0) {
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
         } else {
           // pop bc
-          addPopBC();
+          cpuWriter->addPopBC();
           // out (c), l
-          addWord(0xED, 0x69);
+          cpuWriter->addWord(0xED, 0x69);
         }
       }
     }
@@ -6751,14 +6754,14 @@ void Compiler::cmd_poke() {
 
         if (i == 0) {
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
         } else {
           // ex de, hl
-          addExDEHL();
+          cpuWriter->addExDEHL();
           // pop hl
-          addPopHL();
+          cpuWriter->addPopHL();
           // ld (hl), e
-          addLdiHLE();
+          cpuWriter->addLdiHLE();
         }
       }
     }
@@ -6786,18 +6789,18 @@ void Compiler::cmd_ipoke() {
 
         if (i == 0) {
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
         } else {
           // ex de, hl
-          addExDEHL();
+          cpuWriter->addExDEHL();
           // pop hl
-          addPopHL();
+          cpuWriter->addPopHL();
           // ld (hl), e
-          addLdiHLE();
+          cpuWriter->addLdiHLE();
           // inc hl
-          addIncHL();
+          cpuWriter->addIncHL();
           // ld (hl), d
-          addLdiHLD();
+          cpuWriter->addLdiHLD();
         }
       }
     }
@@ -6825,14 +6828,14 @@ void Compiler::cmd_vpoke() {
 
         if (i == 0) {
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
         } else {
           // ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
           // pop hl
-          addPopHL();
+          cpuWriter->addPopHL();
           // call 0x70b5    ; xbasic VPOKE (in: hl=address, a=byte)
-          addCall(def_XBASIC_VPOKE);
+          cpuWriter->addCall(def_XBASIC_VPOKE);
         }
       }
     }
@@ -6905,13 +6908,13 @@ void Compiler::cmd_call() {
         // ld hl, data address
         addVarAddress(action);
         // ld a, (hl)      ; first character
-        addLdAiHL();
+        cpuWriter->addLdAiHL();
         // ld ix, (CALL)    ; CALL
-        addLdIXii(def_CALL_STMT);
+        cpuWriter->addLdIXii(def_CALL_STMT);
         // call CALBAS
-        addCall(def_CALBAS);
+        cpuWriter->addCall(def_CALBAS);
         // ei
-        addEI();
+        cpuWriter->addEI();
 
       } else {
         // todo: concatenate CALL statement  into a literal string
@@ -6934,79 +6937,79 @@ void Compiler::cmd_maxfiles() {
 
   if (t) {
     // xor a
-    // addXorA();
+    // cpuOpcodeWriter->addXorA();
     // ld (NLONLY), a
-    // addLdiiA(def_NLONLY);
+    // cpuOpcodeWriter->addLdiiA(def_NLONLY);
     // ld (DSKDIS), a
-    // addLdiiA(0xFD99);
+    // cpuOpcodeWriter->addLdiiA(0xFD99);
 
     action = current_action->actions[0];
     result_subtype = evalExpression(action);
     addCast(result_subtype, Lexeme::subtype_numeric);
 
     // ld a, (MAXFIL)
-    addLdAii(def_MAXFIL);
+    cpuWriter->addLdAii(def_MAXFIL);
     // cp l
-    addCpL();
+    cpuWriter->addCpL();
     // jp z, $                ; skip if equal
     mark = addMark();
-    addJpZ(0x0000);
+    cpuWriter->addJpZ(0x0000);
 
     // ld a, l
-    addLdAL();
+    cpuWriter->addLdAL();
 
     // ld (MAXFIL), a
-    addLdiiA(def_MAXFIL);
+    cpuWriter->addLdiiA(def_MAXFIL);
 
     // push af
-    addPushAF();
+    cpuWriter->addPushAF();
 
     addEnableBasicSlot();
 
     // ld hl, fake empty line
-    addLdHL(def_ENDPRG);
+    cpuWriter->addLdHL(def_ENDPRG);
 
     // call CLOSE_ALL
-    addCall(def_CLOSE_ALL);
+    cpuWriter->addCall(def_CLOSE_ALL);
 
     // pop af
-    addPopAF();
+    cpuWriter->addPopAF();
 
     // call MAXFILES
-    addCall(def_MAXFILES);
+    cpuWriter->addCall(def_MAXFILES);
 
     // call 0x7304			; end printeroutput (basic interpreter
     // function)
-    addCall(0x7304);
+    cpuWriter->addCall(0x7304);
     // call 0x4AFF			; return interpreter output to screen
     // (basic interpreter function)
-    addCall(0x4AFF);
+    cpuWriter->addCall(0x4AFF);
 
     addDisableBasicSlot();
 
     // ; restore stack state
     // ld bc, 16
-    addLdBC(0x0010);
+    cpuWriter->addLdBC(0x0010);
     // ld (TEMP), sp
-    addLdiiSP(def_TEMP);
+    cpuWriter->addLdiiSP(def_TEMP);
     // ld hl, (TEMP)
-    addLdHLii(def_TEMP);
+    cpuWriter->addLdHLii(def_TEMP);
     // xor a
-    addXorA();
+    cpuWriter->addXorA();
     // sbc hl, bc
-    addSbcHLBC();
+    cpuWriter->addSbcHLBC();
     // ld sp,hl
-    addLdSPHL();
+    cpuWriter->addLdSPHL();
     // ex de,hl
-    addExDEHL();
+    cpuWriter->addExDEHL();
     // ld hl, (SAVSTK)
-    addLdHLii(def_SAVSTK);
+    cpuWriter->addLdHLii(def_SAVSTK);
     // ldir
-    addLDIR();
+    cpuWriter->addLDIR();
     // ld (SAVSTK), sp
-    addLdiiSP(def_SAVSTK);
+    cpuWriter->addLdiiSP(def_SAVSTK);
 
-    mark->symbol->address = code_pointer;
+    mark->symbol->address = cpuContext->code_pointer;
 
   } else {
     syntaxError("Empty MAXFILES assignment");
@@ -7039,7 +7042,7 @@ void Compiler::cmd_open() {
           addCast(result_subtype, Lexeme::subtype_string);
 
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
         } break;
 
         // FOR
@@ -7048,20 +7051,20 @@ void Compiler::cmd_open() {
           state = 2;
           if (lexeme->value == "OUT") {
             // ld a, 2     ; output mode
-            addLdA(0x02);
+            cpuWriter->addLdA(0x02);
           } else if (lexeme->value == "APP") {
             // ld a, 8     ; append mode
-            addLdA(0x08);
+            cpuWriter->addLdA(0x08);
           } else if (lexeme->value == "INPUT") {
             // ld a, 1     ; input mode
-            addLdA(0x01);
+            cpuWriter->addLdA(0x01);
           } else {
             // ld a, 4     ; random mode
-            addLdA(0x04);
+            cpuWriter->addLdA(0x04);
             i--;
           }
           // push af
-          addPushAF();
+          cpuWriter->addPushAF();
         } break;
 
         // AS
@@ -7071,7 +7074,7 @@ void Compiler::cmd_open() {
           result_subtype = evalExpression(action);
           addCast(result_subtype, Lexeme::subtype_numeric);
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
         } break;
 
         // LEN
@@ -7090,89 +7093,90 @@ void Compiler::cmd_open() {
     // LEN
     if (!has[3]) {
       // ld hl, 256  ; default record size
-      addLdHL(0x0100);
+      cpuWriter->addLdHL(0x0100);
     }
     // ld (RECSIZ), hl
-    addLdiiHL(def_RECSIZ);
+    cpuWriter->addLdiiHL(def_RECSIZ);
 
     // AS
     if (has[2]) {
       // pop hl
-      addPopHL();
+      cpuWriter->addPopHL();
       // ld a, l
-      addLdAL();
+      cpuWriter->addLdAL();
     } else {
       // xor a
-      addXorA();
+      cpuWriter->addXorA();
     }
     // ld (TEMP), a
-    addLdiiA(def_TEMP);
+    cpuWriter->addLdiiA(def_TEMP);
 
     // FOR
     if (has[1]) {
       // pop af
-      addPopAF();
+      cpuWriter->addPopAF();
     } else {
       // xor a
-      addXorA();
+      cpuWriter->addXorA();
     }
     // ld (TEMP+1), a           ; file mode
-    addLdiiA(def_TEMP + 1);
+    cpuWriter->addLdiiA(def_TEMP + 1);
 
     if (opts->megaROM) {
       // ld hl, 0x0000             ; get return point address
       mark = addMark();
       addLdHLmegarom();
       // ld c, l
-      addLdCL();
+      cpuWriter->addLdCL();
       // ld b, h
-      addLdBH();
+      cpuWriter->addLdBH();
     } else {
       // ld bc, 0x0000             ; get return point address
       mark = addMark();
-      addLdBC(0x0000);
+      cpuWriter->addLdBC(0x0000);
     }
 
     // FILE
     if (has[0]) {
       // pop hl
-      addPopHL();
+      cpuWriter->addPopHL();
     } else {
       // ld hl, NULL STR
-      addLdHL(0x8000);
+      cpuWriter->addLdHL(0x8000);
     }
 
     // push bc            ; save return point to run after FILESPEC
-    addPushBC();
+    cpuWriter->addPushBC();
 
     // ld e, (hl)
-    addLdEiHL();
+    cpuWriter->addLdEiHL();
 
     // inc hl
-    addIncHL();
+    cpuWriter->addIncHL();
 
     // push hl
-    addPushHL();
+    cpuWriter->addPushHL();
 
     // jp FILESPEC        ; in e=string size, hl=string start; out d = device
     // code, FILNAM
-    addJp(def_FILESPEC);
+    cpuWriter->addJp(def_FILESPEC);
 
-    mark->symbol->address = code_pointer;  // return point after FILESPEC
+    mark->symbol->address =
+        cpuContext->code_pointer;  // return point after FILESPEC
 
     // ld a, (TEMP+1)
-    addLdAii(def_TEMP + 1);
+    cpuWriter->addLdAii(def_TEMP + 1);
     // ld e, a                ; file mode
-    addLdEA();
+    cpuWriter->addLdEA();
 
     // ld a, (TEMP)           ; io number
-    addLdAii(def_TEMP);
+    cpuWriter->addLdAii(def_TEMP);
 
     // ld hl, fake empty line
-    addLdHL(def_ENDPRG);
+    cpuWriter->addLdHL(def_ENDPRG);
 
     // call OPEN     ; in: a = i/o number, e = filemode, d = devicecode
-    addCall(def_OPEN);
+    cpuWriter->addCall(def_OPEN);
 
     addDisableBasicSlot();
 
@@ -7193,19 +7197,19 @@ void Compiler::cmd_close() {
       addCast(result_subtype, Lexeme::subtype_numeric);
 
       // ld a, l
-      addLdAL();
+      cpuWriter->addLdAL();
       // push af
-      addPushAF();
+      cpuWriter->addPushAF();
 
       addEnableBasicSlot();
 
       // pop af
-      addPopAF();
+      cpuWriter->addPopAF();
       // ld hl, fake empty line
-      addLdHL(def_ENDPRG);
+      cpuWriter->addLdHL(def_ENDPRG);
 
       // call CLOSE    ; in: a = i/o number
-      addCall(def_CLOSE);
+      cpuWriter->addCall(def_CLOSE);
 
       addDisableBasicSlot();
     }
@@ -7214,10 +7218,10 @@ void Compiler::cmd_close() {
     addEnableBasicSlot();
 
     // ld hl, fake empty line
-    addLdHL(def_ENDPRG);
+    cpuWriter->addLdHL(def_ENDPRG);
 
     // call ClOSE ALL
-    addCall(def_CLOSE_ALL);
+    cpuWriter->addCall(def_CLOSE_ALL);
 
     addDisableBasicSlot();
   }
@@ -7244,29 +7248,29 @@ void Compiler::cmd_def() {
         addCast(result_subtype, Lexeme::subtype_numeric);
 
         // push hl
-        addPushHL();
+        cpuWriter->addPushHL();
 
         subaction = action->actions[1];
         result_subtype = evalExpression(subaction);
         addCast(result_subtype, Lexeme::subtype_numeric);
 
         // ex de,hl
-        addExDEHL();
+        cpuWriter->addExDEHL();
 
         // pop hl
-        addPopHL();
+        cpuWriter->addPopHL();
         // ld bc, USRTAB
-        addLdBC(def_USRTAB);
+        cpuWriter->addLdBC(def_USRTAB);
         // add hl,hl
-        addAddHLHL();
+        cpuWriter->addAddHLHL();
         // add hl,bc
-        addAddHLBC();
+        cpuWriter->addAddHLBC();
         // ld (hl), e
-        addLdiHLE();
+        cpuWriter->addLdiHLE();
         // inc hl
-        addIncHL();
+        cpuWriter->addIncHL();
         // ld (hl), d
-        addLdiHLD();
+        cpuWriter->addLdiHLD();
 
       } else {
         syntaxError("Wrong DEF USR parameters count");
@@ -7293,9 +7297,9 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
           // call cmd_runasm
-          addCall(def_cmd_runasm);
+          cpuWriter->addCall(def_cmd_runasm);
 
         } else {
           syntaxError("CMD RUNASM syntax error");
@@ -7311,17 +7315,17 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
 
           sub_action2 = action->actions[1];
           result_subtype = evalExpression(sub_action2);
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (ARG), hl
-          addLdiiHL(def_ARG);
+          cpuWriter->addLdiiHL(def_ARG);
 
           // call cmd_runasm
-          addCall(def_cmd_wrtvram);
+          cpuWriter->addCall(def_cmd_wrtvram);
 
         } else {
           syntaxError("CMD WRTVRAM syntax error");
@@ -7334,9 +7338,9 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
           // call cmd_wrtfnt
-          addCall(def_cmd_wrtfnt);
+          cpuWriter->addCall(def_cmd_wrtfnt);
 
         } else {
           syntaxError("CMD WRTFNT syntax error");
@@ -7349,9 +7353,9 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
           // call cmd_wrtchr
-          addCall(def_cmd_wrtchr);
+          cpuWriter->addCall(def_cmd_wrtchr);
 
         } else {
           syntaxError("CMD WRTCHR syntax error");
@@ -7364,9 +7368,9 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
           // call cmd_wrtclr
-          addCall(def_cmd_wrtclr);
+          cpuWriter->addCall(def_cmd_wrtclr);
 
         } else {
           syntaxError("CMD WRTCLR syntax error");
@@ -7379,9 +7383,9 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
           // call cmd_wrtscr
-          addCall(def_cmd_wrtscr);
+          cpuWriter->addCall(def_cmd_wrtscr);
 
         } else {
           syntaxError("CMD WRTSCR syntax error");
@@ -7394,9 +7398,9 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
           // call cmd_wrtspr                    ; tiny sprite loader
-          addCall(def_cmd_wrtspr);
+          cpuWriter->addCall(def_cmd_wrtspr);
 
         } else {
           syntaxError("CMD WRTSPR syntax error");
@@ -7409,9 +7413,9 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
           // call cmd_wrtsprpat
-          addCall(def_cmd_wrtsprpat);
+          cpuWriter->addCall(def_cmd_wrtsprpat);
 
         } else {
           syntaxError("CMD WRTSPRPAT syntax error");
@@ -7424,9 +7428,9 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
           // call cmd_wrtsprclr
-          addCall(def_cmd_wrtsprclr);
+          cpuWriter->addCall(def_cmd_wrtsprclr);
 
         } else {
           syntaxError("CMD WRTSPRCLR syntax error");
@@ -7439,9 +7443,9 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
           // call cmd_wrtspratr
-          addCall(def_cmd_wrtspratr);
+          cpuWriter->addCall(def_cmd_wrtspratr);
 
         } else {
           syntaxError("CMD WRTSPRATR syntax error");
@@ -7454,24 +7458,24 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
 
           sub_action2 = action->actions[1];
           result_subtype = evalExpression(sub_action2);
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (ARG), hl
-          addLdiiHL(def_ARG);
+          cpuWriter->addLdiiHL(def_ARG);
 
           sub_action3 = action->actions[2];
           result_subtype = evalExpression(sub_action3);
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (ARG2), hl
-          addLdiiHL(def_ARG2);
+          cpuWriter->addLdiiHL(def_ARG2);
 
           // call cmd_ramtovram
-          addCall(def_cmd_ramtovram);
+          cpuWriter->addCall(def_cmd_ramtovram);
 
         } else {
           syntaxError("CMD RAMTOVRAM syntax error");
@@ -7484,24 +7488,24 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
 
           sub_action2 = action->actions[1];
           result_subtype = evalExpression(sub_action2);
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (ARG), hl
-          addLdiiHL(def_ARG);
+          cpuWriter->addLdiiHL(def_ARG);
 
           sub_action3 = action->actions[2];
           result_subtype = evalExpression(sub_action3);
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (ARG2), hl
-          addLdiiHL(def_ARG2);
+          cpuWriter->addLdiiHL(def_ARG2);
 
           // call cmd_vramtoram
-          addCall(def_cmd_vramtoram);
+          cpuWriter->addCall(def_cmd_vramtoram);
 
         } else {
           syntaxError("CMD VRAMTORAM syntax error");
@@ -7509,19 +7513,19 @@ void Compiler::cmd_cmd() {
 
       } else if (lexeme->value == "DISSCR") {
         // call cmd_disscr
-        addCall(def_cmd_disscr);
+        cpuWriter->addCall(def_cmd_disscr);
 
       } else if (lexeme->value == "ENASCR") {
         // call cmd_enascr
-        addCall(def_cmd_enascr);
+        cpuWriter->addCall(def_cmd_enascr);
 
       } else if (lexeme->value == "KEYCLKOFF") {
         // call cmd_keyclkoff
-        addCall(def_cmd_keyclkoff);
+        cpuWriter->addCall(def_cmd_keyclkoff);
 
       } else if (lexeme->value == "MUTE") {
         // call cmd_mute
-        addCall(def_cmd_mute);
+        cpuWriter->addCall(def_cmd_mute);
 
       } else if (lexeme->value == "PLAY") {
         if (action->actions.size() == 1) {
@@ -7530,15 +7534,15 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
 
           // xor a
-          addXorA();
+          cpuWriter->addXorA();
           // ld (ARG), a
-          addLdiiA(def_ARG);
+          cpuWriter->addLdiiA(def_ARG);
 
           // call cmd_play
-          addCall(def_cmd_play);
+          cpuWriter->addCall(def_cmd_play);
 
         } else if (action->actions.size() == 2) {
           sub_action1 = action->actions[0];
@@ -7546,17 +7550,17 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
 
           sub_action2 = action->actions[1];
           result_subtype = evalExpression(sub_action2);
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (ARG), hl
-          addLdiiHL(def_ARG);
+          cpuWriter->addLdiiHL(def_ARG);
 
           // call cmd_play
-          addCall(def_cmd_play);
+          cpuWriter->addCall(def_cmd_play);
 
         } else {
           syntaxError("CMD PLAY syntax error");
@@ -7569,9 +7573,9 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
           // call cmd_draw
-          addCall(def_cmd_draw);
+          cpuWriter->addCall(def_cmd_draw);
 
         } else {
           syntaxError("CMD DRAW syntax error");
@@ -7606,7 +7610,7 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
 
           if (action->actions.size() > 1) {
             sub_action2 = action->actions[1];
@@ -7615,14 +7619,14 @@ void Compiler::cmd_cmd() {
           }
 
           // ld (ARG), hl
-          addLdiiHL(def_ARG);
+          cpuWriter->addLdiiHL(def_ARG);
 
         } else {
           syntaxError("CMD PLYLOAD syntax error");
         }
 
         // call cmd_plyload
-        addCall(def_cmd_plyload);
+        cpuWriter->addCall(def_cmd_plyload);
 
       } else if (lexeme->value == "PLYSONG") {
         akm = true;
@@ -7633,26 +7637,26 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
 
         } else {
           syntaxError("CMD PLYSONG syntax error");
         }
 
         // call cmd_plysong
-        addCall(def_cmd_plysong);
+        cpuWriter->addCall(def_cmd_plysong);
 
       } else if (lexeme->value == "PLYPLAY") {
         akm = true;
 
         // call cmd_plyplay
-        addCall(def_cmd_plyplay);
+        cpuWriter->addCall(def_cmd_plyplay);
 
       } else if (lexeme->value == "PLYMUTE") {
         akm = true;
 
         // call cmd_akmmute
-        addCall(def_cmd_plymute);
+        cpuWriter->addCall(def_cmd_plymute);
 
       } else if (lexeme->value == "PLYLOOP") {
         akm = true;
@@ -7663,9 +7667,9 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
           // call cmd_plyloop
-          addCall(def_cmd_plyloop);
+          cpuWriter->addCall(def_cmd_plyloop);
 
         } else {
           syntaxError("CMD PLYLOOP syntax error");
@@ -7675,7 +7679,7 @@ void Compiler::cmd_cmd() {
         akm = true;
 
         // call cmd_plyreplay
-        addCall(def_cmd_plyreplay);
+        cpuWriter->addCall(def_cmd_plyreplay);
 
       } else if (lexeme->value == "PLYSOUND") {
         if (action->actions.size()) {
@@ -7684,7 +7688,7 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
 
           if (action->actions.size() > 1) {
             sub_action2 = action->actions[1];
@@ -7692,11 +7696,11 @@ void Compiler::cmd_cmd() {
             addCast(result_subtype, Lexeme::subtype_numeric);
           } else {
             // ld hl, 0
-            addLdHL(0x0000);
+            cpuWriter->addLdHL(0x0000);
           }
 
           // ld (ARG), hl
-          addLdiiHL(def_ARG);
+          cpuWriter->addLdiiHL(def_ARG);
 
           if (action->actions.size() > 2) {
             sub_action2 = action->actions[1];
@@ -7704,18 +7708,18 @@ void Compiler::cmd_cmd() {
             addCast(result_subtype, Lexeme::subtype_numeric);
           } else if (action->actions.size() > 1) {
             // ld hl, 0
-            addLdHL(0x0000);
+            cpuWriter->addLdHL(0x0000);
           }
 
           // ld (ARG+2), hl
-          addLdiiHL(def_ARG + 2);
+          cpuWriter->addLdiiHL(def_ARG + 2);
 
         } else {
           syntaxError("CMD PLYSOUND syntax error");
         }
 
         // call cmd_plysound
-        addCall(def_cmd_plysound);
+        cpuWriter->addCall(def_cmd_plysound);
 
       } else if (lexeme->value == "MTF") {
         if (!action->actions.size()) {
@@ -7729,7 +7733,7 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           if (action->actions.size() > 1) {
-            addPushHL();
+            cpuWriter->addPushHL();
 
             // map operation parameter
             sub_action2 = action->actions[1];
@@ -7737,8 +7741,8 @@ void Compiler::cmd_cmd() {
             addCast(result_subtype, Lexeme::subtype_numeric);
 
             if (action->actions.size() > 2) {
-              addLdHL();
-              addPushHL();
+              cpuWriter->addLdHL();
+              cpuWriter->addPushHL();
 
               // col/x parameter
               sub_action2 = action->actions[2];
@@ -7746,39 +7750,39 @@ void Compiler::cmd_cmd() {
               addCast(result_subtype, Lexeme::subtype_numeric);
 
               if (action->actions.size() > 3) {
-                addPushHL();
+                cpuWriter->addPushHL();
 
                 // row/y parameter
                 sub_action2 = action->actions[3];
                 result_subtype = evalExpression(sub_action2);
                 addCast(result_subtype, Lexeme::subtype_numeric);
 
-                addLdCL();
-                addLdBH();   //! row/y
-                addPopDE();  //! col/x
-                addPopAF();  //! map operation
-                addPopHL();  //! resource number
+                cpuWriter->addLdCL();
+                cpuWriter->addLdBH();   //! row/y
+                cpuWriter->addPopDE();  //! col/x
+                cpuWriter->addPopAF();  //! map operation
+                cpuWriter->addPopHL();  //! resource number
               } else {
-                addExDEHL();  //! col/x
-                addLdBC(0);   //! row/y
-                addPopAF();   //! map operation
-                addPopHL();   //! resource number
+                cpuWriter->addExDEHL();  //! col/x
+                cpuWriter->addLdBC(0);   //! row/y
+                cpuWriter->addPopAF();   //! map operation
+                cpuWriter->addPopHL();   //! resource number
               }
             } else {
-              addXorA();
-              addLdEA();
-              addLdDA();  //! col/x
-              addLdCA();
-              addLdBA();   //! row/y
-              addLdAL();   //! map operation
-              addPopHL();  //! resource number
+              cpuWriter->addXorA();
+              cpuWriter->addLdEA();
+              cpuWriter->addLdDA();  //! col/x
+              cpuWriter->addLdCA();
+              cpuWriter->addLdBA();   //! row/y
+              cpuWriter->addLdAL();   //! map operation
+              cpuWriter->addPopHL();  //! resource number
             }
           } else {
-            addXorA();  //! map operation
-            addLdEA();
-            addLdDA();  //! col/x
-            addLdCA();
-            addLdBA();  //! row/y
+            cpuWriter->addXorA();  //! map operation
+            cpuWriter->addLdEA();
+            cpuWriter->addLdDA();  //! col/x
+            cpuWriter->addLdCA();
+            cpuWriter->addLdBA();  //! row/y
           }
 
           // hl = resource number
@@ -7786,7 +7790,7 @@ void Compiler::cmd_cmd() {
           // bc = row/y position
           // a = map operation
           // call cmd_mtf
-          addCall(def_cmd_mtf);
+          cpuWriter->addCall(def_cmd_mtf);
         }
       } else if (lexeme->value == "SETFNT") {
         font = true;
@@ -7797,15 +7801,15 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
 
           // ld a, 0xff                ; it means all screen banks
-          addLdA(0xFF);
+          cpuWriter->addLdA(0xFF);
           // ld (ARG), a
-          addLdiiA(def_ARG);
+          cpuWriter->addLdiiA(def_ARG);
 
           // call cmd_setfnt
-          addCall(def_cmd_setfnt);
+          cpuWriter->addCall(def_cmd_setfnt);
 
         } else if (action->actions.size() == 2) {
           sub_action1 = action->actions[0];
@@ -7813,27 +7817,27 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
 
           sub_action2 = action->actions[1];
           result_subtype = evalExpression(sub_action2);
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (ARG), hl             ; screen font bank number
-          addLdiiHL(def_ARG);
+          cpuWriter->addLdiiHL(def_ARG);
 
           // call cmd_setfnt
-          addCall(def_cmd_setfnt);
+          cpuWriter->addCall(def_cmd_setfnt);
 
         } else {
           syntaxError("CMD SETFNT syntax error");
         }
       } else if (lexeme->value == "UPDFNTCLR") {
         // call cmd_disscr
-        addCall(def_cmd_updfntclr);
+        cpuWriter->addCall(def_cmd_updfntclr);
       } else if (lexeme->value == "CLRSCR") {
         // call cmd_clrscr
-        addCall(def_cmd_clrscr);
+        cpuWriter->addCall(def_cmd_clrscr);
       } else if (lexeme->value == "RAMTORAM") {
         if (action->actions.size() == 3) {
           sub_action1 = action->actions[0];
@@ -7841,24 +7845,24 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
 
           sub_action2 = action->actions[1];
           result_subtype = evalExpression(sub_action2);
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (ARG), hl
-          addLdiiHL(def_ARG);
+          cpuWriter->addLdiiHL(def_ARG);
 
           sub_action3 = action->actions[2];
           result_subtype = evalExpression(sub_action3);
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (ARG2), hl
-          addLdiiHL(def_ARG2);
+          cpuWriter->addLdiiHL(def_ARG2);
 
           // call cmd_ramtoram
-          addCall(def_cmd_ramtoram);
+          cpuWriter->addCall(def_cmd_ramtoram);
 
         } else {
           syntaxError("CMD RAMTORAM syntax error");
@@ -7870,7 +7874,7 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
 
           sub_action2 = action->actions[1];  // ram dest address
           result_subtype = evalExpression(sub_action2);
@@ -7878,36 +7882,36 @@ void Compiler::cmd_cmd() {
 
           if (action->actions.size() == 2) {
             // ex de, hl
-            addExDEHL();
+            cpuWriter->addExDEHL();
             // xor a   ; no pletter
-            addXorA();
+            cpuWriter->addXorA();
           } else {
             // push hl
-            addPushHL();
+            cpuWriter->addPushHL();
 
             sub_action3 = action->actions[2];  // pletter? 0=no, 1=yes
             result_subtype = evalExpression(sub_action3);
             addCast(result_subtype, Lexeme::subtype_numeric);
 
             // ld a, l
-            addLdAL();
+            cpuWriter->addLdAL();
 
             // pop de
-            addPopDE();
+            cpuWriter->addPopDE();
           }
 
           // pop hl
-          addPopHL();
+          cpuWriter->addPopHL();
 
           // call cmd_rsctoram
-          addCall(def_cmd_rsctoram);
+          cpuWriter->addCall(def_cmd_rsctoram);
 
         } else {
           syntaxError("CMD RSCTORAM syntax error");
         }
       } else if (lexeme->value == "CLRKEY") {
         // call cmd_clrkey
-        addCall(def_cmd_clrkey);
+        cpuWriter->addCall(def_cmd_clrkey);
       } else if (lexeme->value == "CLIP") {
         if (action->actions.size() == 1) {
           sub_action1 = action->actions[0];
@@ -7915,17 +7919,17 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld a, l
-          addLdAL();
+          cpuWriter->addLdAL();
           // ld hl, 0xfafc
-          addLdHL(0xfafc);
+          cpuWriter->addLdHL(0xfafc);
           // res 4, (hl)
-          addWord(0xCB, 0xA6);
+          cpuWriter->addWord(0xCB, 0xA6);
           // bit 0, a
-          addWord(0xCB, 0x47);
+          cpuWriter->addWord(0xCB, 0x47);
           // jr z, +3
-          addJrZ(0x02);
+          cpuWriter->addJrZ(0x02);
           //   set 4, (hl)
-          addWord(0xCB, 0xE6);
+          cpuWriter->addWord(0xCB, 0xE6);
 
         } else {
           syntaxError("CMD CLIP syntax error");
@@ -7937,9 +7941,9 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
           // call cmd_turbo
-          addCall(def_cmd_turbo);
+          cpuWriter->addCall(def_cmd_turbo);
 
         } else {
           syntaxError("CMD TURBO syntax error");
@@ -7951,10 +7955,11 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld (DAC), hl
-          addLdiiHL(def_DAC);
+          cpuWriter->addLdiiHL(def_DAC);
 
           // call cmd_restore
-          addCall(def_cmd_restore);  // MSXBAS2ROM resource RESTORE statement
+          cpuWriter->addCall(
+              def_cmd_restore);  // MSXBAS2ROM resource RESTORE statement
 
         } else {
           syntaxError("CMD RESTORE syntax error");
@@ -7966,13 +7971,13 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // ld de, 0                 ; delay = stop
-          addLdDE(0);
+          cpuWriter->addLdDE(0);
 
           // push de
-          addPushDE();
+          cpuWriter->addPushDE();
 
           // pop bc
-          addPopBC();
+          cpuWriter->addPopBC();
 
         } else if (action->actions.size() == 2) {
           sub_action1 = action->actions[1];
@@ -7980,19 +7985,19 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
 
           sub_action2 = action->actions[0];
           result_subtype = evalExpression(sub_action2);
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
 
           // pop bc
-          addPopBC();
+          cpuWriter->addPopBC();
 
         } else if (action->actions.size() == 3) {
           sub_action1 = action->actions[2];
@@ -8000,31 +8005,31 @@ void Compiler::cmd_cmd() {
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
 
           sub_action1 = action->actions[1];
           result_subtype = evalExpression(sub_action1);
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // push hl
-          addPushHL();
+          cpuWriter->addPushHL();
 
           sub_action2 = action->actions[0];
           result_subtype = evalExpression(sub_action2);
           addCast(result_subtype, Lexeme::subtype_numeric);
 
           // pop de
-          addPopDE();
+          cpuWriter->addPopDE();
 
           // pop bc
-          addPopBC();
+          cpuWriter->addPopBC();
 
         } else {
           syntaxError("CMD PAGE syntax error");
         }
 
         // call cmd_page (l = mode, e = delay #1, c = delay #2)
-        addCall(def_cmd_page);
+        cpuWriter->addCall(def_cmd_page);
       } else {
         syntaxError("CMD statement invalid");
         return;
@@ -8038,13 +8043,13 @@ void Compiler::cmd_cmd() {
 void Compiler::addEnableBasicSlot() {
   if (opts->megaROM) {
     // ld a, (EXPTBL)
-    addLdAii(def_EXPTBL);
+    cpuWriter->addLdAii(def_EXPTBL);
     // ld h,040h        ; <--- enable jump to here
-    addLdH(0x40);
+    cpuWriter->addLdH(0x40);
     // call ENASLT		; Select the ROM on page 4000h
-    addCall(def_ENASLT);
+    cpuWriter->addCall(def_ENASLT);
     // ei
-    addEI();
+    cpuWriter->addEI();
   } else {
     // call enable basic slot function
     if (enable_basic_mark) {
@@ -8052,140 +8057,140 @@ void Compiler::addEnableBasicSlot() {
     } else {
       enable_basic_mark = addMark();
     }
-    addCall(0x0000);
+    cpuWriter->addCall(0x0000);
   }
 }
 
 void Compiler::addDisableBasicSlot() {
   if (opts->megaROM) {
     // ld a, (SLTSTR)
-    addLdAii(def_SLTSTR);
+    cpuWriter->addLdAii(def_SLTSTR);
     // ld h,040h        ; <--- enable jump to here
-    addLdH(0x40);
+    cpuWriter->addLdH(0x40);
     // call ENASLT		; Select the ROM on page 4000h
-    addCall(def_ENASLT);
+    cpuWriter->addCall(def_ENASLT);
     // ei
-    addEI();
+    cpuWriter->addEI();
   } else {
     // call disable basic slot function
     if (disable_basic_mark)
       addFix(disable_basic_mark->symbol);
     else
       disable_basic_mark = addMark();
-    addCall(0x0000);
+    cpuWriter->addCall(0x0000);
   }
 }
 
 void Compiler::addSupportSymbols() {
   // IO REDIRECT FUNCTION
   if (io_redirect_mark) {
-    io_redirect_mark->symbol->address = code_pointer;
+    io_redirect_mark->symbol->address = cpuContext->code_pointer;
     // ld a, l  ; io number
-    addLdAL();
+    cpuWriter->addLdAL();
     // ld hl, fake empty line
-    addLdHL(def_ENDPRG);
+    cpuWriter->addLdHL(def_ENDPRG);
     // ld ix, IOREDIRECT     ; in: a = i/o number
-    addLdIX(def_IOREDIRECT);
+    cpuWriter->addLdIX(def_IOREDIRECT);
     // call CALBAS
-    addCall(def_CALBAS);
+    cpuWriter->addCall(def_CALBAS);
     // ei
-    addEI();
+    cpuWriter->addEI();
     // ret
-    addRet();
+    cpuWriter->addRet();
   }
 
   // IO SCREEN FUNCTION
   if (io_screen_mark) {
-    io_screen_mark->symbol->address = code_pointer;
+    io_screen_mark->symbol->address = cpuContext->code_pointer;
     // ld hl, fake empty line
-    addLdHL(def_ENDPRG);
+    cpuWriter->addLdHL(def_ENDPRG);
     // ld ix, IOTOSCREEN
-    addLdIX(def_IOTOSCREEN);
+    cpuWriter->addLdIX(def_IOTOSCREEN);
     // call CALBAS
-    addCall(def_CALBAS);
+    cpuWriter->addCall(def_CALBAS);
     // ei
-    addEI();
+    cpuWriter->addEI();
     // ret
-    addRet();
+    cpuWriter->addRet();
   }
 
   // DRAW STATEMENT - in: hl (pointer to string)
   if (draw_mark) {
-    draw_mark->symbol->address = code_pointer;
+    draw_mark->symbol->address = cpuContext->code_pointer;
     // ld a, (SCRMOD)
-    addLdAii(def_SCRMOD);
+    cpuWriter->addLdAii(def_SCRMOD);
     // cp 2
-    addCp(0x02);
+    cpuWriter->addCp(0x02);
     // ret c                    ; return if text mode
-    addRetC();
+    cpuWriter->addRetC();
 
     // push hl
-    addPushHL();
+    cpuWriter->addPushHL();
 
     addEnableBasicSlot();
 
     // pop hl
-    addPopHL();
+    cpuWriter->addPopHL();
 
     // xor a
-    addXorA();
+    cpuWriter->addXorA();
     // ld bc, disable basic slot
     if (disable_basic_mark)
       addFix(disable_basic_mark->symbol);
     else
       disable_basic_mark = addMark();
-    addLdBC(0x0000);
+    cpuWriter->addLdBC(0x0000);
     // push bc
-    addPushBC();
+    cpuWriter->addPushBC();
     // ld bc, 0
-    addLdBC(0x0000);
+    cpuWriter->addLdBC(0x0000);
     // push bc
-    addPushBC();
+    cpuWriter->addPushBC();
     // push bc
-    addPushBC();
+    cpuWriter->addPushBC();
     // push bc
-    addPushBC();
+    cpuWriter->addPushBC();
     // ld de, 0x5D83
-    addLdDE(0x5D83);
+    cpuWriter->addLdDE(0x5D83);
     // ld (0xFCBB), a   ; DRWFLG
-    addLdiiA(0xFCBB);
+    cpuWriter->addLdiiA(0xFCBB);
     // ld (0xF958), a   ; MCLFLG
-    addLdiiA(0xF958);
+    cpuWriter->addLdiiA(0xF958);
     // ld (0xF956), de  ; MCLTAB
-    addLdiiDE(0xF956);
+    cpuWriter->addLdiiDE(0xF956);
     // ld a, (hl)
-    addLdAiHL();
+    cpuWriter->addLdAiHL();
     // inc hl
-    addIncHL();
+    cpuWriter->addIncHL();
     // ld (0xFB3B), a   ; MCLLEN
-    addLdiiA(0xFB3B);
+    cpuWriter->addLdiiA(0xFB3B);
     // jp 0x5691    ; DRAW subroutine = 0x568C+5  (main routine hook address =
     // 0x39A8)
-    addJp(0x5691);
+    cpuWriter->addJp(0x5691);
   }
 
   // ENABLE BASIC SLOT FUNCTION
   if (enable_basic_mark) {
-    enable_basic_mark->symbol->address = code_pointer;
+    enable_basic_mark->symbol->address = cpuContext->code_pointer;
     // ld a, (EXPTBL)
-    addLdAii(def_EXPTBL);
+    cpuWriter->addLdAii(def_EXPTBL);
     // jr $+4            ; jump to disable code
-    addJr(0x03);
+    cpuWriter->addJr(0x03);
   }
 
   // DISABLE BASIC SLOT FUNCTION
   if (disable_basic_mark) {
-    disable_basic_mark->symbol->address = code_pointer;
+    disable_basic_mark->symbol->address = cpuContext->code_pointer;
     // ld a, (SLTSTR)
-    addLdAii(def_SLTSTR);
+    cpuWriter->addLdAii(def_SLTSTR);
     // ld h,040h        ; <--- enable jump to here
-    addLdH(0x40);
+    cpuWriter->addLdH(0x40);
     // call ENASLT		; Select the ROM on page 4000h
-    addCall(def_ENASLT);
+    cpuWriter->addCall(def_ENASLT);
     // ei
-    addEI();
+    cpuWriter->addEI();
     // ret
-    addRet();
+    cpuWriter->addRet();
   }
 }
 

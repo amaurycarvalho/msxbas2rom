@@ -14,6 +14,7 @@
 #include "doctest/doctest.h"
 #include "lexer.h"
 #include "parser.h"
+#include "z80.h"
 
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {
@@ -39,11 +40,12 @@ TEST_SUITE("Compiler") {
     const std::string filename =
         createTempBas("compiler_valid.bas", "10 PRINT \"HI\"\n20 END\n");
 
-    Compiler compiler;
+    Z80OpcodeWriter cpuOpcodeWriter;
+    Compiler compiler(&cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == true);
-    CHECK(compiler.compiled == true);
-    CHECK(compiler.code_size > 0);
-    CHECK(compiler.ram_size >= 0);
+    CHECK(compiler.isCompiled() == true);
+    CHECK(compiler.getCodeSize() > 0);
+    CHECK(compiler.getRamSize() >= 0);
 
     std::remove(filename.c_str());
   }
@@ -52,9 +54,10 @@ TEST_SUITE("Compiler") {
     const std::string filename = createTempBas(
         "compiler_duplicated_line.bas", "10 PRINT \"A\"\n10 PRINT \"B\"\n");
 
-    Compiler compiler;
+    Z80OpcodeWriter cpuOpcodeWriter;
+    Compiler compiler(&cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
-    CHECK(compiler.error_message.find("Line number already declared") !=
+    CHECK(compiler.getErrorMessage().find("Line number already declared") !=
           std::string::npos);
 
     std::remove(filename.c_str());
@@ -64,9 +67,10 @@ TEST_SUITE("Compiler") {
     const std::string filename = createTempBas(
         "compiler_for_without_next.bas", "10 FOR I=1 TO 10\n20 PRINT I\n");
 
-    Compiler compiler;
+    Z80OpcodeWriter cpuOpcodeWriter;
+    Compiler compiler(&cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
-    CHECK(compiler.error_message.find("FOR without a NEXT") !=
+    CHECK(compiler.getErrorMessage().find("FOR without a NEXT") !=
           std::string::npos);
 
     std::remove(filename.c_str());

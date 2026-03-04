@@ -14,17 +14,19 @@
 // NOLINTBEGIN
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "build_options.h"
 #include "compiler.h"
 #include "doctest/doctest.h"
 #include "lexer.h"
-#include "build_options.h"
 #include "parser.h"
 #include "pletter.h"
+#include "z80.h"
 
 static int COMPILE(string filename, bool megarom = false) {
   Lexer lexer;
   Parser parser;
-  Compiler compiler;
+  Z80OpcodeWriter cpuOpcodeWriter;
+  Compiler compiler(&cpuOpcodeWriter);
   BuildOptions opts;
 
   REQUIRE(lexer.lineNo == 0);

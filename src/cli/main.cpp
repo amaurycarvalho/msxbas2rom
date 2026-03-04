@@ -36,6 +36,7 @@
 #include <math.h>
 
 #include "main.h"
+#include "z80.h"
 
 using namespace std;
 
@@ -45,6 +46,7 @@ int main(int argc, char* argv[]) {
   unique_ptr<Rom> rom;
   unique_ptr<Parser> parser;
   unique_ptr<Compiler> compiler;
+  unique_ptr<ICpuOpcodeWriter> cpuWriter;
   bool retriedWithAscii8 = false;
 
   /// parsing parameters
@@ -107,7 +109,8 @@ int main(int argc, char* argv[]) {
   while (true) {
     lexer.reset(new Lexer());
     parser.reset(new Parser());
-    compiler.reset(new Compiler());
+    cpuWriter.reset(new Z80OpcodeWriter());
+    compiler.reset(new Compiler(cpuWriter.get()));
     rom.reset(new Rom());
 
     if (fileExists(opts.outputFilename)) {
@@ -185,9 +188,9 @@ int main(int argc, char* argv[]) {
     }
 
     if (!compiler->build(parser.get())) {
-      printf("Error: %s\n", compiler->error_message.c_str());
-      if (compiler->current_tag)
-        printf("%s", compiler->current_tag->toString().c_str());
+      printf("Error: %s\n", compiler->getErrorMessage().c_str());
+      if (compiler->getCurrentTag())
+        printf("%s", compiler->getCurrentTag()->toString().c_str());
       return 1;
     }
 
@@ -198,9 +201,9 @@ int main(int argc, char* argv[]) {
         } else
           printf("    Compiling for MegaROM format (ASCII8 mapper)\n");
       }
-      printf("    Compiled code size = %i byte(s)\n", compiler->code_size);
+      printf("    Compiled code size = %i byte(s)\n", compiler->getCodeSize());
       printf("    Memory allocated to variables = %i byte(s)\n",
-             compiler->ram_size);
+             compiler->getRamSize());
     }
 
     /// ROM OUTPUT
@@ -232,7 +235,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (opts.symbols != BuildOptions::SymbolsMode::None) {
-      compiler->symbolManager.saveSymbol(&opts);
+      compiler->getSymbolManager().saveSymbol(&opts);
     }
 
     break;
@@ -254,30 +257,32 @@ int main(int argc, char* argv[]) {
     printf("    ROM size = %.0fK (%.1f%% free)\n", rom->romSize / 1024.0,
            100.0 - rom->codeShare - rom->resourcesShare - rom->kernelShare);
 
-    if (compiler->resourceManager.resources.size()) {
+    if (compiler->getResourceManager().resources.size()) {
       printf("    Resources occupied %.1f%% of avaliable space\n",
              rom->resourcesShare);
       printf("      %i resource(s) found (%.1fK size",
-             (int)compiler->resourceManager.resources.size(),
-             compiler->resourceManager.resourcesPackedSize / 1024.0);
-      if (compiler->resourceManager.resourcesPackedSize <
-          compiler->resourceManager.resourcesUnpackedSize) {
-        printf(", %.1f%% packed rate", compiler->resourceManager.packedRate);
+             (int)compiler->getResourceManager().resources.size(),
+             compiler->getResourceManager().resourcesPackedSize / 1024.0);
+      if (compiler->getResourceManager().resourcesPackedSize <
+          compiler->getResourceManager().resourcesUnpackedSize) {
+        printf(", %.1f%% packed rate",
+               compiler->getResourceManager().packedRate);
       }
       printf(")\n");
-      if (opts.debug) printf("%s", compiler->resourceManager.toString().c_str());
+      if (opts.debug)
+        printf("%s", compiler->getResourceManager().toString().c_str());
     }
 
     printf("    Kernel code occupied %.1f%% of avaliable space\n",
            rom->kernelShare);
-    if (compiler->font) {
+    if (compiler->getFont()) {
       printf("        Built-In fonts included in the kernel\n");
     }
     printf("    Compiled code occupied %.1f%% of avaliable space\n",
            rom->codeShare);
 
     printf("    RAM usage will be %.1f%% of avaliable capacity\n",
-           compiler->ramMemoryPerc);
+           compiler->getRamMemoryPerc());
 
     printf("    Symbols file created for debugger support\n");
 
@@ -286,12 +291,12 @@ int main(int argc, char* argv[]) {
     printf("\nIncluded into this ROM:\n");
     printf("- XBASIC support routines, copyright by J.Suzuki 1989.\n");
     printf("- Pletter v0.5c1 by XL2S Entertainment 2008.\n");
-    if (compiler->akm) {
+    if (compiler->getAkm()) {
       printf(
           "- Arkos Tracker 2 minimalist player v2.0.1 by Julien Névo, "
           "2021\n");
     }
-    if (compiler->has_tiny_sprite) {
+    if (compiler->getHasTinySprite()) {
       printf("- Tiny Sprite resource file support (Rafael Jannone, 2022)\n");
     }
 

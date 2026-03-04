@@ -4,7 +4,6 @@
  *        specialized as a Z80 code stream writer for MSX system
  * @author Amaury Carvalho (2025)
  * @note
- *   https://refactoring.guru/design-patterns/bridge
  *   Z80 Opcodes:
  *     http://z80-heaven.wikidot.com/instructions-set
  *     https://clrhome.org/table/
@@ -13,30 +12,16 @@
 #ifndef Z80_H
 #define Z80_H
 
-#include <string.h>
-
-#include <queue>
+#include "cpu_opcode_writer.h"
 
 /***
- * @class IZ80
- * @brief Z80 interface class (bridge design pattern),
+ * @class Z80OpcodeWriter
+ * @brief Z80 opcode writer implementation (bridge design pattern),
  * specialized as a Z80 code stream writer for MSX system
  */
-class IZ80 {
- protected:
-  //! @remark allocation size need to be at least 20*0xFFFF
-  unsigned char* code;
-
-  int code_pointer;
-  unsigned char* last_code[5];
-
-  void addByte(unsigned char byte);
-  void addWord(unsigned int word);
-  void addWord(unsigned char byte1, unsigned char byte2);
-  void addCmd(unsigned char byte, unsigned int word);
-  void addCodeByte(unsigned char byte);
-  void pushLastCode();
-  void popLastCode();
+class Z80OpcodeWriter : public ICpuOpcodeWriter {
+ public:
+  ~Z80OpcodeWriter() override = default;
 
   /***
    * @defgroup IntructionsOpcodeGroup
@@ -1105,11 +1090,6 @@ class IZ80 {
    * @remark End of IntructionsOpcodeGroup
    * @}
    */
-
- public:
-  IZ80();
-
-  int code_size;
 };
 
 #endif  // Z80_H

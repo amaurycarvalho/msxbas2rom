@@ -16,6 +16,7 @@
 #include "parser.h"
 #include "resources.h"
 #include "rom.h"
+#include "z80.h"
 
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {
@@ -47,30 +48,33 @@ static bool compileProgram(const std::string& filename, Compiler& compiler) {
 
 TEST_SUITE("Builder") {
   TEST_CASE("Builds ROM from compiled code") {
-    const std::string filename = createTempBas(
-        "builder_valid.bas", "10 PRINT \"ROM\"\n20 END\n");
+    const std::string filename =
+        createTempBas("builder_valid.bas", "10 PRINT \"ROM\"\n20 END\n");
 
-    Compiler compiler;
+    Z80OpcodeWriter cpuOpcodeWriter;
+    Compiler compiler(&cpuOpcodeWriter);
     REQUIRE(compileProgram(filename, compiler) == true);
 
     Rom rom;
     CHECK(rom.build(&compiler) == true);
     CHECK(rom.romSize > 0);
-    CHECK(fileExists(compiler.opts->outputFilename) == true);
+    CHECK(fileExists(compiler.getOpts()->outputFilename) == true);
 
     std::remove(filename.c_str());
-    std::remove(compiler.opts->outputFilename.c_str());
+    std::remove(compiler.getOpts()->outputFilename.c_str());
   }
 
   TEST_CASE("Fails ROM build with non-compiled input") {
-    Compiler compiler;
+    Z80OpcodeWriter cpuOpcodeWriter;
+    Compiler compiler(&cpuOpcodeWriter);
     Rom rom;
 
     CHECK(rom.build(&compiler) == false);
   }
 
   TEST_CASE("Rejects resource block larger than 16K") {
-    const std::string filename = createTempBin("builder_large_resource.bin", 0x4001);
+    const std::string filename =
+        createTempBin("builder_large_resource.bin", 0x4001);
 
     ResourceManager rm;
     REQUIRE(rm.addFile(filename, "tmp") == true);

@@ -23,13 +23,13 @@ Rom::~Rom() {}
 bool Rom::build(Compiler *compiler) {
   float romSizeFloat;
 
-  if (!compiler->compiled) return false;
+  if (!compiler->isCompiled()) return false;
 
   /// initialize data
 
   this->compiler = compiler;
-  this->opts = compiler->opts;
-  this->resourceManager = &compiler->resourceManager;
+  this->opts = compiler->getOpts();
+  this->resourceManager = &compiler->getResourceManager();
 
   if (opts->debug) printf("Initializing build...\n");
 
