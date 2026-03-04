@@ -1,0 +1,11 @@
+#ifndef COMPILER_IF_STATEMENT_STRATEGY_H_INCLUDED
+#define COMPILER_IF_STATEMENT_STRATEGY_H_INCLUDED
+
+#include "compiler_statement_strategy.h"
+
+class CompilerIfStatementStrategy : public ICompilerStatementStrategy {
+ public:
+  bool execute(CompilerStatementContext& ctx) override;
+};
+
+#endif  // COMPILER_IF_STATEMENT_STRATEGY_H_INCLUDED

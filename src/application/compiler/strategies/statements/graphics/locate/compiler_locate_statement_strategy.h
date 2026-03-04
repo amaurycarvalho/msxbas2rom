@@ -1,0 +1,11 @@
+#ifndef COMPILER_LOCATE_STATEMENT_STRATEGY_H_INCLUDED
+#define COMPILER_LOCATE_STATEMENT_STRATEGY_H_INCLUDED
+
+#include "compiler_statement_strategy.h"
+
+class CompilerLocateStatementStrategy : public ICompilerStatementStrategy {
+ public:
+  bool execute(CompilerStatementContext& ctx) override;
+};
+
+#endif  // COMPILER_LOCATE_STATEMENT_STRATEGY_H_INCLUDED
