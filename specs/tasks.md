@@ -16,19 +16,19 @@
 - [x] Refactor src/application/lexer/lexer_line implementing a State pattern instanciated by a factory with minimum code change. The individual states files must be saved to src/application/lexer/states/ folder. Finally, adjust the related Makefile and unit testings according the changes;
 - [x] Refactor src/application/parser/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
 - [x] Refactor src/application/parser/ implementing a Strategy pattern instanciated by a factory with minimum code change. The individual strategy files must be saved to src/application/parser/strategies/ folder. Finally, adjust the related Makefile and unit testings according the changes;
-- [ ] Refactor src/application/compiler/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
-- [ ] Create a plan step by step to refactor src/application/compiler/ implementing a Strategy pattern in a similar way to src/application/parser (helpers and strategies folders) and ask for approval;
+- [x] Refactor src/application/compiler/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
+- [x] propose a plan step by step to refactor src/application/compiler/ implementing a Strategy pattern in a similar way to src/application/parser (helpers and strategies folders) and ask for approval (see `specs/compiler-strategy-refactor-plan.md`);
 - [ ] Refactor src/application/builder/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
-- [ ] Create a plan step by step to refactor src/application/builder/ implementing a Strategy pattern in a similar way to src/application/parser (helpers and strategies folders) and ask for approval;
-- [ ] Inspect application/symbols searching for unit testing opportunities, create a plan step by step to implement them and ask for approval;
-- [ ] Inspect application/lexer searching for unit testing opportunities, create a plan step by step to implement them and ask for approval;
-- [ ] Inspect application/parser searching for unit testing opportunities, create a plan step by step to implement them and ask for approval;
-- [ ] Inspect application/compiler searching for unit testing opportunities, create a plan step by step to implement them and ask for approval;
-- [ ] Inspect application/builder searching for unit testing opportunities, create a plan step by step to implement them and ask for approval;
-- [ ] Inspect application, domain and infrastructure searching for `printf`, debug, info, warnings and error messages. Next, create a plan step by step to refactor it applying an appropriate logging engine to them (logging to be showed on console by cli only) and ask for approval;
-- [ ] Inspect application, cli and infrastructure searching for any code access to the file system. Next, create a plan step by step to refactor it applying an appropriate file system helper respecting clean archictecture and paying attention to the file access pecularities used by each original code in the codebase. Finally, ask for approval;
-- [ ] Inspect src/application/lexer searching for opportunities to apply or implement the Iterator pattern. If found, create a plan to refactor it step by step and ask for approval;
-- [ ] Inspect src/application/parser searching for opportunities to apply or implement the Iterator pattern. If found, create a plan to refactor it step by step and ask for approval;
-- [ ] Inspect src/application/compiler searching for opportunities to apply or implement the Iterator pattern. If found, create a plan to refactor it step by step and ask for approval;
-- [ ] Inspect src/application/builder searching for opportunities to apply or implement the Iterator pattern. If found, create a plan to refactor it step by step and ask for approval;
-- [ ] Inspect src/application/symbols searching for opportunities to apply or implement the Iterator pattern. If found, create a plan to refactor it step by step and ask for approval.
+- [ ] Propose a plan step by step to refactor src/application/builder/ implementing a Strategy pattern in a similar way to src/application/parser (helpers and strategies folders) and ask for approval;
+- [ ] Inspect application/symbols searching for unit testing opportunities, propose a plan step by step to implement them and ask for approval;
+- [ ] Inspect application/lexer searching for unit testing opportunities, propose a plan step by step to implement them and ask for approval;
+- [ ] Inspect application/parser searching for unit testing opportunities, propose a plan step by step to implement them and ask for approval;
+- [ ] Inspect application/compiler searching for unit testing opportunities, propose a plan step by step to implement them and ask for approval;
+- [ ] Inspect application/builder searching for unit testing opportunities, propose a plan step by step to implement them and ask for approval;
+- [ ] Inspect application, domain and infrastructure searching for `printf`, debug, info, warnings and error messages. Next, propose a plan step by step to refactor it applying an appropriate logging engine to them (logging to be showed on console by cli only) and ask for approval;
+- [ ] Inspect application, cli and infrastructure searching for any code access to the file system. Next, propose a plan step by step to refactor it applying an appropriate file system helper respecting clean archictecture and paying attention to the file access pecularities used by each original code in the codebase. Finally, ask for approval;
+- [ ] Inspect src/application/lexer searching for opportunities to apply or implement the Iterator pattern. If found, propose a plan to refactor it step by step and ask for approval;
+- [ ] Inspect src/application/parser searching for opportunities to apply or implement the Iterator pattern. If found, propose a plan to refactor it step by step and ask for approval;
+- [ ] Inspect src/application/compiler searching for opportunities to apply or implement the Iterator pattern. If found, propose a plan to refactor it step by step and ask for approval;
+- [ ] Inspect src/application/builder searching for opportunities to apply or implement the Iterator pattern. If found, propose a plan to refactor it step by step and ask for approval;
+- [ ] Inspect src/application/symbols searching for opportunities to apply or implement the Iterator pattern. If found, propose a plan to refactor it step by step and ask for approval.

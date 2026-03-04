@@ -25,6 +25,8 @@ If an insight registered here is not relevant any more, remove it.
 - The codebase already follows the target layered structure from ADR-001: `src/cli`, `src/application`, `src/domain`, and `src/infrastructure`.
 - `src/application/lexer/lexer_line` already uses State + Factory (`src/application/lexer/states/*` and `states/factory/lexer_line_state_factory.*`) with minimal behavior change in `lexer_line.cpp`.
 - `src/application/symbols/symbol_manager` already uses Strategy + Factory (`src/application/symbols/strategies/*` and `strategies/factory/symbol_export_strategy_factory.*`) to dispatch export formats.
+- `src/application/compiler` now keeps the same `Compiler` class behavior split into multiple implementation units (`compiler.cpp` + `compiler_statements.cpp`), reducing monolithic file pressure and preparing upcoming strategy extraction work.
+- Compiler statement dispatch now uses Strategy + Factory (`src/application/compiler/strategies/*`), and strategy header names need compiler-specific prefixes to avoid collisions with parser strategy headers under global include discovery.
 
 ### 2. Implicit Conventions
 

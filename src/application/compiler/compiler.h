@@ -20,6 +20,7 @@
 
 #include <queue>
 
+#include "compiler_statement_strategy_factory.h"
 #include "fswrapper.h"
 #include "parser.h"
 #include "pletter.h"
@@ -54,6 +55,7 @@ class Compiler : public IZ80 {
 
   bool evalAction(ActionNode* action);
   bool evalActions(ActionNode* action);
+  bool dispatchStatementCommand(CompilerCommandId command, bool& traps_checked);
   int evalExpression(ActionNode* action);
   int evalOperator(ActionNode* action);
   int evalFunction(ActionNode* action);
@@ -267,6 +269,7 @@ class Compiler : public IZ80 {
   string error_message;
 
   TagNode* current_tag;
+  CompilerStatementStrategyFactory statementStrategyFactory;
   Parser* parser;
   BuildOptions* opts;
 
