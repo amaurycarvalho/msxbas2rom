@@ -5,7 +5,7 @@
 
 class CompilerOpenGrpStatementStrategy : public ICompilerStatementStrategy {
  public:
-  bool execute(CompilerStatementContext& ctx) override;
+  bool execute(CompilerContext* context) override;
 };
 
 #endif  // COMPILER_OPEN_GRP_STATEMENT_STRATEGY_H_INCLUDED

@@ -1,3 +1,8 @@
+/***
+ * @file compiler_statement_strategy_factory.cpp
+ * @brief Compiler statement strategy factory
+ */
+
 #include "compiler_statement_strategy_factory.h"
 
 CompilerStatementStrategyFactory::CompilerStatementStrategyFactory() {
@@ -10,6 +15,7 @@ CompilerStatementStrategyFactory::CompilerStatementStrategyFactory() {
   strategies["DEFSNG"] = &defsngStrategy;
   strategies["DEFDBL"] = &defdblStrategy;
   strategies["DEFSTR"] = &defstrStrategy;
+  strategies["DEFUSR"] = &defusrStrategy;
   strategies["CLS"] = &clsStrategy;
   strategies["BEEP"] = &beepStrategy;
   strategies["LET"] = &letStrategy;

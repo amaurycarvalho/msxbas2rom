@@ -1,5 +1,9 @@
 #include "compiler_color_statement_strategy.h"
 
-bool CompilerColorStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::color_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+#include "compiler_statement_emitter.h"
+
+bool CompilerColorStatementStrategy::execute(CompilerContext* context) {
+  context->stmtEmitter->cmd_color();
+  return context->compiled;
 }

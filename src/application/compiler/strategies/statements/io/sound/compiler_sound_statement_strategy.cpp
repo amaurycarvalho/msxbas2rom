@@ -1,5 +1,9 @@
 #include "compiler_sound_statement_strategy.h"
 
-bool CompilerSoundStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::sound_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+#include "compiler_statement_emitter.h"
+
+bool CompilerSoundStatementStrategy::execute(CompilerContext* context) {
+  context->stmtEmitter->cmd_sound();
+  return context->compiled;
 }

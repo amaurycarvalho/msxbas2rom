@@ -6,38 +6,29 @@
 #include "cpu_opcode_writer.h"
 
 ICpuOpcodeWriter::ICpuOpcodeWriter() {
-  cpuContext = nullptr;
+  context = nullptr;
 }
 
-ICpuOpcodeWriter::ICpuOpcodeWriter(CpuWorkspaceContext* cpuContext) {
-  this->cpuContext = cpuContext;
+ICpuOpcodeWriter::ICpuOpcodeWriter(CpuWorkspaceContext* context) {
+  this->context = context;
 }
-
-void ICpuOpcodeWriter::setWorkspaceContext(CpuWorkspaceContext* cpuContext) {
-  this->cpuContext = cpuContext;
-}
-
-CpuWorkspaceContext* ICpuOpcodeWriter::getWorkspaceContext() {
-  return cpuContext;
-};
 
 void ICpuOpcodeWriter::pushLastCode() {
-  if (cpuContext)
-    if (cpuContext->code) {
-      cpuContext->code_pipeline.push_front(
-          &cpuContext->code[cpuContext->code_pointer]);
+  if (context)
+    if (!context->code.empty()) {
+      context->code_pipeline.push_front(&context->code[context->code_pointer]);
     }
 }
 
 void ICpuOpcodeWriter::popLastCode() {
-  if (cpuContext) cpuContext->code_pipeline.pop_front();
+  if (context) context->code_pipeline.pop_front();
 }
 
 void ICpuOpcodeWriter::addCodeByte(unsigned char byte) {
-  if (cpuContext)
-    if (cpuContext->code) {
-      cpuContext->code[cpuContext->code_pointer++] = byte;
-      cpuContext->code_size++;
+  if (context)
+    if (!context->code.empty()) {
+      context->code[context->code_pointer++] = byte;
+      context->code_size++;
     }
 }
 

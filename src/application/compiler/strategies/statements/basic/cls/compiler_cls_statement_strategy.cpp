@@ -1,5 +1,9 @@
 #include "compiler_cls_statement_strategy.h"
 
-bool CompilerClsStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::cls_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+#include "compiler_statement_emitter.h"
+
+bool CompilerClsStatementStrategy::execute(CompilerContext* context) {
+  context->stmtEmitter->cmd_cls();
+  return context->compiled;
 }

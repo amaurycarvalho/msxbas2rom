@@ -8,20 +8,13 @@
 
 #include <deque>
 #include <memory>
+#include <vector>
 
 using namespace std;
 
 class CpuWorkspaceContext {
  public:
-  CpuWorkspaceContext(int codeSizeLimit, int ramSizeLimit, int ramStartAddress)
-      : code_size_limit(codeSizeLimit),
-        ram_size_limit(ramSizeLimit),
-        ram_start_address(ramStartAddress),
-        code(new unsigned char[codeSizeLimit]),
-        ram(new unsigned char[ramSizeLimit]) {
-    clear();
-  };
-  ~CpuWorkspaceContext();
+  CpuWorkspaceContext(int codeSizeLimit, int ramSizeLimit, int ramStartAddress);
 
   void clear();
 
@@ -29,12 +22,12 @@ class CpuWorkspaceContext {
   int ram_size_limit;
   int ram_start_address;
 
-  unique_ptr<unsigned char[]> code;
+  vector<unsigned char> code;
   int code_start;
   int code_pointer;
   int code_size;
 
-  unique_ptr<unsigned char[]> ram;
+  vector<unsigned char> ram;
   int ram_start;
   int ram_pointer;
   int ram_size;

@@ -1,5 +1,7 @@
 #include "compiler_defdbl_statement_strategy.h"
 
-bool CompilerDefdblStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::def_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+
+bool CompilerDefdblStatementStrategy::execute(CompilerContext* context) {
+  return true;  // resolved by parser
 }

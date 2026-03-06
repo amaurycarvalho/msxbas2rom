@@ -5,7 +5,7 @@
 
 class CompilerTimeStatementStrategy : public ICompilerStatementStrategy {
  public:
-  bool execute(CompilerStatementContext& ctx) override;
+  bool execute(CompilerContext* context) override;
 };
 
 #endif  // COMPILER_TIME_STATEMENT_STRATEGY_H_INCLUDED

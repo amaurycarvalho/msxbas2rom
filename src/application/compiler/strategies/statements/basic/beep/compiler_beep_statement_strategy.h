@@ -4,8 +4,11 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerBeepStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_beep(CompilerContext* context);
+
  public:
-  bool execute(CompilerStatementContext& ctx) override;
+  bool execute(CompilerContext* context) override;
 };
 
 #endif  // COMPILER_BEEP_STATEMENT_STRATEGY_H_INCLUDED

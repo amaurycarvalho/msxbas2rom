@@ -5,27 +5,44 @@
 #include <string>
 
 #include "compiler_beep_statement_strategy.h"
+#include "compiler_bload_statement_strategy.h"
+#include "compiler_call_statement_strategy.h"
+#include "compiler_circle_statement_strategy.h"
 #include "compiler_clear_statement_strategy.h"
+#include "compiler_close_statement_strategy.h"
 #include "compiler_cls_statement_strategy.h"
+#include "compiler_cmd_statement_strategy.h"
+#include "compiler_color_statement_strategy.h"
+#include "compiler_copy_statement_strategy.h"
+#include "compiler_data_statement_strategy.h"
 #include "compiler_def_statement_strategy.h"
 #include "compiler_defdbl_statement_strategy.h"
 #include "compiler_defint_statement_strategy.h"
 #include "compiler_defsng_statement_strategy.h"
 #include "compiler_defstr_statement_strategy.h"
+#include "compiler_defusr_statement_strategy.h"
 #include "compiler_dim_statement_strategy.h"
+#include "compiler_draw_statement_strategy.h"
 #include "compiler_end_statement_strategy.h"
+#include "compiler_file_statement_strategy.h"
 #include "compiler_for_statement_strategy.h"
+#include "compiler_get_statement_strategy.h"
 #include "compiler_gosub_statement_strategy.h"
 #include "compiler_goto_statement_strategy.h"
+#include "compiler_idata_statement_strategy.h"
 #include "compiler_if_statement_strategy.h"
 #include "compiler_input_statement_strategy.h"
 #include "compiler_interval_statement_strategy.h"
 #include "compiler_ipoke_statement_strategy.h"
 #include "compiler_iread_statement_strategy.h"
 #include "compiler_irestore_statement_strategy.h"
+#include "compiler_key_statement_strategy.h"
 #include "compiler_let_statement_strategy.h"
+#include "compiler_line_statement_strategy.h"
+#include "compiler_locate_statement_strategy.h"
 #include "compiler_maxfiles_statement_strategy.h"
 #include "compiler_next_statement_strategy.h"
+#include "compiler_noop_statement_strategy.h"
 #include "compiler_on_statement_strategy.h"
 #include "compiler_open_grp_statement_strategy.h"
 #include "compiler_open_statement_strategy.h"
@@ -48,19 +65,6 @@
 #include "compiler_sound_statement_strategy.h"
 #include "compiler_sprite_statement_strategy.h"
 #include "compiler_statement_strategy.h"
-#include "compiler_circle_statement_strategy.h"
-#include "compiler_close_statement_strategy.h"
-#include "compiler_color_statement_strategy.h"
-#include "compiler_cmd_statement_strategy.h"
-#include "compiler_copy_statement_strategy.h"
-#include "compiler_data_statement_strategy.h"
-#include "compiler_draw_statement_strategy.h"
-#include "compiler_file_statement_strategy.h"
-#include "compiler_get_statement_strategy.h"
-#include "compiler_key_statement_strategy.h"
-#include "compiler_line_statement_strategy.h"
-#include "compiler_locate_statement_strategy.h"
-#include "compiler_noop_statement_strategy.h"
 #include "compiler_stop_statement_strategy.h"
 #include "compiler_strig_statement_strategy.h"
 #include "compiler_swap_statement_strategy.h"
@@ -69,9 +73,6 @@
 #include "compiler_vpoke_statement_strategy.h"
 #include "compiler_wait_statement_strategy.h"
 #include "compiler_width_statement_strategy.h"
-#include "compiler_bload_statement_strategy.h"
-#include "compiler_call_statement_strategy.h"
-#include "compiler_idata_statement_strategy.h"
 
 using namespace std;
 
@@ -84,6 +85,7 @@ class CompilerStatementStrategyFactory {
   CompilerDefsngStatementStrategy defsngStrategy;
   CompilerDefdblStatementStrategy defdblStrategy;
   CompilerDefstrStatementStrategy defstrStrategy;
+  CompilerDefUsrStatementStrategy defusrStrategy;
   CompilerClsStatementStrategy clsStrategy;
   CompilerBeepStatementStrategy beepStrategy;
   CompilerLetStatementStrategy letStrategy;

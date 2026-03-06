@@ -1,5 +1,9 @@
 #include "compiler_close_statement_strategy.h"
 
-bool CompilerCloseStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::close_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+#include "compiler_statement_emitter.h"
+
+bool CompilerCloseStatementStrategy::execute(CompilerContext* context) {
+  context->stmtEmitter->cmd_close();
+  return context->compiled;
 }

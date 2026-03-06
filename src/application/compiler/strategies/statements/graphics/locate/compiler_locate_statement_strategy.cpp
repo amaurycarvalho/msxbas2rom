@@ -1,5 +1,9 @@
 #include "compiler_locate_statement_strategy.h"
 
-bool CompilerLocateStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::locate_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+#include "compiler_statement_emitter.h"
+
+bool CompilerLocateStatementStrategy::execute(CompilerContext* context) {
+  context->stmtEmitter->cmd_locate();
+  return context->compiled;
 }

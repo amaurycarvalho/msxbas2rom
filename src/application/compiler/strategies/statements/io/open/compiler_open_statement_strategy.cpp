@@ -1,5 +1,9 @@
 #include "compiler_open_statement_strategy.h"
 
-bool CompilerOpenStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::open_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+#include "compiler_statement_emitter.h"
+
+bool CompilerOpenStatementStrategy::execute(CompilerContext* context) {
+  context->stmtEmitter->cmd_open();
+  return context->compiled;
 }

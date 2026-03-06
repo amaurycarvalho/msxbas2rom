@@ -5,7 +5,7 @@
 
 class CompilerPsetStatementStrategy : public ICompilerStatementStrategy {
  public:
-  bool execute(CompilerStatementContext& ctx) override;
+  bool execute(CompilerContext* context) override;
 };
 
 #endif  // COMPILER_PSET_STATEMENT_STRATEGY_H_INCLUDED

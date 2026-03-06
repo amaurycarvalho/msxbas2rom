@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
   unique_ptr<Rom> rom;
   unique_ptr<Parser> parser;
   unique_ptr<Compiler> compiler;
-  unique_ptr<ICpuOpcodeWriter> cpuWriter;
+  unique_ptr<ICpuOpcodeWriter> cpu;
   bool retriedWithAscii8 = false;
 
   /// parsing parameters
@@ -109,8 +109,8 @@ int main(int argc, char* argv[]) {
   while (true) {
     lexer.reset(new Lexer());
     parser.reset(new Parser());
-    cpuWriter.reset(new Z80OpcodeWriter());
-    compiler.reset(new Compiler(cpuWriter.get()));
+    cpu.reset(new Z80OpcodeWriter());
+    compiler.reset(new Compiler(cpu.get()));
     rom.reset(new Rom());
 
     if (fileExists(opts.outputFilename)) {

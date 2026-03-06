@@ -1,5 +1,14 @@
 #include "compiler_beep_statement_strategy.h"
 
-bool CompilerBeepStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::beep_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+
+void CompilerBeepStatementStrategy::cmd_beep(CompilerContext* context) {
+  auto& cpu = *context->cpu;
+  // call beep
+  cpu.addCall(0x00c0);
+}
+
+bool CompilerBeepStatementStrategy::execute(CompilerContext* context) {
+  cmd_beep(context);
+  return context->compiled;
 }

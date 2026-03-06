@@ -9,16 +9,12 @@
 #include "cpu_workspace_context.h"
 
 class ICpuOpcodeWriter {
- protected:
-  CpuWorkspaceContext* cpuContext;
-
  public:
   ICpuOpcodeWriter();
-  ICpuOpcodeWriter(CpuWorkspaceContext* cpuContext);
+  ICpuOpcodeWriter(CpuWorkspaceContext* context);
   virtual ~ICpuOpcodeWriter() = default;
 
-  void setWorkspaceContext(CpuWorkspaceContext* cpuContext);
-  CpuWorkspaceContext* getWorkspaceContext();
+  CpuWorkspaceContext* context;
 
   void addByte(unsigned char byte);
   void addWord(unsigned int word);

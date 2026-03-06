@@ -1,5 +1,9 @@
 #include "compiler_idata_statement_strategy.h"
 
-bool CompilerIdataStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::idata_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+#include "compiler_statement_emitter.h"
+
+bool CompilerIdataStatementStrategy::execute(CompilerContext* context) {
+  context->stmtEmitter->cmd_idata();
+  return context->compiled;
 }

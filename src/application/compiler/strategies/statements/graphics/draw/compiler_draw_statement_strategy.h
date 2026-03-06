@@ -5,7 +5,7 @@
 
 class CompilerDrawStatementStrategy : public ICompilerStatementStrategy {
  public:
-  bool execute(CompilerStatementContext& ctx) override;
+  bool execute(CompilerContext* context) override;
 };
 
 #endif  // COMPILER_DRAW_STATEMENT_STRATEGY_H_INCLUDED

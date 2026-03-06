@@ -1,5 +1,9 @@
 #include "compiler_time_statement_strategy.h"
 
-bool CompilerTimeStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::let_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+#include "compiler_statement_emitter.h"
+
+bool CompilerTimeStatementStrategy::execute(CompilerContext* context) {
+  context->stmtEmitter->cmd_let();
+  return context->compiled;
 }

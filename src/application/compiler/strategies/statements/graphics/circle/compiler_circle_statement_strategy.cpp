@@ -1,5 +1,9 @@
 #include "compiler_circle_statement_strategy.h"
 
-bool CompilerCircleStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::circle_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+#include "compiler_statement_emitter.h"
+
+bool CompilerCircleStatementStrategy::execute(CompilerContext* context) {
+  context->stmtEmitter->cmd_circle();
+  return context->compiled;
 }

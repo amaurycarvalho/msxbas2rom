@@ -1,5 +1,9 @@
 #include "compiler_vpoke_statement_strategy.h"
 
-bool CompilerVpokeStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::vpoke_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+#include "compiler_statement_emitter.h"
+
+bool CompilerVpokeStatementStrategy::execute(CompilerContext* context) {
+  context->stmtEmitter->cmd_vpoke();
+  return context->compiled;
 }

@@ -1,5 +1,9 @@
 #include "compiler_read_statement_strategy.h"
 
-bool CompilerReadStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::read_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+#include "compiler_statement_emitter.h"
+
+bool CompilerReadStatementStrategy::execute(CompilerContext* context) {
+  context->stmtEmitter->cmd_read();
+  return context->compiled;
 }

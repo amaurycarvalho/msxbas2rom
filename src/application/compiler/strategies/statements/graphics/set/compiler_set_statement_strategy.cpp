@@ -1,5 +1,9 @@
 #include "compiler_set_statement_strategy.h"
 
-bool CompilerSetStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::set_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+#include "compiler_statement_emitter.h"
+
+bool CompilerSetStatementStrategy::execute(CompilerContext* context) {
+  context->stmtEmitter->cmd_set();
+  return context->compiled;
 }

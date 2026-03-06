@@ -18,9 +18,11 @@
 
 #include <string.h>
 
+#include <memory>
 #include <queue>
 
-#include "compiler_statement_strategy_factory.h"
+#include "compiler_context.h"
+#include "compiler_evaluator.h"
 #include "cpu_opcode_writer.h"
 #include "fswrapper.h"
 #include "parser.h"
@@ -43,214 +45,11 @@ extern unsigned char bin_header_bin[];
  */
 class Compiler {
  private:
-  ICpuOpcodeWriter* cpuWriter;
-  CpuWorkspaceContext* cpuContext;
-
-  /***
-   * @brief Perform a semanthic analysis on the specified tag node
-   * @param tag TagNode object (action list)
-   * @return True, if semanthic analysis success
-   */
-  bool evaluate(TagNode* tag);
-
-  void addByteOptimized(unsigned char byte);
-  void addKernelCall(unsigned int word);
-  int getKernelCallAddr(unsigned int word);
-  void addLdHLmegarom();
-
-  bool evalAction(ActionNode* action);
-  bool evalActions(ActionNode* action);
-  bool dispatchStatementCommand(CompilerCommandId command, bool& traps_checked);
-  int evalExpression(ActionNode* action);
-  int evalOperator(ActionNode* action);
-  int evalFunction(ActionNode* action);
-  bool evalOperatorParms(ActionNode* action, int parmCount);
-  int evalOperatorCast(ActionNode* action);
-
-  bool addVarAddress(ActionNode* action);
-  void addTempStr(bool atHL);
-  void addCast(int from, int to);
-  bool addAssignment(ActionNode* action);
-
-  SymbolNode* getSymbol(Lexeme* lexeme);
-  SymbolNode* addSymbol(Lexeme* lexeme);
-  SymbolNode* getSymbol(TagNode* tag);
-  SymbolNode* addSymbol(TagNode* tag);
-  SymbolNode* addSymbol(string line);
-
-  FixNode* addFix(Lexeme* lexeme);
-  FixNode* addFix(SymbolNode* symbol);
-  FixNode* addFix(string line);
-  SymbolNode* addPreMark();
-  FixNode* addMark();
-
-  void addSupportSymbols();
-  void clearSymbols();
-  int saveSymbols();
-  void doFix();
-
-  /***
-   * @brief Convert a double to MSX float point math pack library format
-   * @param value Value to convert
-   * @param words 32 bits destination buffer
-   * @note
-   * [Basic Kun Math
-   * Pack](https://www.msx.org/wiki/Category:X-BASIC#Floating_points)
-   */
-  void double2FloatLib(double value, int* words);
-
-  /***
-   * @brief Convert a float to MSX float point math pack library format
-   * @param value Value to convert
-   * @param words 16 bits destination buffer
-   * @note
-   * [Basic Kun Math
-   * Pack](https://www.msx.org/wiki/Category:X-BASIC#Floating_points)
-   */
-  void float2FloatLib(float value, int* words);
-
-  /***
-   * @brief Convert a string to MSX float point math pack library format
-   * @param value String to convert
-   * @return 16 bits float value
-   * @note
-   * [Basic Kun Math
-   * Pack](https://www.msx.org/wiki/Category:X-BASIC#Floating_points)
-   */
-  int str2FloatLib(string value);
-
-  /***
-   * @brief Convert a string to MSX PRINT USING format flags
-   * @param value String to convert
-   * @return 16 bits flags value
-   * @example flags = getUsingFormat("###,##0.00");
-   * @note
-   * [PRINT USING](https://www.msx.org/wiki/PRINT#Parameters)
-   */
-  int getUsingFormat(string text);
-
-  /***
-   * @defgroup StatementsCompilingGroup
-   * @brief Statements compiling group
-   * @{
-   */
-
-  void cmd_start();
-  void cmd_end(bool doCodeRegistering);
-  void cmd_cls();
-  void cmd_print();
-  void cmd_input(bool question);
-  void cmd_beep();
-  //! @brief CLEAR statement
-  //! @note https://www.msx.org/wiki/CLEAR
-  void cmd_clear();
-  void cmd_goto();
-  void cmd_gosub();
-  void cmd_return();
-  void cmd_sound();
-  void cmd_play();
-  void cmd_draw();
-  void cmd_let();
-  void cmd_dim();
-  void cmd_redim();
-  void cmd_randomize();
-  void cmd_if();
-  void cmd_for();
-  void cmd_next();
-  void cmd_locate();
-  void cmd_screen();
-  void cmd_screen_copy();
-  void cmd_screen_paste();
-  void cmd_screen_scroll();
-  void cmd_screen_load();
-  void cmd_screen_on();
-  void cmd_screen_off();
-  void cmd_color();
-  void cmd_width();
-  void cmd_pset(bool forecolor);
-  void cmd_line();
-  void cmd_paint();
-  void cmd_circle();
-  void cmd_copy();
-  void cmd_copy_screen();
-  void cmd_data();
-  void cmd_idata();
-  void cmd_read();
-  void cmd_iread();
-  void cmd_restore();
-  void cmd_irestore();
-  void cmd_resume();
-  void cmd_out();
-  void cmd_poke();
-  void cmd_ipoke();
-  void cmd_vpoke();
-  void cmd_put();
-  void cmd_put_sprite();
-  void cmd_put_tile();
-  void cmd_set();
-  void cmd_set_adjust();
-  void cmd_set_page();
-  void cmd_set_scroll();
-  void cmd_set_video();
-  void cmd_set_screen();
-  void cmd_set_beep();
-  void cmd_set_title();
-  void cmd_set_prompt();
-  void cmd_set_tile();
-  void cmd_set_sprite();
-  void cmd_set_font();
-  void cmd_set_date();
-  void cmd_set_time();
-  void cmd_get();
-  void cmd_get_date();
-  void cmd_get_time();
-  void cmd_get_tile();
-  void cmd_get_sprite();
-  void cmd_on();
-  void cmd_on_error();
-  void cmd_on_interval();
-  void cmd_on_key();
-  void cmd_on_sprite();
-  void cmd_on_stop();
-  void cmd_on_strig();
-  void cmd_on_goto_gosub();
-  void cmd_interval();
-  void cmd_stop();
-  void cmd_sprite();
-  void cmd_sprite_load();
-  void cmd_key();
-  void cmd_strig();
-  void cmd_swap();
-  void cmd_wait();
-  void cmd_file();
-  void cmd_text();
-  void cmd_call();
-  void cmd_cmd();
-  void cmd_maxfiles();
-  void cmd_open();
-  void cmd_close();
-  void cmd_def();
-  void cmd_bload();
-
-  /***
-   * @remark End of StatementsCompilingGroup
-   * @}
-   */
-
-  bool addCheckTraps();
-  void addEnableBasicSlot();
-  void addDisableBasicSlot();
-
-  void beginBasicSetStmt(string name);
-  void endBasicSetStmt();
-  void addBasicChar(char c);
-
-  void syntaxError();
-  void syntaxError(string msg);
+  CompilerContext context;
+  unique_ptr<CpuWorkspaceContext> workspace;
 
  public:
-  explicit Compiler(ICpuOpcodeWriter* cpuWriter);
-  virtual ~Compiler();
+  explicit Compiler(ICpuOpcodeWriter* cpu);
 
   /***
    * @brief Perform a semanthic analysis on the parsed list
@@ -283,37 +82,6 @@ class Compiler {
   BuildOptions* getOpts() const;
 
   bool isCompiled() const;
-
- private:
-  bool pt3, akm, font, file_support, has_defusr;
-  bool has_open_grp;
-  bool has_tiny_sprite;
-
-  SymbolManager symbolManager;
-  ResourceManager resourceManager;
-
-  string error_message;
-
-  TagNode* current_tag;
-  CompilerStatementStrategyFactory statementStrategyFactory;
-  Parser* parser;
-  BuildOptions* opts;
-
-  bool compiled;
-
-  int mark_count, for_count;
-
-  SymbolNode *heap_mark, *temp_str_mark;
-  SymbolNode* end_mark;
-  FixNode *enable_basic_mark, *disable_basic_mark;
-  FixNode* draw_mark;
-  FixNode *io_redirect_mark, *io_screen_mark;
-
-  ActionNode* current_action;
-
-  vector<SymbolNode*> symbols;
-  vector<FixNode*> fixes;
-  stack<ForNextNode*> forNextStack;
 };
 
 #endif  // COMPILER_H

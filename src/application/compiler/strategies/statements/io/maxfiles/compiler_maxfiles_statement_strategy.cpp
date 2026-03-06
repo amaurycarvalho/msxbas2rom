@@ -1,5 +1,9 @@
 #include "compiler_maxfiles_statement_strategy.h"
 
-bool CompilerMaxfilesStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::maxfiles_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+#include "compiler_statement_emitter.h"
+
+bool CompilerMaxfilesStatementStrategy::execute(CompilerContext* context) {
+  context->stmtEmitter->cmd_maxfiles();
+  return context->compiled;
 }

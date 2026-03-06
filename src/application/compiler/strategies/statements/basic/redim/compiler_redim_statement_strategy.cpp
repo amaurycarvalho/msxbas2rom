@@ -1,5 +1,9 @@
 #include "compiler_redim_statement_strategy.h"
 
-bool CompilerRedimStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::redim_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+#include "compiler_statement_emitter.h"
+
+bool CompilerRedimStatementStrategy::execute(CompilerContext* context) {
+  context->stmtEmitter->cmd_redim();
+  return context->compiled;
 }

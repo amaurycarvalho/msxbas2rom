@@ -1,5 +1,9 @@
 #include "compiler_bload_statement_strategy.h"
 
-bool CompilerBloadStatementStrategy::execute(CompilerStatementContext& ctx) {
-  return ctx.dispatch(CompilerCommandId::bload_stmt, ctx.traps_checked);
+#include "compiler_context.h"
+#include "compiler_statement_emitter.h"
+
+bool CompilerBloadStatementStrategy::execute(CompilerContext* context) {
+  context->stmtEmitter->cmd_bload();
+  return context->compiled;
 }
