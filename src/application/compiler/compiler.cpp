@@ -39,6 +39,8 @@ Compiler::Compiler(ICpuOpcodeWriter* cpu) {
   context.compiled = false;
 }
 
+Compiler::~Compiler() = default;
+
 int Compiler::getCodeSize() const {
   return context.cpu->context->code_size;
 }

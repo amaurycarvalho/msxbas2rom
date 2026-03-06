@@ -35,17 +35,17 @@ void CompilerStatementEmitter::cmd_start() {
   cpu.addCall(def_ENASLT);
 
   // ld hl, HEAP START ADDRESS
-  fixup.addFix(context->heap_mark);
+  fixup.addFix(context->heap_mark.get());
   cpu.addLdHL(0x0000);
 
   // ld de, TEMPORARY STRING START ADDRESS
-  fixup.addFix(context->temp_str_mark);
+  fixup.addFix(context->temp_str_mark.get());
   cpu.addLdDE(0x0000);
 
   if (parser.getHasFont()) {
     // ld ix, FONT BUFFER START ADDRESS
     cpu.addByte(0xDD);
-    fixup.addFix(context->heap_mark)->step = -def_RAM_BUFSIZ;
+    fixup.addFix(context->heap_mark.get())->step = -def_RAM_BUFSIZ;
     cpu.addLdHL(0x0000);
   } else {
     // push hl
@@ -4142,6 +4142,7 @@ void CompilerStatementEmitter::cmd_set() {
 void CompilerStatementEmitter::cmd_set_video() {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
+  auto& codeHelper = *context->codeHelper;
   ActionNode *action = context->current_action->actions[0], *sub_action;
   unsigned int i, t = action->actions.size();
   int result_subtype;
@@ -4152,12 +4153,12 @@ void CompilerStatementEmitter::cmd_set_video() {
       return;
     }
 
-    context->codeHelper->beginBasicSetStmt("VIDEO");
+    codeHelper.beginBasicSetStmt("VIDEO");
 
     for (i = 0; i < t; i++) {
       if (i) {
         // comma
-        context->codeHelper->addBasicChar(',');
+        codeHelper.addBasicChar(',');
       }
 
       // push hl
@@ -4192,7 +4193,7 @@ void CompilerStatementEmitter::cmd_set_video() {
       cpu.addIncHL();
     }
 
-    context->codeHelper->endBasicSetStmt();
+    codeHelper.endBasicSetStmt();
 
   } else {
     context->syntaxError("SET VIDEO with empty parameters");
@@ -4202,6 +4203,7 @@ void CompilerStatementEmitter::cmd_set_video() {
 void CompilerStatementEmitter::cmd_set_adjust() {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
+  auto& codeHelper = *context->codeHelper;
   ActionNode *action = context->current_action->actions[0], *sub_action;
   unsigned int i, t = action->actions.size();
   int result_subtype;
@@ -4227,13 +4229,13 @@ void CompilerStatementEmitter::cmd_set_adjust() {
 
     // build command string
 
-    context->codeHelper->beginBasicSetStmt("ADJUST");
+    codeHelper.beginBasicSetStmt("ADJUST");
 
     // (
-    context->codeHelper->addBasicChar('(');
+    codeHelper.addBasicChar('(');
 
     // integer prefix
-    context->codeHelper->addBasicChar(0x1C);
+    codeHelper.addBasicChar(0x1C);
     // ld (hl), c      ; first parameter
     cpu.addLdiHLC();
     // inc hl
@@ -4244,10 +4246,10 @@ void CompilerStatementEmitter::cmd_set_adjust() {
     cpu.addIncHL();
 
     // comma
-    context->codeHelper->addBasicChar(',');
+    codeHelper.addBasicChar(',');
 
     // integer prefix
-    context->codeHelper->addBasicChar(0x1C);
+    codeHelper.addBasicChar(0x1C);
     // ld (hl), e      ; second parameter
     cpu.addLdiHLE();
     // inc hl
@@ -4258,9 +4260,9 @@ void CompilerStatementEmitter::cmd_set_adjust() {
     cpu.addIncHL();
 
     // )
-    context->codeHelper->addBasicChar(')');
+    codeHelper.addBasicChar(')');
 
-    context->codeHelper->endBasicSetStmt();
+    codeHelper.endBasicSetStmt();
 
   } else {
     context->syntaxError("Wrong parameters count on SET ADJUST statement");
@@ -4268,16 +4270,17 @@ void CompilerStatementEmitter::cmd_set_adjust() {
 }
 
 void CompilerStatementEmitter::cmd_set_screen() {
+  auto& codeHelper = *context->codeHelper;
   ActionNode* action = context->current_action->actions[0];
   unsigned int t = action->actions.size();
 
   if (t == 0) {
     // build command string
 
-    context->codeHelper->beginBasicSetStmt("");
-    context->codeHelper->addBasicChar(0xC5);  // token for SCREEN
+    codeHelper.beginBasicSetStmt("");
+    codeHelper.addBasicChar(0xC5);  // token for SCREEN
 
-    context->codeHelper->endBasicSetStmt();
+    codeHelper.endBasicSetStmt();
 
   } else {
     context->syntaxError("Wrong parameters count on SET SCREEN statement");
@@ -4287,6 +4290,7 @@ void CompilerStatementEmitter::cmd_set_screen() {
 void CompilerStatementEmitter::cmd_set_beep() {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
+  auto& codeHelper = *context->codeHelper;
   ActionNode *action = context->current_action->actions[0], *sub_action;
   unsigned int i, t = action->actions.size();
   int result_subtype;
@@ -4312,27 +4316,27 @@ void CompilerStatementEmitter::cmd_set_beep() {
 
     // build command string
 
-    context->codeHelper->beginBasicSetStmt("");
-    context->codeHelper->addBasicChar(0xC0);  // token for BEEP
+    codeHelper.beginBasicSetStmt("");
+    codeHelper.addBasicChar(0xC0);  // token for BEEP
 
     // short integer prefix
-    context->codeHelper->addBasicChar(0x0F);
+    codeHelper.addBasicChar(0x0F);
     // ld (hl), c      ; first parameter
     cpu.addLdiHLC();
     // inc hl
     cpu.addIncHL();
 
     // comma
-    context->codeHelper->addBasicChar(',');
+    codeHelper.addBasicChar(',');
 
     // short integer prefix
-    context->codeHelper->addBasicChar(0x0F);
+    codeHelper.addBasicChar(0x0F);
     // ld (hl), e      ; second parameter
     cpu.addLdiHLE();
     // inc hl
     cpu.addIncHL();
 
-    context->codeHelper->endBasicSetStmt();
+    codeHelper.endBasicSetStmt();
 
   } else {
     context->syntaxError("Wrong parameters count on SET BEEP statement");
@@ -4342,6 +4346,7 @@ void CompilerStatementEmitter::cmd_set_beep() {
 void CompilerStatementEmitter::cmd_set_title() {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
+  auto& codeHelper = *context->codeHelper;
   ActionNode *action = context->current_action->actions[0], *sub_action;
   unsigned int t = action->actions.size();
   int result_subtype;
@@ -4369,10 +4374,10 @@ void CompilerStatementEmitter::cmd_set_title() {
 
     // build command string
 
-    context->codeHelper->beginBasicSetStmt("TITLE");
+    codeHelper.beginBasicSetStmt("TITLE");
 
     // double quote
-    context->codeHelper->addBasicChar('"');
+    codeHelper.addBasicChar('"');
     // push bc
     cpu.addPushBC();
     // ex de,hl
@@ -4390,19 +4395,19 @@ void CompilerStatementEmitter::cmd_set_title() {
     // pop bc
     cpu.addPopBC();
     // double quote
-    context->codeHelper->addBasicChar('"');
+    codeHelper.addBasicChar('"');
 
     // comma
-    context->codeHelper->addBasicChar(',');
+    codeHelper.addBasicChar(',');
 
     // short integer prefix
-    context->codeHelper->addBasicChar(0x0F);
+    codeHelper.addBasicChar(0x0F);
     // ld (hl), c      ; second parameter
     cpu.addLdiHLC();
     // inc hl
     cpu.addIncHL();
 
-    context->codeHelper->endBasicSetStmt();
+    codeHelper.endBasicSetStmt();
 
   } else {
     context->syntaxError("Wrong parameters count on SET TITLE statement");
@@ -4412,6 +4417,7 @@ void CompilerStatementEmitter::cmd_set_title() {
 void CompilerStatementEmitter::cmd_set_prompt() {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
+  auto& codeHelper = *context->codeHelper;
   ActionNode *action = context->current_action->actions[0], *sub_action;
   unsigned int t = action->actions.size();
   int result_subtype;
@@ -4429,10 +4435,10 @@ void CompilerStatementEmitter::cmd_set_prompt() {
 
     // build command string
 
-    context->codeHelper->beginBasicSetStmt("PROMPT");
+    codeHelper.beginBasicSetStmt("PROMPT");
 
     // double quote
-    context->codeHelper->addBasicChar('"');
+    codeHelper.addBasicChar('"');
     // ex de,hl
     cpu.addExDEHL();
     //   ld c, (hl)  ; string size
@@ -4446,9 +4452,9 @@ void CompilerStatementEmitter::cmd_set_prompt() {
     // ex de,hl
     cpu.addExDEHL();
     // double quote
-    context->codeHelper->addBasicChar('"');
+    codeHelper.addBasicChar('"');
 
-    context->codeHelper->endBasicSetStmt();
+    codeHelper.endBasicSetStmt();
 
   } else {
     context->syntaxError("Wrong parameters count on SET PROMPT statement");
@@ -6951,6 +6957,7 @@ void CompilerStatementEmitter::cmd_maxfiles() {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
+  auto& codeHelper = *context->codeHelper;
   ActionNode* action;
   unsigned int t = context->current_action->actions.size();
   int result_subtype;
@@ -6985,7 +6992,7 @@ void CompilerStatementEmitter::cmd_maxfiles() {
     // push af
     cpu.addPushAF();
 
-    context->codeHelper->addEnableBasicSlot();
+    codeHelper.addEnableBasicSlot();
 
     // ld hl, fake empty line
     cpu.addLdHL(def_ENDPRG);
@@ -7006,7 +7013,7 @@ void CompilerStatementEmitter::cmd_maxfiles() {
     // (basic interpreter function)
     cpu.addCall(0x4AFF);
 
-    context->codeHelper->addDisableBasicSlot();
+    codeHelper.addDisableBasicSlot();
 
     // ; restore stack state
     // ld bc, 16
@@ -7043,6 +7050,7 @@ void CompilerStatementEmitter::cmd_open() {
   auto& expression = *context->expressionEvaluator;
   auto& optimizer = *context->codeOptimizer;
   auto& fixup = *context->fixupResolver;
+  auto& codeHelper = *context->codeHelper;
   ActionNode* action;
   Lexeme* lexeme;
   unsigned int i, t = context->current_action->actions.size();
@@ -7114,7 +7122,7 @@ void CompilerStatementEmitter::cmd_open() {
       }
     }
 
-    context->codeHelper->addEnableBasicSlot();
+    codeHelper.addEnableBasicSlot();
 
     // LEN
     if (!has[3]) {
@@ -7204,7 +7212,7 @@ void CompilerStatementEmitter::cmd_open() {
     // call OPEN     ; in: a = i/o number, e = filemode, d = devicecode
     cpu.addCall(def_OPEN);
 
-    context->codeHelper->addDisableBasicSlot();
+    codeHelper.addDisableBasicSlot();
 
   } else {
     context->syntaxError("Empty OPEN statement");
@@ -7214,6 +7222,7 @@ void CompilerStatementEmitter::cmd_open() {
 void CompilerStatementEmitter::cmd_close() {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
+  auto& codeHelper = *context->codeHelper;
   ActionNode* action;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
@@ -7229,7 +7238,7 @@ void CompilerStatementEmitter::cmd_close() {
       // push af
       cpu.addPushAF();
 
-      context->codeHelper->addEnableBasicSlot();
+      codeHelper.addEnableBasicSlot();
 
       // pop af
       cpu.addPopAF();
@@ -7239,11 +7248,11 @@ void CompilerStatementEmitter::cmd_close() {
       // call CLOSE    ; in: a = i/o number
       cpu.addCall(def_CLOSE);
 
-      context->codeHelper->addDisableBasicSlot();
+      codeHelper.addDisableBasicSlot();
     }
 
   } else {
-    context->codeHelper->addEnableBasicSlot();
+    codeHelper.addEnableBasicSlot();
 
     // ld hl, fake empty line
     cpu.addLdHL(def_ENDPRG);
@@ -7251,7 +7260,7 @@ void CompilerStatementEmitter::cmd_close() {
     // call ClOSE ALL
     cpu.addCall(def_CLOSE_ALL);
 
-    context->codeHelper->addDisableBasicSlot();
+    codeHelper.addDisableBasicSlot();
   }
 }
 

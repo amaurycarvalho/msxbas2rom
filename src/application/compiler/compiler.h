@@ -50,7 +50,8 @@ class Compiler {
 
  public:
   explicit Compiler(ICpuOpcodeWriter* cpu);
-
+  ~Compiler();
+  
   /***
    * @brief Perform a semanthic analysis on the parsed list
    * @param parser Parser object

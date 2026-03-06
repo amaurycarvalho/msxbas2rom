@@ -22,32 +22,20 @@ CompilerContext::CompilerContext() {
   temp_str_mark = nullptr;
   heap_mark = nullptr;
 
-  evaluator = new CompilerEvaluator(this);
-  stmtEmitter = new CompilerStatementEmitter(this);
-  codeHelper = new CompilerCodeHelper(this);
-  fixupResolver = new CompilerFixupResolver(this);
-  symbolResolver = new CompilerSymbolResolver(this);
-  codeOptimizer = new CompilerCodeOptimizer(this);
-  expressionEvaluator = new CompilerExpressionEvaluator(this);
-  floatConverter = new CompilerFloatConverter(this);
-  variableEmitter = new CompilerVariableEmitter(this);
+  evaluator.reset(new CompilerEvaluator(this));
+  stmtEmitter.reset(new CompilerStatementEmitter(this));
+  codeHelper.reset(new CompilerCodeHelper(this));
+  fixupResolver.reset(new CompilerFixupResolver(this));
+  symbolResolver.reset(new CompilerSymbolResolver(this));
+  codeOptimizer.reset(new CompilerCodeOptimizer(this));
+  expressionEvaluator.reset(new CompilerExpressionEvaluator(this));
+  floatConverter.reset(new CompilerFloatConverter(this));
+  variableEmitter.reset(new CompilerVariableEmitter(this));
 
   clear();
 }
 
-CompilerContext::~CompilerContext() {
-  if (temp_str_mark) delete temp_str_mark;
-  if (heap_mark) delete heap_mark;
-  if (evaluator) delete evaluator;
-  if (stmtEmitter) delete stmtEmitter;
-  if (codeHelper) delete codeHelper;
-  if (fixupResolver) delete fixupResolver;
-  if (symbolResolver) delete symbolResolver;
-  if (codeOptimizer) delete codeOptimizer;
-  if (expressionEvaluator) delete expressionEvaluator;
-  if (floatConverter) delete floatConverter;
-  if (variableEmitter) delete variableEmitter;
-}
+CompilerContext::~CompilerContext() = default;
 
 void CompilerContext::clear() {
   error_message = "";
@@ -80,7 +68,7 @@ void CompilerContext::clear() {
   while (!forNextStack.empty()) forNextStack.pop();
 
   if (!temp_str_mark) {
-    temp_str_mark = new SymbolNode();
+    temp_str_mark.reset(new SymbolNode());
     temp_str_mark->lexeme =
         new Lexeme(Lexeme::type_identifier, Lexeme::subtype_numeric,
                    "_TEMPSTR_START_", "0");
@@ -88,7 +76,7 @@ void CompilerContext::clear() {
   }
 
   if (!heap_mark) {
-    heap_mark = new SymbolNode();
+    heap_mark.reset(new SymbolNode());
     heap_mark->lexeme = new Lexeme(Lexeme::type_identifier,
                                    Lexeme::subtype_numeric, "_HEAP_", "0");
     heap_mark->lexeme->isAbstract = true;

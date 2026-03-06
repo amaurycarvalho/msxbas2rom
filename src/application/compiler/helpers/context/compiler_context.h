@@ -2,6 +2,7 @@
 #define COMPILER_STATEMENT_CONTEXT_H_INCLUDED
 
 #include <functional>
+#include <memory>
 
 #include "cpu_opcode_writer.h"
 #include "fix_node.h"
@@ -29,15 +30,15 @@ class CompilerContext {
   BuildOptions* opts;
   ICpuOpcodeWriter* cpu;
 
-  CompilerEvaluator* evaluator;
-  CompilerStatementEmitter* stmtEmitter;
-  CompilerCodeHelper* codeHelper;
-  CompilerFixupResolver* fixupResolver;
-  CompilerSymbolResolver* symbolResolver;
-  CompilerCodeOptimizer* codeOptimizer;
-  CompilerExpressionEvaluator* expressionEvaluator;
-  CompilerFloatConverter* floatConverter;
-  CompilerVariableEmitter* variableEmitter;
+  unique_ptr<CompilerEvaluator> evaluator;
+  unique_ptr<CompilerStatementEmitter> stmtEmitter;
+  unique_ptr<CompilerCodeHelper> codeHelper;
+  unique_ptr<CompilerFixupResolver> fixupResolver;
+  unique_ptr<CompilerSymbolResolver> symbolResolver;
+  unique_ptr<CompilerCodeOptimizer> codeOptimizer;
+  unique_ptr<CompilerExpressionEvaluator> expressionEvaluator;
+  unique_ptr<CompilerFloatConverter> floatConverter;
+  unique_ptr<CompilerVariableEmitter> variableEmitter;
 
   SymbolManager symbolManager;
   ResourceManager resourceManager;
@@ -52,7 +53,8 @@ class CompilerContext {
   int mark_count, for_count;
 
   TagNode* current_tag;
-  SymbolNode *heap_mark, *temp_str_mark;
+  unique_ptr<SymbolNode> heap_mark;
+  unique_ptr<SymbolNode> temp_str_mark;
   SymbolNode* end_mark;
   FixNode *enable_basic_mark, *disable_basic_mark;
   FixNode* draw_mark;
