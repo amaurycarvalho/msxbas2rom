@@ -65,8 +65,8 @@ class Lexeme {
   void clear();
   Lexeme* clone();
   string toString(int indentOverride = -1);
-  char* getTypeName();
-  char* getSubTypeName();
+  const char* getTypeName();
+  const char* getSubTypeName();
   bool isKeyword();
   bool isKeyword(string pvalue);
   bool isSeparator(string pvalue);
@@ -74,12 +74,6 @@ class Lexeme {
   bool isLiteralNumeric();
   bool isBooleanOperator();
   bool isFunction();
-
-  static Lexeme* factory(LexemeType ptype, LexemeSubType psubtype,
-                         string pname);
-  static Lexeme* factory(LexemeType ptype, LexemeSubType psubtype, string pname,
-                         string pvalue);
-  static Lexeme* factory(Lexeme* plexeme);
 
   Lexeme();
   Lexeme(Lexeme* plexeme);
