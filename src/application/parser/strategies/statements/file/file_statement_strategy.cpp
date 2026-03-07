@@ -2,8 +2,8 @@
 
 #include <cctype>
 
-
-bool FileStatementStrategy::parseOpen(ParserContext& context, LexerLine* statement) {
+bool FileStatementStrategy::parseOpen(ParserContext& context,
+                                      LexerLine* statement) {
   Lexeme* next_lexeme;
   char* s;
   string stext;
@@ -28,7 +28,8 @@ bool FileStatementStrategy::parseOpen(ParserContext& context, LexerLine* stateme
 
           if (next_lexeme->type == Lexeme::type_literal && str == "GRP:") {
             context.actionRoot->lexeme->name = "OPEN_GRP";
-            context.actionRoot->lexeme->value = context.actionRoot->lexeme->name;
+            context.actionRoot->lexeme->value =
+                context.actionRoot->lexeme->name;
             return true;
           }
           context.pushActionFromLexeme(next_lexeme);
@@ -155,7 +156,8 @@ bool FileStatementStrategy::parseOpen(ParserContext& context, LexerLine* stateme
   return true;
 }
 
-bool FileStatementStrategy::parseClose(ParserContext& context, LexerLine* statement) {
+bool FileStatementStrategy::parseClose(ParserContext& context,
+                                       LexerLine* statement) {
   Lexeme* next_lexeme;
   int state = 0;
 
@@ -195,7 +197,8 @@ bool FileStatementStrategy::parseClose(ParserContext& context, LexerLine* statem
   return true;
 }
 
-bool FileStatementStrategy::parseMaxfiles(ParserContext& context, LexerLine* statement) {
+bool FileStatementStrategy::parseMaxfiles(ParserContext& context,
+                                          LexerLine* statement) {
   Lexeme* next_lexeme;
   LexerLine parm;
   int state = 0;
@@ -203,31 +206,18 @@ bool FileStatementStrategy::parseMaxfiles(ParserContext& context, LexerLine* sta
   next_lexeme = statement->getCurrentLexeme();
   if (!next_lexeme) return false;
 
-  next_lexeme->name = "MAXFILES";
-  next_lexeme->value = next_lexeme->name;
-
   while ((next_lexeme = statement->getNextLexeme())) {
     switch (state) {
       case 0: {
-        if (next_lexeme->isKeyword("FILES")) {
-          state = 1;
-          continue;
-        } else {
-          context.error_message = "Invalid MAXFILES assignment";
-          return false;
-        }
-      } break;
-
-      case 1: {
         if (next_lexeme->isOperator("=")) {
-          state = 2;
+          state = 1;
         } else {
           context.error_message = "MAXFILES assignment is missing";
           return false;
         }
       } break;
 
-      case 2: {
+      case 1: {
         parm.addLexeme(next_lexeme);
       }
     }
@@ -244,7 +234,8 @@ bool FileStatementStrategy::parseMaxfiles(ParserContext& context, LexerLine* sta
   return true;
 }
 
-bool FileStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+bool FileStatementStrategy::execute(ParserContext& context,
+                                    LexerLine* statement, Lexeme* lexeme) {
   if (lexeme->value == "OPEN") return parseOpen(context, statement);
   if (lexeme->value == "CLOSE") return parseClose(context, statement);
   return parseMaxfiles(context, statement);

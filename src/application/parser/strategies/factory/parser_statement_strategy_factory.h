@@ -57,7 +57,7 @@ class ParserStatementStrategyFactory {
   OnStatementStrategy onStrategy;
   FileStatementStrategy openStrategy;
   FileStatementStrategy closeStrategy;
-  FileStatementStrategy maxStrategy;
+  FileStatementStrategy maxfilesStrategy;
   IfStatementStrategy ifStrategy;
   ForStatementStrategy forStrategy;
   NextStatementStrategy nextStrategy;

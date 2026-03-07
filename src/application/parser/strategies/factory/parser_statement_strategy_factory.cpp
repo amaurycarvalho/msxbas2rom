@@ -57,7 +57,7 @@ ParserStatementStrategyFactory::ParserStatementStrategyFactory() {
   strategies["CMD"] = &cmdStrategy;
   strategies["OPEN"] = &openStrategy;
   strategies["CLOSE"] = &closeStrategy;
-  strategies["MAX"] = &maxStrategy;
+  strategies["MAXFILES"] = &maxfilesStrategy;
   strategies["CALL"] = &callStrategy;
   strategies["_"] = &callStrategy;
   strategies["DEF"] = &defStrategy;
