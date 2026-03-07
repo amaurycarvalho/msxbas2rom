@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerGotoStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_goto(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

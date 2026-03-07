@@ -17,6 +17,7 @@
 
 #include "compiler_code_helper.h"
 #include "compiler_context.h"
+#include "compiler_end_statement_strategy.h"
 #include "compiler_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
@@ -106,6 +107,7 @@ bool Compiler::isCompiled() const {
 }
 
 bool Compiler::build(Parser* parser) {
+  CompilerEndStatementStrategy endStmt;
   TagNode* tag;
   SymbolNode* symbol;
   CodeNode* codeItem;
@@ -127,7 +129,8 @@ bool Compiler::build(Parser* parser) {
   codeItem = new CodeNode();
   codeItem->name = "END_STMT";
   codeItem->start = context->cpu->context->code_pointer;
-  context->stmtEmitter->cmd_end(true);  //! write END statement code
+  //! register END statement code
+  endStmt.initialize(context.get());
   codeItem->length = context->cpu->context->code_pointer - codeItem->start;
   codeItem->is_code = true;
   codeItem->debug = true;
@@ -226,7 +229,8 @@ bool Compiler::build(Parser* parser) {
     codeItem = new CodeNode();
     codeItem->name = "END_PGM";
     codeItem->start = context->cpu->context->code_pointer;
-    context->stmtEmitter->cmd_end(false);  //! jump to the real END statement
+    //! jump to the real END statement
+    endStmt.execute(context.get());
     codeItem->length = context->cpu->context->code_pointer - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = true;

@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerStopStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_stop(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

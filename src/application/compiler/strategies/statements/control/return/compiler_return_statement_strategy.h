@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerReturnStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_return(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

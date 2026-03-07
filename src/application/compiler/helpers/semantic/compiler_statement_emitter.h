@@ -14,18 +14,11 @@ class CompilerStatementEmitter {
 
  public:
   void cmd_start();
-  void cmd_end(bool doCodeRegistering);
   void cmd_print();
   void cmd_input(bool question);
-  void cmd_goto();
-  void cmd_gosub();
-  void cmd_return();
   void cmd_sound();
   void cmd_play();
   void cmd_draw();
-  void cmd_if();
-  void cmd_for();
-  void cmd_next();
   void cmd_locate();
   void cmd_screen();
   void cmd_screen_copy();
@@ -75,16 +68,6 @@ class CompilerStatementEmitter {
   void cmd_get_time();
   void cmd_get_tile();
   void cmd_get_sprite();
-  void cmd_on();
-  void cmd_on_error();
-  void cmd_on_interval();
-  void cmd_on_key();
-  void cmd_on_sprite();
-  void cmd_on_stop();
-  void cmd_on_strig();
-  void cmd_on_goto_gosub();
-  void cmd_interval();
-  void cmd_stop();
   void cmd_sprite();
   void cmd_sprite_load();
   void cmd_key();

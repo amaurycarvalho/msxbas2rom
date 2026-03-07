@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerIntervalStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_interval(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

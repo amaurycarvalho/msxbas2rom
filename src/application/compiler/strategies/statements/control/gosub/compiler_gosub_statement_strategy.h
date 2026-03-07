@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerGosubStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_gosub(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

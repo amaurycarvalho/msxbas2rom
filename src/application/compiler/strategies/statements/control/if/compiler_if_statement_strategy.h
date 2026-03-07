@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerIfStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_if(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };
