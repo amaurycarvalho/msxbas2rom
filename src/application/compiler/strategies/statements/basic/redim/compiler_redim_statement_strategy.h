@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerRedimStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_redim(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

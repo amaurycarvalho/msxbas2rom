@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerDimStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_dim(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

@@ -23,10 +23,6 @@ class CompilerStatementEmitter {
   void cmd_sound();
   void cmd_play();
   void cmd_draw();
-  void cmd_let();
-  void cmd_dim();
-  void cmd_redim();
-  void cmd_randomize();
   void cmd_if();
   void cmd_for();
   void cmd_next();
