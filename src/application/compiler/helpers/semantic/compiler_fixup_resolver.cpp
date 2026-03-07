@@ -11,6 +11,7 @@
 #include "compiler_symbol_resolver.h"
 
 FixNode* CompilerFixupResolver::addFix(SymbolNode* symbol) {
+  auto& cpu = *context->cpu;
   FixNode* fix = new FixNode();
   bool is_id = false;
 
@@ -20,21 +21,21 @@ FixNode* CompilerFixupResolver::addFix(SymbolNode* symbol) {
 
   if (context->opts->megaROM && !is_id) {
     // nop, nop      ; reserved to "jr ?, ??" when "call ?, ??" or "jp ?, ??"
-    context->cpu->addNop();
-    context->cpu->addNop();
+    cpu.addNop();
+    cpu.addNop();
     // ex AF, AF'    ; save registers (will be restored by MR_ function)
-    context->cpu->addExAF();
+    cpu.addExAF();
     // exx
-    context->cpu->addExx();
+    cpu.addExx();
     // ld A, <segm>
-    context->cpu->addLdA(0x00);
+    cpu.addLdA(0x00);
     // ld HL, <address>
-    context->cpu->addLdHL(0x0000);
+    cpu.addLdHL(0x0000);
     // CALL MR_????
   }
 
   fix->symbol = symbol;
-  fix->address = context->cpu->context->code_pointer + 1;
+  fix->address = cpu.context->code_pointer + 1;
   fix->step = 0;
   context->fixes.push_back(fix);
 
@@ -61,6 +62,7 @@ FixNode* CompilerFixupResolver::addMark() {
 }
 
 void CompilerFixupResolver::doFix() {
+  auto& cpu = *context->cpu;
   unsigned int i, t = context->fixes.size(), address;
   FixNode* fix;
   SymbolNode* symbol;
@@ -86,7 +88,7 @@ void CompilerFixupResolver::doFix() {
 
     address += fix->step;
 
-    context->cpu->context->code[fix->address] = address & 0xFF;
-    context->cpu->context->code[fix->address + 1] = (address >> 8) & 0xFF;
+    cpu.context->code[fix->address] = address & 0xFF;
+    cpu.context->code[fix->address + 1] = (address >> 8) & 0xFF;
   }
 }

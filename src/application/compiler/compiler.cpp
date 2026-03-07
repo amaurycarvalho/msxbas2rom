@@ -15,9 +15,9 @@
 
 #include "compiler.h"
 
-#include <memory>
-
 #include "compiler_code_helper.h"
+#include "compiler_context.h"
+#include "compiler_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
 #include "compiler_statement_emitter.h"
@@ -28,80 +28,81 @@
  */
 
 Compiler::Compiler(ICpuOpcodeWriter* cpu) {
+  context.reset(new CompilerContext());
   if (cpu) {
-    context.cpu = cpu;
     workspace.reset(new CpuWorkspaceContext(COMPILE_CODE_SIZE, COMPILE_RAM_SIZE,
                                             def_RAM_BOTTOM));
-    context.cpu->context = workspace.get();
+    cpu->context = workspace.get();
+    context->cpu = cpu;
   }
-  context.error_message = "";
-  context.current_tag = 0;
-  context.compiled = false;
+  context->error_message = "";
+  context->current_tag = 0;
+  context->compiled = false;
 }
 
 Compiler::~Compiler() = default;
 
 int Compiler::getCodeSize() const {
-  return context.cpu->context->code_size;
+  return context->cpu->context->code_size;
 }
 
 float Compiler::getRamMemoryPerc() const {
-  return context.cpu->context->ram_memory_perc;
+  return context->cpu->context->ram_memory_perc;
 }
 
 bool Compiler::getPt3() const {
-  return context.pt3;
+  return context->pt3;
 }
 
 bool Compiler::getAkm() const {
-  return context.akm;
+  return context->akm;
 }
 
 bool Compiler::getFont() const {
-  return context.font;
+  return context->font;
 }
 
 bool Compiler::getHasTinySprite() const {
-  return context.has_tiny_sprite;
+  return context->has_tiny_sprite;
 }
 
 SymbolManager& Compiler::getSymbolManager() {
-  return context.symbolManager;
+  return context->symbolManager;
 }
 
 const SymbolManager& Compiler::getSymbolManager() const {
-  return context.symbolManager;
+  return context->symbolManager;
 }
 
 ResourceManager& Compiler::getResourceManager() {
-  return context.resourceManager;
+  return context->resourceManager;
 }
 const ResourceManager& Compiler::getResourceManager() const {
-  return context.resourceManager;
+  return context->resourceManager;
 }
 
 int Compiler::getRamSize() const {
-  return context.cpu->context->ram_size;
+  return context->cpu->context->ram_size;
 }
 
 const string& Compiler::getErrorMessage() const {
-  return context.error_message;
+  return context->error_message;
 }
 
 TagNode* Compiler::getCurrentTag() const {
-  return context.current_tag;
+  return context->current_tag;
 }
 
 Parser* Compiler::getParser() const {
-  return context.parser;
+  return context->parser;
 }
 
 BuildOptions* Compiler::getOpts() const {
-  return context.opts;
+  return context->opts;
 }
 
 bool Compiler::isCompiled() const {
-  return context.compiled;
+  return context->compiled;
 }
 
 bool Compiler::build(Parser* parser) {
@@ -110,53 +111,53 @@ bool Compiler::build(Parser* parser) {
   CodeNode* codeItem;
   unsigned int i, t;
 
-  context.parser = parser;
-  context.opts = parser->getOpts();
+  context->parser = parser;
+  context->opts = parser->getOpts();
 
-  context.cpu->context->clear();
+  context->cpu->context->clear();
 
-  context.symbolResolver->clearSymbols();
+  context->symbolResolver->clearSymbols();
 
   t = parser->getTags().size();
-  context.compiled = (t > 0);
+  context->compiled = (t > 0);
 
   /// @remark END statement needs to be here (first segment) for MegaROM support
-  if (context.opts->debug) printf("Registering END statement...");
+  if (context->opts->debug) printf("Registering END statement...");
 
   codeItem = new CodeNode();
   codeItem->name = "END_STMT";
-  codeItem->start = context.cpu->context->code_pointer;
-  context.stmtEmitter->cmd_end(true);  //! write END statement code
-  codeItem->length = context.cpu->context->code_pointer - codeItem->start;
+  codeItem->start = context->cpu->context->code_pointer;
+  context->stmtEmitter->cmd_end(true);  //! write END statement code
+  codeItem->length = context->cpu->context->code_pointer - codeItem->start;
   codeItem->is_code = true;
   codeItem->debug = true;
-  context.symbolManager.codeList.push_back(codeItem);
-  if (context.opts->debug) printf(" %i byte(s)\n", codeItem->length);
+  context->symbolManager.codeList.push_back(codeItem);
+  if (context->opts->debug) printf(" %i byte(s)\n", codeItem->length);
 
-  if (context.opts->debug) printf("Registering start of program...");
+  if (context->opts->debug) printf("Registering start of program...");
 
   codeItem = new CodeNode();
   codeItem->name = "START_PGM";
-  codeItem->start = context.cpu->context->code_pointer;
-  context.stmtEmitter->cmd_start();
-  codeItem->length = context.cpu->context->code_pointer - codeItem->start;
+  codeItem->start = context->cpu->context->code_pointer;
+  context->stmtEmitter->cmd_start();
+  codeItem->length = context->cpu->context->code_pointer - codeItem->start;
   codeItem->is_code = true;
   codeItem->debug = true;
-  context.symbolManager.codeList.push_back(codeItem);
-  if (context.opts->debug) printf(" %i byte(s)\n", codeItem->length);
+  context->symbolManager.codeList.push_back(codeItem);
+  if (context->opts->debug) printf(" %i byte(s)\n", codeItem->length);
   if (codeItem->length >= 0x4000) {
-    context.syntaxError(
+    context->syntaxError(
         "Maximum of start of program code per ROM reached (16k)");
     return false;
   }
 
-  if (context.opts->debug) printf("Registering compiled code (line/bytes): ");
+  if (context->opts->debug) printf("Registering compiled code (line/bytes): ");
 
   for (i = 0; i < t; i++) {
     tag = parser->getTags()[i];
 
     if (tag) {
-      if (context.opts->debug) {
+      if (context->opts->debug) {
         if (i)
           printf(", %s", tag->name.c_str());
         else
@@ -169,116 +170,116 @@ bool Compiler::build(Parser* parser) {
           tag->name.erase(0, 1);
         }
 
-        symbol = context.symbolResolver->getSymbol(tag);
+        symbol = context->symbolResolver->getSymbol(tag);
         if (symbol) {
           if (symbol->address) {
-            if (context.opts->debug) printf(" error\n");
-            context.current_tag = tag;
-            context.syntaxError("Line number already declared");
+            if (context->opts->debug) printf(" error\n");
+            context->current_tag = tag;
+            context->syntaxError("Line number already declared");
             break;
           }
         } else
-          symbol = context.symbolResolver->addSymbol(tag);
+          symbol = context->symbolResolver->addSymbol(tag);
 
-        symbol->address = context.cpu->context->code_pointer;
+        symbol->address = context->cpu->context->code_pointer;
       }
 
       codeItem = new CodeNode();
-      codeItem->start = context.cpu->context->code_pointer;
+      codeItem->start = context->cpu->context->code_pointer;
       codeItem->name = "LIN_" + tag->name;
 
-      if (!context.evaluator->evaluate(tag)) {
-        context.compiled = false;
+      if (!context->evaluator->evaluate(tag)) {
+        context->compiled = false;
         break;
       }
 
-      codeItem->length = context.cpu->context->code_pointer - codeItem->start;
+      codeItem->length = context->cpu->context->code_pointer - codeItem->start;
       codeItem->is_code = true;
       codeItem->debug = true;
-      context.symbolManager.codeList.push_back(codeItem);
+      context->symbolManager.codeList.push_back(codeItem);
 
-      if (context.opts->debug) printf("/%i", codeItem->length);
+      if (context->opts->debug) printf("/%i", codeItem->length);
 
       if (codeItem->length >= 0x4000) {
-        if (context.opts->debug) printf(" error\n");
-        context.syntaxError("Maximum of code per line per ROM reached (16k)");
+        if (context->opts->debug) printf(" error\n");
+        context->syntaxError("Maximum of code per line per ROM reached (16k)");
         return false;
       }
     }
   }
 
-  if (context.opts->debug) printf("\n");
+  if (context->opts->debug) printf("\n");
 
-  if (context.compiled) {
-    if (context.forNextStack.size()) {
-      context.current_tag = context.forNextStack.top()->tag;
-      context.syntaxError("FOR without a NEXT");
+  if (context->compiled) {
+    if (context->forNextStack.size()) {
+      context->current_tag = context->forNextStack.top()->tag;
+      context->syntaxError("FOR without a NEXT");
     }
   }
 
-  if (context.compiled) {
-    context.current_tag = 0;
+  if (context->compiled) {
+    context->current_tag = 0;
 
     /// @remark END is always the last statement of the program
-    if (context.opts->debug) printf("Registering end of program...");
+    if (context->opts->debug) printf("Registering end of program...");
 
     codeItem = new CodeNode();
     codeItem->name = "END_PGM";
-    codeItem->start = context.cpu->context->code_pointer;
-    context.stmtEmitter->cmd_end(false);  //! jump to the real END statement
-    codeItem->length = context.cpu->context->code_pointer - codeItem->start;
+    codeItem->start = context->cpu->context->code_pointer;
+    context->stmtEmitter->cmd_end(false);  //! jump to the real END statement
+    codeItem->length = context->cpu->context->code_pointer - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = true;
-    context.symbolManager.codeList.push_back(codeItem);
-    if (context.opts->debug) printf(" %i byte(s)\n", codeItem->length);
+    context->symbolManager.codeList.push_back(codeItem);
+    if (context->opts->debug) printf(" %i byte(s)\n", codeItem->length);
     if (codeItem->length >= 0x4000) {
-      context.syntaxError(
+      context->syntaxError(
           "Maximum of end of program code per ROM reached (16k)");
       return false;
     }
 
-    if (context.opts->debug) printf("Registering support code...");
+    if (context->opts->debug) printf("Registering support code...");
 
     codeItem = new CodeNode();
-    codeItem->start = context.cpu->context->code_pointer;
-    context.symbolResolver->addSupportSymbols();
-    codeItem->length = context.cpu->context->code_pointer - codeItem->start;
+    codeItem->start = context->cpu->context->code_pointer;
+    context->symbolResolver->addSupportSymbols();
+    codeItem->length = context->cpu->context->code_pointer - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = false;
-    context.symbolManager.codeList.push_back(codeItem);
-    if (context.opts->debug) printf(" %i byte(s)\n", codeItem->length);
+    context->symbolManager.codeList.push_back(codeItem);
+    if (context->opts->debug) printf(" %i byte(s)\n", codeItem->length);
     if (codeItem->length >= 0x4000) {
-      context.syntaxError("Maximum of support code per ROM reached (16k)");
+      context->syntaxError("Maximum of support code per ROM reached (16k)");
       return false;
     }
 
     if (parser->getHasIData()) {
-      if (context.opts->debug) printf("Registering IDATA resource...");
-      context.resourceManager.addIDataResource(parser);
+      if (context->opts->debug) printf("Registering IDATA resource...");
+      context->resourceManager.addIDataResource(parser);
     }
 
     if (parser->getHasData()) {
-      if (context.opts->debug) printf("Registering DATA resource...");
-      context.resourceManager.addDataResource(parser);
+      if (context->opts->debug) printf("Registering DATA resource...");
+      context->resourceManager.addDataResource(parser);
     }
 
-    if (context.opts->debug) printf("Registering ctx.symbols..");
+    if (context->opts->debug) printf("Registering ctx.symbols..");
 
-    if (context.opts->debug) printf(".");
+    if (context->opts->debug) printf(".");
 
-    i = context.symbolResolver->saveSymbols();
+    i = context->symbolResolver->saveSymbols();
 
-    if (context.opts->debug) printf(" %i byte(s)\n", i);
+    if (context->opts->debug) printf(" %i byte(s)\n", i);
 
-    if (context.opts->debug) printf("Adjusting code/data memory address...\n");
+    if (context->opts->debug) printf("Adjusting code/data memory address...\n");
 
-    context.fixupResolver->doFix();
+    context->fixupResolver->doFix();
 
-    context.cpu->context->ram_memory_perc =
-        (context.cpu->context->ram_size * 100.0) / def_RAM_SIZE;
+    context->cpu->context->ram_memory_perc =
+        (context->cpu->context->ram_size * 100.0) / def_RAM_SIZE;
   }
 
-  return context.compiled;
+  return context->compiled;
 }
 
 int Compiler::write(unsigned char* dest, int start_address) {
@@ -294,27 +295,27 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
   // copy compiled code to final destination
 
-  t = context.symbolManager.codeList.size();
+  t = context->symbolManager.codeList.size();
   addr_within_segm = start_address;
 
-  if (context.opts->megaROM) {
+  if (context->opts->megaROM) {
     skips.clear();
 
-    context.cpu->context->segm_last =
+    context->cpu->context->segm_last =
         2;  // last ROM segment starts at segment 2
-    context.cpu->context->segm_total = 4;  // 4 segments of 8kb (0, 1, 2, 3)
+    context->cpu->context->segm_total = 4;  // 4 segments of 8kb (0, 1, 2, 3)
     length = (start_address - 0x8000);
-    context.cpu->context->code_size = 0;
+    context->cpu->context->code_size = 0;
     d = dest;
 
     for (i = 0; i < t; i++) {
-      codeItem = context.symbolManager.codeList[i];
+      codeItem = context->symbolManager.codeList[i];
 
       // printf("%i address %i size %i\n", i, codeItem->start,
       // codeItem->length);
 
       if (codeItem->length) {
-        s = &context.cpu->context->code[codeItem->start];
+        s = &context->cpu->context->code[codeItem->start];
 
         if (codeItem->is_code)
           step = 8;
@@ -324,7 +325,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
         tt = (length + codeItem->length + step);
 
         if (tt >= 0x4000) {
-          context.cpu->context->segm_last +=
+          context->cpu->context->segm_last +=
               2;  // konami segments size are 8kb (0/1, 2/3...)
           addr_within_segm = 0x8000;
 
@@ -333,7 +334,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
             // ld a, segmt
             d[0] = 0x3E;
-            d[1] = context.cpu->context
+            d[1] = context->cpu->context
                        ->segm_last;  // extra code will start after segment 3
             // ld hl, 0x8000
             d[2] = 0x21;
@@ -366,7 +367,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
           skip->step = step;
           skips.push_back(skip);
 
-          context.cpu->context->code_size += length;
+          context->cpu->context->code_size += length;
 
           length = 0;
         }
@@ -374,7 +375,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
         memcpy(d, s, codeItem->length);
 
         codeItem->addr_within_segm = addr_within_segm;
-        codeItem->segm = context.cpu->context->segm_last;
+        codeItem->segm = context->cpu->context->segm_last;
         if (codeItem->addr_within_segm >= (0xA000)) codeItem->segm++;
 
         d += codeItem->length;
@@ -382,36 +383,36 @@ int Compiler::write(unsigned char* dest, int start_address) {
         addr_within_segm += codeItem->length;
       } else {
         codeItem->addr_within_segm = addr_within_segm;
-        codeItem->segm = context.cpu->context->segm_last;
+        codeItem->segm = context->cpu->context->segm_last;
         if (codeItem->addr_within_segm >= (0xA000)) codeItem->segm++;
       }
     }
 
-    context.cpu->context->code_size += length;
+    context->cpu->context->code_size += length;
 
-    context.cpu->context->segm_total =
-        ((context.cpu->context->segm_last + 1) / 16 + 1) * 16;
+    context->cpu->context->segm_total =
+        ((context->cpu->context->segm_last + 1) / 16 + 1) * 16;
 
     tt = skips.size();
 
   } else {
     for (i = 0; i < t; i++) {
-      codeItem = context.symbolManager.codeList[i];
+      codeItem = context->symbolManager.codeList[i];
       codeItem->segm = 0;
       codeItem->addr_within_segm = addr_within_segm;
       addr_within_segm += codeItem->length;
     }
 
-    memcpy(dest, context.cpu->context->code.data(),
-           context.cpu->context->code_size);
+    memcpy(dest, context->cpu->context->code.data(),
+           context->cpu->context->code_size);
   }
 
   // reallocate code pointers to new start address
 
-  t = context.fixes.size();
+  t = context->fixes.size();
 
   for (i = 0; i < t; i++) {
-    fix = context.fixes[i];
+    fix = context->fixes[i];
     if (fix) {
       if (fix->symbol) {
         if (fix->symbol->lexeme) {
@@ -422,7 +423,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
         address = fix->address;
 
-        if (context.opts->megaROM) {
+        if (context->opts->megaROM) {
           step = 0;
           for (k = 0; k < tt; k++) {
             skip = skips[k];
@@ -640,5 +641,5 @@ int Compiler::write(unsigned char* dest, int start_address) {
       printf("Error in fix object (null)\n");
   }
 
-  return context.cpu->context->code_size;
+  return context->cpu->context->code_size;
 }

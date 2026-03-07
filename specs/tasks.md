@@ -20,6 +20,7 @@
 - [x] Propose a plan to refactor step by step src/application/compiler/ implementing a Strategy pattern in a similar way to src/application/parser (helpers and strategies folders) and ask for approval;
 - [ ] Propose a plan to refactor step by step evalFunction method at src/application/compiler/helpers/semantic/compiler_expression_evaluator implementing a Strategy pattern at strategies/ folder and ask for approval;
 - [ ] Propose a plan to refactor step by step CompilerStatementEmitter moving cmd\_\* methods to its related strategies in a way similar to CompilerBeepStatementStrategy (only move methods with existing strategies) and ask for approval;
+- [ ] Inspect src/ searching for opportunities to apply `forward declaration` technique and housekeepings. If found, propose a plan to refactor it and ask for approval;
 - [ ] Refactor src/application/builder/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
 - [ ] Propose a plan to refactor step by step src/application/builder/ implementing a Strategy pattern in a similar way to src/application/parser (helpers and strategies folders) and ask for approval;
 - [ ] Inspect application/symbols searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
@@ -27,7 +28,7 @@
 - [ ] Inspect application/parser searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
 - [ ] Inspect application/compiler searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
 - [ ] Inspect application/builder searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
-- [ ] Propose a plan to refactor step by step application/ implementing `unique_ptr` on object allocations to avoid memory leaks and ask for approval;
+- [ ] Propose a plan to refactor step by step application/ implementing `unique_ptr` (or similar solutions for C++11) on object allocations to avoid memory leaks and ask for approval;
 - [ ] Inspect application, domain and infrastructure searching for `printf`, debug, info, warnings and error messages. Next, propose a plan to refactor it step by step applying an appropriate logging engine to them (logging to be showed on console by cli only) and ask for approval;
 - [ ] Inspect application, cli and infrastructure searching for any code access to the file system. Next, propose a plan to refactor it step by step applying an appropriate file system helper respecting clean archictecture and paying attention to the file access pecularities used by each original code in the codebase. Finally, ask for approval;
 - [ ] Inspect src/application/lexer searching for opportunities to apply or implement the Iterator pattern. If found, propose a plan to refactor it step by step and ask for approval;

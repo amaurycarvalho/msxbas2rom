@@ -20,7 +20,7 @@ Adopt as a foundation:
 2. Domain-Driven Design (DDD);
 3. Clean Code + SOLID;
 4. Clean Architecture;
-5. C++ as the main stack;
+5. C++ 11 as the main stack (code compatible with Linux, Windows and macOS);
 6. TDD + BDD for user stories;
 7. Deliverable as CLI.
 

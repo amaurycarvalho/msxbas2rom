@@ -19,16 +19,6 @@
 #include <string.h>
 
 #include <memory>
-#include <queue>
-
-#include "compiler_context.h"
-#include "compiler_evaluator.h"
-#include "cpu_opcode_writer.h"
-#include "fswrapper.h"
-#include "parser.h"
-#include "pletter.h"
-#include "resources.h"
-#include "symbols.h"
 
 using namespace std;
 
@@ -36,7 +26,15 @@ using namespace std;
 #define COMPILE_CODE_SIZE (COMPILE_MAX_PAGES * 0x4000)
 #define COMPILE_RAM_SIZE (0xFFFF)
 
-extern unsigned char bin_header_bin[];
+// extern unsigned char bin_header_bin[];
+class CompilerContext;
+class CpuWorkspaceContext;
+class ICpuOpcodeWriter;
+class Parser;
+class SymbolManager;
+class ResourceManager;
+class BuildOptions;
+class TagNode;
 
 /***
  * @class Compiler
@@ -45,13 +43,13 @@ extern unsigned char bin_header_bin[];
  */
 class Compiler {
  private:
-  CompilerContext context;
+  unique_ptr<CompilerContext> context;
   unique_ptr<CpuWorkspaceContext> workspace;
 
  public:
   explicit Compiler(ICpuOpcodeWriter* cpu);
   ~Compiler();
-  
+
   /***
    * @brief Perform a semanthic analysis on the parsed list
    * @param parser Parser object

@@ -112,119 +112,116 @@ SymbolNode* CompilerSymbolResolver::addSymbol(string line) {
 }
 
 void CompilerSymbolResolver::addSupportSymbols() {
+  auto& cpu = *context->cpu;
   // IO REDIRECT FUNCTION
   if (context->io_redirect_mark) {
-    context->io_redirect_mark->symbol->address =
-        context->cpu->context->code_pointer;
+    context->io_redirect_mark->symbol->address = cpu.context->code_pointer;
     // ld a, l  ; io number
-    context->cpu->addLdAL();
+    cpu.addLdAL();
     // ld hl, fake empty line
-    context->cpu->addLdHL(def_ENDPRG);
+    cpu.addLdHL(def_ENDPRG);
     // ld ix, IOREDIRECT     ; in: a = i/o number
-    context->cpu->addLdIX(def_IOREDIRECT);
+    cpu.addLdIX(def_IOREDIRECT);
     // call CALBAS
-    context->cpu->addCall(def_CALBAS);
+    cpu.addCall(def_CALBAS);
     // ei
-    context->cpu->addEI();
+    cpu.addEI();
     // ret
-    context->cpu->addRet();
+    cpu.addRet();
   }
 
   // IO SCREEN FUNCTION
   if (context->io_screen_mark) {
-    context->io_screen_mark->symbol->address =
-        context->cpu->context->code_pointer;
+    context->io_screen_mark->symbol->address = cpu.context->code_pointer;
     // ld hl, fake empty line
-    context->cpu->addLdHL(def_ENDPRG);
+    cpu.addLdHL(def_ENDPRG);
     // ld ix, IOTOSCREEN
-    context->cpu->addLdIX(def_IOTOSCREEN);
+    cpu.addLdIX(def_IOTOSCREEN);
     // call CALBAS
-    context->cpu->addCall(def_CALBAS);
+    cpu.addCall(def_CALBAS);
     // ei
-    context->cpu->addEI();
+    cpu.addEI();
     // ret
-    context->cpu->addRet();
+    cpu.addRet();
   }
 
   // DRAW STATEMENT - in: hl (pointer to string)
   if (context->draw_mark) {
-    context->draw_mark->symbol->address = context->cpu->context->code_pointer;
+    context->draw_mark->symbol->address = cpu.context->code_pointer;
     // ld a, (SCRMOD)
-    context->cpu->addLdAii(def_SCRMOD);
+    cpu.addLdAii(def_SCRMOD);
     // cp 2
-    context->cpu->addCp(0x02);
+    cpu.addCp(0x02);
     // ret c                    ; return if text mode
-    context->cpu->addRetC();
+    cpu.addRetC();
 
     // push hl
-    context->cpu->addPushHL();
+    cpu.addPushHL();
 
     context->codeHelper->addEnableBasicSlot();
 
     // pop hl
-    context->cpu->addPopHL();
+    cpu.addPopHL();
 
     // xor a
-    context->cpu->addXorA();
+    cpu.addXorA();
     // ld bc, disable basic slot
     if (context->disable_basic_mark)
       context->fixupResolver->addFix(context->disable_basic_mark->symbol);
     else
       context->disable_basic_mark = context->fixupResolver->addMark();
-    context->cpu->addLdBC(0x0000);
+    cpu.addLdBC(0x0000);
     // push bc
-    context->cpu->addPushBC();
+    cpu.addPushBC();
     // ld bc, 0
-    context->cpu->addLdBC(0x0000);
+    cpu.addLdBC(0x0000);
     // push bc
-    context->cpu->addPushBC();
+    cpu.addPushBC();
     // push bc
-    context->cpu->addPushBC();
+    cpu.addPushBC();
     // push bc
-    context->cpu->addPushBC();
+    cpu.addPushBC();
     // ld de, 0x5D83
-    context->cpu->addLdDE(0x5D83);
+    cpu.addLdDE(0x5D83);
     // ld (0xFCBB), a   ; DRWFLG
-    context->cpu->addLdiiA(0xFCBB);
+    cpu.addLdiiA(0xFCBB);
     // ld (0xF958), a   ; MCLFLG
-    context->cpu->addLdiiA(0xF958);
+    cpu.addLdiiA(0xF958);
     // ld (0xF956), de  ; MCLTAB
-    context->cpu->addLdiiDE(0xF956);
+    cpu.addLdiiDE(0xF956);
     // ld a, (hl)
-    context->cpu->addLdAiHL();
+    cpu.addLdAiHL();
     // inc hl
-    context->cpu->addIncHL();
+    cpu.addIncHL();
     // ld (0xFB3B), a   ; MCLLEN
-    context->cpu->addLdiiA(0xFB3B);
+    cpu.addLdiiA(0xFB3B);
     // jp 0x5691    ; DRAW subroutine = 0x568C+5  (main routine hook address =
     // 0x39A8)
-    context->cpu->addJp(0x5691);
+    cpu.addJp(0x5691);
   }
 
   // ENABLE BASIC SLOT FUNCTION
   if (context->enable_basic_mark) {
-    context->enable_basic_mark->symbol->address =
-        context->cpu->context->code_pointer;
+    context->enable_basic_mark->symbol->address = cpu.context->code_pointer;
     // ld a, (EXPTBL)
-    context->cpu->addLdAii(def_EXPTBL);
+    cpu.addLdAii(def_EXPTBL);
     // jr $+4            ; jump to disable code
-    context->cpu->addJr(0x03);
+    cpu.addJr(0x03);
   }
 
   // DISABLE BASIC SLOT FUNCTION
   if (context->disable_basic_mark) {
-    context->disable_basic_mark->symbol->address =
-        context->cpu->context->code_pointer;
+    context->disable_basic_mark->symbol->address = cpu.context->code_pointer;
     // ld a, (SLTSTR)
-    context->cpu->addLdAii(def_SLTSTR);
+    cpu.addLdAii(def_SLTSTR);
     // ld h,040h        ; <--- enable jump to here
-    context->cpu->addLdH(0x40);
+    cpu.addLdH(0x40);
     // call ENASLT		; Select the ROM on page 4000h
-    context->cpu->addCall(def_ENASLT);
+    cpu.addCall(def_ENASLT);
     // ei
-    context->cpu->addEI();
+    cpu.addEI();
     // ret
-    context->cpu->addRet();
+    cpu.addRet();
   }
 }
 
@@ -233,6 +230,7 @@ void CompilerSymbolResolver::clearSymbols() {
 }
 
 int CompilerSymbolResolver::saveSymbols() {
+  auto& cpu = *context->cpu;
   unsigned int i, t = context->symbols.size();
   SymbolNode* symbol;
   CodeNode* codeItem;
@@ -246,7 +244,7 @@ int CompilerSymbolResolver::saveSymbols() {
         if (lexeme->isAbstract) continue;
 
         if (lexeme->type == Lexeme::type_literal) {
-          symbol->address = context->cpu->context->code_pointer;
+          symbol->address = cpu.context->code_pointer;
 
           // string constant or binary data
           if (lexeme->subtype == Lexeme::subtype_string ||
@@ -256,7 +254,7 @@ int CompilerSymbolResolver::saveSymbols() {
 
             codeItem = new CodeNode();
             codeItem->name = "LIT_" + to_string(literal_count);
-            codeItem->start = context->cpu->context->code_pointer;
+            codeItem->start = cpu.context->code_pointer;
 
             literal_count++;
 
@@ -278,17 +276,16 @@ int CompilerSymbolResolver::saveSymbols() {
 
             if (lexeme->subtype == Lexeme::subtype_integer_data) {
               k = atoi(s);
-              context->cpu->addWord(k);
+              cpu.addWord(k);
             } else {
-              context->cpu->addByte(tt);
+              cpu.addByte(tt);
 
               for (k = 0; k < tt; k++) {
-                context->cpu->addByte(s[k]);
+                cpu.addByte(s[k]);
               }
             }
 
-            codeItem->length =
-                context->cpu->context->code_pointer - codeItem->start;
+            codeItem->length = cpu.context->code_pointer - codeItem->start;
             codeItem->is_code = false;
             codeItem->debug = true;
             context->symbolManager.codeList.push_back(codeItem);
@@ -299,9 +296,9 @@ int CompilerSymbolResolver::saveSymbols() {
         } else if (lexeme->type == Lexeme::type_identifier) {
           codeItem = new CodeNode();
           codeItem->name = "VAR_" + lexeme->value;
-          codeItem->start = context->cpu->context->ram_pointer;
-          codeItem->addr_within_segm = context->cpu->context->ram_page +
-                                       context->cpu->context->ram_pointer;
+          codeItem->start = cpu.context->ram_pointer;
+          codeItem->addr_within_segm =
+              cpu.context->ram_page + cpu.context->ram_pointer;
           codeItem->is_code = false;
           codeItem->debug = true;
           codeItem->lexeme = lexeme;
@@ -309,7 +306,7 @@ int CompilerSymbolResolver::saveSymbols() {
 
           var_size = 0;
 
-          symbol->address = context->cpu->context->ram_pointer;
+          symbol->address = cpu.context->ram_pointer;
 
           // string variable
           if (lexeme->subtype == Lexeme::subtype_string) {
@@ -338,12 +335,12 @@ int CompilerSymbolResolver::saveSymbols() {
 
           codeItem->length = var_size;
 
-          context->cpu->context->ram_size += var_size;
-          context->cpu->context->ram_pointer += var_size;
+          cpu.context->ram_size += var_size;
+          cpu.context->ram_pointer += var_size;
 
-          if (context->cpu->context->ram_size > def_RAM_SIZE) {
+          if (cpu.context->ram_size > def_RAM_SIZE) {
             context->syntaxError("Not enough memory to variables [" +
-                                 to_string(context->cpu->context->ram_size) +
+                                 to_string(cpu.context->ram_size) +
                                  "bytes occupied from RAM]");
           }
         }
@@ -351,18 +348,18 @@ int CompilerSymbolResolver::saveSymbols() {
     }
   }
 
-  context->temp_str_mark->address = context->cpu->context->ram_pointer;
+  context->temp_str_mark->address = cpu.context->ram_pointer;
 
   var_size = (256 * 5);  // temporary strings
-  context->cpu->context->ram_size += var_size;
-  context->cpu->context->ram_pointer += var_size;
+  cpu.context->ram_size += var_size;
+  cpu.context->ram_pointer += var_size;
 
   if (context->parser->getHasFont()) {
-    context->cpu->context->ram_size += def_RAM_BUFSIZ;
-    context->cpu->context->ram_pointer += def_RAM_BUFSIZ;
+    cpu.context->ram_size += def_RAM_BUFSIZ;
+    cpu.context->ram_pointer += def_RAM_BUFSIZ;
   }
 
-  context->heap_mark->address = context->cpu->context->ram_pointer;
+  context->heap_mark->address = cpu.context->ram_pointer;
 
   return length;
 }

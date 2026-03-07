@@ -13,6 +13,7 @@
 #include "compiler_hooks.h"
 
 bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
+  auto& cpu = *context->cpu;
   Lexeme *lexeme, *lexeme1, *lexeme2;
   ActionNode *action1, *action2;
   unsigned int i, t;
@@ -48,7 +49,7 @@ bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
 
             // ld hl, variable_address +  (x_index * x_factor)
             context->fixupResolver->addFix(lexeme)->step = i;
-            context->cpu->addLdHL(0x0000);
+            cpu.addLdHL(0x0000);
 
           } else {
             context->syntaxError("Invalid array index type");
@@ -63,35 +64,35 @@ bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
 
           if (lexeme->x_factor == 2) {
             // add hl, hl
-            context->cpu->addAddHLHL();
+            cpu.addAddHLHL();
           } else if (lexeme->x_factor == 3) {
             // ld d, h
-            context->cpu->addLdDH();
+            cpu.addLdDH();
             // ld e, l
-            context->cpu->addLdEL();
+            cpu.addLdEL();
             // add hl, hl
-            context->cpu->addAddHLHL();
+            cpu.addAddHLHL();
             // add hl, de
-            context->cpu->addAddHLDE();
+            cpu.addAddHLDE();
           } else if (lexeme->x_factor == 256) {
             // ld h, l
-            context->cpu->addLdHL();
+            cpu.addLdHL();
             // ld l, 0
-            context->cpu->addLdL(0x00);
+            cpu.addLdL(0x00);
           } else {
             // ld de, x_factor
-            context->cpu->addLdDE(lexeme->x_factor);
+            cpu.addLdDE(lexeme->x_factor);
 
             // call 0x761b    ; integer multiplication (hl = hl * de)
-            context->cpu->addCall(def_XBASIC_MULTIPLY_INTEGERS);
+            cpu.addCall(def_XBASIC_MULTIPLY_INTEGERS);
           }
 
           // ld de, variable
           context->fixupResolver->addFix(lexeme);
-          context->cpu->addLdDE(0x0000);
+          cpu.addLdDE(0x0000);
 
           // add hl, de   ; hl = variable_address +  (x_index * x_factor)
-          context->cpu->addAddHLDE();
+          cpu.addAddHLDE();
         }
 
       } break;
@@ -129,7 +130,7 @@ bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
               // ld hl, variable_address +  (x_index * x_factor) + (y_index *
               // y_factor)
               context->fixupResolver->addFix(lexeme)->step = i;
-              context->cpu->addLdHL(0x0000);
+              cpu.addLdHL(0x0000);
 
             } else {
               context->syntaxError("Invalid array 2nd index type");
@@ -148,31 +149,31 @@ bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
 
           if (lexeme->x_factor == 2) {
             // add hl, hl
-            context->cpu->addAddHLHL();
+            cpu.addAddHLHL();
           } else if (lexeme->x_factor == 3) {
             // ld d, h
-            context->cpu->addLdDH();
+            cpu.addLdDH();
             // ld e, l
-            context->cpu->addLdEL();
+            cpu.addLdEL();
             // add hl, hl
-            context->cpu->addAddHLHL();
+            cpu.addAddHLHL();
             // add hl, de
-            context->cpu->addAddHLDE();
+            cpu.addAddHLDE();
           } else if (lexeme->x_factor == 256) {
             // ld h, l
-            context->cpu->addLdHL();
+            cpu.addLdHL();
             // ld l, 0
-            context->cpu->addLdL(0x00);
+            cpu.addLdL(0x00);
           } else {
             // ld de, x_factor
-            context->cpu->addLdDE(lexeme->x_factor);
+            cpu.addLdDE(lexeme->x_factor);
 
             // call 0x761b    ; integer multiplication (hl = hl * de)
-            context->cpu->addCall(def_XBASIC_MULTIPLY_INTEGERS);
+            cpu.addCall(def_XBASIC_MULTIPLY_INTEGERS);
           }
 
           // push hl
-          context->cpu->addPushHL();
+          cpu.addPushHL();
 
           // ld hl, y index
           result_subtype =
@@ -202,26 +203,26 @@ bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
           }
           if (diff != factor) {
             // ld b, h           ; save index in bc
-            context->cpu->addLdBH();
+            cpu.addLdBH();
             // ld c, l
-            context->cpu->addLdCL();
+            cpu.addLdCL();
           }
 
           while (factor) {
             if (!first) {
               // ex de, hl     ; save current total
-              context->cpu->addExDEHL();
+              cpu.addExDEHL();
               // ld h, b       ; restore index from bc
-              context->cpu->addLdHB();
+              cpu.addLdHB();
               // ld l, c
-              context->cpu->addLdLC();
+              cpu.addLdLC();
             }
 
             diff = 1;
 
             while (factor >= (diff << 1)) {
               // add hl, hl    ; x 2
-              context->cpu->addAddHLHL();
+              cpu.addAddHLHL();
 
               diff <<= 1;  // diff *= 2;
             }
@@ -230,7 +231,7 @@ bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
               first = false;
             } else {
               // add hl, de    ; add last total
-              context->cpu->addAddHLDE();
+              cpu.addAddHLDE();
             }
 
             factor -= diff;
@@ -238,21 +239,21 @@ bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
 
           if (lexeme->x_factor == 2) {
             // add hl, hl    ; x 2
-            context->cpu->addAddHLHL();
+            cpu.addAddHLHL();
           }
 
           // pop de
-          context->cpu->addPopDE();
+          cpu.addPopDE();
 
           // add hl, de     ; hl = (x_index * x_factor) + (y_index * y_factor)
-          context->cpu->addAddHLDE();
+          cpu.addAddHLDE();
 
           // ld de, variable
           context->fixupResolver->addFix(lexeme);
-          context->cpu->addLdDE(0x0000);
+          cpu.addLdDE(0x0000);
 
           // add hl, de    ; hl += variable_adress
-          context->cpu->addAddHLDE();
+          cpu.addAddHLDE();
         }
 
       } break;
@@ -270,7 +271,7 @@ bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
     } else {
       // ld hl, variable
       context->fixupResolver->addFix(lexeme);
-      context->cpu->addLdHL(0x0000);
+      cpu.addLdHL(0x0000);
     }
   }
 
@@ -278,34 +279,36 @@ bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
 }
 
 void CompilerVariableEmitter::addTempStr(bool atHL) {
+  auto& cpu = *context->cpu;
   if (atHL) {
     // call GET_NEXT_TEMP_STRING_ADDRESS
-    context->cpu->addCall(def_GET_NEXT_TEMP_STRING_ADDRESS);
+    cpu.addCall(def_GET_NEXT_TEMP_STRING_ADDRESS);
   } else {
     // ex de, hl
-    context->cpu->addExDEHL();
+    cpu.addExDEHL();
     // call GET_NEXT_TEMP_STRING_ADDRESS
-    context->cpu->addCall(def_GET_NEXT_TEMP_STRING_ADDRESS);
+    cpu.addCall(def_GET_NEXT_TEMP_STRING_ADDRESS);
     // ex de, hl
     context->codeOptimizer->addByteOptimized(0xEB);
   }
 }
 
 bool CompilerVariableEmitter::addAssignment(ActionNode* action) {
+  auto& cpu = *context->cpu;
   if (action->lexeme->type == Lexeme::type_keyword) {
     if (action->lexeme->value == "TIME") {
       // ld (0xFC9E), hl    ; JIFFY
-      context->cpu->addLdiiHL(0xFC9E);
+      cpu.addLdiiHL(0xFC9E);
 
     } else if (action->lexeme->value == "MAXFILES") {
       // ld a, l
-      context->cpu->addLdAL();
+      cpu.addLdAL();
       // ld ix, MAXFILES
-      context->cpu->addLdIX(def_MAXFILES);
+      cpu.addLdIX(def_MAXFILES);
       // call CALBAS
-      context->cpu->addCall(def_CALBAS);
+      cpu.addCall(def_CALBAS);
       // ei
-      context->cpu->addEI();
+      cpu.addEI();
 
     } else {
       context->syntaxError("Invalid KEYWORD/FUNCTION assignment");
@@ -315,52 +318,52 @@ bool CompilerVariableEmitter::addAssignment(ActionNode* action) {
     if (action->lexeme->isArray ||
         action->lexeme->subtype == Lexeme::subtype_string) {
       // push hl
-      context->cpu->addPushHL();
+      cpu.addPushHL();
 
       if (action->lexeme->subtype == Lexeme::subtype_single_decimal ||
           action->lexeme->subtype == Lexeme::subtype_double_decimal) {
         // push bc
-        context->cpu->addPushBC();
+        cpu.addPushBC();
       }
 
       if (!addVarAddress(action)) return false;
 
       if (action->lexeme->subtype == Lexeme::subtype_string) {
         // pop de
-        context->cpu->addPopDE();
+        cpu.addPopDE();
         // ex de,hl
-        context->cpu->addExDEHL();
+        cpu.addExDEHL();
 
         // call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest; out: hl
         // end of string)
-        context->cpu->addCall(def_XBASIC_COPY_STRING);
+        cpu.addCall(def_XBASIC_COPY_STRING);
 
       } else if (action->lexeme->subtype == Lexeme::subtype_numeric) {
         // pop de
-        context->cpu->addPopDE();
+        cpu.addPopDE();
         // ld (hl),e
-        context->cpu->addLdiHLE();
+        cpu.addLdiHLE();
         // inc hl
-        context->cpu->addIncHL();
+        cpu.addIncHL();
         // ld (hl),d
-        context->cpu->addLdiHLD();
+        cpu.addLdiHLD();
 
       } else if (action->lexeme->subtype == Lexeme::subtype_single_decimal ||
                  action->lexeme->subtype == Lexeme::subtype_double_decimal) {
         // pop bc
-        context->cpu->addPopBC();
+        cpu.addPopBC();
         // pop de
-        context->cpu->addPopDE();
+        cpu.addPopDE();
         // ld (hl),b
-        context->cpu->addLdiHLB();
+        cpu.addLdiHLB();
         // inc hl
-        context->cpu->addIncHL();
+        cpu.addIncHL();
         // ld (hl),e
-        context->cpu->addLdiHLE();
+        cpu.addLdiHLE();
         // inc hl
-        context->cpu->addIncHL();
+        cpu.addIncHL();
         // ld (hl),d
-        context->cpu->addLdiHLD();
+        cpu.addLdiHLD();
 
       } else {
         context->syntaxError("Invalid assignment");
@@ -373,18 +376,18 @@ bool CompilerVariableEmitter::addAssignment(ActionNode* action) {
       if (action->lexeme->subtype == Lexeme::subtype_numeric) {
         // ld (var), hl
         context->fixupResolver->addFix(action->lexeme);
-        context->cpu->addLdiiHL(0x0000);
+        cpu.addLdiiHL(0x0000);
 
       } else if (action->lexeme->subtype == Lexeme::subtype_single_decimal ||
                  action->lexeme->subtype == Lexeme::subtype_double_decimal) {
         // ld a, b
-        context->cpu->addLdAB();
+        cpu.addLdAB();
         // ld (var), a
         context->fixupResolver->addFix(action->lexeme);
-        context->cpu->addLdiiA(0x0000);
+        cpu.addLdiiA(0x0000);
         // ld (var+1), hl
         context->fixupResolver->addFix(action->lexeme)->step = 1;
-        context->cpu->addLdiiHL(0x0000);
+        cpu.addLdiiHL(0x0000);
 
       } else {
         context->syntaxError("Invalid assignment");
