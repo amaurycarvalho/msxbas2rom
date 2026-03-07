@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerMaxfilesStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_maxfiles(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

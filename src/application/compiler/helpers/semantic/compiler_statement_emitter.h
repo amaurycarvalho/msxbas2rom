@@ -15,7 +15,6 @@ class CompilerStatementEmitter {
  public:
   void cmd_start();
   void cmd_end(bool doCodeRegistering);
-  void cmd_cls();
   void cmd_print();
   void cmd_input(bool question);
   void cmd_goto();
@@ -100,11 +99,8 @@ class CompilerStatementEmitter {
   void cmd_text();
   void cmd_call();
   void cmd_cmd();
-  void cmd_maxfiles();
   void cmd_open();
   void cmd_close();
-  void cmd_def();
-  void cmd_defusr();
   void cmd_bload();
 
   CompilerStatementEmitter(CompilerContext* context) : context(context) {};

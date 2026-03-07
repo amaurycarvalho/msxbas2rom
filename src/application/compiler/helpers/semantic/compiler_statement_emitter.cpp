@@ -139,11 +139,6 @@ void CompilerStatementEmitter::cmd_end(bool doCodeRegistering) {
   }
 }
 
-void CompilerStatementEmitter::cmd_cls() {
-  auto& cpu = *context->cpu;
-  cpu.addCall(def_XBASIC_CLS);  // call cls
-}
-
 void CompilerStatementEmitter::cmd_randomize() {
   auto& cpu = *context->cpu;
   // ld hl, 0x3579      ; RANDOMIZE 1 - FIX
@@ -4586,12 +4581,13 @@ void CompilerStatementEmitter::cmd_set_tile() {
     t = action->actions.size();
 
     if (lexeme->value == "ON") {
+      CompilerClsStatementStrategy cls;
       // ld a, 2                   ; tiled mode
       cpu.addLdA(2);
       // ld (SOMODE), a
       cpu.addLdiiA(def_SOMODE);
       // clear screen, set font to default and put cursor on home
-      cmd_cls();
+      cls.execute(context);
       // ld hl, 0
       cpu.addLdHL(0x0000);
       // ld (DAC), hl
@@ -6953,97 +6949,6 @@ void CompilerStatementEmitter::cmd_call() {
   }
 }
 
-void CompilerStatementEmitter::cmd_maxfiles() {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& expression = *context->expressionEvaluator;
-  auto& codeHelper = *context->codeHelper;
-  ActionNode* action;
-  unsigned int t = context->current_action->actions.size();
-  int result_subtype;
-  FixNode* mark;
-
-  if (t) {
-    // xor a
-    // cpuOpcodeWriter->addXorA();
-    // ld (NLONLY), a
-    // cpuOpcodeWriter->addLdiiA(def_NLONLY);
-    // ld (DSKDIS), a
-    // cpuOpcodeWriter->addLdiiA(0xFD99);
-
-    action = context->current_action->actions[0];
-    result_subtype = expression.evalExpression(action);
-    expression.addCast(result_subtype, Lexeme::subtype_numeric);
-
-    // ld a, (MAXFIL)
-    cpu.addLdAii(def_MAXFIL);
-    // cp l
-    cpu.addCpL();
-    // jp z, $                ; skip if equal
-    mark = fixup.addMark();
-    cpu.addJpZ(0x0000);
-
-    // ld a, l
-    cpu.addLdAL();
-
-    // ld (MAXFIL), a
-    cpu.addLdiiA(def_MAXFIL);
-
-    // push af
-    cpu.addPushAF();
-
-    codeHelper.addEnableBasicSlot();
-
-    // ld hl, fake empty line
-    cpu.addLdHL(def_ENDPRG);
-
-    // call CLOSE_ALL
-    cpu.addCall(def_CLOSE_ALL);
-
-    // pop af
-    cpu.addPopAF();
-
-    // call MAXFILES
-    cpu.addCall(def_MAXFILES);
-
-    // call 0x7304			; end printeroutput (basic interpreter
-    // function)
-    cpu.addCall(0x7304);
-    // call 0x4AFF			; return interpreter output to screen
-    // (basic interpreter function)
-    cpu.addCall(0x4AFF);
-
-    codeHelper.addDisableBasicSlot();
-
-    // ; restore stack state
-    // ld bc, 16
-    cpu.addLdBC(0x0010);
-    // ld (TEMP), sp
-    cpu.addLdiiSP(def_TEMP);
-    // ld hl, (TEMP)
-    cpu.addLdHLii(def_TEMP);
-    // xor a
-    cpu.addXorA();
-    // sbc hl, bc
-    cpu.addSbcHLBC();
-    // ld sp,hl
-    cpu.addLdSPHL();
-    // ex de,hl
-    cpu.addExDEHL();
-    // ld hl, (SAVSTK)
-    cpu.addLdHLii(def_SAVSTK);
-    // ldir
-    cpu.addLDIR();
-    // ld (SAVSTK), sp
-    cpu.addLdiiSP(def_SAVSTK);
-
-    mark->symbol->address = cpu.context->code_pointer;
-
-  } else {
-    context->syntaxError("Empty MAXFILES assignment");
-  }
-}
-
 void CompilerStatementEmitter::cmd_open() {
   auto& cpu = *context->cpu;
   auto& opts = *context->opts;
@@ -7261,68 +7166,6 @@ void CompilerStatementEmitter::cmd_close() {
     cpu.addCall(def_CLOSE_ALL);
 
     codeHelper.addDisableBasicSlot();
-  }
-}
-
-void CompilerStatementEmitter::cmd_def() {
-  ActionNode* action;
-  Lexeme* lexeme;
-  unsigned int t = context->current_action->actions.size();
-
-  if (t) {
-    action = context->current_action->actions[0];
-    lexeme = action->lexeme;
-
-    if (lexeme->value == "USR") {
-      cmd_defusr();
-    }
-  }
-}
-
-void CompilerStatementEmitter::cmd_defusr() {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  ActionNode *action, *subaction;
-  unsigned int t;
-  int result_subtype;
-
-  action = context->current_action->actions[0];
-  t = action->actions.size();
-
-  if (t == 2) {
-    context->has_defusr = true;
-
-    subaction = action->actions[0];
-    result_subtype = expression.evalExpression(subaction);
-    expression.addCast(result_subtype, Lexeme::subtype_numeric);
-
-    // push hl
-    cpu.addPushHL();
-
-    subaction = action->actions[1];
-    result_subtype = expression.evalExpression(subaction);
-    expression.addCast(result_subtype, Lexeme::subtype_numeric);
-
-    // ex de,hl
-    cpu.addExDEHL();
-
-    // pop hl
-    cpu.addPopHL();
-    // ld bc, USRTAB
-    cpu.addLdBC(def_USRTAB);
-    // add hl,hl
-    cpu.addAddHLHL();
-    // add hl,bc
-    cpu.addAddHLBC();
-    // ld (hl), e
-    cpu.addLdiHLE();
-    // inc hl
-    cpu.addIncHL();
-    // ld (hl), d
-    cpu.addLdiHLD();
-
-  } else {
-    context->syntaxError("Wrong DEF USR parameters count");
   }
 }
 

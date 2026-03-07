@@ -263,7 +263,7 @@ bool Compiler::build(Parser* parser) {
       context->resourceManager.addDataResource(parser);
     }
 
-    if (context->opts->debug) printf("Registering ctx.symbols..");
+    if (context->opts->debug) printf("Registering symbols..");
 
     if (context->opts->debug) printf(".");
 
