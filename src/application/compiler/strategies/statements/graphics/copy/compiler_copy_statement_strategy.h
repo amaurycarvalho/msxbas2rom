@@ -4,6 +4,10 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerCopyStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_copy(CompilerContext* context);
+  void cmd_copy_screen(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

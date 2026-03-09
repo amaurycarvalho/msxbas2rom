@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerWidthStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_width(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

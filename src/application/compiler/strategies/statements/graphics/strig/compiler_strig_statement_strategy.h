@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerStrigStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_strig(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

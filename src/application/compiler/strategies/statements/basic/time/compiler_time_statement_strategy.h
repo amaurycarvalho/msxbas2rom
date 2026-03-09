@@ -4,9 +4,6 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerTimeStatementStrategy : public ICompilerStatementStrategy {
- private:
-  void cmd_time(CompilerContext* context);
-
  public:
   bool execute(CompilerContext* context) override;
 };

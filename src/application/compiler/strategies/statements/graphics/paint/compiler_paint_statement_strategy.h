@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerPaintStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_paint(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

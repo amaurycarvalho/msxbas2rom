@@ -4,6 +4,10 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerSpriteStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_sprite(CompilerContext* context);
+  void cmd_sprite_load(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

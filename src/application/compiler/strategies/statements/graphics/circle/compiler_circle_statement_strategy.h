@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerCircleStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_circle(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

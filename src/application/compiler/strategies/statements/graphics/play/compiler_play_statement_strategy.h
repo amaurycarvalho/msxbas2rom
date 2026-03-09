@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerPlayStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_play(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };
