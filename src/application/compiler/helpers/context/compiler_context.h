@@ -19,7 +19,6 @@ class CompilerCodeOptimizer;
 class CompilerExpressionEvaluator;
 class CompilerFloatConverter;
 class CompilerVariableEmitter;
-class CompilerStatementEmitter;
 class CompilerEvaluator;
 
 using namespace std;
@@ -31,7 +30,6 @@ class CompilerContext {
   ICpuOpcodeWriter* cpu;
 
   unique_ptr<CompilerEvaluator> evaluator;
-  unique_ptr<CompilerStatementEmitter> stmtEmitter;
   unique_ptr<CompilerCodeHelper> codeHelper;
   unique_ptr<CompilerFixupResolver> fixupResolver;
   unique_ptr<CompilerSymbolResolver> symbolResolver;

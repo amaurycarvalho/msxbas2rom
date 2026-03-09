@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerFileStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_file(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

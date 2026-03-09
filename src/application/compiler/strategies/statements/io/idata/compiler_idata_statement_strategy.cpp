@@ -1,9 +1,14 @@
 #include "compiler_idata_statement_strategy.h"
 
 #include "compiler_context.h"
-#include "compiler_statement_emitter.h"
+
+void CompilerIdataStatementStrategy::cmd_idata(CompilerContext* context) {
+  if (!context->current_action->actions.size()) {
+    context->syntaxError("IDATA with empty parameters");
+  }
+}
 
 bool CompilerIdataStatementStrategy::execute(CompilerContext* context) {
-  context->stmtEmitter->cmd_idata();
+  cmd_idata(context);
   return context->compiled;
 }

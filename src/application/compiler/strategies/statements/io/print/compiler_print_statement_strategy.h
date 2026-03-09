@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerPrintStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_print(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

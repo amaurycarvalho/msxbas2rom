@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerIpokeStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_ipoke(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

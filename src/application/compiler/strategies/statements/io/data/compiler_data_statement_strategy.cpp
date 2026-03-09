@@ -1,9 +1,14 @@
 #include "compiler_data_statement_strategy.h"
 
 #include "compiler_context.h"
-#include "compiler_statement_emitter.h"
+
+void CompilerDataStatementStrategy::cmd_data(CompilerContext* context) {
+  if (!context->current_action->actions.size()) {
+    context->syntaxError("DATA with empty parameters");
+  }
+}
 
 bool CompilerDataStatementStrategy::execute(CompilerContext* context) {
-  context->stmtEmitter->cmd_data();
+  cmd_data(context);
   return context->compiled;
 }

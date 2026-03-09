@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerIrestoreStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_irestore(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

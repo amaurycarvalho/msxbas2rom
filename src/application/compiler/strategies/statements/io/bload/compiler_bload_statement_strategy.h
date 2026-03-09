@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerBloadStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_bload(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

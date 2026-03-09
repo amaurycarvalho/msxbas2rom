@@ -4,6 +4,9 @@
 #include "compiler_statement_strategy.h"
 
 class CompilerIdataStatementStrategy : public ICompilerStatementStrategy {
+ private:
+  void cmd_idata(CompilerContext* context);
+
  public:
   bool execute(CompilerContext* context) override;
 };

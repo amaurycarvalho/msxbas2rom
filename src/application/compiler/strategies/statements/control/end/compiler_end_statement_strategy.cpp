@@ -56,7 +56,8 @@ bool CompilerEndStatementStrategy::execute(CompilerContext* context) {
   return context->compiled;
 }
 
-bool CompilerEndStatementStrategy::initialize(CompilerContext* context) {
+bool CompilerEndStatementStrategy::registerEndRoutine(
+    CompilerContext* context) {
   context->traps_checked = context->codeHelper->addCheckTraps();
   //! register END statement code
   cmd_end(context, true);

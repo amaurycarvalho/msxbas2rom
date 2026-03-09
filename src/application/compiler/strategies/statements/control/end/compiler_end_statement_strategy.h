@@ -11,7 +11,7 @@ class CompilerEndStatementStrategy : public ICompilerStatementStrategy {
   //! @brief execute statement code
   bool execute(CompilerContext* context) override;
   //! @brief register statement code
-  bool initialize(CompilerContext* context);
+  bool registerEndRoutine(CompilerContext* context);
 };
 
 #endif  // COMPILER_END_STATEMENT_STRATEGY_H_INCLUDED

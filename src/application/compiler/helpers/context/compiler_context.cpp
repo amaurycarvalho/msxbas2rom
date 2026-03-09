@@ -11,7 +11,6 @@
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_float_converter.h"
-#include "compiler_statement_emitter.h"
 #include "compiler_symbol_resolver.h"
 #include "compiler_variable_emitter.h"
 
@@ -23,7 +22,6 @@ CompilerContext::CompilerContext() {
   heap_mark = nullptr;
 
   evaluator.reset(new CompilerEvaluator(this));
-  stmtEmitter.reset(new CompilerStatementEmitter(this));
   codeHelper.reset(new CompilerCodeHelper(this));
   fixupResolver.reset(new CompilerFixupResolver(this));
   symbolResolver.reset(new CompilerSymbolResolver(this));
