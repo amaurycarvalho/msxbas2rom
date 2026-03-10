@@ -18,10 +18,9 @@
 - [x] Refactor src/application/parser/ implementing a Strategy pattern instanciated by a factory with minimum code change. The individual strategy files must be saved to src/application/parser/strategies/ folder. Finally, adjust the related Makefile and unit testings according the changes;
 - [x] Refactor src/application/compiler/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
 - [x] Propose a plan to refactor step by step src/application/compiler/ implementing a Strategy pattern in a similar way to src/application/parser (helpers and strategies folders) and ask for approval;
-- [ ] Refactor src/application/builder/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
+- [x] Refactor src/application/builder/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
 - [ ] Propose a plan to refactor step by step evalFunction method of CompilerExpressionEvaluator implementing a Strategy pattern at src/application/compiler/functions folder and ask for approval;
 - [ ] Inspect src/ and tests/ searching for opportunities to apply `forward declaration` technique and housekeepings. If found, propose a plan to refactor it and ask for approval;
-- [ ] Propose a plan to refactor step by step src/application/builder/ implementing a Strategy pattern in a similar way to src/application/parser (helpers and strategies folders) and ask for approval;
 - [ ] Inspect application/symbols searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
 - [ ] Inspect application/lexer searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
 - [ ] Inspect application/parser searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
