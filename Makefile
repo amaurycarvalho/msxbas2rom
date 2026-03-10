@@ -161,12 +161,7 @@ test: test-unit
 
 test-unit:
 	@$(MAKE) -C tests/unit all
-	@cd tests/unit && ./bin/test_lexer
-	@cd tests/unit && ./bin/test_parser
-	@cd tests/unit && ./bin/test_compiler
-	@cd tests/unit && ./bin/test_builder
-	@cd tests/unit && ./bin/test_fs
-	@cd tests/unit && ./bin/test_resources
+	@cd tests/unit && ./bin/test_unit
 	@echo "✅ Unit testing finished"
 
 test-integration:

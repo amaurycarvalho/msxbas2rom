@@ -5,15 +5,16 @@
 
 // NOLINTBEGIN
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <cstdio>
 #include <fstream>
 #include <string>
+#include <vector>
 
 #include "compiler.h"
 #include "doctest/doctest.h"
 #include "lexer.h"
 #include "parser.h"
+#include "resources.h"
 #include "z80.h"
 
 static std::string createTempBas(const std::string& filename,
@@ -23,6 +24,15 @@ static std::string createTempBas(const std::string& filename,
   ofs << content;
   ofs.close();
   return path;
+}
+
+static bool compileProgram(const std::string& filename, Compiler& compiler,
+                           Parser& parser) {
+  Lexer lexer;
+  if (!lexer.load(filename)) return false;
+  if (!lexer.evaluate()) return false;
+  if (!parser.evaluate(&lexer)) return false;
+  return compiler.build(&parser);
 }
 
 static bool compileProgram(const std::string& filename, Compiler& compiler) {
@@ -50,6 +60,17 @@ TEST_SUITE("Compiler") {
     std::remove(filename.c_str());
   }
 
+  TEST_CASE("Fails when parser has no tags") {
+    const std::string filename = createTempBas("compiler_empty.bas", "\n\n");
+
+    Z80OpcodeWriter cpuOpcodeWriter;
+    Compiler compiler(&cpuOpcodeWriter);
+    CHECK(compileProgram(filename, compiler) == false);
+    CHECK(compiler.isCompiled() == false);
+
+    std::remove(filename.c_str());
+  }
+
   TEST_CASE("Fails on duplicated line numbers") {
     const std::string filename = createTempBas(
         "compiler_duplicated_line.bas", "10 PRINT \"A\"\n10 PRINT \"B\"\n");
@@ -72,6 +93,61 @@ TEST_SUITE("Compiler") {
     CHECK(compileProgram(filename, compiler) == false);
     CHECK(compiler.getErrorMessage().find("FOR without a NEXT") !=
           std::string::npos);
+
+    std::remove(filename.c_str());
+  }
+
+  TEST_CASE("Fails when NEXT has no FOR") {
+    const std::string filename =
+        createTempBas("compiler_next_without_for.bas", "10 NEXT I\n");
+
+    Z80OpcodeWriter cpuOpcodeWriter;
+    Compiler compiler(&cpuOpcodeWriter);
+    CHECK(compileProgram(filename, compiler) == false);
+    CHECK(compiler.getErrorMessage().find("NEXT without a FOR") !=
+          std::string::npos);
+
+    std::remove(filename.c_str());
+  }
+
+  TEST_CASE("Fails on unknown function or array in expression") {
+    const std::string filename =
+        createTempBas("compiler_unknown_func.bas", "10 A=FOO(1)\n");
+
+    Z80OpcodeWriter cpuOpcodeWriter;
+    Compiler compiler(&cpuOpcodeWriter);
+    CHECK(compileProgram(filename, compiler) == false);
+    CHECK(compiler.getErrorMessage().find(
+              "Undeclared array or unknown function") != std::string::npos);
+
+    std::remove(filename.c_str());
+  }
+
+  TEST_CASE("Registers DATA and IDATA resources") {
+    const std::string filename =
+        createTempBas("compiler_data_idata.bas", "10 DATA 1,2\n20 IDATA 3\n");
+
+    Z80OpcodeWriter cpuOpcodeWriter;
+    Compiler compiler(&cpuOpcodeWriter);
+    Parser parser;
+    CHECK(compileProgram(filename, compiler, parser) == true);
+    CHECK(compiler.getResourceManager() != nullptr);
+    CHECK(compiler.getResourceManager()->resources.size() >= 2);
+
+    std::remove(filename.c_str());
+  }
+
+  TEST_CASE("Writes compiled code to output buffer") {
+    const std::string filename =
+        createTempBas("compiler_write.bas", "10 PRINT \"HI\"\n20 END\n");
+
+    Z80OpcodeWriter cpuOpcodeWriter;
+    Compiler compiler(&cpuOpcodeWriter);
+    CHECK(compileProgram(filename, compiler) == true);
+
+    std::vector<unsigned char> out(0x8000, 0);
+    int written = compiler.write(out.data(), 0x8000);
+    CHECK(written > 0);
 
     std::remove(filename.c_str());
   }

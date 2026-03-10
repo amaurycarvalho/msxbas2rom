@@ -22,7 +22,7 @@ Or directly:
 
 ```bash
 make -C tests/unit all
-cd tests/unit && ./bin/test_lexer
+cd tests/unit && ./bin/test_unit
 ```
 
 ## Maintenance Policy

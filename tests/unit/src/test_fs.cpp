@@ -13,7 +13,6 @@
 
 // NOLINTBEGIN
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "build_options.h"
 #include "compiler.h"
 #include "doctest/doctest.h"
@@ -48,7 +47,7 @@ static int COMPILE(string filename, bool megarom = false) {
   return 0;
 }
 
-TEST_SUITE("Basic test") {
+TEST_SUITE("FS suite") {
   TEST_CASE("PRINT statement") {
     SUBCASE("hello world") {
       string filename = "../integration/PRINT/test1.bas";

@@ -5,7 +5,6 @@
 
 // NOLINTBEGIN
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "build_options_setup.h"
 #include "doctest/doctest.h"
 

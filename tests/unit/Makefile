@@ -25,9 +25,10 @@ LDFLAGS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc
 SRC_FILES = $(shell find $(SRC_ROOT) -name '*.cpp' ! -path '$(SRC_ROOT)/cli/main.cpp' | sort)
 SRC_OBJ = $(patsubst $(SRC_ROOT)/%.cpp,$(OBJ)/src_%.o,$(SRC_FILES))
 
-TEST_MODULES = lexer parser compiler builder fs resources options
-TEST_BINS = $(addprefix $(BIN)/test_,$(TEST_MODULES))
-TEST_OBJ = $(addprefix $(OBJ)/test_,$(addsuffix .o,$(TEST_MODULES)))
+TEST_SOURCES = $(shell find $(TEST_SRC) -name 'test_*.cpp' | sort)
+TEST_OBJ = $(patsubst $(TEST_SRC)/%.cpp,$(OBJ)/%.o,$(TEST_SOURCES))
+TEST_BIN = $(BIN)/test_unit
+DEP = $(SRC_OBJ:.o=.d) $(TEST_OBJ:.o=.d)
 
 ifeq ($(OS),Windows_NT)
  OSFLAG += -D Win $(PARMS)
@@ -43,7 +44,7 @@ else
  endif
 endif
 
-all: setup $(TEST_BINS)
+all: setup $(TEST_BIN)
 
 clean:
 	@echo "🧹 Cleaning artifacts..."
@@ -66,6 +67,8 @@ $(OBJ)/test_%.o: $(TEST_SRC)/test_%.cpp | setup
 	@echo "📦 Compiling unit test $<..."
 	@$(CXX) $(CFLAGS) $(CPPFLAGS) $(DEPFLAGS) -c $< -o $@
 
-$(BIN)/test_%: $(OBJ)/test_%.o $(SRC_OBJ) | setup
+$(BIN)/test_unit: $(TEST_OBJ) $(SRC_OBJ) | setup
 	@echo "📦 Building unit test binary $@..."
-	@$(LD) -o $@ $< $(SRC_OBJ) $(LDFLAGS)
+	@$(LD) -o $@ $^ $(LDFLAGS)
+
+-include $(DEP)
