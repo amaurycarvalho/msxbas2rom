@@ -33,6 +33,7 @@ class ResourceReader {
   virtual bool remapTo(int index, int mappedSegm, int mappedAddress);
   virtual bool load() = 0;
   ResourceReader(string filename);
+  virtual ~ResourceReader();
 };
 
 #endif  // RESOURCE_READER_H_INCLUDED

@@ -19,6 +19,8 @@
 class ResourceFactory {
  public:
   static std::unique_ptr<ResourceReader> create(string filename);
+  ResourceFactory();
+  ~ResourceFactory();
 };
 
 #endif  // RESOURCE_FACTORY_H_INCLUDED

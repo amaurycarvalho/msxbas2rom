@@ -10,7 +10,7 @@
 
 Pletter::Pletter() {}
 
-Pletter::~Pletter() {}
+Pletter::~Pletter() = default;
 
 void Pletter::saves::init(unsigned length) {
   ep = dp = p = e = 0;
@@ -76,7 +76,7 @@ void Pletter::saves::claimevent() {
   ++dp;
 }
 
-int Pletter::saves::done(unsigned char *pDest) {
+int Pletter::saves::done(unsigned char* pDest) {
   if (p != 0) {
     while (p != 8) {
       e *= 2;
@@ -144,7 +144,7 @@ void Pletter::createmetadata() {
   }
 }
 
-int Pletter::getlen(pakdata *p, unsigned q) {
+int Pletter::getlen(pakdata* p, unsigned q) {
   unsigned i, j, cc, ccc, kc, kmode, kl;
   p[length].cost = 0;
   for (i = length - 1; i != unsigned(-1); --i) {
@@ -182,7 +182,7 @@ int Pletter::getlen(pakdata *p, unsigned q) {
   return p[0].cost;
 }
 
-int Pletter::save(pakdata *p, unsigned q, unsigned char *pDest) {
+int Pletter::save(pakdata* p, unsigned q, unsigned char* pDest) {
   s.init(length);
   unsigned i, j;
   if (savelength) {
@@ -241,8 +241,8 @@ int Pletter::save(pakdata *p, unsigned q, unsigned char *pDest) {
   return s.done(pDest);
 }
 
-int Pletter::pack(const unsigned char *pData, int dataSize,
-                  unsigned char *pDest) {
+int Pletter::pack(const unsigned char* pData, int dataSize,
+                  unsigned char* pDest) {
   int packed;
 
   if (pData == NULL) {

@@ -59,3 +59,7 @@ std::unique_ptr<ResourceReader> ResourceFactory::create(string filename) {
   }
   return nullptr;
 }
+
+ResourceFactory::ResourceFactory() {}
+
+ResourceFactory::~ResourceFactory() = default;

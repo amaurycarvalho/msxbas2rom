@@ -26,4 +26,6 @@ ResourceReader::ResourceReader(string filename) {
   this->isPacked = false;
   /// @todo Refactor it creating linked lists in the affected resources
   this->has1stBlockAnd2ndBlockSegmentDisalignmentBug = false;
-};
+}
+
+ResourceReader::~ResourceReader() = default;

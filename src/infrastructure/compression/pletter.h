@@ -20,7 +20,7 @@
 class Pletter {
  public:
   Pletter();
-  virtual ~Pletter();
+  ~Pletter();
 
   /***
    * @brief Compress data
@@ -28,7 +28,7 @@ class Pletter {
    * @param dataSize Source data size
    * @param pDest Destination data buffer
    */
-  int pack(const unsigned char *pData, int dataSize, unsigned char *pDest);
+  int pack(const unsigned char* pData, int dataSize, unsigned char* pDest);
 
  protected:
  private:
@@ -37,7 +37,7 @@ class Pletter {
 
   std::vector<unsigned> last;
   std::vector<unsigned> prev;
-  unsigned char *d = NULL;
+  unsigned char* d = NULL;
 
   struct metadata {
     unsigned reeks;
@@ -66,13 +66,13 @@ class Pletter {
     void adddata(unsigned char d);
     void addevent();
     void claimevent();
-    int done(unsigned char *pDest);
+    int done(unsigned char* pDest);
   } s;
 
   void initvarcost();
   void createmetadata();
-  int getlen(pakdata *p, unsigned q);
-  int save(pakdata *p, unsigned q, unsigned char *pDest);
+  int getlen(pakdata* p, unsigned q);
+  int save(pakdata* p, unsigned q, unsigned char* pDest);
 };
 
 #endif  // PLETTER_H
