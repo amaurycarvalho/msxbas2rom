@@ -11,11 +11,15 @@
 #include "compiler_context.h"
 #include "compiler_hooks.h"
 #include "compiler_statement_strategy.h"
+#include "compiler_statement_strategy_factory.h"
 #include "tag_node.h"
 
 CompilerEvaluator::CompilerEvaluator(CompilerContext* context) {
   this->context = context;
+  statementFactory.reset(new CompilerStatementStrategyFactory());
 }
+
+CompilerEvaluator::~CompilerEvaluator() = default;
 
 bool CompilerEvaluator::evaluate(TagNode* tag) {
   ActionNode* action;
@@ -61,7 +65,7 @@ bool CompilerEvaluator::evalActions(ActionNode* action) {
 
 bool CompilerEvaluator::evalAction(ActionNode* action) {
   Lexeme* lexeme;
-  ICompilerStatementStrategy* strategy;
+  ICompilerStatementStrategy* statement;
 
   if (!action) {
     context->syntaxError();
@@ -75,8 +79,8 @@ bool CompilerEvaluator::evalAction(ActionNode* action) {
     return false;
   }
 
-  strategy = statementStrategyFactory.getStrategyByKeyword(lexeme->name);
-  if (!strategy) {
+  statement = statementFactory->getByKeyword(lexeme->name);
+  if (!statement) {
     context->syntaxError();
     return false;
   }
@@ -84,7 +88,7 @@ bool CompilerEvaluator::evalAction(ActionNode* action) {
   context->traps_checked = false;
   context->skip_post_trap_check = false;
 
-  if (!strategy->execute(context)) {
+  if (!statement->execute(context)) {
     if (context->error_message.empty()) context->syntaxError();
     return false;
   }

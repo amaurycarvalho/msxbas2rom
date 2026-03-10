@@ -235,7 +235,8 @@ int main(int argc, char* argv[]) {
     }
 
     if (opts.symbols != BuildOptions::SymbolsMode::None) {
-      compiler->getSymbolManager().saveSymbol(&opts);
+      auto symbolManager = compiler->getSymbolManager();
+      symbolManager->saveSymbol(&opts);
     }
 
     break;
@@ -257,20 +258,19 @@ int main(int argc, char* argv[]) {
     printf("    ROM size = %.0fK (%.1f%% free)\n", rom->romSize / 1024.0,
            100.0 - rom->codeShare - rom->resourcesShare - rom->kernelShare);
 
-    if (compiler->getResourceManager().resources.size()) {
+    auto resourceManager = compiler->getResourceManager();
+    if (resourceManager->resources.size()) {
       printf("    Resources occupied %.1f%% of avaliable space\n",
              rom->resourcesShare);
       printf("      %i resource(s) found (%.1fK size",
-             (int)compiler->getResourceManager().resources.size(),
-             compiler->getResourceManager().resourcesPackedSize / 1024.0);
-      if (compiler->getResourceManager().resourcesPackedSize <
-          compiler->getResourceManager().resourcesUnpackedSize) {
-        printf(", %.1f%% packed rate",
-               compiler->getResourceManager().packedRate);
+             (int)resourceManager->resources.size(),
+             resourceManager->resourcesPackedSize / 1024.0);
+      if (resourceManager->resourcesPackedSize <
+          resourceManager->resourcesUnpackedSize) {
+        printf(", %.1f%% packed rate", resourceManager->packedRate);
       }
       printf(")\n");
-      if (opts.debug)
-        printf("%s", compiler->getResourceManager().toString().c_str());
+      if (opts.debug) printf("%s", resourceManager->toString().c_str());
     }
 
     printf("    Kernel code occupied %.1f%% of avaliable space\n",

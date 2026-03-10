@@ -6,20 +6,22 @@
 #ifndef COMPILER_EVALUATOR_H
 #define COMPILER_EVALUATOR_H
 
-#include "compiler_statement_strategy_factory.h"
+#include <functional>
+#include <memory>
 
 class CompilerContext;
 class TagNode;
 class ActionNode;
+class CompilerStatementStrategyFactory;
 
 using namespace std;
 
 class CompilerEvaluator {
- public:
+ private:
   CompilerContext* context;
+  unique_ptr<CompilerStatementStrategyFactory> statementFactory;
 
-  CompilerStatementStrategyFactory statementStrategyFactory;
-
+ public:
   /***
    * @brief Perform a semanthic analysis on the specified tag node
    * @param tag TagNode object (action list)
@@ -31,6 +33,7 @@ class CompilerEvaluator {
   bool evalActions(ActionNode* action);
 
   CompilerEvaluator(CompilerContext* context);
+  ~CompilerEvaluator();
 };
 
 #endif  // COMPILER_EVALUATOR_H

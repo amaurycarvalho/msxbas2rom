@@ -13,6 +13,9 @@
 #include "compiler_float_converter.h"
 #include "compiler_symbol_resolver.h"
 #include "compiler_variable_emitter.h"
+#include "parser.h"
+#include "resources.h"
+#include "symbol_manager.h"
 
 CompilerContext::CompilerContext() {
   parser = nullptr;
@@ -29,6 +32,8 @@ CompilerContext::CompilerContext() {
   expressionEvaluator.reset(new CompilerExpressionEvaluator(this));
   floatConverter.reset(new CompilerFloatConverter(this));
   variableEmitter.reset(new CompilerVariableEmitter(this));
+  symbolManager.reset(new SymbolManager());
+  resourceManager.reset(new ResourceManager());
 
   clear();
 }
@@ -60,8 +65,8 @@ void CompilerContext::clear() {
   symbols.clear();
   fixes.clear();
 
-  symbolManager.clear();
-  resourceManager.clear();
+  symbolManager->clear();
+  resourceManager->clear();
 
   while (!forNextStack.empty()) forNextStack.pop();
 

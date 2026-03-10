@@ -20,7 +20,7 @@ Rom::Rom() {}
 
 Rom::~Rom() {}
 
-bool Rom::build(Compiler *compiler) {
+bool Rom::build(Compiler* compiler) {
   float romSizeFloat;
 
   if (!compiler->isCompiled()) return false;
@@ -29,7 +29,7 @@ bool Rom::build(Compiler *compiler) {
 
   this->compiler = compiler;
   this->opts = compiler->getOpts();
-  this->resourceManager = &compiler->getResourceManager();
+  this->resourceManager = compiler->getResourceManager();
 
   if (opts->debug) printf("Initializing build...\n");
 
@@ -138,7 +138,7 @@ bool Rom::addResources() {
 
 bool Rom::addCompiledCode() {
   vector<unsigned char> buf(COMPILE_CODE_SIZE);
-  unsigned char *pbuf = buf.data();
+  unsigned char* pbuf = buf.data();
   int copyTotalSize, copyChunkSize;
 
   /// write compiled code to temporary buffer
@@ -186,7 +186,7 @@ void Rom::setResourceMapStartAddress() {
  */
 bool Rom::fixIfKonamiSCC() {
   if (opts->compileMode == BuildOptions::CompileMode::KonamiSCC) {
-    char *p = (char *)pages[0].data() + 0xDB;
+    char* p = (char*)pages[0].data() + 0xDB;
     int mapperCount = 0;
     for (int i = 0xDB; i < (0x4000 - 3); i++) {
       if (p[1] == 0 && (p[0] == 0x32 || p[0] == 0x3A) &&
@@ -246,7 +246,7 @@ bool Rom::writeRom(string filename) {
         remove(filename.c_str());
         return false;
       }
-      file.write((char *)resourceManager->pages[0].data(),
+      file.write((char*)resourceManager->pages[0].data(),
                  resourceManager->pages[0].size());
       romSize += resourceManager->pages[0].size();
     }
@@ -274,7 +274,7 @@ bool Rom::writeRom(string filename) {
   }
 
   for (i = 0; i < (int)pages.size(); i++) {
-    file.write((char *)pages[i].data(), pages[i].size());
+    file.write((char*)pages[i].data(), pages[i].size());
     romSize += pages[i].size();
     pageCount++;
   }
@@ -282,7 +282,7 @@ bool Rom::writeRom(string filename) {
   /// write MegaROM resources pages
   if (opts->megaROM) {
     for (i = 0; i < (int)resourceManager->pages.size(); i++) {
-      file.write((char *)resourceManager->pages[i].data(),
+      file.write((char*)resourceManager->pages[i].data(),
                  resourceManager->pages[i].size());
       romSize += resourceManager->pages[i].size();
       pageCount++;
@@ -292,7 +292,7 @@ bool Rom::writeRom(string filename) {
     if (fillerCount) {
       fillerCount = 8 - fillerCount;
       while (fillerCount--) {
-        file.write((char *)fillerPage.data(), fillerPage.size());
+        file.write((char*)fillerPage.data(), fillerPage.size());
         romSize += fillerPage.size();
       }
     }

@@ -11,8 +11,17 @@
 #include "compiler_context.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_float_converter.h"
+#include "compiler_function_strategy_factory.h"
 #include "compiler_hooks.h"
 #include "compiler_variable_emitter.h"
+
+CompilerExpressionEvaluator::CompilerExpressionEvaluator(
+    CompilerContext* context)
+    : context(context) {
+  functionFactory.reset(new CompilerFunctionStrategyFactory());
+}
+
+CompilerExpressionEvaluator::~CompilerExpressionEvaluator() = default;
 
 int CompilerExpressionEvaluator::evalExpression(ActionNode* action) {
   auto& cpu = *context->cpu;

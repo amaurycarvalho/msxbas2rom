@@ -3,13 +3,10 @@
 
 #include <functional>
 #include <memory>
+#include <stack>
 
 #include "cpu_opcode_writer.h"
-#include "fix_node.h"
 #include "for_next_node.h"
-#include "parser.h"
-#include "resources.h"
-#include "symbol_manager.h"
 #include "symbol_node.h"
 
 class CompilerSymbolResolver;
@@ -20,6 +17,11 @@ class CompilerExpressionEvaluator;
 class CompilerFloatConverter;
 class CompilerVariableEmitter;
 class CompilerEvaluator;
+
+class SymbolManager;
+class ResourceManager;
+class Parser;
+class BuildOptions;
 
 using namespace std;
 
@@ -38,8 +40,8 @@ class CompilerContext {
   unique_ptr<CompilerFloatConverter> floatConverter;
   unique_ptr<CompilerVariableEmitter> variableEmitter;
 
-  SymbolManager symbolManager;
-  ResourceManager resourceManager;
+  unique_ptr<SymbolManager> symbolManager;
+  unique_ptr<ResourceManager> resourceManager;
 
   bool pt3, akm, font, file_support, has_defusr;
   bool has_open_grp;

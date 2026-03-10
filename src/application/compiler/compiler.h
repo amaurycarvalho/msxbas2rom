@@ -20,8 +20,6 @@
 
 #include <memory>
 
-using namespace std;
-
 #define COMPILE_MAX_PAGES (16 * 4)
 #define COMPILE_CODE_SIZE (COMPILE_MAX_PAGES * 0x4000)
 #define COMPILE_RAM_SIZE (0xFFFF)
@@ -35,6 +33,8 @@ class SymbolManager;
 class ResourceManager;
 class BuildOptions;
 class TagNode;
+
+using namespace std;
 
 /***
  * @class Compiler
@@ -65,11 +65,11 @@ class Compiler {
   bool getFont() const;
   bool getHasTinySprite() const;
 
-  SymbolManager& getSymbolManager();
-  const SymbolManager& getSymbolManager() const;
+  SymbolManager* getSymbolManager();
+  const SymbolManager* getSymbolManager() const;
 
-  ResourceManager& getResourceManager();
-  const ResourceManager& getResourceManager() const;
+  ResourceManager* getResourceManager();
+  const ResourceManager* getResourceManager() const;
 
   int getRamSize() const;
 

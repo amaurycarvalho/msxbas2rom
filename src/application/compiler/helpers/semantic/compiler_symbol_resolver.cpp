@@ -6,10 +6,13 @@
 
 #include "compiler_symbol_resolver.h"
 
+#include "code_node.h"
 #include "compiler_code_helper.h"
 #include "compiler_context.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "symbol_manager.h"
+#include "symbol_node.h"
 
 SymbolNode* CompilerSymbolResolver::getSymbol(Lexeme* lexeme) {
   unsigned int i, t = context->symbols.size();
@@ -288,7 +291,7 @@ int CompilerSymbolResolver::saveSymbols() {
             codeItem->length = cpu.context->code_pointer - codeItem->start;
             codeItem->is_code = false;
             codeItem->debug = true;
-            context->symbolManager.codeList.push_back(codeItem);
+            context->symbolManager->codeList.push_back(codeItem);
 
             length += codeItem->length;
           }
@@ -302,7 +305,7 @@ int CompilerSymbolResolver::saveSymbols() {
           codeItem->is_code = false;
           codeItem->debug = true;
           codeItem->lexeme = lexeme;
-          context->symbolManager.dataList.push_back(codeItem);
+          context->symbolManager->dataList.push_back(codeItem);
 
           var_size = 0;
 

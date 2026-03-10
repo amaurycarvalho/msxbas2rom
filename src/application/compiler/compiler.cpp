@@ -23,6 +23,8 @@
 #include "compiler_hooks.h"
 #include "compiler_start_statement_strategy.h"
 #include "compiler_symbol_resolver.h"
+#include "resources.h"
+#include "symbol_manager.h"
 
 /***
  * @name Compiler class code
@@ -67,19 +69,19 @@ bool Compiler::getHasTinySprite() const {
   return context->has_tiny_sprite;
 }
 
-SymbolManager& Compiler::getSymbolManager() {
-  return context->symbolManager;
+SymbolManager* Compiler::getSymbolManager() {
+  return context->symbolManager.get();
 }
 
-const SymbolManager& Compiler::getSymbolManager() const {
-  return context->symbolManager;
+const SymbolManager* Compiler::getSymbolManager() const {
+  return context->symbolManager.get();
 }
 
-ResourceManager& Compiler::getResourceManager() {
-  return context->resourceManager;
+ResourceManager* Compiler::getResourceManager() {
+  return context->resourceManager.get();
 }
-const ResourceManager& Compiler::getResourceManager() const {
-  return context->resourceManager;
+const ResourceManager* Compiler::getResourceManager() const {
+  return context->resourceManager.get();
 }
 
 int Compiler::getRamSize() const {
@@ -135,7 +137,7 @@ bool Compiler::build(Parser* parser) {
   codeItem->length = context->cpu->context->code_pointer - codeItem->start;
   codeItem->is_code = true;
   codeItem->debug = true;
-  context->symbolManager.codeList.push_back(codeItem);
+  context->symbolManager->codeList.push_back(codeItem);
   if (context->opts->debug) printf(" %i byte(s)\n", codeItem->length);
 
   if (context->opts->debug) printf("Registering start of program...");
@@ -147,7 +149,7 @@ bool Compiler::build(Parser* parser) {
   codeItem->length = context->cpu->context->code_pointer - codeItem->start;
   codeItem->is_code = true;
   codeItem->debug = true;
-  context->symbolManager.codeList.push_back(codeItem);
+  context->symbolManager->codeList.push_back(codeItem);
   if (context->opts->debug) printf(" %i byte(s)\n", codeItem->length);
   if (codeItem->length >= 0x4000) {
     context->syntaxError(
@@ -200,7 +202,7 @@ bool Compiler::build(Parser* parser) {
       codeItem->length = context->cpu->context->code_pointer - codeItem->start;
       codeItem->is_code = true;
       codeItem->debug = true;
-      context->symbolManager.codeList.push_back(codeItem);
+      context->symbolManager->codeList.push_back(codeItem);
 
       if (context->opts->debug) printf("/%i", codeItem->length);
 
@@ -235,7 +237,7 @@ bool Compiler::build(Parser* parser) {
     codeItem->length = context->cpu->context->code_pointer - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = true;
-    context->symbolManager.codeList.push_back(codeItem);
+    context->symbolManager->codeList.push_back(codeItem);
     if (context->opts->debug) printf(" %i byte(s)\n", codeItem->length);
     if (codeItem->length >= 0x4000) {
       context->syntaxError(
@@ -251,7 +253,7 @@ bool Compiler::build(Parser* parser) {
     codeItem->length = context->cpu->context->code_pointer - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = false;
-    context->symbolManager.codeList.push_back(codeItem);
+    context->symbolManager->codeList.push_back(codeItem);
     if (context->opts->debug) printf(" %i byte(s)\n", codeItem->length);
     if (codeItem->length >= 0x4000) {
       context->syntaxError("Maximum of support code per ROM reached (16k)");
@@ -260,12 +262,12 @@ bool Compiler::build(Parser* parser) {
 
     if (parser->getHasIData()) {
       if (context->opts->debug) printf("Registering IDATA resource...");
-      context->resourceManager.addIDataResource(parser);
+      context->resourceManager->addIDataResource(parser);
     }
 
     if (parser->getHasData()) {
       if (context->opts->debug) printf("Registering DATA resource...");
-      context->resourceManager.addDataResource(parser);
+      context->resourceManager->addDataResource(parser);
     }
 
     if (context->opts->debug) printf("Registering symbols..");
@@ -300,7 +302,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
   // copy compiled code to final destination
 
-  t = context->symbolManager.codeList.size();
+  t = context->symbolManager->codeList.size();
   addr_within_segm = start_address;
 
   if (context->opts->megaROM) {
@@ -314,7 +316,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
     d = dest;
 
     for (i = 0; i < t; i++) {
-      codeItem = context->symbolManager.codeList[i];
+      codeItem = context->symbolManager->codeList[i];
 
       // printf("%i address %i size %i\n", i, codeItem->start,
       // codeItem->length);
@@ -402,7 +404,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
   } else {
     for (i = 0; i < t; i++) {
-      codeItem = context->symbolManager.codeList[i];
+      codeItem = context->symbolManager->codeList[i];
       codeItem->segm = 0;
       codeItem->addr_within_segm = addr_within_segm;
       addr_within_segm += codeItem->length;
