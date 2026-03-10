@@ -8,13 +8,13 @@
 #ifndef SYMBOL_MANAGER_H_INCLUDED
 #define SYMBOL_MANAGER_H_INCLUDED
 
-#include <string.h>
+#include <string>
 
 #include <queue>
 #include <vector>
 
-#include "code_node.h"
-#include "build_options.h"
+class CodeNode;
+class BuildOptions;
 
 using namespace std;
 

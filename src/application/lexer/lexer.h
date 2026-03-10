@@ -12,9 +12,8 @@
 #include <string>
 #include <vector>
 
-#include "fswrapper.h"
-#include "lexer_line.h"
-#include "build_options.h"
+class LexerLine;
+class BuildOptions;
 
 using namespace std;
 

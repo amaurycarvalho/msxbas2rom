@@ -7,7 +7,7 @@
 #ifndef BUILD_OPTIONS_H
 #define BUILD_OPTIONS_H
 
-#include "fswrapper.h"
+#include <string>
 
 using namespace std;
 

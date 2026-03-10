@@ -7,6 +7,8 @@
 
 #include "tag_node.h"
 
+#include "action_node.h"
+
 string TagNode::toString() const {
   string out = "Tag ";
   out += name;

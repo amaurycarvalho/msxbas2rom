@@ -18,6 +18,8 @@ class CompilerFloatConverter;
 class CompilerVariableEmitter;
 class CompilerEvaluator;
 
+class TagNode;
+class ActionNode;
 class SymbolManager;
 class ResourceManager;
 class Parser;

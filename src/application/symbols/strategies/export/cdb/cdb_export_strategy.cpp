@@ -7,10 +7,13 @@
 
 #include "cdb_export_strategy.h"
 
+#include "code_node.h"
+#include "lexeme.h"
+
 bool CdbExportStrategy::save(SymbolManager* symbolManager, BuildOptions* opts) {
   FILE* file;
   CodeNode* codeItem;
-  int i, t;
+  int i, t, size;
   char s[512];
 
   vector<CodeNode*>& codeList = symbolManager->codeList;
@@ -64,18 +67,27 @@ bool CdbExportStrategy::save(SymbolManager* symbolManager, BuildOptions* opts) {
       }
 
       // -------- S:G (definition) ----------
-      snprintf(s, sizeof(s), "S:G$%s$0_0$0({%d}%s),G,0,0\n", name.c_str(),
-               totalSize, descriptor.c_str());
-      fwrite(s, 1, strlen(s), file);
+      size = snprintf(s, sizeof(s), "S:G$%s$0_0$0({%d}%s),G,0,0\n",
+                      name.c_str(), totalSize, descriptor.c_str());
+      if (size <= 0) {
+        fclose(file);
+        return false;
+      }
+      fwrite(s, 1, size, file);
 
       // -------- L:G (address binding) ----------
       if (opts->megaROM) {
-        snprintf(s, sizeof(s), "L:G$%s$0_0$0:%06X\n", name.c_str(), addr);
+        size =
+            snprintf(s, sizeof(s), "L:G$%s$0_0$0:%06X\n", name.c_str(), addr);
       } else {
-        snprintf(s, sizeof(s), "L:G$%s$0_0$0:%04X\n", name.c_str(),
-                 codeItem->addr_within_segm);
+        size = snprintf(s, sizeof(s), "L:G$%s$0_0$0:%04X\n", name.c_str(),
+                        codeItem->addr_within_segm);
       }
-      fwrite(s, 1, strlen(s), file);
+      if (size <= 0) {
+        fclose(file);
+        return false;
+      }
+      fwrite(s, 1, size, file);
     }
 
     fprintf(file, "\n");
@@ -92,14 +104,19 @@ bool CdbExportStrategy::save(SymbolManager* symbolManager, BuildOptions* opts) {
       unsigned int addr = (codeItem->segm << 16) | codeItem->addr_within_segm;
 
       if (opts->megaROM) {
-        snprintf(s, sizeof(s), "L:A$%s$%s$0_0$0:%06X\n",
-                 opts->inputFilename.c_str(), codeItem->name.c_str(), addr);
+        size =
+            snprintf(s, sizeof(s), "L:A$%s$%s$0_0$0:%06X\n",
+                     opts->inputFilename.c_str(), codeItem->name.c_str(), addr);
       } else {
-        snprintf(s, sizeof(s), "L:A$%s$%s$0_0$0:%04X\n",
-                 opts->inputFilename.c_str(), codeItem->name.c_str(),
-                 codeItem->addr_within_segm);
+        size = snprintf(s, sizeof(s), "L:A$%s$%s$0_0$0:%04X\n",
+                        opts->inputFilename.c_str(), codeItem->name.c_str(),
+                        codeItem->addr_within_segm);
       }
-      fwrite(s, 1, strlen(s), file);
+      if (size <= 0) {
+        fclose(file);
+        return false;
+      }
+      fwrite(s, 1, size, file);
     }
 
     fclose(file);

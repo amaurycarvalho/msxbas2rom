@@ -3,6 +3,7 @@
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "fswrapper.h"
 #include "resources.h"
 
 void CompilerBloadStatementStrategy::cmd_bload(CompilerContext* context) {

@@ -1,6 +1,7 @@
 #include "compiler_file_statement_strategy.h"
 
 #include "compiler_context.h"
+#include "fswrapper.h"
 #include "resources.h"
 
 void CompilerFileStatementStrategy::cmd_file(CompilerContext* context) {

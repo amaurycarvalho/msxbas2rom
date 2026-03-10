@@ -12,17 +12,12 @@
 #ifndef ROM_H_INCLUDED
 #define ROM_H_INCLUDED
 
-#include <math.h>
-#include <string.h>
-
 #include <string>
 #include <vector>
 
-#include "compiler.h"
-#include "fswrapper.h"
-#include "lexer.h"
-#include "build_options.h"
-#include "resources.h"
+class Compiler;
+class BuildOptions;
+class ResourceManager;
 
 using namespace std;
 

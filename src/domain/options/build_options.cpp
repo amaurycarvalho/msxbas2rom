@@ -9,6 +9,8 @@
 
 #include "build_options.h"
 
+#include "fswrapper.h"
+
 BuildOptions::BuildOptions(string filename) : BuildOptions() {
   setInputFilename(filename);
 }
@@ -31,7 +33,6 @@ BuildOptions::BuildOptions() {
 
   /// default paths
   inputPath = outputPath = "";
-
 }
 
 void BuildOptions::setInputFilename(string filename) {

@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "lexeme.h"
+class Lexeme;
 
 using namespace std;
 

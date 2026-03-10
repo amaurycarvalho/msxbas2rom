@@ -15,6 +15,7 @@
 
 #include "compiler.h"
 
+#include "code_node.h"
 #include "compiler_code_helper.h"
 #include "compiler_context.h"
 #include "compiler_end_statement_strategy.h"
@@ -24,7 +25,9 @@
 #include "compiler_start_statement_strategy.h"
 #include "compiler_symbol_resolver.h"
 #include "resources.h"
+#include "symbol_node.h"
 #include "symbol_manager.h"
+#include "tag_node.h"
 
 /***
  * @name Compiler class code

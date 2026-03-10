@@ -7,21 +7,23 @@
 
 #include "omds_export_strategy.h"
 
+#include "code_node.h"
+
 bool OmdsExportStrategy::save(SymbolManager* symbolManager,
                               BuildOptions* opts) {
   FILE* file;
   CodeNode* codeItem;
-  int i, t;
+  int i, t, size;
   char s[255];
   string segmString;
-  const char* omds_header = R"(<!DOCTYPE xomds>
+  constexpr const char omds_header[] = R"(<!DOCTYPE xomds>
 <DebugSession version="0.1">
 <Symbols>
 )";
-  const char* omds_footer = R"(</Symbols>
+  constexpr const char omds_footer[] = R"(</Symbols>
 </DebugSession>
 )";
-  const char* omds_format =
+  constexpr const char omds_format[] =
       "<Symbol><type>%s</type><name>%s</name><value>%i</"
       "value><validSlots>65535</validSlots><validRegisters>3968</"
       "validRegisters><source>0</source><segments>%s</segments></Symbol>\n";
@@ -31,14 +33,18 @@ bool OmdsExportStrategy::save(SymbolManager* symbolManager,
   vector<CodeNode*>& dataList = symbolManager->dataList;
 
   if ((file = fopen(opts->omdsFilename.c_str(), "w"))) {
-    fwrite(omds_header, 1, strlen(omds_header), file);
+    fwrite(omds_header, 1, sizeof(omds_header) - 1, file);
 
     t = kernelSymbols.size();
     for (i = 0; i < t; i++) {
-      snprintf(s, sizeof(s), omds_format, kernelSymbols[i][2].c_str(),
-               kernelSymbols[i][0].c_str(),
-               stoi(kernelSymbols[i][1].c_str(), nullptr, 16), "");
-      fwrite(s, 1, strlen(s), file);
+      size = snprintf(s, sizeof(s), omds_format, kernelSymbols[i][2].c_str(),
+                      kernelSymbols[i][0].c_str(),
+                      stoi(kernelSymbols[i][1].c_str(), nullptr, 16), "");
+      if (size <= 0) {
+        fclose(file);
+        return false;
+      }
+      fwrite(s, 1, size, file);
     }
 
     t = codeList.size();
@@ -47,9 +53,14 @@ bool OmdsExportStrategy::save(SymbolManager* symbolManager,
       codeItem = codeList[i];
       if (codeItem->debug) {
         segmString = (opts->megaROM) ? to_string(codeItem->segm) : "";
-        snprintf(s, sizeof(s), omds_format, "jump", codeItem->name.c_str(),
-                 codeItem->addr_within_segm, segmString.c_str());
-        fwrite(s, 1, strlen(s), file);
+        size =
+            snprintf(s, sizeof(s), omds_format, "jump", codeItem->name.c_str(),
+                     codeItem->addr_within_segm, segmString.c_str());
+        if (size <= 0) {
+          fclose(file);
+          return false;
+        }
+        fwrite(s, 1, size, file);
       }
     }
 
@@ -58,13 +69,17 @@ bool OmdsExportStrategy::save(SymbolManager* symbolManager,
     for (i = 0; i < t; i++) {
       codeItem = dataList[i];
       if (codeItem->debug) {
-        snprintf(s, sizeof(s), omds_format, "variable", codeItem->name.c_str(),
-                 codeItem->addr_within_segm, "");
-        fwrite(s, 1, strlen(s), file);
+        size = snprintf(s, sizeof(s), omds_format, "variable",
+                        codeItem->name.c_str(), codeItem->addr_within_segm, "");
+        if (size <= 0) {
+          fclose(file);
+          return false;
+        }
+        fwrite(s, 1, size, file);
       }
     }
 
-    fwrite(omds_footer, 1, strlen(omds_footer), file);
+    fwrite(omds_footer, 1, sizeof(omds_footer) - 1, file);
 
     fclose(file);
     return true;

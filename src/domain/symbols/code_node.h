@@ -8,8 +8,11 @@
 #ifndef CODE_NODE_H_INCLUDED
 #define CODE_NODE_H_INCLUDED
 
-#include "fswrapper.h"
-#include "lexeme.h"
+#include <string>
+
+class Lexeme;
+
+using namespace std;
 
 /***
  * @class CodeNode

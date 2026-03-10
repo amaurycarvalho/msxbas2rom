@@ -13,6 +13,7 @@
 
 #include "action_node.h"
 #include "lexer_line.h"
+#include "lexeme.h"
 #include "tag_node.h"
 
 using namespace std;

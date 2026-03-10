@@ -9,6 +9,9 @@
 #include "compiler_code_helper.h"
 #include "compiler_context.h"
 #include "compiler_symbol_resolver.h"
+#include "fix_node.h"
+#include "lexeme.h"
+#include "symbol_node.h"
 
 FixNode* CompilerFixupResolver::addFix(SymbolNode* symbol) {
   auto& cpu = *context->cpu;

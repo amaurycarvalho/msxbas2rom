@@ -11,7 +11,14 @@
 
 #include "rom.h"
 
+#include <cstdio>
+#include <cstring>
+#include <fstream>
+
+#include "build_options.h"
+#include "compiler.h"
 #include "header.h"
+#include "resource_manager.h"
 #include "start.h"
 
 //----------------------------------------------------------------------------------------------

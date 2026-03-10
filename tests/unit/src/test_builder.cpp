@@ -12,6 +12,7 @@
 
 #include "compiler.h"
 #include "doctest/doctest.h"
+#include "fswrapper.h"
 #include "lexer.h"
 #include "parser.h"
 #include "resources.h"

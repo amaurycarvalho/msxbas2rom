@@ -7,6 +7,7 @@
 
 #include "symbol_manager.h"
 
+#include "build_options.h"
 #include "symbol_export_strategy_factory.h"
 
 void SymbolManager::clear() {
@@ -16,7 +17,7 @@ void SymbolManager::clear() {
 
 vector<vector<string>> SymbolManager::getKernelSymbolAddresses() {
   return {{"LOADER", "4010", "jump"},
-          {"VAR_CURSEGM", "C023", "variable,integer,2"},
+          {"VAR_CURSEGM", "C023", "variable,byte,1"},
           {"MR_CALL", "41C8", "jump"},
           {"MR_CALL_TRAP", "41CB", "jump"},
           {"MR_CHANGE_SGM", "41CE", "jump"},

@@ -11,8 +11,10 @@
 #include "compiler_context.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 #include "symbol_manager.h"
 #include "symbol_node.h"
+#include "tag_node.h"
 
 SymbolNode* CompilerSymbolResolver::getSymbol(Lexeme* lexeme) {
   unsigned int i, t = context->symbols.size();

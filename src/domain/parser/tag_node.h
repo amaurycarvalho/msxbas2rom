@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "action_node.h"
+class ActionNode;
 
 using namespace std;
 

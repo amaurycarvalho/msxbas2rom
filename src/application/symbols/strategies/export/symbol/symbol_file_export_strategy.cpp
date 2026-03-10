@@ -7,11 +7,13 @@
 
 #include "symbol_file_export_strategy.h"
 
+#include "code_node.h"
+
 bool SymbolFileExportStrategy::save(SymbolManager* symbolManager,
                                     BuildOptions* opts) {
   FILE* file;
   CodeNode* codeItem;
-  int i, t;
+  int i, t, size;
   char s[255];
   const char* symbol_format[] = {"S%i_%s EQU 0%XH\n", "%s EQU 0%XH\n"};
   vector<vector<string>> kernelSymbols =
@@ -22,9 +24,14 @@ bool SymbolFileExportStrategy::save(SymbolManager* symbolManager,
   if ((file = fopen(opts->symbolFilename.c_str(), "w"))) {
     t = kernelSymbols.size();
     for (i = 0; i < t; i++) {
-      snprintf(s, sizeof(s), symbol_format[1], kernelSymbols[i][0].c_str(),
-               stoi(kernelSymbols[i][1], nullptr, 16));
-      fwrite(s, 1, strlen(s), file);
+      size =
+          snprintf(s, sizeof(s), symbol_format[1], kernelSymbols[i][0].c_str(),
+                   stoi(kernelSymbols[i][1], nullptr, 16));
+      if (size <= 0) {
+        fclose(file);
+        return false;
+      }
+      fwrite(s, 1, size, file);
     }
 
     t = codeList.size();
@@ -33,13 +40,17 @@ bool SymbolFileExportStrategy::save(SymbolManager* symbolManager,
       codeItem = codeList[i];
       if (codeItem->debug) {
         if (opts->megaROM) {
-          snprintf(s, sizeof(s), symbol_format[0], codeItem->segm,
-                   codeItem->name.c_str(), codeItem->addr_within_segm);
+          size = snprintf(s, sizeof(s), symbol_format[0], codeItem->segm,
+                          codeItem->name.c_str(), codeItem->addr_within_segm);
         } else {
-          snprintf(s, sizeof(s), symbol_format[1], codeItem->name.c_str(),
-                   codeItem->addr_within_segm);
+          size = snprintf(s, sizeof(s), symbol_format[1],
+                          codeItem->name.c_str(), codeItem->addr_within_segm);
         }
-        fwrite(s, 1, strlen(s), file);
+        if (size <= 0) {
+          fclose(file);
+          return false;
+        }
+        fwrite(s, 1, size, file);
       }
     }
 
@@ -48,9 +59,13 @@ bool SymbolFileExportStrategy::save(SymbolManager* symbolManager,
     for (i = 0; i < t; i++) {
       codeItem = dataList[i];
       if (codeItem->debug) {
-        snprintf(s, sizeof(s), symbol_format[1], codeItem->name.c_str(),
-                 codeItem->addr_within_segm);
-        fwrite(s, 1, strlen(s), file);
+        size = snprintf(s, sizeof(s), symbol_format[1], codeItem->name.c_str(),
+                        codeItem->addr_within_segm);
+        if (size <= 0) {
+          fclose(file);
+          return false;
+        }
+        fwrite(s, 1, size, file);
       }
     }
 

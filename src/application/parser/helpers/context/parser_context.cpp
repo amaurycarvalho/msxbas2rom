@@ -6,6 +6,11 @@
 
 #include "parser_context.h"
 
+#include "action_node.h"
+#include "lexer_line.h"
+#include "lexeme.h"
+#include "tag_node.h"
+
 ParserContext::ParserContext() {
   lex_null = new Lexeme(Lexeme::type_literal, Lexeme::subtype_null, "NULL");
   lex_empty_string =

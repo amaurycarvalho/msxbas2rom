@@ -6,6 +6,8 @@
 
 #include "lexer_line.h"
 
+#include "lexeme.h"
+
 #include "lexer_line_state_factory.h"
 
 /***

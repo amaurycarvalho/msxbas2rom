@@ -7,11 +7,14 @@
 
 #include "noice_export_strategy.h"
 
+#include "code_node.h"
+#include "lexeme.h"
+
 bool NoIceExportStrategy::save(SymbolManager* symbolManager,
                                BuildOptions* opts) {
   FILE* file;
   CodeNode* codeItem;
-  int i, t;
+  int i, t, size;
   char s[255];
   const char* noice_format = "def %s %XH  ; %s\n";
   string comment;
@@ -23,10 +26,14 @@ bool NoIceExportStrategy::save(SymbolManager* symbolManager,
   if ((file = fopen(opts->noiceFilename.c_str(), "w"))) {
     t = kernelSymbols.size();
     for (i = 0; i < t; i++) {
-      snprintf(s, sizeof(s), noice_format, kernelSymbols[i][0].c_str(),
-               stoi(kernelSymbols[i][1], nullptr, 16),
-               kernelSymbols[i][2].c_str());
-      fwrite(s, 1, strlen(s), file);
+      size = snprintf(s, sizeof(s), noice_format, kernelSymbols[i][0].c_str(),
+                      stoi(kernelSymbols[i][1], nullptr, 16),
+                      kernelSymbols[i][2].c_str());
+      if (size <= 0) {
+        fclose(file);
+        return false;
+      }
+      fwrite(s, 1, size, file);
     }
 
     t = codeList.size();
@@ -35,10 +42,14 @@ bool NoIceExportStrategy::save(SymbolManager* symbolManager,
     for (i = 0; i < t; i++) {
       codeItem = codeList[i];
       if (codeItem->debug) {
-        snprintf(s, sizeof(s), noice_format, codeItem->name.c_str(),
-                 codeItem->segm << 16 | codeItem->addr_within_segm,
-                 comment.c_str());
-        fwrite(s, 1, strlen(s), file);
+        size = snprintf(s, sizeof(s), noice_format, codeItem->name.c_str(),
+                        codeItem->segm << 16 | codeItem->addr_within_segm,
+                        comment.c_str());
+        if (size <= 0) {
+          fclose(file);
+          return false;
+        }
+        fwrite(s, 1, size, file);
       }
     }
 
@@ -76,10 +87,14 @@ bool NoIceExportStrategy::save(SymbolManager* symbolManager,
               comment += "," + to_string(codeItem->lexeme->y_size);
           }
         }
-        snprintf(s, sizeof(s), noice_format, codeItem->name.c_str(),
-                 codeItem->segm << 16 | codeItem->addr_within_segm,
-                 comment.c_str());
-        fwrite(s, 1, strlen(s), file);
+        size = snprintf(s, sizeof(s), noice_format, codeItem->name.c_str(),
+                        codeItem->segm << 16 | codeItem->addr_within_segm,
+                        comment.c_str());
+        if (size <= 0) {
+          fclose(file);
+          return false;
+        }
+        fwrite(s, 1, size, file);
       }
     }
 

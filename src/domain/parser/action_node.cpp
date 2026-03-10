@@ -7,6 +7,8 @@
 
 #include "action_node.h"
 
+#include "lexeme.h"
+
 ActionNode::ActionNode() {
   create((Lexeme*)0);
 }

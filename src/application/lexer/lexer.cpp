@@ -8,6 +8,9 @@
 
 #include "lexer.h"
 
+#include "build_options.h"
+#include "lexer_line.h"
+
 #include <stdio.h>
 #include <string.h>
 
