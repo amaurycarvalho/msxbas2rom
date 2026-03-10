@@ -8,17 +8,13 @@
 
 #include "pletter.h"
 
-Pletter::Pletter() {
-  clean();
-}
+Pletter::Pletter() {}
 
-Pletter::~Pletter() {
-  clean();
-}
+Pletter::~Pletter() {}
 
 void Pletter::saves::init(unsigned length) {
   ep = dp = p = e = 0;
-  buf = new unsigned char[length * 2];
+  buf.assign(length * 2, 0);
 }
 
 void Pletter::saves::add0() {
@@ -88,7 +84,7 @@ int Pletter::saves::done(unsigned char *pDest) {
     }
     addevent();
   }
-  memcpy(pDest, buf, dp);
+  memcpy(pDest, buf.data(), dp);
   return dp;
 }
 
@@ -103,9 +99,9 @@ void Pletter::initvarcost() {
 
 void Pletter::createmetadata() {
   unsigned i, j;
-  last = new unsigned[65536];
-  memset(last, -1, 65536 * sizeof(unsigned));
-  prev = new unsigned[length + 1];
+  last.assign(65536, unsigned(-1));
+  prev.assign(length + 1, 0);
+  m.assign(length + 1, metadata());
   for (i = 0; i != length; ++i) {
     m[i].cpos[0] = m[i].clen[0] = 0;
     prev[i] = last[d[i] + d[i + 1] * 256];
@@ -245,31 +241,19 @@ int Pletter::save(pakdata *p, unsigned q, unsigned char *pDest) {
   return s.done(pDest);
 }
 
-void Pletter::clean() {
-  if (last != NULL) delete[] last;
-  last = NULL;
-  if (prev != NULL) delete[] prev;
-  prev = NULL;
-  if (s.buf != NULL) delete[] s.buf;
-  s.buf = NULL;
-  if (m != NULL) delete[] m;
-  m = NULL;
-  for (int i = 1; i != 7; ++i) {
-    if (p[i] != NULL) delete[] p[i];
-    p[i] = NULL;
-  }
-}
-
-int Pletter::pack(unsigned char *pData, int dataSize, unsigned char *pDest) {
+int Pletter::pack(const unsigned char *pData, int dataSize,
+                  unsigned char *pDest) {
   int packed;
-  unsigned char last_byte =
-      pData[dataSize];  // last byte of source data bug fix
 
   if (pData == NULL) {
     return false;
   }
 
   if (dataSize == 0) {
+    return false;
+  }
+
+  if (pDest == NULL) {
     return false;
   }
 
@@ -280,9 +264,10 @@ int Pletter::pack(unsigned char *pData, int dataSize, unsigned char *pDest) {
   int i = 1;
   length = (unsigned)dataSize;
 
-  d = pData;
-  m = new metadata[length + 1];
-  d[length] = 0;
+  std::vector<unsigned char> temp(length + 1);
+  memcpy(temp.data(), pData, length);
+  temp[length] = 0;
+  d = temp.data();
 
   initvarcost();
   createmetadata();
@@ -291,19 +276,15 @@ int Pletter::pack(unsigned char *pData, int dataSize, unsigned char *pDest) {
   int minbl = 0;
 
   for (i = 1; i != 7; ++i) {
-    p[i] = new pakdata[length + 1];
-    int l = getlen(p[i], i);
+    p[i].assign(length + 1, pakdata());
+    int l = getlen(p[i].data(), i);
     if (l < minlen && i) {
       minlen = l;
       minbl = i;
     }
   }
 
-  packed = save(p[minbl], minbl, pDest);
-
-  clean();
-
-  pData[dataSize] = last_byte;  // last byte of source data bug fix
+  packed = save(p[minbl].data(), minbl, pDest);
 
   return packed;
 }
