@@ -1,9 +1,15 @@
 #include "compiler_noop_function_strategy.h"
 
 #include "compiler_context.h"
+#include "lexeme.h"
 
-bool NoopCompilerFunctionStrategy::execute(CompilerContext* context) {
-  // Keep legacy behavior: comments return early and do not run trap checks.
-  // context->skip_post_trap_check = true;
-  return context->compiled;
+int NoopCompilerFunctionStrategy::execute(CompilerContext* context,
+                                          ActionNode* action,
+                                          int* result,
+                                          unsigned int parmCount) {
+  (void)context;
+  (void)action;
+  (void)result;
+  (void)parmCount;
+  return Lexeme::subtype_unknown;
 }

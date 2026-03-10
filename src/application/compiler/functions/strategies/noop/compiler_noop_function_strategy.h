@@ -3,9 +3,14 @@
 
 #include "compiler_function_strategy.h"
 
+class ActionNode;
+
 class NoopCompilerFunctionStrategy : public ICompilerFunctionStrategy {
  public:
-  bool execute(CompilerContext* context) override;
+  int execute(CompilerContext* context,
+              ActionNode* action,
+              int* result,
+              unsigned int parmCount) override;
 };
 
 #endif  // NOOP_COMPILER_FUNCTION_STRATEGY_H_INCLUDED

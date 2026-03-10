@@ -1,0 +1,41 @@
+#include "compiler_strig_function_strategy.h"
+
+#include "action_node.h"
+#include "compiler_context.h"
+#include "compiler_expression_evaluator.h"
+#include "lexeme.h"
+
+int StrigCompilerFunctionStrategy::execute(CompilerContext* context,
+                                           ActionNode* action,
+                                           int* result,
+                                           unsigned int parmCount) {
+  if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
+  if (parmCount != 1) return Lexeme::subtype_unknown;
+
+  if (action->lexeme->value != "STRIG") return Lexeme::subtype_unknown;
+
+  auto& cpu = *context->cpu;
+  auto& expression = *context->expressionEvaluator;
+
+  if (result[0] == Lexeme::subtype_single_decimal ||
+      result[0] == Lexeme::subtype_double_decimal) {
+    // cast
+    expression.addCast(result[0], Lexeme::subtype_numeric);
+    result[0] = Lexeme::subtype_numeric;
+  }
+
+  if (result[0] == Lexeme::subtype_numeric) {
+    // ld a, l
+    cpu.addLdAL();
+    // call 0x00D8      ; GTTRIG
+    cpu.addCall(0x00D8);
+    // ld h, a
+    cpu.addLdHA();
+    // ld l, a
+    cpu.addLdLA();
+
+  } else
+    result[0] = Lexeme::subtype_unknown;
+
+  return result[0];
+}
