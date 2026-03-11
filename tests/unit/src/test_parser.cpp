@@ -161,7 +161,7 @@ TEST_SUITE("Parser") {
     REQUIRE(lexer.load(filename) == true);
     REQUIRE(lexer.evaluate() == true);
     CHECK(parser.evaluate(&lexer) == false);
-    CHECK(parser.getLogger()->errors().toString().find(
+    CHECK(parser.getLogger()->trace().toString().find(
               "Invalid parameter in INCLUDE keyword") != std::string::npos);
 
     std::remove(filename.c_str());
@@ -177,7 +177,7 @@ TEST_SUITE("Parser") {
     REQUIRE(lexer.load(filename) == true);
     REQUIRE(lexer.evaluate() == true);
     CHECK(parser.evaluate(&lexer) == false);
-    CHECK(parser.getLogger()->errors().toString().find(
+    CHECK(parser.getLogger()->trace().toString().find(
               "Invalid expression unary symbol") != std::string::npos);
 
     std::remove(filename.c_str());
@@ -231,7 +231,7 @@ TEST_SUITE("Parser") {
     REQUIRE(lexer.load(filename) == true);
     REQUIRE(lexer.evaluate() == true);
     CHECK(parser.evaluate(&lexer) == false);
-    CHECK(parser.getLogger()->errors().toString().find(
+    CHECK(parser.getLogger()->trace().toString().find(
               "Invalid array declaration") != std::string::npos);
 
     std::remove(filename.c_str());
@@ -283,7 +283,7 @@ TEST_SUITE("Parser") {
     REQUIRE(lexer.load(filename) == true);
     REQUIRE(lexer.evaluate() == true);
     CHECK(parser.evaluate(&lexer) == false);
-    CHECK(parser.getLogger()->errors().toString().find(
+    CHECK(parser.getLogger()->trace().toString().find(
               "ELSE without a THEN/GOTO/GOSUB") != std::string::npos);
 
     std::remove(filename.c_str());
@@ -337,13 +337,13 @@ TEST_SUITE("Parser") {
     REQUIRE(lexer.load(badOpen) == true);
     REQUIRE(lexer.evaluate() == true);
     CHECK(parser.evaluate(&lexer) == false);
-    CHECK(parser.getLogger()->errors().toString().find(
+    CHECK(parser.getLogger()->trace().toString().find(
               "FOR/AS is missing in OPEN statement") != std::string::npos);
 
     REQUIRE(lexer.load(badClose) == true);
     REQUIRE(lexer.evaluate() == true);
     CHECK(parser.evaluate(&lexer) == false);
-    CHECK(parser.getLogger()->errors().toString().find(
+    CHECK(parser.getLogger()->trace().toString().find(
               "# is missing in CLOSE statement") != std::string::npos);
 
     std::remove(okFile.c_str());
