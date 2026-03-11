@@ -7,14 +7,17 @@
 #ifndef PARSER_CONTEXT_H_INCLUDED
 #define PARSER_CONTEXT_H_INCLUDED
 
+#include <memory>
 #include <stack>
 #include <string>
 #include <vector>
 
 #include "action_node.h"
-#include "lexer_line.h"
 #include "lexeme.h"
+#include "lexer_line.h"
 #include "tag_node.h"
+
+class Logger;
 
 using namespace std;
 
@@ -27,7 +30,7 @@ class ParserContext {
   TagNode* tag;
   ActionNode* actionRoot;
   LexerLine* error_line;
-  Lexeme *lex_null, *lex_index, *lex_empty_string;
+  unique_ptr<Lexeme> lex_null, lex_index, lex_empty_string;
 
   stack<ActionNode*> actionStack;
   stack<Lexeme*> expressionList;
@@ -35,7 +38,7 @@ class ParserContext {
   int deftbl[26];
 
   bool eval_expr_error, line_comment;
-  string error_message;
+  unique_ptr<Logger> logger;
 
   int lineNo;
   vector<TagNode*> tags;

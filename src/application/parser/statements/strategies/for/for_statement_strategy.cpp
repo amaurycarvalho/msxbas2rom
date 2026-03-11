@@ -2,8 +2,10 @@
 
 #include "assignment_evaluator.h"
 #include "expression_evaluator.h"
+#include "logger.h"
 
-bool ForStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
+bool ForStatementStrategy::parseStatement(ParserContext& context,
+                                          LexerLine* statement) {
   Lexeme *next_lexeme, *last_lexeme = 0;
   LexerLine parm;
   ActionNode* action;
@@ -19,7 +21,7 @@ bool ForStatementStrategy::parseStatement(ParserContext& context, LexerLine* sta
         if (next_lexeme->isKeyword("TO")) {
           parm.setLexemeBOF();
           if (!assignEval.evaluate(&parm)) {
-            context.error_message = "FOR command without a valid assignment";
+            context.logger->error("FOR command without a valid assignment");
             context.eval_expr_error = true;
             return false;
           }
@@ -41,14 +43,14 @@ bool ForStatementStrategy::parseStatement(ParserContext& context, LexerLine* sta
       case 1: {
         if (next_lexeme->isKeyword("STEP")) {
           if (last_lexeme->value != "TO") {
-            context.error_message = "STEP without a TO clausule";
+            context.logger->error("STEP without a TO clausule");
             context.eval_expr_error = true;
             return false;
           }
 
           parm.setLexemeBOF();
           if (!evaluateExpression(context, &parm)) {
-            context.error_message = "FOR with an invalid TO/STEP";
+            context.logger->error("FOR with an invalid TO/STEP");
             context.eval_expr_error = true;
             return false;
           }
@@ -74,14 +76,14 @@ bool ForStatementStrategy::parseStatement(ParserContext& context, LexerLine* sta
 
   if (parm.getLexemeCount() && last_lexeme) {
     if (last_lexeme->value != "TO" && last_lexeme->value != "STEP") {
-      context.error_message = "FOR command without a TO/STEP complement.";
+      context.logger->error("FOR command without a TO/STEP complement.");
       context.eval_expr_error = true;
       return false;
     }
 
     parm.setLexemeBOF();
     if (!evaluateExpression(context, &parm)) {
-      context.error_message = "FOR with an invalid TO/STEP";
+      context.logger->error("FOR with an invalid TO/STEP");
       context.eval_expr_error = true;
       return false;
     }
@@ -90,14 +92,15 @@ bool ForStatementStrategy::parseStatement(ParserContext& context, LexerLine* sta
     parm.clearLexemes();
 
   } else {
-    context.error_message = "Invalid FOR statement (empty)";
+    context.logger->error("Invalid FOR statement (empty)");
     return false;
   }
 
   return true;
 }
 
-bool ForStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+bool ForStatementStrategy::execute(ParserContext& context, LexerLine* statement,
+                                   Lexeme* lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);
 }

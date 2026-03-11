@@ -7,25 +7,24 @@
 #include "parser_context.h"
 
 #include "action_node.h"
-#include "lexer_line.h"
 #include "lexeme.h"
+#include "lexer_line.h"
+#include "logger.h"
 #include "tag_node.h"
 
 ParserContext::ParserContext() {
-  lex_null = new Lexeme(Lexeme::type_literal, Lexeme::subtype_null, "NULL");
-  lex_empty_string =
-      new Lexeme(Lexeme::type_literal, Lexeme::subtype_string, "");
-  lex_index =
-      new Lexeme(Lexeme::type_keyword, Lexeme::subtype_numeric, "INDEX");
+  logger.reset(new Logger());
+  lex_null.reset(
+      new Lexeme(Lexeme::type_literal, Lexeme::subtype_null, "NULL"));
+  lex_empty_string.reset(
+      new Lexeme(Lexeme::type_literal, Lexeme::subtype_string, ""));
+  lex_index.reset(
+      new Lexeme(Lexeme::type_keyword, Lexeme::subtype_numeric, "INDEX"));
 
   reset();
 }
 
-ParserContext::~ParserContext() {
-  if (lex_null) delete lex_null;
-  if (lex_empty_string) delete lex_empty_string;
-  if (lex_index) delete lex_index;
-}
+ParserContext::~ParserContext() = default;
 
 void ParserContext::reset() {
   int i;
@@ -49,7 +48,6 @@ void ParserContext::reset() {
   has_akm = false;
   has_mtf = false;
   has_resource_restore = false;
-  error_message = "";
 
   for (i = 0; i < 26; i++) deftbl[i] = 0;
 

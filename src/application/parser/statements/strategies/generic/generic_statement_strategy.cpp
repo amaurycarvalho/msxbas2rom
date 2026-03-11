@@ -1,7 +1,7 @@
 #include "generic_statement_strategy.h"
 
-
-bool GenericStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
+bool GenericStatementStrategy::parseStatement(ParserContext& context,
+                                              LexerLine* statement) {
   Lexeme* next_lexeme;
   LexerLine parm;
   int sepcount = 0;
@@ -23,7 +23,7 @@ bool GenericStatementStrategy::parseStatement(ParserContext& context, LexerLine*
         }
         parm.clearLexemes();
       } else {
-        next_lexeme = context.lex_null;
+        next_lexeme = context.lex_null.get();
         context.pushActionFromLexeme(next_lexeme);
       }
 
@@ -45,8 +45,8 @@ bool GenericStatementStrategy::parseStatement(ParserContext& context, LexerLine*
   return true;
 }
 
-bool GenericStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
-
+bool GenericStatementStrategy::execute(ParserContext& context,
+                                       LexerLine* statement, Lexeme* lexeme) {
   if (lexeme->value == "BLOAD") context.resourceCount++;
   if (lexeme->value == "PLAY") context.has_play = true;
 

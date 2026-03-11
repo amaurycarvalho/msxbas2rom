@@ -46,6 +46,8 @@ bool Lexer::load(BuildOptions* opts) {
 
   clear();
 
+  logger->setFile(opts->inputFilename);
+
   if ((file = fopen(opts->inputFilename.c_str(), "rb"))) {
     memset(header, 0, 3);
     bytes = fread(header, 1, 3, file);
@@ -96,21 +98,18 @@ bool Lexer::evaluate() {
   logger->debug("Displaying lexical analysis:");
   for (unsigned int i = 0; i < lines.size(); i++) {
     int lineNumber = i + 1;
+    logger->setLineNumber(lineNumber);
     lexerLine = lines[i];
     if (lexerLine) {
       if (!lexerLine->evaluate()) {
-        auto& entry = logger->error("Lexical error");
-        entry.file = opts->inputFilename;
-        entry.line = lineNumber;
-
-        logger->error(lexerLine->toString());
+        logger->error("Lexical error");
+        logger->info(lexerLine->toString());
         return false;
       }
       logger->debug(lexerLine->toString());
     } else {
-      logger->error("Lexical error at line " + to_string(lineNumber)).line =
-          lineNumber;
-      logger->error("Cannot evaluate a null line");
+      logger->error("Lexical error");
+      logger->info("Cannot evaluate a null line");
     }
   }
   return true;
@@ -124,4 +123,8 @@ string Lexer::toString() {
     if (lexerLine) out += lexerLine->toString();
   }
   return out;
+}
+
+Logger* Lexer::getLogger() {
+  return logger.get();
 }

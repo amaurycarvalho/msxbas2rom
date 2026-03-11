@@ -24,6 +24,7 @@ class SymbolManager;
 class ResourceManager;
 class Parser;
 class BuildOptions;
+class Logger;
 
 using namespace std;
 
@@ -66,6 +67,8 @@ class CompilerContext {
   vector<SymbolNode*> symbols;
   vector<FixNode*> fixes;
   stack<ForNextNode*> forNextStack;
+
+  unique_ptr<Logger> logger;
 
   string error_message;
 

@@ -14,6 +14,7 @@
 #include "compiler_symbol_resolver.h"
 #include "compiler_variable_emitter.h"
 #include "lexeme.h"
+#include "logger.h"
 #include "parser.h"
 #include "resources.h"
 #include "symbol_manager.h"
@@ -25,6 +26,7 @@ CompilerContext::CompilerContext() {
   temp_str_mark = nullptr;
   heap_mark = nullptr;
 
+  logger.reset(new Logger());
   evaluator.reset(new CompilerEvaluator(this));
   codeHelper.reset(new CompilerCodeHelper(this));
   fixupResolver.reset(new CompilerFixupResolver(this));

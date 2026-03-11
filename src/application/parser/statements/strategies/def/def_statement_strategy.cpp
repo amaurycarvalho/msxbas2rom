@@ -1,7 +1,9 @@
 #include "def_statement_strategy.h"
 
+#include "logger.h"
 
-bool DefStatementStrategy::parseDefUsr(ParserContext& context, LexerLine* statement) {
+bool DefStatementStrategy::parseDefUsr(ParserContext& context,
+                                       LexerLine* statement) {
   Lexeme *next_lexeme, *lex_zero;
   LexerLine parm;
   int state = 0;
@@ -38,7 +40,7 @@ bool DefStatementStrategy::parseDefUsr(ParserContext& context, LexerLine* statem
           context.pushActionFromLexeme(lex_zero);
           lex_zero_used = true;
         } else {
-          context.error_message = "Invalid DEF USR assignment";
+          context.logger->error("Invalid DEF USR assignment");
           if (!lex_zero_used) delete lex_zero;
           return false;
         }
@@ -48,7 +50,7 @@ bool DefStatementStrategy::parseDefUsr(ParserContext& context, LexerLine* statem
         if (next_lexeme->isOperator("=")) {
           state = 2;
         } else {
-          context.error_message = "DEF USR assignment is missing";
+          context.logger->error("DEF USR assignment is missing");
           if (!lex_zero_used) delete lex_zero;
           return false;
         }
@@ -76,7 +78,8 @@ bool DefStatementStrategy::parseDefUsr(ParserContext& context, LexerLine* statem
   return true;
 }
 
-bool DefStatementStrategy::parseWithType(ParserContext& context, LexerLine* statement, int vartype) {
+bool DefStatementStrategy::parseWithType(ParserContext& context,
+                                         LexerLine* statement, int vartype) {
   Lexeme* next_lexeme;
   int state = 0, c[2], i;
 
@@ -138,7 +141,8 @@ bool DefStatementStrategy::parseWithType(ParserContext& context, LexerLine* stat
   return true;
 }
 
-bool DefStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+bool DefStatementStrategy::execute(ParserContext& context, LexerLine* statement,
+                                   Lexeme* lexeme) {
   int vartype = 0;
 
   if (lexeme->value == "DEFINT")

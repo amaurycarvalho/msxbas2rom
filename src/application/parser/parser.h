@@ -12,6 +12,7 @@
 #ifndef PARSE_H_INCLUDED
 #define PARSE_H_INCLUDED
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -24,6 +25,8 @@
 #include "parser_line_evaluator.h"
 #include "parser_statement_strategy_factory.h"
 #include "tag_node.h"
+
+class Logger;
 
 using namespace std;
 
@@ -49,7 +52,9 @@ class Parser {
    */
   bool evaluate(Lexer* lexer);
 
-  int getLineNo() const;
+  Logger* getLogger();
+
+  int getLineNumber() const;
 
   vector<TagNode*>& getTags();
   const vector<TagNode*>& getTags() const;
@@ -81,11 +86,6 @@ class Parser {
    * @brief Return all tags and it's syntax tree as a string
    */
   string toString();
-
-  /***
-   * @brief Return the invalid tag node as a string
-   */
-  string errorToString();
 
   /***
    * @brief Parse class constructor, specialized as a

@@ -1,8 +1,10 @@
 #include "color_statement_strategy.h"
 
 #include "generic_statement_strategy.h"
+#include "logger.h"
 
-bool ColorStatementStrategy::parseColorRgb(ParserContext& context, LexerLine* statement) {
+bool ColorStatementStrategy::parseColorRgb(ParserContext& context,
+                                           LexerLine* statement) {
   Lexeme *next_lexeme, *lex_rgb;
   LexerLine parm;
   int state = 0, sepCount = 0;
@@ -11,7 +13,8 @@ bool ColorStatementStrategy::parseColorRgb(ParserContext& context, LexerLine* st
     switch (state) {
       case 0: {
         if (next_lexeme->isSeparator("(")) {
-          lex_rgb = new Lexeme(Lexeme::type_keyword, Lexeme::subtype_any, "RGB");
+          lex_rgb =
+              new Lexeme(Lexeme::type_keyword, Lexeme::subtype_any, "RGB");
           context.pushActionFromLexeme(lex_rgb);
 
           state++;
@@ -64,7 +67,8 @@ bool ColorStatementStrategy::parseColorRgb(ParserContext& context, LexerLine* st
   return false;
 }
 
-bool ColorStatementStrategy::parseColorSprite(ParserContext& context, LexerLine* statement) {
+bool ColorStatementStrategy::parseColorSprite(ParserContext& context,
+                                              LexerLine* statement) {
   Lexeme* next_lexeme;
   LexerLine parm;
   int state = 0, sepCount = 0;
@@ -128,7 +132,8 @@ bool ColorStatementStrategy::parseColorSprite(ParserContext& context, LexerLine*
   return true;
 }
 
-bool ColorStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
+bool ColorStatementStrategy::parseStatement(ParserContext& context,
+                                            LexerLine* statement) {
   Lexeme* next_lexeme = statement->getNextLexeme();
 
   if (next_lexeme) {
@@ -144,13 +149,14 @@ bool ColorStatementStrategy::parseStatement(ParserContext& context, LexerLine* s
       return genericStrategy.parseStatement(context, statement);
     }
   } else {
-    context.error_message = "Invalid COLOR statement";
+    context.logger->error("Invalid COLOR statement");
   }
 
   return false;
 }
 
-bool ColorStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+bool ColorStatementStrategy::execute(ParserContext& context,
+                                     LexerLine* statement, Lexeme* lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);
 }

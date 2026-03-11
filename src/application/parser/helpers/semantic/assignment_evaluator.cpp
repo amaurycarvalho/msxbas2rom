@@ -6,6 +6,8 @@
 
 #include "assignment_evaluator.h"
 
+#include "logger.h"
+
 AssignmentEvaluator::AssignmentEvaluator(ParserContext& context,
                                          ExpressionEvaluator& exprEval)
     : ctx(context), exprEval(exprEval) {}
@@ -70,6 +72,7 @@ bool AssignmentEvaluator::evaluate(LexerLine* assignment) {
     }
   }
 
-  ctx.error_message = "Invalid LET statement";
+  ctx.logger->error("Invalid LET statement");
+
   return false;
 }

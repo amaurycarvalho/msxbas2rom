@@ -31,13 +31,16 @@ class Logger {
  private:
   vector<LogEntry> logs;
   LogEntry dummy;
+  string file;
+  int lineNumber;
 
-  LogEntry& add(LogLevel level, const string& msg);
+  LogEntry& add(LogLevel severity, const string& message);
   string trim(const string& str) const;
 
  public:
   void clear();
   bool empty() const;
+  int size() const;
 
   LogEntry& info(const string& msg);
   LogEntry& warning(const string& msg);
@@ -52,6 +55,14 @@ class Logger {
 
   string toString() const;
   Logger errors() const;
+  Logger infos() const;
+  Logger trace() const;
+
+  void setFile(string file);
+  string getFile();
+
+  void setLineNumber(int lineNumber);
+  int getLineNumber();
 
   vector<LogEntry>& getAll();
 

@@ -6,6 +6,8 @@
 
 #include "expression_evaluator.h"
 
+#include "logger.h"
+
 ExpressionEvaluator::ExpressionEvaluator(ParserContext& context)
     : ctx(context) {}
 
@@ -67,7 +69,7 @@ bool ExpressionEvaluator::push(LexerLine* expression) {
       if (outputCount == 0 || unary) {
         if (outputCount == 0 && lexeme->value == ")") {
           ctx.eval_expr_error = true;
-          ctx.error_message = "Mismatched parentheses error";
+          ctx.logger->error("Mismatched parentheses error");
           return false;
         } else if (lexeme->value == "=") {
           next_lexeme = operatorStack.top();
@@ -83,7 +85,7 @@ bool ExpressionEvaluator::push(LexerLine* expression) {
             continue;
           } else {
             ctx.eval_expr_error = true;
-            ctx.error_message = "Invalid = symbol in expression";
+            ctx.logger->error("Invalid = symbol in expression");
             return false;
           }
         } else if (lexeme->value == ">") {
@@ -95,14 +97,14 @@ bool ExpressionEvaluator::push(LexerLine* expression) {
             continue;
           } else {
             ctx.eval_expr_error = true;
-            ctx.error_message = "Invalid > symbol in expression";
+            ctx.logger->error("Invalid > symbol in expression");
             return false;
           }
         } else if (lexeme->value != "+" && lexeme->value != "-" &&
                    lexeme->value != "(" && lexeme->value != ")" &&
                    lexeme->value != "NOT") {
           ctx.eval_expr_error = true;
-          ctx.error_message = "Invalid expression unary symbol";
+          ctx.logger->error("Invalid expression unary symbol");
           return false;
         } else {
           if (lexeme->value == "+" ||
@@ -121,8 +123,8 @@ bool ExpressionEvaluator::push(LexerLine* expression) {
         if (lastWasFunction || lastWasIdentifier) {
           if (ctx.expressionList.empty()) {
             ctx.eval_expr_error = true;
-            ctx.error_message =
-                "Invalid FUNCTION or ARRAY declaration in expression";
+            ctx.logger->error(
+                "Invalid FUNCTION or ARRAY declaration in expression");
             return false;
           }
 
@@ -160,16 +162,16 @@ bool ExpressionEvaluator::push(LexerLine* expression) {
           }
           if (!ok) {
             ctx.eval_expr_error = true;
-            ctx.error_message =
-                "Mismatched parentheses error in function or array";
+            ctx.logger->error(
+                "Mismatched parentheses error in function or array");
             return false;
           }
 
           if (!parmcount) {
             ctx.eval_expr_error = true;
-            ctx.error_message =
+            ctx.logger->error(
                 "Invalid FUNCTION or ARRAY declaration in expression (missing "
-                "parameters?)";
+                "parameters?)");
             return false;
           }
 
@@ -228,7 +230,7 @@ bool ExpressionEvaluator::push(LexerLine* expression) {
         }
         if (!ok) {
           ctx.eval_expr_error = true;
-          ctx.error_message = "Mismatched parentheses error";
+          ctx.logger->error("Mismatched parentheses error");
           return false;  // parentheses is missing
         }
       } else

@@ -13,6 +13,9 @@
 #include "resource_reader.h"
 
 class Parser;
+class Logger;
+
+using namespace std;
 
 /***
  * @class ResourceManager
@@ -26,9 +29,14 @@ class ResourceManager {
   vector<std::unique_ptr<ResourceReader>> resources;
   vector<vector<unsigned char>> pages;
 
+  unique_ptr<Logger> logger;
+
   int resourcesPackedSize;
   int resourcesUnpackedSize;
   float packedRate;
+
+  ResourceManager();
+  ~ResourceManager();
 
   /***
    * @brief clear all resources
@@ -49,13 +57,13 @@ class ResourceManager {
    * @brief Add a DATA statement resource to the resource list
    * @todo Implement IDATA+DATA mix up bug fix
    */
-  void addDataResource(Parser *parser);
+  void addDataResource(Parser* parser);
 
   /***
    * @brief Add a IDATA statement resource to the resource list
    * @todo Implement IDATA+DATA mix up bug fix
    */
-  void addIDataResource(Parser *parser);
+  void addIDataResource(Parser* parser);
 
   /***
    * @brief build map and resources data

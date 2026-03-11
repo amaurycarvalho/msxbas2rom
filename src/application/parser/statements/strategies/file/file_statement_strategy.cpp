@@ -2,6 +2,8 @@
 
 #include <cctype>
 
+#include "logger.h"
+
 bool FileStatementStrategy::parseOpen(ParserContext& context,
                                       LexerLine* statement) {
   Lexeme* next_lexeme;
@@ -36,7 +38,7 @@ bool FileStatementStrategy::parseOpen(ParserContext& context,
           state = 1;
           continue;
         } else {
-          context.error_message = "File name is missing in OPEN statement";
+          context.logger->error("File name is missing in OPEN statement");
           return false;
         }
       } break;
@@ -59,7 +61,7 @@ bool FileStatementStrategy::parseOpen(ParserContext& context,
           state = 5;
           continue;
         } else {
-          context.error_message = "FOR/AS is missing in OPEN statement";
+          context.logger->error("FOR/AS is missing in OPEN statement");
           return false;
         }
       } break;
@@ -88,7 +90,7 @@ bool FileStatementStrategy::parseOpen(ParserContext& context,
           state = 5;
           continue;
         } else {
-          context.error_message = "Invalid FOR parameter in OPEN statement";
+          context.logger->error("Invalid FOR parameter in OPEN statement");
           return false;
         }
       } break;
@@ -108,7 +110,7 @@ bool FileStatementStrategy::parseOpen(ParserContext& context,
           state = 5;
           continue;
         } else {
-          context.error_message = "AS is missing in OPEN statement";
+          context.logger->error("AS is missing in OPEN statement");
           return false;
         }
       } break;
@@ -122,7 +124,7 @@ bool FileStatementStrategy::parseOpen(ParserContext& context,
           state = 5;
           continue;
         } else {
-          context.error_message = "File number is missing in OPEN statement";
+          context.logger->error("File number is missing in OPEN statement");
           return false;
         }
       } break;
@@ -132,7 +134,7 @@ bool FileStatementStrategy::parseOpen(ParserContext& context,
           state = 6;
           continue;
         } else {
-          context.error_message = "LEN is missing in OPEN statement";
+          context.logger->error("LEN is missing in OPEN statement");
           return false;
         }
       } break;
@@ -146,7 +148,7 @@ bool FileStatementStrategy::parseOpen(ParserContext& context,
           state = 7;
           continue;
         } else {
-          context.error_message = "Record length is missing in OPEN statement";
+          context.logger->error("Record length is missing in OPEN statement");
           return false;
         }
       } break;
@@ -167,7 +169,7 @@ bool FileStatementStrategy::parseClose(ParserContext& context,
         if (next_lexeme->isSeparator("#")) {
           state = 1;
         } else {
-          context.error_message = "# is missing in CLOSE statement";
+          context.logger->error("# is missing in CLOSE statement");
           return false;
         }
 
@@ -177,7 +179,7 @@ bool FileStatementStrategy::parseClose(ParserContext& context,
         if (next_lexeme->isLiteralNumeric()) {
           context.pushActionFromLexeme(next_lexeme);
         } else {
-          context.error_message = "Invalid parameter in CLOSE statement";
+          context.logger->error("Invalid parameter in CLOSE statement");
           return false;
         }
 
@@ -187,7 +189,7 @@ bool FileStatementStrategy::parseClose(ParserContext& context,
         if (next_lexeme->isSeparator(",")) {
           state = 0;
         } else {
-          context.error_message = "Comma is missing in CLOSE statement";
+          context.logger->error("Comma is missing in CLOSE statement");
           return false;
         }
       } break;
@@ -212,7 +214,7 @@ bool FileStatementStrategy::parseMaxfiles(ParserContext& context,
         if (next_lexeme->isOperator("=")) {
           state = 1;
         } else {
-          context.error_message = "MAXFILES assignment is missing";
+          context.logger->error("MAXFILES assignment is missing");
           return false;
         }
       } break;

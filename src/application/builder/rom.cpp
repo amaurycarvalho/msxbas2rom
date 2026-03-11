@@ -18,14 +18,21 @@
 #include "build_options.h"
 #include "compiler.h"
 #include "header.h"
+#include "logger.h"
 #include "resource_manager.h"
 #include "start.h"
 
 //----------------------------------------------------------------------------------------------
 
-Rom::Rom() {}
+Rom::Rom() {
+  logger.reset(new Logger());
+}
 
-Rom::~Rom() {}
+Rom::~Rom() = default;
+
+Logger* Rom::getLogger() {
+  return logger.get();
+}
 
 bool Rom::build(Compiler* compiler) {
   float romSizeFloat;

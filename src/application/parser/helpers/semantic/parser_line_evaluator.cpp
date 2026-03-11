@@ -1,5 +1,7 @@
 #include "parser_line_evaluator.h"
 
+#include "logger.h"
+
 ParserLineEvaluator::ParserLineEvaluator(
     ParserContext& context, ParserStatementStrategyFactory& strategyFactory,
     ExpressionEvaluator& expressionEvaluator,
@@ -77,13 +79,13 @@ bool ParserLineEvaluator::evaluateLine(LexerLine* lexerLine) {
           if (lexeme->type == Lexeme::type_literal &&
               lexeme->subtype == Lexeme::subtype_string) {
             if (!includeLoader.load(lexeme)) {
-              ctx.error_message =
-                  "INCLUDE file not found or with content syntax error";
+              ctx.logger->error(
+                  "INCLUDE file not found or with content syntax error");
               return false;
             }
 
           } else {
-            ctx.error_message = "Invalid parameter in INCLUDE keyword";
+            ctx.logger->error("Invalid parameter in INCLUDE keyword");
             return false;
           }
         }
@@ -115,7 +117,7 @@ bool ParserLineEvaluator::evaluatePhrase(LexerLine* phrase) {
     }
   }
 
-  ctx.error_message = "Invalid keyword/identifier";
+  ctx.logger->error("Invalid keyword/identifier");
   return false;
 }
 
@@ -140,7 +142,7 @@ bool ParserLineEvaluator::evaluateStatement(LexerLine* statement) {
       result = strategy->execute(ctx, statement, lexeme);
       if (lexeme->value == "IF") return result;
     } else {
-      ctx.error_message = "Invalid keyword / identifier";
+      ctx.logger->error("Invalid keyword / identifier");
       result = false;
     }
 

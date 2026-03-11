@@ -1,9 +1,11 @@
 #include "graphics_statement_strategy.h"
 
 #include "generic_statement_strategy.h"
+#include "logger.h"
 #include "print_statement_strategy.h"
 
-bool GraphicsStatementStrategy::parsePset(ParserContext& context, LexerLine* statement) {
+bool GraphicsStatementStrategy::parsePset(ParserContext& context,
+                                          LexerLine* statement) {
   Lexeme* next_lexeme;
   ActionNode* action;
   LexerLine parm;
@@ -30,7 +32,7 @@ bool GraphicsStatementStrategy::parsePset(ParserContext& context, LexerLine* sta
         }
         continue;
       } else {
-        context.error_message = "PSET without a valid complement.";
+        context.logger->error("PSET without a valid complement");
         context.eval_expr_error = true;
         return false;
       }
@@ -59,7 +61,7 @@ bool GraphicsStatementStrategy::parsePset(ParserContext& context, LexerLine* sta
             parmCount++;
         } else {
           parmCount++;
-          next_lexeme = context.lex_null;
+          next_lexeme = context.lex_null.get();
           context.pushActionFromLexeme(next_lexeme);
         }
         continue;
@@ -81,7 +83,7 @@ bool GraphicsStatementStrategy::parsePset(ParserContext& context, LexerLine* sta
         if (operatorCode >= 0) {
           parmValue = to_string(operatorCode);
         } else {
-          context.error_message = "Invalid operator parameter in PSET statement.";
+          context.logger->error("Invalid operator parameter in PSET statement");
           context.eval_expr_error = true;
           return false;
         }
@@ -105,7 +107,8 @@ bool GraphicsStatementStrategy::parsePset(ParserContext& context, LexerLine* sta
   return true;
 }
 
-bool GraphicsStatementStrategy::parseLine(ParserContext& context, LexerLine* statement) {
+bool GraphicsStatementStrategy::parseLine(ParserContext& context,
+                                          LexerLine* statement) {
   Lexeme* next_lexeme;
   ActionNode* action;
   LexerLine parm;
@@ -153,7 +156,7 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context, LexerLine* sta
           startAsParm2 = true;
           continue;
         } else {
-          context.error_message = "LINE without a valid complement.";
+          context.logger->error("LINE without a valid complement");
           context.eval_expr_error = true;
           return false;
         }
@@ -167,7 +170,8 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context, LexerLine* sta
             sepCount--;
           else {
             if (sepTime) {
-              context.error_message = "Invalid parentheses syntax in LINE statement.";
+              context.logger->error(
+                  "Invalid parentheses syntax in LINE statement");
               context.eval_expr_error = true;
               return false;
             }
@@ -211,7 +215,8 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context, LexerLine* sta
               context.pushActionRoot(action);
             }
           } else {
-            context.error_message = "Invalid parentheses syntax in LINE statement.";
+            context.logger->error(
+                "Invalid parentheses syntax in LINE statement");
             context.eval_expr_error = true;
             return false;
           }
@@ -228,7 +233,8 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context, LexerLine* sta
             sepCount--;
           else {
             if (parmCount != 2 || mustPopAction) {
-              context.error_message = "Invalid parentheses syntax in LINE statement.";
+              context.logger->error(
+                  "Invalid parentheses syntax in LINE statement");
               context.eval_expr_error = true;
               return false;
             }
@@ -273,14 +279,14 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context, LexerLine* sta
             parm.clearLexemes();
 
           } else {
-            next_lexeme = context.lex_null;
+            next_lexeme = context.lex_null.get();
             context.pushActionFromLexeme(next_lexeme);
           }
 
           continue;
 
         } else if (mustPopAction) {
-          context.error_message = "Invalid syntax in LINE statement.";
+          context.logger->error("Invalid syntax in LINE statement");
           context.eval_expr_error = true;
           return false;
         }
@@ -316,7 +322,8 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context, LexerLine* sta
           if (operatorCode >= 0) {
             parmValue = to_string(operatorCode);
           } else {
-            context.error_message = "Invalid operator parameter in LINE statement.";
+            context.logger->error(
+                "Invalid operator parameter in LINE statement.");
             context.eval_expr_error = true;
             return false;
           }
@@ -341,7 +348,8 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context, LexerLine* sta
   return true;
 }
 
-bool GraphicsStatementStrategy::parseCircle(ParserContext& context, LexerLine* statement) {
+bool GraphicsStatementStrategy::parseCircle(ParserContext& context,
+                                            LexerLine* statement) {
   Lexeme* next_lexeme;
   ActionNode* action;
   LexerLine parm;
@@ -367,7 +375,7 @@ bool GraphicsStatementStrategy::parseCircle(ParserContext& context, LexerLine* s
         }
         continue;
       } else {
-        context.error_message = "CIRCLE without a valid complement.";
+        context.logger->error("CIRCLE without a valid complement");
         context.eval_expr_error = true;
         return false;
       }
@@ -396,7 +404,7 @@ bool GraphicsStatementStrategy::parseCircle(ParserContext& context, LexerLine* s
             parmCount++;
         } else {
           parmCount++;
-          next_lexeme = context.lex_null;
+          next_lexeme = context.lex_null.get();
           context.pushActionFromLexeme(next_lexeme);
         }
         continue;
@@ -417,7 +425,8 @@ bool GraphicsStatementStrategy::parseCircle(ParserContext& context, LexerLine* s
   return true;
 }
 
-bool GraphicsStatementStrategy::parsePaint(ParserContext& context, LexerLine* statement) {
+bool GraphicsStatementStrategy::parsePaint(ParserContext& context,
+                                           LexerLine* statement) {
   Lexeme* next_lexeme;
   ActionNode* action;
   LexerLine parm;
@@ -443,7 +452,7 @@ bool GraphicsStatementStrategy::parsePaint(ParserContext& context, LexerLine* st
         }
         continue;
       } else {
-        context.error_message = "PAINT without a valid complement.";
+        context.logger->error("PAINT without a valid complement.");
         context.eval_expr_error = true;
         return false;
       }
@@ -471,7 +480,7 @@ bool GraphicsStatementStrategy::parsePaint(ParserContext& context, LexerLine* st
           } else
             parmCount++;
         } else {
-          next_lexeme = context.lex_null;
+          next_lexeme = context.lex_null.get();
           context.pushActionFromLexeme(next_lexeme);
         }
         continue;
@@ -492,7 +501,8 @@ bool GraphicsStatementStrategy::parsePaint(ParserContext& context, LexerLine* st
   return true;
 }
 
-bool GraphicsStatementStrategy::parseCopy(ParserContext& context, LexerLine* statement) {
+bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
+                                          LexerLine* statement) {
   Lexeme* next_lexeme;
   ActionNode* action;
   LexerLine parm;
@@ -540,7 +550,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context, LexerLine* sta
               }
               parm.clearLexemes();
             } else {
-              next_lexeme = context.lex_null;
+              next_lexeme = context.lex_null.get();
               context.pushActionFromLexeme(next_lexeme);
             }
             context.popActionRoot();
@@ -555,7 +565,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context, LexerLine* sta
             }
             parm.clearLexemes();
           } else {
-            next_lexeme = context.lex_null;
+            next_lexeme = context.lex_null.get();
             context.pushActionFromLexeme(next_lexeme);
           }
           continue;
@@ -594,7 +604,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context, LexerLine* sta
               }
               parm.clearLexemes();
             } else {
-              next_lexeme = context.lex_null;
+              next_lexeme = context.lex_null.get();
               context.pushActionFromLexeme(next_lexeme);
             }
 
@@ -613,7 +623,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context, LexerLine* sta
             }
             parm.clearLexemes();
           } else {
-            next_lexeme = context.lex_null;
+            next_lexeme = context.lex_null.get();
             context.pushActionFromLexeme(next_lexeme);
           }
 
@@ -631,7 +641,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context, LexerLine* sta
             }
             parm.clearLexemes();
           } else {
-            next_lexeme = context.lex_null;
+            next_lexeme = context.lex_null.get();
             context.pushActionFromLexeme(next_lexeme);
           }
 
@@ -675,7 +685,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context, LexerLine* sta
               }
               parm.clearLexemes();
             } else {
-              next_lexeme = context.lex_null;
+              next_lexeme = context.lex_null.get();
               context.pushActionFromLexeme(next_lexeme);
             }
 
@@ -693,7 +703,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context, LexerLine* sta
             }
             parm.clearLexemes();
           } else {
-            next_lexeme = context.lex_null;
+            next_lexeme = context.lex_null.get();
             context.pushActionFromLexeme(next_lexeme);
           }
 
@@ -720,7 +730,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context, LexerLine* sta
             }
             parm.clearLexemes();
           } else {
-            next_lexeme = context.lex_null;
+            next_lexeme = context.lex_null.get();
             context.pushActionFromLexeme(next_lexeme);
           }
 
@@ -740,12 +750,12 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context, LexerLine* sta
             }
             parm.clearLexemes();
           } else {
-            next_lexeme = context.lex_null;
+            next_lexeme = context.lex_null.get();
             context.pushActionFromLexeme(next_lexeme);
           }
 
           if (parmCount == 0) {
-            context.pushActionFromLexeme(context.lex_null);
+            context.pushActionFromLexeme(context.lex_null.get());
           }
 
           parmCount++;
@@ -761,7 +771,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context, LexerLine* sta
             }
             parm.clearLexemes();
           } else {
-            next_lexeme = context.lex_null;
+            next_lexeme = context.lex_null.get();
             context.pushActionFromLexeme(next_lexeme);
           }
 
@@ -775,7 +785,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context, LexerLine* sta
           state = 2;
           continue;
         } else {
-          context.error_message = "Invalid syntax on COPY statement";
+          context.logger->error("Invalid syntax on COPY statement");
           return false;
         }
       } break;
@@ -798,7 +808,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context, LexerLine* sta
         if (operatorCode >= 0) {
           parmValue = to_string(operatorCode);
         } else {
-          context.error_message = "Invalid operator parameter in COPY statement.";
+          context.logger->error("Invalid operator parameter in COPY statement");
           context.eval_expr_error = true;
           return false;
         }
@@ -822,7 +832,8 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context, LexerLine* sta
   return true;
 }
 
-bool GraphicsStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+bool GraphicsStatementStrategy::execute(ParserContext& context,
+                                        LexerLine* statement, Lexeme* lexeme) {
   if (lexeme->value == "PSET" || lexeme->value == "PRESET")
     return parsePset(context, statement);
   if (lexeme->value == "LINE") return parseLine(context, statement);

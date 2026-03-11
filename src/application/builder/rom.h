@@ -12,12 +12,14 @@
 #ifndef ROM_H_INCLUDED
 #define ROM_H_INCLUDED
 
+#include <memory>
 #include <string>
 #include <vector>
 
 class Compiler;
 class BuildOptions;
 class ResourceManager;
+class Logger;
 
 using namespace std;
 
@@ -27,9 +29,10 @@ using namespace std;
  */
 class Rom {
  private:
-  Compiler *compiler;
-  BuildOptions *opts;
-  ResourceManager *resourceManager;
+  Compiler* compiler;
+  BuildOptions* opts;
+  ResourceManager* resourceManager;
+  unique_ptr<Logger> logger;
 
   int resourceAddress, resourceSegment;
 
@@ -69,12 +72,14 @@ class Rom {
   Rom();
   ~Rom();
 
+  Logger* getLogger();
+
   /***
    * @brief Creates a MSX BASIC ROM based on a compiled source code
    * @param compiler Compiled source code
    * @return True, if success
    */
-  bool build(Compiler *compiler);
+  bool build(Compiler* compiler);
 
   /***
    * @brief Print to the terminal the invalid source code

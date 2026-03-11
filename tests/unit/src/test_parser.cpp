@@ -12,6 +12,7 @@
 
 #include "doctest/doctest.h"
 #include "lexer.h"
+#include "logger.h"
 #include "parser.h"
 
 static std::string createTempBas(const std::string& filename,
@@ -49,8 +50,8 @@ static bool tagHasAction(const TagNode* tag, const std::string& value) {
 
 TEST_SUITE("Parser") {
   TEST_CASE("Builds tags from valid numbered statements") {
-    const std::string filename = createTempBas(
-        "parser_valid.bas", "10 LET A=1\n20 PRINT A\n30 END\n");
+    const std::string filename =
+        createTempBas("parser_valid.bas", "10 LET A=1\n20 PRINT A\n30 END\n");
 
     Lexer lexer;
     Parser parser;
@@ -64,8 +65,8 @@ TEST_SUITE("Parser") {
   }
 
   TEST_CASE("Rejects INCLUDE with non-string parameter") {
-    const std::string filename = createTempBas("parser_bad_include.bas",
-                                               "10 INCLUDE 123\n");
+    const std::string filename =
+        createTempBas("parser_bad_include.bas", "10 INCLUDE 123\n");
 
     Lexer lexer;
     Parser parser;
@@ -133,10 +134,10 @@ TEST_SUITE("Parser") {
   TEST_CASE("Loads INCLUDE directive with valid string parameter") {
     const std::string incFile =
         createTempBas("parser_include_child.bas", "10 PRINT \"X\"\n");
-    const std::string mainFile = createTempBas(
-        "parser_include_main.bas",
-        "INCLUDE \"tmp/parser_include_child.bas\"\n"
-                                   "10 END\n");
+    const std::string mainFile =
+        createTempBas("parser_include_main.bas",
+                      "INCLUDE \"tmp/parser_include_child.bas\"\n"
+                      "10 END\n");
 
     Lexer lexer;
     Parser parser;
@@ -160,8 +161,8 @@ TEST_SUITE("Parser") {
     REQUIRE(lexer.load(filename) == true);
     REQUIRE(lexer.evaluate() == true);
     CHECK(parser.evaluate(&lexer) == false);
-    CHECK(parser.errorToString().find("Invalid parameter in INCLUDE keyword") !=
-          std::string::npos);
+    CHECK(parser.getLogger()->errors().toString().find(
+              "Invalid parameter in INCLUDE keyword") != std::string::npos);
 
     std::remove(filename.c_str());
   }
@@ -176,15 +177,15 @@ TEST_SUITE("Parser") {
     REQUIRE(lexer.load(filename) == true);
     REQUIRE(lexer.evaluate() == true);
     CHECK(parser.evaluate(&lexer) == false);
-    CHECK(parser.errorToString().find("Invalid expression unary symbol") !=
-          std::string::npos);
+    CHECK(parser.getLogger()->errors().toString().find(
+              "Invalid expression unary symbol") != std::string::npos);
 
     std::remove(filename.c_str());
   }
 
   TEST_CASE("Handles LET implicit and explicit assignments") {
-    const std::string filename = createTempBas(
-        "parser_let.bas", "10 LET A=1\n20 B=2\n");
+    const std::string filename =
+        createTempBas("parser_let.bas", "10 LET A=1\n20 B=2\n");
 
     Lexer lexer;
     Parser parser;
@@ -203,8 +204,8 @@ TEST_SUITE("Parser") {
   }
 
   TEST_CASE("Applies DEFINT to symbol subtype") {
-    const std::string filename = createTempBas(
-        "parser_defint.bas", "10 DEFINT A\n20 A=1\n");
+    const std::string filename =
+        createTempBas("parser_defint.bas", "10 DEFINT A\n20 A=1\n");
 
     Lexer lexer;
     Parser parser;
@@ -230,15 +231,15 @@ TEST_SUITE("Parser") {
     REQUIRE(lexer.load(filename) == true);
     REQUIRE(lexer.evaluate() == true);
     CHECK(parser.evaluate(&lexer) == false);
-    CHECK(parser.errorToString().find("Invalid array declaration") !=
-          std::string::npos);
+    CHECK(parser.getLogger()->errors().toString().find(
+              "Invalid array declaration") != std::string::npos);
 
     std::remove(filename.c_str());
   }
 
   TEST_CASE("Parses DATA and IDATA statements") {
-    const std::string filename = createTempBas(
-        "parser_data.bas", "10 DATA 1,2,,&H0F\n20 IDATA &B10\n");
+    const std::string filename =
+        createTempBas("parser_data.bas", "10 DATA 1,2,,&H0F\n20 IDATA &B10\n");
 
     Lexer lexer;
     Parser parser;
@@ -282,8 +283,8 @@ TEST_SUITE("Parser") {
     REQUIRE(lexer.load(filename) == true);
     REQUIRE(lexer.evaluate() == true);
     CHECK(parser.evaluate(&lexer) == false);
-    CHECK(parser.errorToString().find("ELSE without a THEN/GOTO/GOSUB") !=
-          std::string::npos);
+    CHECK(parser.getLogger()->errors().toString().find(
+              "ELSE without a THEN/GOTO/GOSUB") != std::string::npos);
 
     std::remove(filename.c_str());
   }
@@ -303,9 +304,9 @@ TEST_SUITE("Parser") {
   }
 
   TEST_CASE("Parses PRINT USING and INPUT") {
-    const std::string filename = createTempBas(
-        "parser_print_input.bas",
-        "10 PRINT USING \"###\";A\n20 INPUT \"A?\";A\n");
+    const std::string filename =
+        createTempBas("parser_print_input.bas",
+                      "10 PRINT USING \"###\";A\n20 INPUT \"A?\";A\n");
 
     Lexer lexer;
     Parser parser;
@@ -321,10 +322,10 @@ TEST_SUITE("Parser") {
     const std::string okFile = createTempBas(
         "parser_open_ok.bas",
         "10 OPEN \"A\" FOR INPUT AS #1 LEN 1\n20 CLOSE #1\n30 MAXFILES=5\n");
-    const std::string badOpen = createTempBas(
-        "parser_open_bad.bas", "10 OPEN \"A\" INPUT\n");
-    const std::string badClose = createTempBas(
-        "parser_close_bad.bas", "10 CLOSE 1\n");
+    const std::string badOpen =
+        createTempBas("parser_open_bad.bas", "10 OPEN \"A\" INPUT\n");
+    const std::string badClose =
+        createTempBas("parser_close_bad.bas", "10 CLOSE 1\n");
 
     Lexer lexer;
     Parser parser;
@@ -336,14 +337,14 @@ TEST_SUITE("Parser") {
     REQUIRE(lexer.load(badOpen) == true);
     REQUIRE(lexer.evaluate() == true);
     CHECK(parser.evaluate(&lexer) == false);
-    CHECK(parser.errorToString().find("FOR/AS is missing in OPEN statement") !=
-          std::string::npos);
+    CHECK(parser.getLogger()->errors().toString().find(
+              "FOR/AS is missing in OPEN statement") != std::string::npos);
 
     REQUIRE(lexer.load(badClose) == true);
     REQUIRE(lexer.evaluate() == true);
     CHECK(parser.evaluate(&lexer) == false);
-    CHECK(parser.errorToString().find("# is missing in CLOSE statement") !=
-          std::string::npos);
+    CHECK(parser.getLogger()->errors().toString().find(
+              "# is missing in CLOSE statement") != std::string::npos);
 
     std::remove(okFile.c_str());
     std::remove(badOpen.c_str());

@@ -24,9 +24,10 @@
 #include "compiler_hooks.h"
 #include "compiler_start_statement_strategy.h"
 #include "compiler_symbol_resolver.h"
+#include "logger.h"
 #include "resources.h"
-#include "symbol_node.h"
 #include "symbol_manager.h"
+#include "symbol_node.h"
 #include "tag_node.h"
 
 /***
@@ -70,6 +71,10 @@ bool Compiler::getFont() const {
 
 bool Compiler::getHasTinySprite() const {
   return context->has_tiny_sprite;
+}
+
+Logger* Compiler::getLogger() {
+  return context->logger.get();
 }
 
 SymbolManager* Compiler::getSymbolManager() {

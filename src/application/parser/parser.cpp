@@ -11,6 +11,8 @@
 
 #include "parser.h"
 
+#include "logger.h"
+
 /***
  * @name Parser class code
  */
@@ -22,7 +24,7 @@ Parser::Parser()
       lexer(nullptr),
       opts(nullptr) {}
 
-Parser::~Parser() {}
+Parser::~Parser() = default;
 
 bool Parser::evaluate(Lexer* lexer) {
   int i, t = lexer->lines.size();
@@ -30,64 +32,112 @@ bool Parser::evaluate(Lexer* lexer) {
 
   this->lexer = lexer;
   this->opts = lexer->opts;
+
+  ctx.logger->setFile(opts->inputFilename);
+
+  ctx.logger->debug("Displaying syntactic analysis:");
+
   ctx.reset();
 
   for (i = 0, ctx.lineNo = 1; i < t; i++, ctx.lineNo++) {
+    ctx.logger->setLineNumber(ctx.lineNo);
     lexerLine = lexer->lines[i];
-    // if(opts->debug) {
-    // printf("%s\n",lexerLine->line.c_str());
-    // }
     if (lexerLine->getLexemeCount() > 0) {
       ctx.line_comment = false;
-      if (!lineEval.evaluateLine(lexerLine)) return false;
+      if (!lineEval.evaluateLine(lexerLine)) {
+        if (ctx.logger->empty()) {
+          ctx.logger->error("Syntactic error");
+        }
+        ctx.logger->info(lexerLine->toString());
+        return false;
+      }
+      if (!ctx.tags.empty()) {
+        ctx.logger->debug(lexerLine->line + ctx.tags.back()->toString());
+      }
     }
   }
 
   return true;
 }
 
-int Parser::getLineNo() const { return ctx.lineNo; }
+Logger* Parser::getLogger() {
+  return ctx.logger.get();
+}
 
-vector<TagNode*>& Parser::getTags() { return ctx.tags; }
-const vector<TagNode*>& Parser::getTags() const { return ctx.tags; }
+int Parser::getLineNumber() const {
+  return ctx.lineNo;
+}
 
-vector<Lexeme*>& Parser::getSymbolList() { return ctx.symbolList; }
-const vector<Lexeme*>& Parser::getSymbolList() const { return ctx.symbolList; }
+vector<TagNode*>& Parser::getTags() {
+  return ctx.tags;
+}
+const vector<TagNode*>& Parser::getTags() const {
+  return ctx.tags;
+}
 
-vector<Lexeme*>& Parser::getDatas() { return ctx.datas; }
-const vector<Lexeme*>& Parser::getDatas() const { return ctx.datas; }
+vector<Lexeme*>& Parser::getSymbolList() {
+  return ctx.symbolList;
+}
+const vector<Lexeme*>& Parser::getSymbolList() const {
+  return ctx.symbolList;
+}
 
-bool Parser::getHasTraps() const { return ctx.has_traps; }
-bool Parser::getHasDefusr() const { return ctx.has_defusr; }
-bool Parser::getHasData() const { return ctx.has_data; }
-bool Parser::getHasIData() const { return ctx.has_idata; }
-bool Parser::getHasPlay() const { return ctx.has_play; }
-bool Parser::getHasInput() const { return ctx.has_input; }
-bool Parser::getHasFont() const { return ctx.has_font; }
-bool Parser::getHasMtf() const { return ctx.has_mtf; }
-bool Parser::getHasPt3() const { return ctx.has_pt3; }
-bool Parser::getHasAkm() const { return ctx.has_akm; }
-bool Parser::getHasResourceRestore() const { return ctx.has_resource_restore; }
+vector<Lexeme*>& Parser::getDatas() {
+  return ctx.datas;
+}
+const vector<Lexeme*>& Parser::getDatas() const {
+  return ctx.datas;
+}
 
-int Parser::getResourceCount() const { return ctx.resourceCount; }
+bool Parser::getHasTraps() const {
+  return ctx.has_traps;
+}
+bool Parser::getHasDefusr() const {
+  return ctx.has_defusr;
+}
+bool Parser::getHasData() const {
+  return ctx.has_data;
+}
+bool Parser::getHasIData() const {
+  return ctx.has_idata;
+}
+bool Parser::getHasPlay() const {
+  return ctx.has_play;
+}
+bool Parser::getHasInput() const {
+  return ctx.has_input;
+}
+bool Parser::getHasFont() const {
+  return ctx.has_font;
+}
+bool Parser::getHasMtf() const {
+  return ctx.has_mtf;
+}
+bool Parser::getHasPt3() const {
+  return ctx.has_pt3;
+}
+bool Parser::getHasAkm() const {
+  return ctx.has_akm;
+}
+bool Parser::getHasResourceRestore() const {
+  return ctx.has_resource_restore;
+}
 
-Lexer* Parser::getLexer() const { return lexer; }
-BuildOptions* Parser::getOpts() const { return opts; }
+int Parser::getResourceCount() const {
+  return ctx.resourceCount;
+}
+
+Lexer* Parser::getLexer() const {
+  return lexer;
+}
+BuildOptions* Parser::getOpts() const {
+  return opts;
+}
 
 string Parser::toString() {
   string out;
   for (unsigned int i = 0; i < ctx.tags.size(); i++) {
     if (ctx.tags[i]) out += ctx.tags[i]->toString();
-  }
-  return out;
-}
-
-string Parser::errorToString() {
-  string out;
-  if (ctx.error_line) out += ctx.error_line->toString();
-  if (ctx.error_message.size() > 0) {
-    out += ctx.error_message;
-    out += "\n";
   }
   return out;
 }

@@ -33,6 +33,7 @@ class SymbolManager;
 class ResourceManager;
 class BuildOptions;
 class TagNode;
+class Logger;
 
 using namespace std;
 
@@ -64,6 +65,7 @@ class Compiler {
   bool getAkm() const;
   bool getFont() const;
   bool getHasTinySprite() const;
+  Logger* getLogger();
 
   SymbolManager* getSymbolManager();
   const SymbolManager* getSymbolManager() const;

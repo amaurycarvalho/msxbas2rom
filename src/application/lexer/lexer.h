@@ -24,16 +24,20 @@ using namespace std;
  * @brief Lexer class specialized as a MSX BASIC lexical analyzer
  */
 class Lexer {
+ private:
+  unique_ptr<Logger> logger;
+
  public:
   vector<LexerLine*> lines;
   BuildOptions* opts;
-  unique_ptr<Logger> logger;
 
   void clear();
   bool load(string filename);
   bool load(BuildOptions* opts);
   bool evaluate();
   string toString();
+
+  Logger* getLogger();
 
   Lexer();
   ~Lexer();

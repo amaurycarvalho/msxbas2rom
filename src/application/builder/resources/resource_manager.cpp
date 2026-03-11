@@ -7,18 +7,26 @@
 
 #include "resource_manager.h"
 
+#include <string.h>
+
 #include <algorithm>
 #include <iomanip>
 #include <memory>
 #include <sstream>
-#include <string.h>
 #include <utility>
 
 #include "fswrapper.h"
+#include "logger.h"
 #include "resource_data_reader.h"
 #include "resource_factory.h"
 #include "resource_idata_reader.h"
 #include "resource_string_reader.h"
+
+ResourceManager::ResourceManager() {
+  logger.reset(new Logger());
+}
+
+ResourceManager::~ResourceManager() = default;
 
 void ResourceManager::clear() {
   resources.clear();
@@ -62,16 +70,16 @@ void ResourceManager::addText(string text) {
   resources.emplace_back(new ResourceStringReader(text));
 }
 
-void ResourceManager::addDataResource(Parser *parser) {
+void ResourceManager::addDataResource(Parser* parser) {
   resources.emplace_back(new ResourceDataReader(parser));
 }
 
-void ResourceManager::addIDataResource(Parser *parser) {
+void ResourceManager::addIDataResource(Parser* parser) {
   resources.emplace_back(new ResourceIDataReader(parser));
 }
 
 bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
-  ResourceReader *resourceReader;
+  ResourceReader* resourceReader;
   int mapAddress = 0x0010;
   int mapSize = mapAddress + 2 + resources.size() * 5;
   int resourceItemIndex, resourceItemCount, resourceItemSize;
@@ -80,7 +88,7 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
   int resourceBlockIndex, resourceBlockCount, resourceBlockSize;
   int resourceBlockOffset, resourceBlockNextAddress;
   int copyIndex;
-  vector<unsigned char *> copyFrom, copyTo;
+  vector<unsigned char*> copyFrom, copyTo;
   vector<int> copySize;
 
   resourcesUnpackedSize = mapSize;  //! include resource map size

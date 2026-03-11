@@ -74,7 +74,7 @@ TEST_SUITE("Lexer") {
 
     Lexer lexer;
     CHECK(lexer.load(filename) == false);
-    CHECK(lexer.logger->errors().toString().find("Empty file") !=
+    CHECK(lexer.getLogger()->errors().toString().find("Empty file") !=
           std::string::npos);
 
     std::remove(filename.c_str());
@@ -83,7 +83,7 @@ TEST_SUITE("Lexer") {
   TEST_CASE("Fails when input file does not exist") {
     Lexer lexer;
     CHECK(lexer.load("tmp/does_not_exist.bas") == false);
-    CHECK(lexer.logger->errors().toString().find("File doesn't exist") !=
+    CHECK(lexer.getLogger()->errors().toString().find("File doesn't exist") !=
           std::string::npos);
   }
 
@@ -96,7 +96,7 @@ TEST_SUITE("Lexer") {
 
     Lexer lexer;
     CHECK(lexer.load(filename) == false);
-    CHECK(lexer.logger->errors().toString().find("Tokenized MSX BASIC") !=
+    CHECK(lexer.getLogger()->errors().toString().find("Tokenized MSX BASIC") !=
           std::string::npos);
 
     std::remove(filename.c_str());
@@ -108,7 +108,7 @@ TEST_SUITE("Lexer") {
 
     Lexer lexer;
     CHECK(lexer.load(filename) == false);
-    CHECK(lexer.logger->errors().toString().find("not a MSX BASIC") !=
+    CHECK(lexer.getLogger()->errors().toString().find("not a MSX BASIC") !=
           std::string::npos);
 
     std::remove(filename.c_str());
@@ -121,9 +121,10 @@ TEST_SUITE("Lexer") {
     Lexer lexer;
     REQUIRE(lexer.load(filename) == true);
     CHECK(lexer.evaluate() == false);
-    CHECK(lexer.logger->containErrors());
-    CHECK(lexer.logger->errors().toString().find("1..2") != std::string::npos);
-    CHECK(lexer.logger->errors().toString().find("10 A=1..2") !=
+    CHECK(lexer.getLogger()->containErrors());
+    CHECK(lexer.getLogger()->errors().toString().find("1..2") !=
+          std::string::npos);
+    CHECK(lexer.getLogger()->errors().toString().find("10 A=1..2") !=
           std::string::npos);
 
     std::remove(filename.c_str());

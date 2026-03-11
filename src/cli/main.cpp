@@ -51,6 +51,7 @@ int main(int argc, char* argv[]) {
   unique_ptr<Parser> parser;
   unique_ptr<Compiler> compiler;
   unique_ptr<ICpuOpcodeWriter> cpu;
+  Logger* logger;
   bool retriedWithAscii8 = false;
 
   /// parsing parameters
@@ -144,40 +145,41 @@ int main(int argc, char* argv[]) {
     /// LEXICAL ANALYSIS
     //! @note lexing the input file, tokenizing it
 
-    lexer->logger->info("(1) Doing lexical analysis...");
+    logger = lexer->getLogger();
+
+    logger->info("(1) Doing lexical analysis...");
 
     if (!lexer->load(&opts)) {
-      lexer->logger->error("Cannot load input file for lexical analysis");
-      print(lexer->logger->errors().toString());
+      logger->error("Cannot load input file for lexical analysis");
+      print(logger->trace().toString());
       return 1;
     }
 
     if (!lexer->evaluate()) {
-      print(lexer->logger->errors().toString());
+      print(logger->trace().toString());
       return 1;
     }
 
-    print(lexer->logger->filter(logLevels).toString());
+    print(logger->filter(logLevels).toString());
 
     /// SYNTACTIC ANALYSIS
     //! @note parsing the lexing tokens, building the syntax tree
 
-    if (!opts.quiet) printf("(2) Doing syntactic analysis...\n");
+    logger = parser->getLogger();
+
+    logger->info("(2) Doing syntactic analysis...");
 
     if (!parser->evaluate(lexer.get())) {
-      if (parser->getLineNo() == 0)
-        printf("ERROR: Cannot build the symbol tree\n");
-      else {
-        printf("%s", parser->errorToString().c_str());
-        printf("ERROR: Syntax error at line %i\n", parser->getLineNo());
+      if (!parser->getLineNumber()) {
+        logger->error("Is the file empty?");
+      } else if (logger->errors().empty()) {
+        logger->error("Unknown error");
       }
+      print(logger->trace().toString());
       return 1;
     }
 
-    if (opts.debug) {
-      printf("Displaying syntactic analysis:\n");
-      printf("%s", parser->toString().c_str());
-    }
+    print(logger->filter(logLevels).toString());
 
     /// SEMANTIC ANALYSIS
     //! @note create assembly output

@@ -10,9 +10,13 @@ bool Logger::empty() const {
   return logs.empty();
 }
 
-Logger::LogEntry& Logger::add(LogLevel level, const string& msg) {
-  if (trim(msg).empty()) return dummy;
-  logs.push_back({level, msg});
+int Logger::size() const {
+  return logs.size();
+}
+
+Logger::LogEntry& Logger::add(LogLevel severity, const string& message) {
+  if (trim(message).empty()) return dummy;
+  logs.push_back({severity, message});
   return logs.back();
 }
 
@@ -55,6 +59,30 @@ Logger Logger::errors() const {
   return filter({LogLevel::ERROR});
 }
 
+Logger Logger::infos() const {
+  return filter({LogLevel::INFO});
+}
+
+Logger Logger::trace() const {
+  return filter({LogLevel::INFO, LogLevel::ERROR});
+}
+
+void Logger::setFile(string file) {
+  this->file = file;
+}
+
+string Logger::getFile() {
+  return file;
+}
+
+void Logger::setLineNumber(int lineNumber) {
+  this->lineNumber = lineNumber;
+}
+
+int Logger::getLineNumber() {
+  return lineNumber;
+}
+
 string Logger::toString() const {
   string result = "";
 
@@ -78,7 +106,10 @@ Logger::LogEntry& Logger::debug(const string& msg) {
 }
 
 Logger::LogEntry& Logger::error(const string& msg) {
-  return add(LogLevel::ERROR, msg);
+  auto& entry = add(LogLevel::ERROR, msg);
+  entry.file = file;
+  entry.line = lineNumber;
+  return entry;
 }
 
 vector<Logger::LogEntry>& Logger::getAll() {

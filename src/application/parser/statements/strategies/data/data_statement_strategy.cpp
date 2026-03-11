@@ -1,10 +1,10 @@
 #include "data_statement_strategy.h"
 
 #include "lexer.h"
+#include "logger.h"
 
 bool DataStatementStrategy::parseData(ParserContext& context,
-                                      LexerLine* statement,
-                                      bool isBinaryData) {
+                                      LexerLine* statement, bool isBinaryData) {
   Lexeme *next_lexeme, *lexeme;
   Lexeme::LexemeSubType subtype;
   string stext = "", sname;
@@ -68,7 +68,7 @@ bool DataStatementStrategy::parseData(ParserContext& context,
         stext = "";
 
       } else {
-        context.error_message = "Invalid DATA parameter type";
+        context.logger->error("Invalid DATA parameter type");
         return false;
       }
 
@@ -127,7 +127,8 @@ bool DataStatementStrategy::parseData(ParserContext& context,
   return true;
 }
 
-bool DataStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+bool DataStatementStrategy::execute(ParserContext& context,
+                                    LexerLine* statement, Lexeme* lexeme) {
   (void)lexeme;
   return parseData(context, statement, false);
 }
