@@ -18,33 +18,40 @@ class Logger {
     string levelToString(LogLevel level) const;
 
    public:
-    LogLevel level;
+    LogLevel severity;
     string message;
+    string file;
+    int line;
+    int column;
+    int code;
 
     string toString() const;
   };
 
  private:
   vector<LogEntry> logs;
+  LogEntry dummy;
 
-  void add(LogLevel level, const string& msg);
+  LogEntry& add(LogLevel level, const string& msg);
+  string trim(const string& str) const;
 
  public:
   void clear();
   bool empty() const;
 
-  void info(const string& msg);
-  void warning(const string& msg);
-  void debug(const string& msg);
-  void error(const string& msg);
+  LogEntry& info(const string& msg);
+  LogEntry& warning(const string& msg);
+  LogEntry& debug(const string& msg);
+  LogEntry& error(const string& msg);
 
-  void add(LogEntry entry);
+  LogEntry& add(LogEntry entry);
 
   bool contain(const set<LogLevel>& levels) const;
   bool containWarnings() const;
   bool containErrors() const;
 
-  string toString();
+  string toString() const;
+  Logger errors() const;
 
   vector<LogEntry>& getAll();
 

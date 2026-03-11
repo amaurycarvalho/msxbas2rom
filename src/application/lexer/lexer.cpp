@@ -8,22 +8,26 @@
 
 #include "lexer.h"
 
+#include <stdio.h>
+
+#include <cstring>
+
 #include "build_options.h"
 #include "lexer_line.h"
-
-#include <stdio.h>
-#include <string.h>
+#include "logger.h"
 
 /***
  * @name Lexer class functions
  */
 
 Lexer::Lexer() {
+  logger.reset(new Logger());
   clear();
 }
 
+Lexer::~Lexer() = default;
+
 void Lexer::clear() {
-  errorMessage = "";
   lines.clear();
 }
 
@@ -48,7 +52,7 @@ bool Lexer::load(BuildOptions* opts) {
     fclose(file);
 
     if (bytes == 0) {
-      errorMessage = "Empty file";
+      logger->error("Empty file");
       return false;
     }
     if (header[0] < 0x20 || header[0] > 126) {
@@ -58,16 +62,16 @@ bool Lexer::load(BuildOptions* opts) {
                  "plain text to use it "
                  "with MSXBAS2ROM:\nSAVE \"%s\",A",
                  opts->inputFilename.c_str());
-        errorMessage = line;
+        logger->error(line);
         return false;
       } else if (header[0] != 0x0D && header[0] != 0x0A &&
                  header[0] != 0x0C) {  // CR LF FF
-        errorMessage = "This is not a MSX BASIC source code file.";
+        logger->error("This is not a MSX BASIC source code file.");
         return false;
       }
     }
   } else {
-    errorMessage = "File doesn't exist";
+    logger->error("File doesn't exist");
     return false;
   }
 
@@ -80,7 +84,7 @@ bool Lexer::load(BuildOptions* opts) {
 
     fclose(file);
   } else {
-    errorMessage = "File doesn't exist";
+    logger->error("File doesn't exist");
     return false;
   }
 
@@ -89,14 +93,25 @@ bool Lexer::load(BuildOptions* opts) {
 
 bool Lexer::evaluate() {
   LexerLine* lexerLine;
+  logger->debug("Displaying lexical analysis:");
   for (unsigned int i = 0; i < lines.size(); i++) {
+    int lineNumber = i + 1;
     lexerLine = lines[i];
-    if (lexerLine)
+    if (lexerLine) {
       if (!lexerLine->evaluate()) {
-        lineNo = i + 1;
-        errorMessage = lexerLine->line;
+        auto& entry = logger->error("Lexical error");
+        entry.file = opts->inputFilename;
+        entry.line = lineNumber;
+
+        logger->error(lexerLine->toString());
         return false;
       }
+      logger->debug(lexerLine->toString());
+    } else {
+      logger->error("Lexical error at line " + to_string(lineNumber)).line =
+          lineNumber;
+      logger->error("Cannot evaluate a null line");
+    }
   }
   return true;
 }
@@ -108,12 +123,5 @@ string Lexer::toString() {
     lexerLine = lines[i];
     if (lexerLine) out += lexerLine->toString();
   }
-  return out;
-}
-
-string Lexer::errorToString() {
-  string out;
-  LexerLine* lexerLine = lines[lineNo - 1];
-  if (lexerLine) out = lexerLine->toString();
   return out;
 }

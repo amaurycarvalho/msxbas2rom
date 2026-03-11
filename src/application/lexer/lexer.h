@@ -9,11 +9,13 @@
 #ifndef LEX_H_INCLUDED
 #define LEX_H_INCLUDED
 
+#include <memory>
 #include <string>
 #include <vector>
 
 class LexerLine;
 class BuildOptions;
+class Logger;
 
 using namespace std;
 
@@ -23,19 +25,18 @@ using namespace std;
  */
 class Lexer {
  public:
-  int lineNo = 0;
   vector<LexerLine*> lines;
-  string errorMessage;
   BuildOptions* opts;
+  unique_ptr<Logger> logger;
 
   void clear();
   bool load(string filename);
   bool load(BuildOptions* opts);
   bool evaluate();
   string toString();
-  string errorToString();
 
   Lexer();
+  ~Lexer();
 };
 
 #endif  // LEX_H_INCLUDED

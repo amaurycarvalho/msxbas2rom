@@ -28,8 +28,6 @@ static int COMPILE(string filename, bool megarom = false) {
   Compiler compiler(&cpuOpcodeWriter);
   BuildOptions opts;
 
-  REQUIRE(lexer.lineNo == 0);
-
   // build options
   opts.setInputFilename(filename);
   opts.megaROM = megarom;

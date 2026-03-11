@@ -41,6 +41,9 @@
  */
 int main(int argc, char* argv[]);
 
+//! @brief Print a message to console
+void print(string msg);
+
 //! @brief Print header
 void printHeader();
 

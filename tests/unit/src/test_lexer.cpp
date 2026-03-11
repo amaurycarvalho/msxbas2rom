@@ -14,6 +14,7 @@
 #include "lexeme.h"
 #include "lexer.h"
 #include "lexer_line.h"
+#include "logger.h"
 
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {
@@ -73,7 +74,8 @@ TEST_SUITE("Lexer") {
 
     Lexer lexer;
     CHECK(lexer.load(filename) == false);
-    CHECK(lexer.errorMessage.find("Empty file") != std::string::npos);
+    CHECK(lexer.logger->errors().toString().find("Empty file") !=
+          std::string::npos);
 
     std::remove(filename.c_str());
   }
@@ -81,7 +83,8 @@ TEST_SUITE("Lexer") {
   TEST_CASE("Fails when input file does not exist") {
     Lexer lexer;
     CHECK(lexer.load("tmp/does_not_exist.bas") == false);
-    CHECK(lexer.errorMessage.find("File doesn't exist") != std::string::npos);
+    CHECK(lexer.logger->errors().toString().find("File doesn't exist") !=
+          std::string::npos);
   }
 
   TEST_CASE("Fails for tokenized MSX BASIC input") {
@@ -93,7 +96,8 @@ TEST_SUITE("Lexer") {
 
     Lexer lexer;
     CHECK(lexer.load(filename) == false);
-    CHECK(lexer.errorMessage.find("Tokenized MSX BASIC") != std::string::npos);
+    CHECK(lexer.logger->errors().toString().find("Tokenized MSX BASIC") !=
+          std::string::npos);
 
     std::remove(filename.c_str());
   }
@@ -104,7 +108,8 @@ TEST_SUITE("Lexer") {
 
     Lexer lexer;
     CHECK(lexer.load(filename) == false);
-    CHECK(lexer.errorMessage.find("not a MSX BASIC") != std::string::npos);
+    CHECK(lexer.logger->errors().toString().find("not a MSX BASIC") !=
+          std::string::npos);
 
     std::remove(filename.c_str());
   }
@@ -116,17 +121,17 @@ TEST_SUITE("Lexer") {
     Lexer lexer;
     REQUIRE(lexer.load(filename) == true);
     CHECK(lexer.evaluate() == false);
-    CHECK(lexer.lineNo == 1);
-    CHECK(lexer.errorMessage.find("1..2") != std::string::npos);
-    CHECK(lexer.errorToString().find("10 A=1..2") != std::string::npos);
+    CHECK(lexer.logger->containErrors());
+    CHECK(lexer.logger->errors().toString().find("1..2") != std::string::npos);
+    CHECK(lexer.logger->errors().toString().find("10 A=1..2") !=
+          std::string::npos);
 
     std::remove(filename.c_str());
   }
 
   TEST_CASE("Classifies numeric literal subtypes and separators") {
     const std::string filename = createTempBas(
-        "lexer_numeric_ranges.bas",
-        "10 A=32767:B=32768:C=123456:D=1234567\n");
+        "lexer_numeric_ranges.bas", "10 A=32767:B=32768:C=123456:D=1234567\n");
 
     Lexer lexer;
     REQUIRE(lexer.load(filename) == true);
@@ -158,9 +163,8 @@ TEST_SUITE("Lexer") {
   }
 
   TEST_CASE("Tokenizes hex literals, identifiers, operators and functions") {
-    const std::string filename = createTempBas(
-        "lexer_hex_and_functions.bas",
-        "10 A=&HFF:PRINT TIME\n");
+    const std::string filename =
+        createTempBas("lexer_hex_and_functions.bas", "10 A=&HFF:PRINT TIME\n");
 
     Lexer lexer;
     REQUIRE(lexer.load(filename) == true);

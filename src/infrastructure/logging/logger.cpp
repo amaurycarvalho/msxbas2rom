@@ -1,6 +1,6 @@
 #include "logger.h"
 
-#include <sstream>
+#include <algorithm>
 
 void Logger::clear() {
   logs.clear();
@@ -10,17 +10,33 @@ bool Logger::empty() const {
   return logs.empty();
 }
 
-void Logger::add(LogLevel level, const string& msg) {
+Logger::LogEntry& Logger::add(LogLevel level, const string& msg) {
+  if (trim(msg).empty()) return dummy;
   logs.push_back({level, msg});
+  return logs.back();
 }
 
-void Logger::add(LogEntry entry) {
+Logger::LogEntry& Logger::add(LogEntry entry) {
   logs.push_back(entry);
+  return logs.back();
+}
+
+string Logger::trim(const string& str) const {
+  auto start = find_if_not(str.begin(), str.end(),
+                           [](unsigned char c) { return isspace(c); });
+
+  auto end = find_if_not(str.rbegin(), str.rend(), [](unsigned char c) {
+               return isspace(c);
+             }).base();
+
+  if (start >= end) return "";
+
+  return string(start, end);
 }
 
 bool Logger::contain(const set<LogLevel>& levels) const {
   for (const auto& log : logs) {
-    if (levels.count(log.level) > 0) {
+    if (levels.count(log.severity) > 0) {
       return true;
     }
   }
@@ -35,7 +51,11 @@ bool Logger::containErrors() const {
   return contain({LogLevel::ERROR});
 }
 
-string Logger::toString() {
+Logger Logger::errors() const {
+  return filter({LogLevel::ERROR});
+}
+
+string Logger::toString() const {
   string result = "";
 
   for (const auto& log : logs) {
@@ -45,20 +65,20 @@ string Logger::toString() {
   return result;
 }
 
-void Logger::info(const string& msg) {
-  add(LogLevel::INFO, msg);
+Logger::LogEntry& Logger::info(const string& msg) {
+  return add(LogLevel::INFO, msg);
 }
 
-void Logger::warning(const string& msg) {
-  add(LogLevel::WARNING, msg);
+Logger::LogEntry& Logger::warning(const string& msg) {
+  return add(LogLevel::WARNING, msg);
 }
 
-void Logger::debug(const string& msg) {
-  add(LogLevel::DEBUG, msg);
+Logger::LogEntry& Logger::debug(const string& msg) {
+  return add(LogLevel::DEBUG, msg);
 }
 
-void Logger::error(const string& msg) {
-  add(LogLevel::ERROR, msg);
+Logger::LogEntry& Logger::error(const string& msg) {
+  return add(LogLevel::ERROR, msg);
 }
 
 vector<Logger::LogEntry>& Logger::getAll() {
@@ -69,7 +89,7 @@ Logger Logger::filter(const set<LogLevel>& levels) const {
   Logger result;
 
   for (const auto& log : logs) {
-    if (levels.count(log.level)) {
+    if (levels.count(log.severity)) {
       result.add(log);
     }
   }
@@ -93,11 +113,13 @@ string Logger::LogEntry::levelToString(LogLevel level) const {
 }
 
 string Logger::LogEntry::format(const LogEntry& entry) const {
-  ostringstream oss;
-
-  oss << "[" << levelToString(entry.level) << "] " << entry.message;
-
-  return oss.str();
+  if (entry.severity == LogLevel::INFO) {
+    return entry.message;
+  } else if (!entry.file.empty()) {
+    return entry.file + ":" + to_string(entry.line) + ": " +
+           levelToString(entry.severity) + ": " + entry.message;
+  }
+  return levelToString(entry.severity) + ": " + entry.message;
 }
 
 string Logger::LogEntry::toString() const {

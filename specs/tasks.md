@@ -27,11 +27,11 @@
 - [x] Inspect application/compiler searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
 - [x] Inspect application/builder searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
 - [x] Inspect domain/ searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
-- [ ] Inspect application/compiler/statements/strategies/io/cmd/handlers and implement at least two unit testing per handler (ex: factoring and executing), propose a plan to implement them step by step and ask for approval;
-- [ ] Inspect application/compiler/statements and implement at least two unit testing per strategy (ex: factoring and executing), propose a plan to implement them step by step and ask for approval;
-- [ ] Inspect application/compiler/functions and implement at least two unit testing per strategy (ex: factoring and executing), propose a plan to implement them step by step and ask for approval;
-- [ ] Inspect application/parser/statements and implement at least two unit testing per strategy (ex: factoring and executing), propose a plan to implement them step by step and ask for approval;
-- [ ] Inspect application, domain and infrastructure searching for `printf`, debug, info, warnings and error messages. Next, propose a plan to refactor it step by step applying an appropriate logging engine to them (logging to be showed on console by cli only) and ask for approval;
+- [ ] Inspect application/compiler/statements/strategies/io/cmd/handlers and implement at least two unit testing per handler (factored and executed successfully), propose a plan to implement them step by step and ask for approval;
+- [ ] Inspect application/compiler/statements and implement at least two unit testing per strategy (factored and executed successfully), propose a plan to implement them step by step and ask for approval;
+- [ ] Inspect application/compiler/functions and implement at least two unit testing per strategy (factored and executed successfully), propose a plan to implement them step by step and ask for approval;
+- [ ] Inspect application/parser/statements and implement at least two unit testing per strategy (factored and executed successfully), propose a plan to implement them step by step and ask for approval;
+- [ ] Inspect application, domain and infrastructure searching for `printf`, debug, info, warnings and error messages. Next, propose a plan to refactor it step by step applying Logger class (similar to Lexer) and ask for approval;
 - [ ] Inspect application, cli and infrastructure searching for any code access to the file system. Next, propose a plan to refactor it step by step applying an appropriate file system helper respecting clean archictecture and paying attention to the file access pecularities used by each original code in the codebase. Finally, ask for approval;
 - [ ] Propose a plan to refactor step by step application/ implementing `unique_ptr` (or similar solutions for C++11) on object allocations to avoid memory leaks and ask for approval;
 - [ ] Inspect src/application/lexer searching for opportunities to apply or implement the Iterator pattern. If found, propose a plan to refactor it step by step and ask for approval;

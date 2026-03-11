@@ -35,6 +35,9 @@
 #endif
 #include <math.h>
 
+#include <set>
+
+#include "logger.h"
 #include "main.h"
 #include "z80.h"
 
@@ -42,6 +45,7 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
   BuildOptionsSetup opts;
+  set<Logger::LogLevel> logLevels = {Logger::LogLevel::ERROR};
   unique_ptr<Lexer> lexer;
   unique_ptr<Rom> rom;
   unique_ptr<Parser> parser;
@@ -57,8 +61,15 @@ int main(int argc, char* argv[]) {
     return 1;
   };
 
+  if (opts.debug) {
+    logLevels.insert(Logger::LogLevel::DEBUG);
+  }
+
   if (!opts.quiet) {
     bool footer = false;
+
+    logLevels.insert(Logger::LogLevel::INFO);
+    logLevels.insert(Logger::LogLevel::WARNING);
 
     /// version
     if (opts.version) {
@@ -106,6 +117,15 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  if (opts.compileMode == BuildOptions::CompileMode::Pcoded) {
+    printf(
+        "ERROR: P-code mode is now DEPRECATED\n"
+        "If you really need it, try to use v0.3.3.1 release.\n"
+        "You can get it at:\n"
+        "https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v0.3.3.1");
+    return 1;
+  }
+
   while (true) {
     lexer.reset(new Lexer());
     parser.reset(new Parser());
@@ -124,34 +144,20 @@ int main(int argc, char* argv[]) {
     /// LEXICAL ANALYSIS
     //! @note lexing the input file, tokenizing it
 
-    if (!opts.quiet) printf("(1) Doing lexical analysis...\n");
+    lexer->logger->info("(1) Doing lexical analysis...");
 
     if (!lexer->load(&opts)) {
-      printf("ERROR: Cannot load input file for lexical analysis\n");
-      printf("%s\n", lexer->errorMessage.c_str());
+      lexer->logger->error("Cannot load input file for lexical analysis");
+      print(lexer->logger->errors().toString());
       return 1;
     }
 
     if (!lexer->evaluate()) {
-      printf("%s", lexer->errorToString().c_str());
-      printf("ERROR: Lexical error at line %i\n", lexer->lineNo);
-      printf("%s\n", lexer->errorMessage.c_str());
+      print(lexer->logger->errors().toString());
       return 1;
     }
 
-    if (opts.debug) {
-      printf("Displaying lexical analysis:\n");
-      printf("%s", lexer->toString().c_str());
-    }
-
-    if (opts.compileMode == BuildOptions::CompileMode::Pcoded) {
-      printf(
-          "ERROR: P-code mode is now DEPRECATED\n"
-          "If you really need it, try to use v0.3.3.1 release.\n"
-          "You can get it at:\n"
-          "https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v0.3.3.1");
-      return 1;
-    }
+    print(lexer->logger->filter(logLevels).toString());
 
     /// SYNTACTIC ANALYSIS
     //! @note parsing the lexing tokens, building the syntax tree
@@ -306,27 +312,32 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
+void print(string msg) {
+  printf("%s", msg.c_str());
+}
+
 void printHeader() {
   printf("%s %s\n", info_header, app_version);
 }
 
 void printVersion() {
-  printf("%s\n", app_version);
+  print(app_version);
+  printf("\n");
 }
 
 void printHelp() {
-  printf("%s", info_help);
-  // parser.printHelp(appFileName);
+  print(info_help);
 }
 
 void printHistory() {
-  printf("%s", info_history);
+  print(info_history);
 }
 
 void printDocs() {
-  printf("%s", info_documentation);
+  print(info_documentation);
 }
 
 void printFooter() {
-  printf("%s\n", info_footer);
+  print(info_footer);
+  printf("\n");
 }
