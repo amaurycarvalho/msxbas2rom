@@ -12,6 +12,7 @@
 #include "compiler_hooks.h"
 #include "compiler_statement_strategy.h"
 #include "compiler_statement_strategy_factory.h"
+#include "logger.h"
 #include "tag_node.h"
 
 CompilerEvaluator::CompilerEvaluator(CompilerContext* context) {
@@ -31,8 +32,8 @@ bool CompilerEvaluator::evaluate(TagNode* tag) {
     try {
       lin = stoi(tag->name);
     } catch (exception& e) {
-      printf("Warning: error while converting numeric constant %s\n",
-             tag->name.c_str());
+      context->logger->warning("Error while converting numeric constant " +
+                               tag->name);
       lin = 0;
     }
     // ld hl, line number

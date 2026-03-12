@@ -8,9 +8,17 @@
 #include "tag_node.h"
 
 #include "action_node.h"
+#include "lexer_line.h"
 
 string TagNode::toString() const {
-  string out = "Tag ";
+  string out = "";
+
+  if (lexerLine) out = lexerLine->lineText;
+
+  if (!out.empty())
+    if (out.back() != '\n' && out.back() != '\r') out += "\n";
+
+  out += "Tag ";
   out += name;
   out += "\n";
 
@@ -20,3 +28,9 @@ string TagNode::toString() const {
 
   return out;
 }
+
+TagNode::TagNode() {
+  lexerLine = nullptr;
+}
+
+TagNode::~TagNode() = default;

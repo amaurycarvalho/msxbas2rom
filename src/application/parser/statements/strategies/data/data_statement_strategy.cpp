@@ -55,8 +55,8 @@ bool DataStatementStrategy::parseData(ParserContext& context,
             else
               itext = 0;
           } catch (exception& e) {
-            printf("Warning: error while converting numeric constant %s\n",
-                   stext.c_str());
+            context.logger->warning("Error while converting numeric constant " +
+                                    stext);
             itext = 0;
           }
           next_lexeme->value = to_string(itext);
@@ -113,8 +113,8 @@ bool DataStatementStrategy::parseData(ParserContext& context,
         else
           itext = 0;
       } catch (exception& e) {
-        printf("Warning: error while converting numeric constant %s\n",
-               stext.c_str());
+        context.logger->warning("Error while converting numeric constant " +
+                                stext);
         itext = 0;
       }
       next_lexeme->value = to_string(itext);

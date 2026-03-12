@@ -52,7 +52,7 @@ bool Parser::evaluate(Lexer* lexer) {
         return false;
       }
       if (!ctx.tags.empty()) {
-        ctx.logger->debug(lexerLine->line + ctx.tags.back()->toString());
+        ctx.logger->debug(ctx.tags.back()->toString());
       }
     }
   }

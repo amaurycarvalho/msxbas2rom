@@ -28,6 +28,7 @@ bool ParserLineEvaluator::evaluateLine(LexerLine* lexerLine) {
       ctx.tag = new TagNode();  // register line number tag
       ctx.tag->name = lexeme->value;
       ctx.tag->value = ctx.tag->name;
+      ctx.tag->lexerLine = lexerLine;
       ctx.tags.push_back(ctx.tag);
 
       while ((lexeme = lexerLine->getNextLexeme())) {
@@ -64,6 +65,7 @@ bool ParserLineEvaluator::evaluateLine(LexerLine* lexerLine) {
         ctx.tag = new TagNode();  // register line number tag
         ctx.tag->name = "DIRECTIVE";
         ctx.tag->value = ctx.tag->name;
+        ctx.tag->lexerLine = lexerLine;
         ctx.tags.push_back(ctx.tag);
 
         action = new ActionNode(lexeme);
@@ -78,7 +80,7 @@ bool ParserLineEvaluator::evaluateLine(LexerLine* lexerLine) {
         if ((lexeme = lexerLine->getNextLexeme())) {
           if (lexeme->type == Lexeme::type_literal &&
               lexeme->subtype == Lexeme::subtype_string) {
-            if (!includeLoader.load(lexeme)) {
+            if (!includeLoader.load(lexeme, lexerLine)) {
               ctx.logger->error(
                   "INCLUDE file not found or with content syntax error");
               return false;

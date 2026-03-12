@@ -12,6 +12,7 @@
 #include <vector>
 
 class ActionNode;
+class LexerLine;
 
 using namespace std;
 
@@ -24,7 +25,12 @@ class TagNode {
   string name;
   string value;
   vector<ActionNode*> actions;
+  LexerLine* lexerLine;
+
   string toString() const;
+
+  TagNode();
+  ~TagNode();
 };
 
 #endif  // TAG_NODE_H_INCLUDED

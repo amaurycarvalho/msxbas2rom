@@ -12,6 +12,7 @@
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
 #include "lexeme.h"
+#include "lexer_line.h"
 #include "symbol_manager.h"
 #include "symbol_node.h"
 #include "tag_node.h"
@@ -106,10 +107,13 @@ SymbolNode* CompilerSymbolResolver::addSymbol(string line) {
   if (!found) {
     tag = new TagNode();
     tag->name = line;
-    if (context->current_tag)
+    if (context->current_tag) {
       tag->value = context->current_tag->name;
-    else
+      tag->lexerLine = context->current_tag->lexerLine;
+    } else {
       tag->value = "SUPPORT_ROUTINE";
+      tag->lexerLine = nullptr;
+    }
     symbol = addSymbol(tag);
   }
 

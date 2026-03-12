@@ -1,6 +1,7 @@
 #include "compiler_dim_statement_strategy.h"
 
 #include "compiler_context.h"
+#include "logger.h"
 
 void CompilerDimStatementStrategy::cmd_dim(CompilerContext* context) {
   Lexeme *lexeme, *parm_lexeme;
@@ -44,8 +45,9 @@ void CompilerDimStatementStrategy::cmd_dim(CompilerContext* context) {
             try {
               lexeme->x_size = stoi(parm_lexeme->value) + 1;
             } catch (exception& e) {
-              printf("Warning: error while converting numeric constant %s\n",
-                     parm_lexeme->value.c_str());
+              context->logger->warning(
+                  "Error while converting numeric constant " +
+                  parm_lexeme->value);
               lexeme->x_size = 0;
             }
             if (!lexeme->x_size) {
@@ -65,8 +67,9 @@ void CompilerDimStatementStrategy::cmd_dim(CompilerContext* context) {
               try {
                 lexeme->y_size = stoi(parm_lexeme->value) + 1;
               } catch (exception& e) {
-                printf("Warning: error while converting numeric constant %s\n",
-                       parm_lexeme->value.c_str());
+                context->logger->warning(
+                    "Error while converting numeric constant " +
+                    parm_lexeme->value);
                 lexeme->y_size = 0;
               }
               if (!lexeme->y_size) {

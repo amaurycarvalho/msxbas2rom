@@ -11,6 +11,7 @@
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "logger.h"
 
 bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
   auto& cpu = *context->cpu;
@@ -42,8 +43,8 @@ bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
             try {
               i = stoi(lexeme1->value) * lexeme->x_factor;
             } catch (exception& e) {
-              printf("Warning: error while converting numeric constant %s\n",
-                     lexeme1->value.c_str());
+              context->logger->warning(
+                  "Error while converting numeric constant " + lexeme1->value);
               i = 0;
             }
 
@@ -112,8 +113,8 @@ bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
             try {
               i = stoi(lexeme1->value) * lexeme->x_factor;
             } catch (exception& e) {
-              printf("Warning: error while converting numeric constant %s\n",
-                     lexeme1->value.c_str());
+              context->logger->warning(
+                  "Error while converting numeric constant " + lexeme1->value);
               i = 0;
             }
 
@@ -123,8 +124,9 @@ bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
               try {
                 i += stoi(lexeme2->value) * lexeme->y_factor;
               } catch (exception& e) {
-                printf("Warning: error while converting numeric constant %s\n",
-                       lexeme2->value.c_str());
+                context->logger->warning(
+                    "Error while converting numeric constant " +
+                    lexeme2->value);
               }
 
               // ld hl, variable_address +  (x_index * x_factor) + (y_index *

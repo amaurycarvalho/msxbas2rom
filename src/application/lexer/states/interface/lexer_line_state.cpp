@@ -5,7 +5,7 @@
 LexerLineStateContext::LexerLineStateContext(LexerLine* lexerLine)
     : lexerLine(lexerLine),
       index(0),
-      length(lexerLine->line.length()),
+      length(lexerLine->lineText.length()),
       hexa(false),
       current(0),
       lexeme(new Lexeme()) {}
@@ -15,11 +15,11 @@ bool LexerLineStateContext::hasNextChar() const {
 }
 
 char LexerLineStateContext::peekNextChar() const {
-  return hasNextChar() ? lexerLine->line[index + 1] : '\0';
+  return hasNextChar() ? lexerLine->lineText[index + 1] : '\0';
 }
 
 string LexerLineStateContext::restFromNext() const {
-  return lexerLine->line.substr(index + 1);
+  return lexerLine->lineText.substr(index + 1);
 }
 
 bool LexerLineStateContext::isNumeric(char c) const {

@@ -14,6 +14,7 @@
 #include "compiler_function_strategy_factory.h"
 #include "compiler_hooks.h"
 #include "compiler_variable_emitter.h"
+#include "logger.h"
 
 CompilerExpressionEvaluator::CompilerExpressionEvaluator(
     CompilerContext* context)
@@ -128,8 +129,8 @@ int CompilerExpressionEvaluator::evalExpression(ActionNode* action) {
           } else
             cpu.addLdHL(stoi(lexeme->value));  // ld hl, value
         } catch (exception& e) {
-          printf("Warning: error while converting numeric constant %s\n",
-                 lexeme->value.c_str());
+          context->logger->warning("Error while converting numeric constant " +
+                                   lexeme->value);
           cpu.addLdHL(0x0000);  // ld hl, value
         }
 

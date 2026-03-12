@@ -192,6 +192,7 @@ bool Compiler::build(Parser* parser) {
             compiledCodeInfo += " error";
             context->current_tag = tag;
             context->syntaxError("Line number already declared");
+            context->logger->info(tag->toString());
             break;
           }
         } else
@@ -207,6 +208,7 @@ bool Compiler::build(Parser* parser) {
       if (!context->evaluator->evaluate(tag)) {
         compiledCodeInfo += " error";
         context->compiled = false;
+        context->logger->info(tag->toString());
         break;
       }
 
@@ -221,6 +223,7 @@ bool Compiler::build(Parser* parser) {
         compiledCodeInfo += " error";
         context->logger->debug(compiledCodeInfo);
         context->syntaxError("Maximum of code per line per ROM reached (16k)");
+        context->logger->info(tag->toString());
         return false;
       }
     }
@@ -231,7 +234,11 @@ bool Compiler::build(Parser* parser) {
   if (context->compiled) {
     if (context->forNextStack.size()) {
       context->current_tag = context->forNextStack.top()->tag;
+      if (context->current_tag->lexerLine)
+        context->logger->setLineNumber(
+            context->current_tag->lexerLine->lineNumber);
       context->syntaxError("FOR without a NEXT");
+      context->logger->info(context->current_tag->toString());
     }
   }
 

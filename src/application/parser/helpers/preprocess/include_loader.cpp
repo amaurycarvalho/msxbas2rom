@@ -6,14 +6,16 @@
 
 #include "include_loader.h"
 
+#include "lexer_line.h"
 #include "parser_line_evaluator.h"
 
 IncludeLoader::IncludeLoader(ParserLineEvaluator& lineEvaluator)
     : lineEvaluator(lineEvaluator) {}
 
-bool IncludeLoader::load(Lexeme* lexeme) {
+bool IncludeLoader::load(Lexeme* lexeme, LexerLine* lexerLine) {
   if (lexeme) {
     string s = lexeme->value;
+
     // Remove leading quote
     if (!s.empty() && s.front() == '"') {
       s.erase(s.begin());
@@ -22,32 +24,28 @@ bool IncludeLoader::load(Lexeme* lexeme) {
     if (!s.empty() && s.back() == '"') {
       s.pop_back();
     }
-    return load(s);
+    return load(s, lexerLine);
   }
 
   return false;
 }
 
-bool IncludeLoader::load(const string& filename) {
+bool IncludeLoader::load(const string& filename, LexerLine* lexerLine) {
   FILE* file;
-  char line[255];
-  LexerLine* lexerLine;
 
   /***
    * @remark
-   * 1. instanciate a new LexerLine;
-   * 2. read the file, line by line;
-   * 3. evaluate it lexing tokens;
-   * 4. and process it by calling evalLine(LexerLine).
+   * The lines in the included file will point to the INCLUDE line of the
+   * original source.
    */
 
   if ((file = fopen(filename.c_str(), "r"))) {
     bool result = true;
+    string originalLineText = lexerLine->lineText;
+    char newLineText[255];
 
-    lexerLine = new LexerLine();
-
-    while (fgets(line, sizeof(line), file)) {
-      lexerLine->line = line;
+    while (fgets(newLineText, sizeof(newLineText), file)) {
+      lexerLine->lineText = newLineText;
       if (lexerLine->evaluate()) {
         if (!lineEvaluator.evaluateLine(lexerLine)) {
           result = false;
@@ -59,7 +57,8 @@ bool IncludeLoader::load(const string& filename) {
       }
     }
 
-    delete lexerLine;
+    lexerLine->lineText = originalLineText;
+
     fclose(file);
 
     return result;

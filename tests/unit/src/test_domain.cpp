@@ -85,6 +85,7 @@ TEST_SUITE("Domain") {
     tag.actions.push_back(&root);
 
     std::string tagText = tag.toString();
+
     CHECK(tagText.find("Tag 10") != std::string::npos);
   }
 }

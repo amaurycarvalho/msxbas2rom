@@ -37,7 +37,7 @@ bool Lexer::load(string filename) {
 
 bool Lexer::load(BuildOptions* opts) {
   FILE* file;
-  char line[255];
+  char lineText[255];
   unsigned char header[3];
   int len = 255, bytes;
   LexerLine* lexerLine;
@@ -59,12 +59,12 @@ bool Lexer::load(BuildOptions* opts) {
     }
     if (header[0] < 0x20 || header[0] > 126) {
       if (header[0] == 0xFF && header[2] == 0x80) {
-        snprintf(line, sizeof(line),
+        snprintf(lineText, sizeof(lineText),
                  "Tokenized MSX BASIC source code file detected\nSave it as a "
                  "plain text to use it "
                  "with MSXBAS2ROM:\nSAVE \"%s\",A",
                  opts->inputFilename.c_str());
-        logger->error(line);
+        logger->error(lineText);
         return false;
       } else if (header[0] != 0x0D && header[0] != 0x0A &&
                  header[0] != 0x0C) {  // CR LF FF
@@ -78,9 +78,11 @@ bool Lexer::load(BuildOptions* opts) {
   }
 
   if ((file = fopen(opts->inputFilename.c_str(), "r"))) {
-    while (fgets(line, len, file)) {
+    int lineNumber = 0;
+    while (fgets(lineText, len, file)) {
       lexerLine = new LexerLine();
-      lexerLine->line = line;
+      lexerLine->lineText = lineText;
+      lexerLine->lineNumber = ++lineNumber;
       lines.push_back(lexerLine);
     }
 

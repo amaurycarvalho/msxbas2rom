@@ -20,7 +20,7 @@ LexerLineProcessResult IdentifierState::handle(LexerLineStateContext& context) {
     bool isAnotherKeyword = false;
     for (int ii = context.index + 1;
          ii < context.length && ii < (context.index + 20); ii++) {
-      c = context.lexerLine->line[ii];
+      c = context.lexerLine->lineText[ii];
       context.lexeme->value += toupper(c);
       if (context.lexeme->isKeyword()) {
         isAnotherKeyword = true;

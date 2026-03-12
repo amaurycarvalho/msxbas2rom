@@ -243,7 +243,7 @@ TEST_SUITE("Lexer") {
 
   TEST_CASE("Navigates lexemes in LexerLine") {
     LexerLine line;
-    line.line = "10 PRINT A\n";
+    line.lineText = "10 PRINT A\n";
     REQUIRE(line.evaluate() == true);
     REQUIRE(line.getLexemeCount() >= 3);
 

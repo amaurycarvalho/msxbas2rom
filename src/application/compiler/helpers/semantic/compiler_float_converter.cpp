@@ -6,6 +6,9 @@
 
 #include "compiler_float_converter.h"
 
+#include "compiler_context.h"
+#include "logger.h"
+
 void CompilerFloatConverter::double2FloatLib(double value, int* words) {
   float value2 = value;
   float2FloatLib(value2, words);
@@ -46,8 +49,7 @@ int CompilerFloatConverter::str2FloatLib(string text) {
   try {
     value = stof(text);
   } catch (exception& e) {
-    printf("Warning: error while converting numeric constant %s\n",
-           text.c_str());
+    context->logger->warning("Error while converting numeric constant " + text);
     value = 0;
   }
   float2FloatLib(value, (int*)&words);

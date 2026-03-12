@@ -4,6 +4,7 @@
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
 #include "compiler_input_statement_strategy.h"
+#include "logger.h"
 
 void CompilerLineStatementStrategy::cmd_line(CompilerContext* context) {
   auto& cpu = *context->cpu;
@@ -266,8 +267,8 @@ void CompilerLineStatementStrategy::cmd_line(CompilerContext* context) {
             try {
               line_type = stoi(lexeme->value);
             } catch (exception& e) {
-              printf("Warning: error while converting numeric constant %s\n",
-                     lexeme->value.c_str());
+              context->logger->warning(
+                  "Error while converting numeric constant " + lexeme->value);
               line_type = 0;
             }
           } else {

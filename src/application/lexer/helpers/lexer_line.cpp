@@ -7,7 +7,6 @@
 #include "lexer_line.h"
 
 #include "lexeme.h"
-
 #include "lexer_line_state_factory.h"
 
 /***
@@ -78,7 +77,9 @@ void LexerLine::popLexemeDiscarding() {
 }
 
 string LexerLine::toString() {
-  string out = line;
+  string out = lineText;
+  if (!out.empty())
+    if (out.back() != '\n' && out.back() != '\r') out += "\n";
   for (unsigned int i = 0; i < lexemes.size(); i++) {
     out += lexemes[i]->toString();
   }
@@ -92,7 +93,7 @@ bool LexerLine::evaluate() {
   lexemes.clear();
 
   for (context.index = 0; context.index < context.length; context.index++) {
-    context.current = line[context.index];
+    context.current = lineText[context.index];
     ILexerLineState* state = stateFactory.getState(context.lexeme->type);
     LexerLineProcessResult result = state->handle(context);
     if (result == LexerLineProcessResult::Accept) return true;

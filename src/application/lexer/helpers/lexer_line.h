@@ -26,7 +26,8 @@ class LexerLine {
   stack<int> lexemeStack;
 
  public:
-  string line;
+  string lineText;
+  int lineNumber;
 
   bool evaluate();
   string toString();
