@@ -17,7 +17,7 @@ void CompilerTextStatementStrategy::cmd_text(CompilerContext* context) {
       lexeme->name = "TEXT";
       context->resourceManager->addText(lexeme->value);
     } else {
-      context->error_message = "Invalid parameter in TEXT keyword";
+      context->syntaxError("Invalid parameter in TEXT keyword");
     }
 
   } else {

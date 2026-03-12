@@ -21,7 +21,7 @@ void CompilerFileStatementStrategy::cmd_file(CompilerContext* context) {
       filename = removeQuotes(lexeme->value);
       context->resourceManager->addFile(filename, opts.inputPath);
     } else {
-      context->error_message = "Invalid parameter in FILE keyword";
+      context->syntaxError("Invalid parameter in FILE keyword");
     }
 
   } else {

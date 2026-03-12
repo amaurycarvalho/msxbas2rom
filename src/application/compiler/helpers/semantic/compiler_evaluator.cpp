@@ -89,7 +89,7 @@ bool CompilerEvaluator::evalAction(ActionNode* action) {
   context->skip_post_trap_check = false;
 
   if (!statement->execute(context)) {
-    if (context->error_message.empty()) context->syntaxError();
+    if (!context->containErrors()) context->syntaxError();
     return false;
   }
 

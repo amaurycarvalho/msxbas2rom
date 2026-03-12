@@ -44,7 +44,6 @@ CompilerContext::CompilerContext() {
 CompilerContext::~CompilerContext() = default;
 
 void CompilerContext::clear() {
-  error_message = "";
   current_tag = 0;
 
   mark_count = 0;
@@ -89,12 +88,15 @@ void CompilerContext::clear() {
   }
 }
 
+bool CompilerContext::containErrors() {
+  return logger->containErrors();
+}
+
 void CompilerContext::syntaxError() {
   syntaxError("Syntax error");
 }
 
 void CompilerContext::syntaxError(string msg) {
   compiled = false;
-  error_message = msg;
-  if (current_tag) error_message += " (line=" + current_tag->value + ")";
+  logger->error(msg);
 }

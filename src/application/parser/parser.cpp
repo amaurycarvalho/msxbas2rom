@@ -39,8 +39,8 @@ bool Parser::evaluate(Lexer* lexer) {
 
   ctx.reset();
 
-  for (i = 0, ctx.lineNo = 1; i < t; i++, ctx.lineNo++) {
-    ctx.logger->setLineNumber(ctx.lineNo);
+  for (i = 0, ctx.lineNumber = 1; i < t; i++, ctx.lineNumber++) {
+    ctx.logger->setLineNumber(ctx.lineNumber);
     lexerLine = lexer->lines[i];
     if (lexerLine->getLexemeCount() > 0) {
       ctx.line_comment = false;
@@ -65,7 +65,7 @@ Logger* Parser::getLogger() {
 }
 
 int Parser::getLineNumber() const {
-  return ctx.lineNo;
+  return ctx.lineNumber;
 }
 
 vector<TagNode*>& Parser::getTags() {

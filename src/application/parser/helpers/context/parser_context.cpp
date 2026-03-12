@@ -34,7 +34,7 @@ void ParserContext::reset() {
   error_line = 0;
   resourceCount = 0;
 
-  lineNo = 0;
+  lineNumber = 0;
   eval_expr_error = false;
   line_comment = false;
   has_traps = false;

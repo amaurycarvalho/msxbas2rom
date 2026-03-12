@@ -13,6 +13,7 @@
 #include "compiler.h"
 #include "doctest/doctest.h"
 #include "lexer.h"
+#include "logger.h"
 #include "parser.h"
 #include "resources.h"
 #include "z80.h"
@@ -78,8 +79,8 @@ TEST_SUITE("Compiler") {
     Z80OpcodeWriter cpuOpcodeWriter;
     Compiler compiler(&cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
-    CHECK(compiler.getErrorMessage().find("Line number already declared") !=
-          std::string::npos);
+    CHECK(compiler.getLogger()->errors().toString().find(
+              "Line number already declared") != std::string::npos);
 
     std::remove(filename.c_str());
   }
@@ -91,8 +92,8 @@ TEST_SUITE("Compiler") {
     Z80OpcodeWriter cpuOpcodeWriter;
     Compiler compiler(&cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
-    CHECK(compiler.getErrorMessage().find("FOR without a NEXT") !=
-          std::string::npos);
+    CHECK(compiler.getLogger()->errors().toString().find(
+              "FOR without a NEXT") != std::string::npos);
 
     std::remove(filename.c_str());
   }
@@ -104,8 +105,8 @@ TEST_SUITE("Compiler") {
     Z80OpcodeWriter cpuOpcodeWriter;
     Compiler compiler(&cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
-    CHECK(compiler.getErrorMessage().find("NEXT without a FOR") !=
-          std::string::npos);
+    CHECK(compiler.getLogger()->errors().toString().find(
+              "NEXT without a FOR") != std::string::npos);
 
     std::remove(filename.c_str());
   }
@@ -117,7 +118,7 @@ TEST_SUITE("Compiler") {
     Z80OpcodeWriter cpuOpcodeWriter;
     Compiler compiler(&cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
-    CHECK(compiler.getErrorMessage().find(
+    CHECK(compiler.getLogger()->errors().toString().find(
               "Undeclared array or unknown function") != std::string::npos);
 
     std::remove(filename.c_str());

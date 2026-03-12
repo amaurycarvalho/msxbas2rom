@@ -40,7 +40,7 @@ class ParserContext {
   bool eval_expr_error, line_comment;
   unique_ptr<Logger> logger;
 
-  int lineNo;
+  int lineNumber;
   vector<TagNode*> tags;
   vector<Lexeme*> symbolList;
   vector<Lexeme*> datas;

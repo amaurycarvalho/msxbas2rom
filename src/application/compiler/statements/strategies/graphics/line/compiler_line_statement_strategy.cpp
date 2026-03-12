@@ -23,7 +23,7 @@ void CompilerLineStatementStrategy::cmd_line(CompilerContext* context) {
       CompilerInputStatementStrategy inputStmt;
       context->current_action = action;
       if (!inputStmt.executeLineInput(context)) {
-        if (context->error_message.empty())
+        if (!context->containErrors())
           context->syntaxError("Error on LINE INPUT");
       }
       return;

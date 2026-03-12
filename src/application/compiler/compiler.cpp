@@ -42,7 +42,6 @@ Compiler::Compiler(ICpuOpcodeWriter* cpu) {
     cpu->context = workspace.get();
     context->cpu = cpu;
   }
-  context->error_message = "";
   context->current_tag = 0;
   context->compiled = false;
 }
@@ -96,10 +95,6 @@ int Compiler::getRamSize() const {
   return context->cpu->context->ram_size;
 }
 
-const string& Compiler::getErrorMessage() const {
-  return context->error_message;
-}
-
 TagNode* Compiler::getCurrentTag() const {
   return context->current_tag;
 }
@@ -123,6 +118,7 @@ bool Compiler::build(Parser* parser) {
   SymbolNode* symbol;
   CodeNode* codeItem;
   unsigned int i, t;
+  string compiledCodeInfo;
 
   context->parser = parser;
   context->opts = parser->getOpts();
@@ -131,11 +127,14 @@ bool Compiler::build(Parser* parser) {
 
   context->symbolResolver->clearSymbols();
 
+  context->logger->setFile(context->opts->inputFilename);
+
   t = parser->getTags().size();
   context->compiled = (t > 0);
 
-  /// @remark END statement needs to be here (first segment) for MegaROM support
-  if (context->opts->debug) printf("Registering END statement...");
+  /// @remark END statement needs to be here (first segment) for MegaROM
+  /// support
+  context->logger->debug("Registering END statement...");
 
   codeItem = new CodeNode();
   codeItem->name = "END_STMT";
@@ -146,9 +145,10 @@ bool Compiler::build(Parser* parser) {
   codeItem->is_code = true;
   codeItem->debug = true;
   context->symbolManager->codeList.push_back(codeItem);
-  if (context->opts->debug) printf(" %i byte(s)\n", codeItem->length);
+  context->logger->debug("+--> size: " + to_string(codeItem->length) +
+                         " byte(s)");
 
-  if (context->opts->debug) printf("Registering start of program...");
+  context->logger->debug("Registering start of program...");
 
   codeItem = new CodeNode();
   codeItem->name = "START_PGM";
@@ -158,25 +158,27 @@ bool Compiler::build(Parser* parser) {
   codeItem->is_code = true;
   codeItem->debug = true;
   context->symbolManager->codeList.push_back(codeItem);
-  if (context->opts->debug) printf(" %i byte(s)\n", codeItem->length);
+  context->logger->debug("+--> size: " + to_string(codeItem->length) +
+                         " byte(s)");
   if (codeItem->length >= 0x4000) {
     context->syntaxError(
         "Maximum of start of program code per ROM reached (16k)");
     return false;
   }
 
-  if (context->opts->debug) printf("Registering compiled code (line/bytes): ");
+  context->logger->debug("Registering compiled code (line/bytes):");
+  compiledCodeInfo = "";
 
   for (i = 0; i < t; i++) {
     tag = parser->getTags()[i];
 
     if (tag) {
-      if (context->opts->debug) {
-        if (i)
-          printf(", %s", tag->name.c_str());
-        else
-          printf("%s", tag->name.c_str());
-      }
+      context->logger->setLineNumber(i + 1);
+
+      if (i)
+        compiledCodeInfo += ", " + tag->name;  /// code line
+      else
+        compiledCodeInfo += tag->name;  /// code line
 
       if (tag->name != "DIRECTIVE") {
         // Trim leading zeros
@@ -187,7 +189,7 @@ bool Compiler::build(Parser* parser) {
         symbol = context->symbolResolver->getSymbol(tag);
         if (symbol) {
           if (symbol->address) {
-            if (context->opts->debug) printf(" error\n");
+            compiledCodeInfo += " error";
             context->current_tag = tag;
             context->syntaxError("Line number already declared");
             break;
@@ -203,6 +205,7 @@ bool Compiler::build(Parser* parser) {
       codeItem->name = "LIN_" + tag->name;
 
       if (!context->evaluator->evaluate(tag)) {
+        compiledCodeInfo += " error";
         context->compiled = false;
         break;
       }
@@ -212,17 +215,18 @@ bool Compiler::build(Parser* parser) {
       codeItem->debug = true;
       context->symbolManager->codeList.push_back(codeItem);
 
-      if (context->opts->debug) printf("/%i", codeItem->length);
+      compiledCodeInfo += "/" + to_string(codeItem->length);  /// code bytes
 
       if (codeItem->length >= 0x4000) {
-        if (context->opts->debug) printf(" error\n");
+        compiledCodeInfo += " error";
+        context->logger->debug(compiledCodeInfo);
         context->syntaxError("Maximum of code per line per ROM reached (16k)");
         return false;
       }
     }
   }
 
-  if (context->opts->debug) printf("\n");
+  context->logger->debug(compiledCodeInfo);
 
   if (context->compiled) {
     if (context->forNextStack.size()) {
@@ -235,7 +239,7 @@ bool Compiler::build(Parser* parser) {
     context->current_tag = 0;
 
     /// @remark END is always the last statement of the program
-    if (context->opts->debug) printf("Registering end of program...");
+    context->logger->debug("Registering end of program...");
 
     codeItem = new CodeNode();
     codeItem->name = "END_PGM";
@@ -246,14 +250,14 @@ bool Compiler::build(Parser* parser) {
     codeItem->is_code = true;
     codeItem->debug = true;
     context->symbolManager->codeList.push_back(codeItem);
-    if (context->opts->debug) printf(" %i byte(s)\n", codeItem->length);
+    context->logger->debug("+--> " + to_string(codeItem->length) + " byte(s)");
     if (codeItem->length >= 0x4000) {
       context->syntaxError(
           "Maximum of end of program code per ROM reached (16k)");
       return false;
     }
 
-    if (context->opts->debug) printf("Registering support code...");
+    context->logger->debug("Registering support code...");
 
     codeItem = new CodeNode();
     codeItem->start = context->cpu->context->code_pointer;
@@ -262,31 +266,29 @@ bool Compiler::build(Parser* parser) {
     codeItem->is_code = true;
     codeItem->debug = false;
     context->symbolManager->codeList.push_back(codeItem);
-    if (context->opts->debug) printf(" %i byte(s)\n", codeItem->length);
+    context->logger->debug("+--> " + to_string(codeItem->length) + " byte(s)");
     if (codeItem->length >= 0x4000) {
       context->syntaxError("Maximum of support code per ROM reached (16k)");
       return false;
     }
 
     if (parser->getHasIData()) {
-      if (context->opts->debug) printf("Registering IDATA resource...");
+      context->logger->debug("Registering IDATA resource...");
       context->resourceManager->addIDataResource(parser);
     }
 
     if (parser->getHasData()) {
-      if (context->opts->debug) printf("Registering DATA resource...");
+      context->logger->debug("Registering DATA resource...");
       context->resourceManager->addDataResource(parser);
     }
 
-    if (context->opts->debug) printf("Registering symbols..");
-
-    if (context->opts->debug) printf(".");
+    context->logger->debug("Registering symbols...");
 
     i = context->symbolResolver->saveSymbols();
 
-    if (context->opts->debug) printf(" %i byte(s)\n", i);
+    context->logger->debug("+--> " + to_string(i) + " byte(s)");
 
-    if (context->opts->debug) printf("Adjusting code/data memory address...\n");
+    context->logger->debug("Adjusting code/data memory address...");
 
     context->fixupResolver->doFix();
 
@@ -325,9 +327,6 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
     for (i = 0; i < t; i++) {
       codeItem = context->symbolManager->codeList[i];
-
-      // printf("%i address %i size %i\n", i, codeItem->start,
-      // codeItem->length);
 
       if (codeItem->length) {
         s = &context->cpu->context->code[codeItem->start];
@@ -651,9 +650,9 @@ int Compiler::write(unsigned char* dest, int start_address) {
         }
 
       } else
-        printf("Error fixing symbol (null)\n");
+        context->syntaxError("Error fixing symbol (null)");
     } else
-      printf("Error in fix object (null)\n");
+      context->syntaxError("Error in the fix object (null)");
   }
 
   return context->cpu->context->code_size;

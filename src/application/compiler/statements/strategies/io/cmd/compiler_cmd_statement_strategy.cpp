@@ -20,7 +20,7 @@ void CompilerCmdStatementStrategy::cmd_cmd(CompilerContext* context) {
     }
 
     if (!handler->execute(context, action)) {
-      if (context->error_message.empty()) context->syntaxError();
+      if (!context->containErrors()) context->syntaxError();
       return;
     }
   }

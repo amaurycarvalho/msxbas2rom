@@ -70,10 +70,12 @@ class CompilerContext {
 
   unique_ptr<Logger> logger;
 
-  string error_message;
-
   void clear();
+
+  bool containErrors();
+
   void syntaxError();
+
   void syntaxError(string msg);
 
   CompilerContext();

@@ -156,6 +156,9 @@ int main(int argc, char* argv[]) {
     }
 
     if (!lexer->evaluate()) {
+      if (!logger->containErrors()) {
+        logger->error("Unknown error");
+      }
       print(logger->trace().toString());
       return 1;
     }
@@ -172,7 +175,7 @@ int main(int argc, char* argv[]) {
     if (!parser->evaluate(lexer.get())) {
       if (!parser->getLineNumber()) {
         logger->error("Is the file empty?");
-      } else if (logger->errors().empty()) {
+      } else if (!logger->containErrors()) {
         logger->error("Unknown error");
       }
       print(logger->trace().toString());
@@ -180,11 +183,6 @@ int main(int argc, char* argv[]) {
     }
 
     print(logger->filter(logLevels).toString());
-
-    /// SEMANTIC ANALYSIS
-    //! @note create assembly output
-
-    if (!opts.quiet) printf("(3) Doing semantic analysis (compiling)...\n");
 
     if (parser->getHasPt3()) {
       printf(
@@ -195,24 +193,34 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
+    /// SEMANTIC ANALYSIS
+    //! @note create assembly output
+
+    logger = compiler->getLogger();
+
+    logger->info("(3) Doing semantic analysis (compiling)...");
+
     if (!compiler->build(parser.get())) {
-      printf("Error: %s\n", compiler->getErrorMessage().c_str());
-      if (compiler->getCurrentTag())
-        printf("%s", compiler->getCurrentTag()->toString().c_str());
+      if (!logger->containErrors()) {
+        logger->error("Unknown error");
+      }
+      print(logger->trace().toString());
       return 1;
     }
 
-    if (!opts.quiet) {
-      if (opts.megaROM) {
-        if (opts.compileMode == BuildOptions::CompileMode::KonamiSCC) {
-          printf("    Compiling for MegaROM format (Konami with SCC mapper)\n");
-        } else
-          printf("    Compiling for MegaROM format (ASCII8 mapper)\n");
-      }
-      printf("    Compiled code size = %i byte(s)\n", compiler->getCodeSize());
-      printf("    Memory allocated to variables = %i byte(s)\n",
-             compiler->getRamSize());
+    if (opts.megaROM) {
+      if (opts.compileMode == BuildOptions::CompileMode::KonamiSCC) {
+        logger->info(
+            "    Compiling for MegaROM format (Konami with SCC mapper)");
+      } else
+        logger->info("    Compiling for MegaROM format (ASCII8 mapper)");
     }
+    logger->info("    Compiled code size = " +
+                 to_string(compiler->getCodeSize()) + " byte(s)");
+    logger->info("    Memory allocated to variables = " +
+                 to_string(compiler->getRamSize()) + " byte(s)");
+
+    print(logger->filter(logLevels).toString());
 
     /// ROM OUTPUT
 

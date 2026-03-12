@@ -75,8 +75,6 @@ class Compiler {
 
   int getRamSize() const;
 
-  const string& getErrorMessage() const;
-
   TagNode* getCurrentTag() const;
 
   Parser* getParser() const;

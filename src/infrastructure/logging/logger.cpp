@@ -98,7 +98,10 @@ Logger::LogEntry& Logger::info(const string& msg) {
 }
 
 Logger::LogEntry& Logger::warning(const string& msg) {
-  return add(LogLevel::WARNING, msg);
+  auto& entry = add(LogLevel::WARNING, msg);
+  entry.file = file;
+  entry.line = lineNumber;
+  return entry;
 }
 
 Logger::LogEntry& Logger::debug(const string& msg) {
