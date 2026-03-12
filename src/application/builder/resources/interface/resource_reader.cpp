@@ -7,8 +7,10 @@
 
 #include "resource_reader.h"
 
-const string ResourceReader::getErrorMessage() {
-  return errorMessage;
+#include "logger.h"
+
+Logger* ResourceReader::getLogger() {
+  return logger.get();
 }
 
 const string ResourceReader::getFilename() {
@@ -20,6 +22,7 @@ bool ResourceReader::remapTo(int index, int mappedSegm, int mappedAddress) {
 };
 
 ResourceReader::ResourceReader(string filename) {
+  logger.reset(new Logger());
   this->filename = filename;
   this->packedSize = 0;
   this->unpackedSize = 0;

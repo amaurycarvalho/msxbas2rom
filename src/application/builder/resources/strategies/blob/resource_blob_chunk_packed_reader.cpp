@@ -7,8 +7,11 @@
 
 #include "resource_blob_chunk_packed_reader.h"
 
-#include <algorithm>
 #include <string.h>
+
+#include <algorithm>
+
+#include "logger.h"
 
 ResourceBlobChunkPackedReader::ResourceBlobChunkPackedReader(string filename)
     : ResourceBlobPackedReader(filename) {
@@ -24,7 +27,7 @@ bool ResourceBlobChunkPackedReader::isIt(string fileext) {
 /// implementing resource block linked list
 bool ResourceBlobChunkPackedReader::load() {
   unsigned char buffer[1024];
-  unsigned char *srcBuf;
+  unsigned char* srcBuf;
   int bytesPacked, bytesUnpacked;
   int srcSize, blockCount = 0;
   if (ResourceBlobReader::load()) {
@@ -36,14 +39,14 @@ bool ResourceBlobChunkPackedReader::load() {
       bytesUnpacked = min(srcSize, 200);
       bytesPacked = pletter.pack(srcBuf, bytesUnpacked, buffer);
       if (bytesPacked <= 0) {
-        errorMessage =
-            "Error while packing resource file with pletter: " + filename;
+        logger->error("Error while packing resource file with pletter: " +
+                      filename);
         return false;
       }
       if (bytesPacked > 255) {
-        errorMessage =
+        logger->error(
             "Block size > 255 bytes (#" + std::to_string(blockCount) +
-            ") while packing resource file with pletter: " + filename;
+            ") while packing resource file with pletter: " + filename);
         return false;
       }
       srcBuf += bytesUnpacked;

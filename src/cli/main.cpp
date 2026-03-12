@@ -224,20 +224,24 @@ int main(int argc, char* argv[]) {
 
     /// ROM OUTPUT
 
-    if (!opts.quiet) printf("(4) Building ROM...\n");
+    logger = rom->getLogger();
+
+    logger->info("(4) Building ROM...");
 
     if (!rom->build(compiler.get())) {
       bool shouldRetryWithAscii8 =
           opts.autoROM && !retriedWithAscii8 &&
           opts.compileMode == BuildOptions::CompileMode::Plain &&
-          rom->getErrorMessage().find("plain ROM limit") != string::npos;
+          rom->getLogger()->errors().toString().find("plain ROM limit") !=
+              string::npos;
 
       if (shouldRetryWithAscii8) {
-        if (!opts.quiet) {
-          printf(
-              "    Auto mode: plain ROM overflow detected, retrying as "
-              "ASCII8 MegaROM...\n");
-        }
+        logger->clear();
+        logger->info(
+            "WARNING: Plain ROM overflow detected.\n"
+            "Auto mode activated to retry as an ASCII8 MegaROM...\n");
+        print(logger->filter(logLevels).toString());
+
         opts.compileMode = BuildOptions::CompileMode::ASCII8;
         opts.megaROM = true;
         opts.setInputFilename(opts.inputFilename);
@@ -245,8 +249,10 @@ int main(int argc, char* argv[]) {
         continue;
       }
 
-      rom->error();
-      printf("ERROR: ROM building error\n");
+      if (!logger->containErrors()) {
+        logger->error("ROM building error");
+      }
+      print(logger->trace().toString());
       return 1;
     }
 
@@ -258,7 +264,9 @@ int main(int argc, char* argv[]) {
     break;
   }
 
-  /// finish process
+  print(logger->filter(logLevels).toString());
+
+  /// FINAL SUMMARY WITH COMPILATION STATISTICS
 
   if (!opts.quiet) {
     if (opts.megaROM) {

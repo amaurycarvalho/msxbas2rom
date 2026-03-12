@@ -8,8 +8,11 @@
 #ifndef RESOURCE_READER_H_INCLUDED
 #define RESOURCE_READER_H_INCLUDED
 
+#include <memory>
 #include <string>
 #include <vector>
+
+class Logger;
 
 using namespace std;
 
@@ -20,18 +23,22 @@ using namespace std;
 class ResourceReader {
  protected:
   string filename;
-  string errorMessage;
+  unique_ptr<Logger> logger;
 
  public:
   vector<vector<unsigned char>> data;
+
   int unpackedSize;
   int packedSize;
   bool isPacked;
   bool has1stBlockAnd2ndBlockSegmentDisalignmentBug;
-  const string getErrorMessage();
+
+  Logger* getLogger();
   const string getFilename();
+
   virtual bool remapTo(int index, int mappedSegm, int mappedAddress);
   virtual bool load() = 0;
+
   ResourceReader(string filename);
   virtual ~ResourceReader();
 };

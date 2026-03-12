@@ -9,6 +9,7 @@
 
 #include <strings.h>
 
+#include "logger.h"
 #include "resource_blob_reader.h"
 
 /***
@@ -133,11 +134,15 @@ bool ResourceMtfMapReader::load() {
             data.back()[tilemapSaveIndex++] = data.back()[i + 3];
         }
       }
+
       return true;
+
     } else
-      errorMessage = supertileReader.getErrorMessage();
+      logger->add(supertileReader.getLogger());
+
   } else
-    errorMessage = tilemapReader.getErrorMessage();
+    logger->add(tilemapReader.getLogger());
+
   return false;
 }
 

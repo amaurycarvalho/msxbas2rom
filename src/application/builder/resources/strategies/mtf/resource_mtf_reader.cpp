@@ -9,6 +9,8 @@
 
 #include <strings.h>
 
+#include "logger.h"
+
 /***
  * @remarks
  * Wrapper to ResourceMtfPalReader, ResourceMtfTilesReader and
@@ -16,7 +18,7 @@
  */
 /// @todo NOT IMPLEMENTED YET
 bool ResourceMtfReader::load() {
-  errorMessage = "Not implemented yet (ResourceMtfReader::load)";
+  logger->error("Not implemented yet (ResourceMtfReader::load)");
   return false;
 }
 

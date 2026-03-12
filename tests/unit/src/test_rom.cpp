@@ -13,6 +13,7 @@
 #include "compiler.h"
 #include "doctest/doctest.h"
 #include "lexer.h"
+#include "logger.h"
 #include "parser.h"
 #include "rom.h"
 #include "z80.h"
@@ -86,8 +87,8 @@ TEST_SUITE("Rom") {
 
     Rom rom;
     CHECK(rom.build(&compiler) == false);
-    CHECK(rom.getErrorMessage().find("Cannot create output file") !=
-          std::string::npos);
+    CHECK(rom.getLogger()->errors().toString().find(
+              "Cannot create output file") != std::string::npos);
 
     std::remove(filename.c_str());
   }

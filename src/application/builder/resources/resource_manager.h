@@ -22,9 +22,6 @@ using namespace std;
  * @brief Resource manager
  */
 class ResourceManager {
- private:
-  string errorMessage;
-
  public:
   vector<std::unique_ptr<ResourceReader>> resources;
   vector<vector<unsigned char>> pages;
@@ -84,11 +81,6 @@ class ResourceManager {
    * Resources data starts immediatelly following resource table.
    */
   bool buildMap(int startSegment, int startAddress);
-
-  /***
-   * @brief return last error message
-   */
-  const string getErrorMessage();
 
   /***
    * @brief print resources names

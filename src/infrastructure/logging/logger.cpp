@@ -25,6 +25,13 @@ Logger::LogEntry& Logger::add(LogEntry entry) {
   return logs.back();
 }
 
+Logger* Logger::add(Logger* logger) {
+  for (const auto& log : logger->getAll()) {
+    add(log);
+  }
+  return this;
+}
+
 string Logger::trim(const string& str) const {
   auto start = find_if_not(str.begin(), str.end(),
                            [](unsigned char c) { return isspace(c); });

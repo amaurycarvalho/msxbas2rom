@@ -9,6 +9,8 @@
 
 #include <strings.h>
 
+#include "logger.h"
+
 ResourceAkmReader::ResourceAkmReader(string filename)
     : ResourceBlobReader(filename) {};
 
@@ -22,7 +24,7 @@ bool ResourceAkmReader::remapTo(int index, int mappedSegm, int mappedAddress) {
     fixAKM(data[0].data(), mappedAddress, data[0].size());
     return true;
   }
-  errorMessage = "AKM data is empty";
+  logger->error("AKM data is empty");
   return false;
 }
 
@@ -32,7 +34,7 @@ bool ResourceAkmReader::remapTo(int index, int mappedSegm, int mappedAddress) {
  * https://bitbucket.org/JulienNevo/arkostracker3/src/master/
  * https://bitbucket.org/JulienNevo/arkostracker3/src/master/doc/export/AKM.md
  */
-bool ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
+bool ResourceAkmReader::fixAKM(unsigned char* data, int address, int length) {
   int t, i, k, w, current, previous, baseAddress, tracks, linker;
   int instrumentIndexTable, arpeggioIndexTable, pitchIndexTable;
   int subsongIndexTable;
@@ -41,11 +43,11 @@ bool ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
 
   baseAddress = guessBaseAddress(data, length);
   if (baseAddress < 0) {
-    printf("WARNING: cannot guess base address of AKM file\n");
+    logger->warning("Cannot guess base address of AKM file");
     return false;
   }
   /// debug:
-  /// printf("----> akm base address: %04X\n", baseAddress);
+  /// logger->debug("----> akm base address: %04X", baseAddress);
 
   /// adjust header
 
@@ -77,7 +79,7 @@ bool ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
       subsongIndexTable -= baseAddress;
 
       /// debug:
-      /// printf("===> subsong 0x%02X\n", subsongIndexTable);
+      /// logger->debug("===> subsong 0x%02X\n", subsongIndexTable);
 
       if (first) {
         first = false;
@@ -134,7 +136,7 @@ bool ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
             }
             k += 2;  //! ...skip loop address
             /// debug:
-            /// printf("   end of song\n");
+            /// logger->debug("   end of song");
           } else {
             linker >>= 1;
             if (linker & 1) {  //! if line count...
@@ -155,7 +157,7 @@ bool ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
                     if (current > tracks) tracks = current;
                   }
                   /// debug:
-                  /// printf("   track c %i: 0x%02X\n", w, current);
+                  /// logger->debug("   track c %i: 0x%02X\n", w, current);
                 } else {
                   /// @remark
                   /// "current" value needs to be calculated to keep
@@ -164,7 +166,7 @@ bool ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
                   current = (current << 8) | data[k];
                   k++;
                   /// debug:
-                  /// printf("   track c %i: 0x%04X\n", w, current);
+                  /// logger->debug("   track c %i: 0x%04X\n", w, current);
                 }
               }
             }
@@ -174,7 +176,7 @@ bool ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
         if (track_annotation) {
           tracks = ((tracks & 3) + 1) * 2;
           /// debug:
-          /// printf("   tracks: %i\n", tracks / 2);
+          /// logger->debug("   tracks: %i\n", tracks / 2);
 
           t = trackIndexTable + tracks;
 
@@ -256,7 +258,7 @@ bool ResourceAkmReader::fixAKM(unsigned char *data, int address, int length) {
  * @remarks
  * https://bitbucket.org/JulienNevo/arkostracker3/src/master/doc/export/AKM.md
  */
-int ResourceAkmReader::guessBaseAddress(unsigned char *data, int length) {
+int ResourceAkmReader::guessBaseAddress(unsigned char* data, int length) {
   int i, baseAddress;
   int instrumentIndexTable, instrumentIndexItem;
   int subsongIndexTable, subsongIndexHeader;

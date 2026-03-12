@@ -40,7 +40,6 @@ class Rom {
   vector<vector<unsigned char>> pages;
 
   /// @brief Error management
-  string errorMessage;
   bool errorFound;
 
   /// @brief Initialize data
@@ -80,14 +79,6 @@ class Rom {
    * @return True, if success
    */
   bool build(Compiler* compiler);
-
-  /***
-   * @brief Print to the terminal the invalid source code
-   */
-  void error();
-
-  //! @brief Return last error message
-  const string& getErrorMessage() const;
 };
 
 #endif  // ROM_H_INCLUDED

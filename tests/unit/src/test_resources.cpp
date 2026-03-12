@@ -18,29 +18,30 @@
 #include <vector>
 
 #include "doctest/doctest.h"
+#include "logger.h"
 #include "resources.h"
 
 // Utilities
-static void createTempFile(const std::string &filename,
-                           const std::string &content) {
+static void createTempFile(const std::string& filename,
+                           const std::string& content) {
   std::ofstream ofs(filename, std::ios::binary);
   ofs.write(content.data(), content.size());
   ofs.close();
 }
-static void deleteTempFile(const std::string &filename) {
+static void deleteTempFile(const std::string& filename) {
   std::remove(filename.c_str());
 }
 
 // Helpers
-#define CHECK_VALID_READER(reader)         \
-  CHECK(reader.load() == true);            \
-  CHECK(reader.getErrorMessage().empty()); \
-  CHECK(reader.data.size() > 0);           \
+#define CHECK_VALID_READER(reader)             \
+  CHECK(reader.load() == true);                \
+  CHECK(!reader.getLogger()->containErrors()); \
+  CHECK(reader.data.size() > 0);               \
   CHECK(reader.unpackedSize > 0);
 
 #define CHECK_INVALID_READER(reader) \
   CHECK(reader.load() == false);     \
-  CHECK(reader.getErrorMessage().size() > 0);
+  CHECK(reader.getLogger()->errors().size() > 0);
 
 // ------------------------------------------------------------------
 // ResourceManager suite
@@ -63,17 +64,18 @@ TEST_SUITE("ResourceManager suite") {
       }
 
       SUBCASE("Failing when resources count exceeds MegaROM maximum size") {
-        for(int i=0;i<128;i++) resourceManager.addFile(fname, "./tmp");
+        for (int i = 0; i < 128; i++) resourceManager.addFile(fname, "./tmp");
         CHECK(resourceManager.buildMap(0, 0) == false);
-        CHECK(resourceManager.getErrorMessage().find(
-                 "MegaROM size limit exceeded (2048K)") != std::string::npos);
+        CHECK(resourceManager.logger->errors().toString().find(
+                  "MegaROM size limit exceeded (2048K)") != std::string::npos);
       }
 
       SUBCASE("Failing when resource address table exceeds 16K limit") {
-        for(int i=0;i<4000;i++) resourceManager.addFile(fname, "./tmp");
+        for (int i = 0; i < 4000; i++) resourceManager.addFile(fname, "./tmp");
         CHECK(resourceManager.buildMap(0, 0) == false);
-        CHECK(resourceManager.getErrorMessage().find(
-                "Resource count maximum limit exceeded") != std::string::npos);
+        CHECK(resourceManager.logger->errors().toString().find(
+                  "Resource count maximum limit exceeded") !=
+              std::string::npos);
       }
 
       deleteTempFile(fname);
@@ -87,7 +89,7 @@ TEST_SUITE("ResourceManager suite") {
       resourceManager.addFile(fname, "./tmp");
       REQUIRE(resourceManager.resources.size() == 1);
       CHECK(resourceManager.buildMap(0, 0) == false);
-      CHECK(resourceManager.getErrorMessage().find(
+      CHECK(resourceManager.logger->errors().toString().find(
                 "Resource file size exceeds") != std::string::npos);
 
       deleteTempFile(fname);
@@ -140,7 +142,7 @@ TEST_SUITE("ResourceReader suite") {
 
     ResourceBlobPackedReader reader(fname);
     CHECK_INVALID_READER(reader);
-    CHECK(reader.getErrorMessage().find("Resource size >") !=
+    CHECK(reader.getLogger()->errors().toString().find("Resource size >") !=
           std::string::npos);
 
     deleteTempFile(fname);
@@ -174,7 +176,7 @@ TEST_SUITE("ResourceReader suite") {
 
     // Check first block has our text
     REQUIRE(reader.data.size() == 4);
-    std::string loaded(reinterpret_cast<char *>(reader.data[1].data()),
+    std::string loaded(reinterpret_cast<char*>(reader.data[1].data()),
                        reader.data[1].size());
     CHECK(loaded.find("Hello World") != std::string::npos);
 
@@ -192,7 +194,7 @@ TEST_SUITE("ResourceReader suite") {
     CHECK_VALID_READER(reader);
 
     REQUIRE(reader.data.size() == 7);
-    std::string loaded(reinterpret_cast<char *>(reader.data[4].data()),
+    std::string loaded(reinterpret_cast<char*>(reader.data[4].data()),
                        reader.data[4].size());
     CHECK(loaded.find("Alice") != std::string::npos);
 
@@ -321,7 +323,7 @@ TEST_SUITE("ResourceReader suite") {
     CHECK_VALID_READER(reader);
 
     REQUIRE(reader.data.size() > 0);
-    std::string loaded(reinterpret_cast<char *>(reader.data[0].data()),
+    std::string loaded(reinterpret_cast<char*>(reader.data[0].data()),
                        reader.data[0].size());
     CHECK(loaded.find("HELLO") != std::string::npos);
   }

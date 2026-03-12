@@ -10,6 +10,7 @@
 #include <string.h>
 #include <strings.h>
 
+#include "logger.h"
 #include "resource_txt_reader.h"
 
 ResourceSprReader::ResourceSprReader(string filename)
@@ -44,8 +45,8 @@ bool ResourceSprReader::parseTinySpriteFile() {
   unsigned char spriteData[16][4][8];
   unsigned char spriteAttr[16 * 255];
   unsigned char spriteColor[16];
-  unsigned char *spriteCount = &spriteColor[0];
-  unsigned char *buffer;
+  unsigned char* spriteCount = &spriteColor[0];
+  unsigned char* buffer;
   bool ok = false, found;
 
   data.clear();
@@ -62,7 +63,7 @@ bool ResourceSprReader::parseTinySpriteFile() {
       length = (int)line.size();
 
       /// debug:
-      /// printf("---> %s...\n", line.c_str());
+      /// logger->debug("---> " + line);
 
       if (length) {
         switch (state) {
@@ -222,10 +223,10 @@ bool ResourceSprReader::parseTinySpriteFile() {
       }
     }
   } else {
-    errorMessage = txtReader.getErrorMessage();
+    logger->add(txtReader.getLogger());
     return false;
   }
 
-  errorMessage = "Error while parsing Tiny Sprite resource: " + filename;
+  logger->error("Error while parsing Tiny Sprite resource: " + filename);
   return false;
 }

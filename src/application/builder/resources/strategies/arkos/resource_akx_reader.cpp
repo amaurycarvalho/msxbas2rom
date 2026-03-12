@@ -9,6 +9,8 @@
 
 #include <strings.h>
 
+#include "logger.h"
+
 ResourceAkxReader::ResourceAkxReader(string filename)
     : ResourceBlobReader(filename) {};
 
@@ -22,7 +24,7 @@ bool ResourceAkxReader::remapTo(int index, int mappedSegm, int mappedAddress) {
     fixAKX(data[0].data(), mappedAddress, data[0].size());
     return true;
   }
-  errorMessage = "AKX data is empty";
+  logger->error("AKX data is empty");
   return false;
 }
 
@@ -32,18 +34,19 @@ bool ResourceAkxReader::remapTo(int index, int mappedSegm, int mappedAddress) {
  * https://bitbucket.org/JulienNevo/arkostracker3/src/master/
  * https://bitbucket.org/JulienNevo/arkostracker3/src/master/doc/export/SoundEffects.md
  */
-bool ResourceAkxReader::fixAKX(unsigned char *data, int address, int length) {
+bool ResourceAkxReader::fixAKX(unsigned char* data, int address, int length) {
   int i, baseAddress;
   int firstSoundEffectAddress, firstSoundEffectFixed;
   int soundEffectAddress, soundEffectFixed;
 
   baseAddress = guessBaseAddress(data, length);
   if (baseAddress < 0) {
-    printf("WARNING: cannot guess base address of AKX file\n");
+    logger->warning("Cannot guess base address of AKX file");
     return false;
   }
+
   /// debug:
-  /// printf("----> akx base address: %04X\n", baseAddress);
+  /// logger->debug("----> akx base address: %04X\n", baseAddress);
 
   firstSoundEffectAddress = data[0] | (data[1] << 8);
   firstSoundEffectFixed = firstSoundEffectAddress - baseAddress;
@@ -70,7 +73,7 @@ bool ResourceAkxReader::fixAKX(unsigned char *data, int address, int length) {
  * @remarks
  * https://bitbucket.org/JulienNevo/arkostracker3/src/master/doc/export/SoundEffects.md
  */
-int ResourceAkxReader::guessBaseAddress(unsigned char *data, int length) {
+int ResourceAkxReader::guessBaseAddress(unsigned char* data, int length) {
   int baseAddress, i;
   int firstSoundEffectAddress, firstSoundEffectItem;
   int soundEffectAddress, soundEffectItem;

@@ -13,6 +13,7 @@
 #include "doctest/doctest.h"
 #include "fswrapper.h"
 #include "lexer.h"
+#include "logger.h"
 #include "parser.h"
 #include "resources.h"
 #include "rom.h"
@@ -79,7 +80,7 @@ TEST_SUITE("Builder") {
     ResourceManager rm;
     REQUIRE(rm.addFile(filename, "tmp") == true);
     CHECK(rm.buildMap(0, 0) == false);
-    CHECK(rm.getErrorMessage().find("Resource file size exceeds") !=
+    CHECK(rm.logger->errors().toString().find("Resource file size exceeds") !=
           std::string::npos);
 
     std::remove(filename.c_str());

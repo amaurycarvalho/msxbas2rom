@@ -9,6 +9,8 @@
 
 #include <fstream>
 
+#include "logger.h"
+
 ResourceBlobReader::ResourceBlobReader(string filename)
     : ResourceReader(filename) {};
 
@@ -24,7 +26,7 @@ bool ResourceBlobReader::load() {
   packedSize = 0;
 
   if (!fileStream) {
-    errorMessage = "Resource file not found: " + filename;
+    logger->error("Resource file not found: " + filename);
     return false;
   }
 
@@ -32,13 +34,13 @@ bool ResourceBlobReader::load() {
   fileStream.seekg(0, ios::beg);
 
   if (size <= 0) {
-    errorMessage = "Resource is empty: " + filename;
+    logger->error("Resource is empty: " + filename);
     return false;
   }
 
   data.emplace_back(size);
-  if (!fileStream.read((char *)data.back().data(), size)) {
-    errorMessage = "Error reading resource: " + filename;
+  if (!fileStream.read((char*)data.back().data(), size)) {
+    logger->error("Error reading resource: " + filename);
     return false;
   }
 

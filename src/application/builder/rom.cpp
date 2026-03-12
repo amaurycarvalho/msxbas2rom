@@ -37,6 +37,8 @@ Logger* Rom::getLogger() {
 bool Rom::build(Compiler* compiler) {
   float romSizeFloat;
 
+  if (!compiler) return false;
+
   if (!compiler->isCompiled()) return false;
 
   /// initialize data
@@ -45,37 +47,39 @@ bool Rom::build(Compiler* compiler) {
   this->opts = compiler->getOpts();
   this->resourceManager = compiler->getResourceManager();
 
-  if (opts->debug) printf("Initializing build...\n");
+  logger->setFile(opts->inputFilename);
+
+  logger->debug("Initializing build...");
 
   buildInit();
 
   /// add kernel page
 
-  if (opts->debug) printf("Adding kernel data...\n");
+  logger->debug("Adding kernel data...");
 
   if (!addKernel()) return false;
 
   /// add code page
 
-  if (opts->debug) printf("Adding compiled code...\n");
+  logger->debug("Adding compiled code...");
 
   if (!addCompiledCode()) return false;
 
   // add resources pages
 
-  if (opts->debug) printf("Adding resources...\n");
+  logger->debug("Adding resources...");
 
   if (!addResources()) return false;
 
   // save ROM file
 
-  if (opts->debug) printf("Writing ROM file...\n");
+  logger->debug("Writing ROM file...");
 
   if (!writeRom(opts->outputFilename)) return false;
 
   // calculate shares
 
-  if (opts->debug) printf("Calculating ROM statistics...\n");
+  logger->debug("Calculating ROM statistics...");
 
   romSizeFloat = romSize;
   kernelShare = (0x4000 / romSizeFloat) * 100;
@@ -120,7 +124,7 @@ bool Rom::addKernel() {
 bool Rom::addResources() {
   int baseAddress;
 
-  if (opts->debug) printf("--> Calculating resource map base address...\n");
+  logger->debug("--> Calculating resource map base address...");
 
   if (opts->megaROM) {
     baseAddress = 0x8000;
@@ -131,19 +135,22 @@ bool Rom::addResources() {
   }
   resourceAddress = baseAddress + 0x0010;  //! resource map start address
 
-  if (opts->debug) printf("--> Building resource map...\n");
+  logger->debug("--> Building resource map...");
 
   if (!resourceManager->buildMap(resourceSegment, baseAddress)) {
-    errorMessage = resourceManager->getErrorMessage();
+    logger->add(resourceManager->logger.get());
     errorFound = true;
     return false;
   }
+
+  if (resourceManager->logger->size())
+    logger->add(resourceManager->logger.get());
 
   resourcesSize = resourceManager->resourcesPackedSize;
 
   /// adjust resource map start address
 
-  if (opts->debug) printf("--> Adjusting resource map start address...\n");
+  logger->debug("--> Adjusting resource map start address...");
 
   setResourceMapStartAddress();
 
@@ -173,7 +180,7 @@ bool Rom::addCompiledCode() {
     }
     return true;
   } else {
-    errorMessage = "Compiled code is empty!";
+    logger->error("Compiled code is empty!");
     errorFound = true;
     return false;
   }
@@ -215,21 +222,13 @@ bool Rom::fixIfKonamiSCC() {
         p++;
     }
     if (mapperCount != 11) {
-      printf("ERROR: Konami SCC ROM format adjust failed (%i locations)\n",
-             mapperCount);
+      logger->error("ERROR: Konami SCC ROM format adjust failed (" +
+                    to_string(mapperCount) + " locations)");
       errorFound = true;
       return false;
     }
   }
   return true;
-}
-
-void Rom::error() {
-  printf("%s\n", errorMessage.c_str());
-}
-
-const string& Rom::getErrorMessage() const {
-  return errorMessage;
 }
 
 //----------------------------------------------------------------------------------------------
@@ -240,7 +239,7 @@ bool Rom::writeRom(string filename) {
   int i, pageCount, fillerCount;
 
   if (!file) {
-    errorMessage = "Cannot create output file: " + filename;
+    logger->error("Cannot create output file: " + filename);
     errorFound = true;
     return false;
   }
@@ -252,9 +251,9 @@ bool Rom::writeRom(string filename) {
   if (!opts->megaROM) {
     if ((pageCount = (int)resourceManager->pages.size())) {
       if (pageCount > 1) {
-        errorMessage =
+        logger->error(
             "Resources exceeded 16k plain ROM limit\n"
-            "Try to compile it in MegaROM format by adding the -x parameter";
+            "Try to compile it in MegaROM format by adding the -x parameter");
         errorFound = true;
         file.close();
         remove(filename.c_str());
@@ -268,8 +267,8 @@ bool Rom::writeRom(string filename) {
 
   /// write code pages
   if (!pages.size()) {
-    errorMessage =
-        "Code is empty!!!\nTry to write some code in your program....";
+    logger->error(
+        "Code is empty!!!\nTry to write some code in your program....");
     errorFound = true;
     file.close();
     remove(filename.c_str());
@@ -277,9 +276,9 @@ bool Rom::writeRom(string filename) {
   }
   if (!opts->megaROM) {
     if (pages.size() > 2) {
-      errorMessage =
+      logger->error(
           "Code exceeded 16k plain ROM limit\n"
-          "Try to compile it in MegaROM format by adding the -x parameter";
+          "Try to compile it in MegaROM format by adding the -x parameter");
       errorFound = true;
       file.close();
       remove(filename.c_str());

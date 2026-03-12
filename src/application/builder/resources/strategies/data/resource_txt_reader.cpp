@@ -7,10 +7,13 @@
 
 #include "resource_txt_reader.h"
 
-#include <algorithm>
-#include <fstream>
 #include <string.h>
 #include <strings.h>
+
+#include <algorithm>
+#include <fstream>
+
+#include "logger.h"
 
 ResourceTxtReader::ResourceTxtReader(string filename)
     : ResourceReader(filename) {
@@ -21,7 +24,7 @@ ResourceTxtReader::ResourceTxtReader(string filename)
 bool ResourceTxtReader::populateLines() {
   ifstream file(filename);
   if (!file) {
-    errorMessage = "Resource file not found: " + filename;
+    logger->error("Resource file not found: " + filename);
     return false;
   }
 
@@ -34,7 +37,7 @@ bool ResourceTxtReader::populateLines() {
       line.pop_back();
     }
     // replace non-printable / non-ASCII characters with spaces
-    for (char &ch : line) {
+    for (char& ch : line) {
       if (ch < 32) {
         ch = ' ';
       }

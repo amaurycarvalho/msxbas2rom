@@ -32,7 +32,7 @@ class Logger {
   vector<LogEntry> logs;
   LogEntry dummy;
   string file;
-  int lineNumber;
+  int lineNumber = 0;
 
   LogEntry& add(LogLevel severity, const string& message);
   string trim(const string& str) const;
@@ -48,6 +48,7 @@ class Logger {
   LogEntry& error(const string& msg);
 
   LogEntry& add(LogEntry entry);
+  Logger* add(Logger* logger);
 
   bool contain(const set<LogLevel>& levels) const;
   bool containWarnings() const;

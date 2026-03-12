@@ -46,10 +46,6 @@ string ResourceManager::toString() {
   return out.str();
 }
 
-const string ResourceManager::getErrorMessage() {
-  return errorMessage;
-}
-
 bool ResourceManager::addFile(string filename, string inputPath) {
   /// if file not found, try search it at input path
   if (!fileExists(filename)) {
@@ -62,7 +58,7 @@ bool ResourceManager::addFile(string filename, string inputPath) {
     resources.push_back(std::move(resourceReader));
     return true;
   }
-  errorMessage = "Resource type not recognized: " + filename;
+  logger->error("Resource type not recognized: " + filename);
   return false;
 }
 
@@ -102,8 +98,8 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
   if (resources.size()) {
     /// check resource map size limit
     if (mapSize > 0x4000) {
-      errorMessage = "Resource count maximum limit exceeded: " +
-                     to_string(resources.size());
+      logger->error("Resource count maximum limit exceeded: " +
+                    to_string(resources.size()));
       return false;
     }
 
@@ -120,11 +116,16 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
          resourceItemIndex++) {
       /// next resource item
       resourceReader = resources[resourceItemIndex].get();
-      /// debug:
-      /// printf("Building resource: %s\n",
-      /// resourceReader->getFilename().c_str());
+
+      logger->debug("Building resource: " + resourceReader->getFilename());
+
       if (!resourceReader->load()) {
-        errorMessage = resourceReader->getErrorMessage();
+        Logger* resourceLogger = resourceReader->getLogger();
+        if (!resourceLogger->containErrors())
+          logger->error("Error loading resource " +
+                        resourceReader->getFilename());
+        else
+          logger->add(resourceLogger);
         return false;
       }
 
@@ -136,8 +137,8 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
         /// resource block size check
         resourceBlockSize = resourceReader->data[resourceBlockIndex].size();
         if (resourceBlockSize > 0x4000) {
-          errorMessage = "Resource file size exceeds maximum limit (16k): " +
-                         resourceReader->getFilename();
+          logger->error("Resource file size exceeds maximum limit (16k): " +
+                        resourceReader->getFilename());
           return false;
         }
         /// calculate next block address
@@ -155,7 +156,7 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
           resourceBlockAddress = 0;
           /// check MegaROM size limit
           if (resourceBlockSegment > 255) {
-            errorMessage = "MegaROM size limit exceeded (2048K)";
+            logger->error("MegaROM size limit exceeded (2048K)");
             return false;
           }
         }
@@ -163,7 +164,12 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
         resourceBlockOffset = (resourceBlockAddress + baseAddress);
         if (!resourceReader->remapTo(resourceBlockIndex, resourceBlockSegment,
                                      resourceBlockOffset)) {
-          errorMessage = resourceReader->getErrorMessage();
+          Logger* resourceLogger = resourceReader->getLogger();
+          if (!resourceLogger->containErrors())
+            logger->error("Error building resource map for " +
+                          resourceReader->getFilename());
+          else
+            logger->add(resourceLogger);
           return false;
         }
         if (resourceBlockIndex == 0) {

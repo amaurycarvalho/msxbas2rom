@@ -7,9 +7,10 @@
 
 #include "resource_data_reader.h"
 
+#include "logger.h"
 #include "parser.h"
 
-ResourceDataReader::ResourceDataReader(Parser *parser)
+ResourceDataReader::ResourceDataReader(Parser* parser)
     : ResourceCsvReader(string("_DATA_")) {
   this->parser = parser;
   resourceType = 0;  //! DATA resource type
@@ -24,7 +25,7 @@ bool ResourceDataReader::load() {
 
 bool ResourceDataReader::populateFields() {
   int fieldCount = parser->getDatas().size(), i;
-  Lexeme *lexeme;
+  Lexeme* lexeme;
   string lineNumber;
   /// DATA/IDATA resource data
   lineFields.clear();
@@ -39,8 +40,8 @@ bool ResourceDataReader::populateFields() {
           try {
             lineNumbers.push_back(stoi(lineNumber));
           } catch (...) {
-            errorMessage =
-                "DATA/IDATA statement invalid line number: " + lineNumber;
+            logger->error("DATA/IDATA statement invalid line number: " +
+                          lineNumber);
             return false;
           }
         }
