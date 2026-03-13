@@ -84,3 +84,7 @@ IParserStatementStrategy* ParserStatementStrategyFactory::getStrategyByKeyword(
 
   return it->second;
 }
+
+size_t ParserStatementStrategyFactory::size() const {
+  return strategies.size();
+}

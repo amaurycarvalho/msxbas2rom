@@ -10,10 +10,15 @@
 #include <string>
 #include <vector>
 
+#include "action_node.h"
 #include "doctest/doctest.h"
+#include "lexeme.h"
 #include "lexer.h"
+#include "lexer_line.h"
 #include "logger.h"
 #include "parser.h"
+#include "parser_context.h"
+#include "print_statement_strategy.h"
 
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {
@@ -349,6 +354,263 @@ TEST_SUITE("Parser") {
     std::remove(okFile.c_str());
     std::remove(badOpen.c_str());
     std::remove(badClose.c_str());
+  }
+}
+
+TEST_SUITE("ParserStatementStrategyFactory") {
+  TEST_CASE("All parser strategies are registered") {
+    ParserStatementStrategyFactory factory;
+
+    std::vector<std::string> keywords = {
+
+        "REM",    "CLS",      "END",    "BEEP",    "RANDOMIZE", "'",
+
+        "WIDTH",  "CLEAR",    "ERASE",  "LOCATE",  "DRAW",      "GOTO",
+        "GOSUB",  "RETURN",   "SOUND",  "RESTORE", "RESUME",    "READ",
+        "IREAD",  "IRESTORE", "POKE",   "IPOKE",   "VPOKE",     "OUT",
+        "SWAP",   "WAIT",     "SEED",   "BLOAD",   "PLAY",
+
+        "LET",    "DIM",      "REDIM",
+
+        "PRINT",  "?",        "INPUT",
+
+        "DATA",   "IDATA",
+
+        "SCREEN", "SPRITE",   "BASE",   "VDP",
+
+        "PUT",    "TIME",     "SET",    "GET",
+
+        "ON",     "INTERVAL", "STOP",   "KEY",     "STRIG",
+
+        "COLOR",  "CMD",      "OPEN",   "CLOSE",   "MAXFILES",
+
+        "CALL",   "_",
+
+        "DEF",    "DEFINT",   "DEFSTR", "DEFSNG",  "DEFDBL",
+
+        "IF",     "FOR",      "NEXT",
+
+        "PSET",   "PRESET",   "LINE",   "CIRCLE",  "PAINT",     "COPY"};
+
+    for (const auto& kw : keywords) {
+      CHECK(factory.getStrategyByKeyword(kw) != nullptr);
+    }
+  }
+
+  TEST_CASE("Unknown keyword returns nullptr") {
+    ParserStatementStrategyFactory factory;
+
+    CHECK(factory.getStrategyByKeyword("FOOBAR") == nullptr);
+    CHECK(factory.getStrategyByKeyword("") == nullptr);
+    CHECK(factory.getStrategyByKeyword("INVALID") == nullptr);
+  }
+
+  TEST_CASE("PRINT aliases share same strategy") {
+    ParserStatementStrategyFactory factory;
+
+    auto* s1 = factory.getStrategyByKeyword("PRINT");
+    auto* s2 = factory.getStrategyByKeyword("?");
+
+    CHECK(s1 != nullptr);
+    CHECK(s1 == s2);
+  }
+
+  TEST_CASE("CALL aliases share same strategy") {
+    ParserStatementStrategyFactory factory;
+
+    auto* s1 = factory.getStrategyByKeyword("CALL");
+    auto* s2 = factory.getStrategyByKeyword("_");
+
+    CHECK(s1 != nullptr);
+    CHECK(s1 == s2);
+  }
+
+  TEST_CASE("ON family shares same strategy") {
+    ParserStatementStrategyFactory factory;
+
+    auto* base = factory.getStrategyByKeyword("ON");
+
+    CHECK(base != nullptr);
+    CHECK(base == factory.getStrategyByKeyword("INTERVAL"));
+    CHECK(base == factory.getStrategyByKeyword("STOP"));
+    CHECK(base == factory.getStrategyByKeyword("KEY"));
+    CHECK(base == factory.getStrategyByKeyword("STRIG"));
+  }
+
+  TEST_CASE("DEF family shares same strategy") {
+    ParserStatementStrategyFactory factory;
+
+    auto* base = factory.getStrategyByKeyword("DEF");
+
+    CHECK(base != nullptr);
+    CHECK(base == factory.getStrategyByKeyword("DEFINT"));
+    CHECK(base == factory.getStrategyByKeyword("DEFSTR"));
+    CHECK(base == factory.getStrategyByKeyword("DEFSNG"));
+    CHECK(base == factory.getStrategyByKeyword("DEFDBL"));
+  }
+
+  TEST_CASE("Graphics commands share same strategy") {
+    ParserStatementStrategyFactory factory;
+
+    auto* base = factory.getStrategyByKeyword("PSET");
+
+    CHECK(base != nullptr);
+
+    CHECK(base == factory.getStrategyByKeyword("PRESET"));
+    CHECK(base == factory.getStrategyByKeyword("LINE"));
+    CHECK(base == factory.getStrategyByKeyword("CIRCLE"));
+    CHECK(base == factory.getStrategyByKeyword("PAINT"));
+    CHECK(base == factory.getStrategyByKeyword("COPY"));
+  }
+
+  TEST_CASE("Repeated calls return same instance") {
+    ParserStatementStrategyFactory factory;
+
+    auto* s1 = factory.getStrategyByKeyword("PRINT");
+    auto* s2 = factory.getStrategyByKeyword("PRINT");
+
+    CHECK(s1 != nullptr);
+    CHECK(s1 == s2);
+  }
+
+  TEST_CASE("All statement strategies have unit tests") {
+    ParserStatementStrategyFactory factory;
+
+    CHECK(factory.size() == 71);
+  }
+}
+
+static Lexeme* kw(const std::string& v) {
+  return new Lexeme(Lexeme::type_keyword, Lexeme::subtype_any, v);
+}
+
+static Lexeme* sep(const std::string& v) {
+  return new Lexeme(Lexeme::type_separator, Lexeme::subtype_any, v);
+}
+
+static Lexeme* lit(const std::string& v) {
+  return new Lexeme(Lexeme::type_literal, Lexeme::subtype_basic_string, v);
+}
+
+static unique_ptr<ParserContext> createContext() {
+  unique_ptr<ParserContext> ctx;
+  ctx.reset(new ParserContext());
+  ctx->tag = new TagNode();
+  ctx->actionRoot = new ActionNode();
+  return ctx;
+}
+
+TEST_SUITE("PrintStatementStrategy") {
+  TEST_CASE("PRINT simple literal") {
+    unique_ptr<ParserContext> ctx = createContext();
+    PrintStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(lit("\"HELLO\""));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.parseStatement(*ctx, &line);
+
+    CHECK(result == true);
+  }
+
+  TEST_CASE("PRINT with comma separator") {
+    unique_ptr<ParserContext> ctx = createContext();
+    PrintStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(lit("\"A\""));
+    line.addLexeme(sep(","));
+    line.addLexeme(lit("\"B\""));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.parseStatement(*ctx, &line);
+
+    CHECK(result == true);
+  }
+
+  TEST_CASE("PRINT with semicolon separator") {
+    unique_ptr<ParserContext> ctx = createContext();
+    PrintStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(lit("\"A\""));
+    line.addLexeme(sep(";"));
+    line.addLexeme(lit("\"B\""));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.parseStatement(*ctx, &line);
+
+    CHECK(result == true);
+  }
+
+  TEST_CASE("PRINT to channel") {
+    unique_ptr<ParserContext> ctx = createContext();
+    PrintStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(sep("#"));
+    line.addLexeme(lit("1"));
+    line.addLexeme(sep(","));
+    line.addLexeme(lit("\"HELLO\""));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.parseStatement(*ctx, &line);
+
+    CHECK(result == true);
+  }
+
+  TEST_CASE("PRINT USING valid") {
+    unique_ptr<ParserContext> ctx = createContext();
+    PrintStatementStrategy strategy;
+
+    LexerLine line;
+
+    line.addLexeme(kw("USING"));
+    line.addLexeme(lit("\"###\""));
+    line.addLexeme(sep(";"));
+    line.addLexeme(lit("123"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.parseStatement(*ctx, &line);
+
+    CHECK(result == true);
+  }
+
+  TEST_CASE("PRINT USING invalid syntax") {
+    unique_ptr<ParserContext> ctx = createContext();
+    PrintStatementStrategy strategy;
+
+    LexerLine line;
+
+    line.addLexeme(kw("USING"));
+    line.addLexeme(sep(","));  // inválido
+
+    line.setLexemeBOF();
+
+    bool result = strategy.parseStatement(*ctx, &line);
+
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Alias ? converts to PRINT") {
+    unique_ptr<ParserContext> ctx = createContext();
+    PrintStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(lit("\"HELLO\""));
+
+    Lexeme lex(Lexeme::type_keyword, Lexeme::subtype_any, "?");
+
+    bool result = strategy.execute(*ctx, &line, &lex);
+
+    CHECK(result == true);
+    CHECK(lex.value == "PRINT");
   }
 }
 

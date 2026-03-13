@@ -69,9 +69,9 @@
 #include "compiler_using_function_strategy.h"
 #include "compiler_usr_function_strategy.h"
 #include "compiler_val_function_strategy.h"
+#include "compiler_varptr_function_strategy.h"
 #include "compiler_vdp_function_strategy.h"
 #include "compiler_vpeek_function_strategy.h"
-#include "compiler_varptr_function_strategy.h"
 
 using namespace std;
 
@@ -150,6 +150,7 @@ class CompilerFunctionStrategyFactory {
  public:
   CompilerFunctionStrategyFactory();
   ICompilerFunctionStrategy* getByKeyword(const string& keyword);
+  size_t size() const;
 };
 
 #endif  // COMPILER_FUNCTION_STRATEGY_FACTORY_H_INCLUDED

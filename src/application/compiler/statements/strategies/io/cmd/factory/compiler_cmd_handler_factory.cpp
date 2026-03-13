@@ -58,3 +58,7 @@ ICompilerCmdHandler* CompilerCmdHandlerFactory::getByKeyword(
 
   return it->second;
 }
+
+size_t CompilerCmdHandlerFactory::size() const {
+  return handlers.size();
+}

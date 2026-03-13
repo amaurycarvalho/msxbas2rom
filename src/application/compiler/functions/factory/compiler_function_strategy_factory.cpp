@@ -97,3 +97,7 @@ ICompilerFunctionStrategy* CompilerFunctionStrategyFactory::getByKeyword(
 
   return it->second;
 }
+
+size_t CompilerFunctionStrategyFactory::size() const {
+  return strategies.size();
+}

@@ -151,6 +151,7 @@ class CompilerStatementStrategyFactory {
  public:
   CompilerStatementStrategyFactory();
   ICompilerStatementStrategy* getByKeyword(const string& keyword);
+  size_t size() const;
 };
 
 #endif  // COMPILER_STATEMENT_STRATEGY_FACTORY_H_INCLUDED

@@ -90,3 +90,7 @@ ICompilerStatementStrategy* CompilerStatementStrategyFactory::getByKeyword(
 
   return it->second;
 }
+
+size_t CompilerStatementStrategyFactory::size() const {
+  return strategies.size();
+}

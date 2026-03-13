@@ -66,6 +66,7 @@ class ParserStatementStrategyFactory {
  public:
   ParserStatementStrategyFactory();
   IParserStatementStrategy* getStrategyByKeyword(const string& keyword);
+  size_t size() const;
 };
 
 #endif  // PARSER_STATEMENT_STRATEGY_FACTORY_H_INCLUDED

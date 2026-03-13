@@ -92,6 +92,7 @@ class CompilerCmdHandlerFactory {
  public:
   CompilerCmdHandlerFactory();
   ICompilerCmdHandler* getByKeyword(const string& keyword);
+  size_t size() const;
 };
 
 #endif  // COMPILER_CMD_HANDLER_FACTORY_H_INCLUDED
