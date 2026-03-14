@@ -7,8 +7,10 @@
 
 #include "cdb_export_strategy.h"
 
+#include "build_options.h"
 #include "code_node.h"
 #include "lexeme.h"
+#include "symbol_manager.h"
 
 bool CdbExportStrategy::save(SymbolManager* symbolManager, BuildOptions* opts) {
   FILE* file;

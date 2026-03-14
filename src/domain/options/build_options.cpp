@@ -57,6 +57,8 @@ void BuildOptions::setInputFilename(string filename) {
     omdsFilename = outputFilename + ".omds";
     noiceFilename = outputFilename + ".noi";
     cdbFilename = outputFilename + ".cdb";
+    elfFilename = outputFilename + ".elf";
+
     outputFilename += ".rom";
   }
 }

@@ -8,13 +8,14 @@
 #ifndef SYMBOL_MANAGER_H_INCLUDED
 #define SYMBOL_MANAGER_H_INCLUDED
 
-#include <string>
-
+#include <memory>
 #include <queue>
+#include <string>
 #include <vector>
 
 class CodeNode;
 class BuildOptions;
+class SymbolExportStrategyFactory;
 
 using namespace std;
 
@@ -24,8 +25,7 @@ using namespace std;
  */
 class SymbolManager {
  private:
-  bool saveWithStrategy(class SymbolExportStrategy* strategy,
-                        BuildOptions* opts);
+  unique_ptr<SymbolExportStrategyFactory> symbolExportFactory;
 
  public:
   vector<vector<string>> getKernelSymbolAddresses();
@@ -38,6 +38,8 @@ class SymbolManager {
   void clear();
 
   bool saveSymbol(BuildOptions* opts);
+  SymbolManager();
+  ~SymbolManager();
 };
 
 #endif  // SYMBOL_MANAGER_H_INCLUDED

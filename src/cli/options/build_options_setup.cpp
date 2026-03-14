@@ -75,6 +75,8 @@ void BuildOptionsSetup::setupParser() {
                    [&](const std::string&) { symbols = SymbolsMode::Omds; });
   parser.addOption("", "--cdb", "Generate symbols in .cdb format", false, false,
                    [&](const std::string&) { symbols = SymbolsMode::Cdb; });
+  parser.addOption("", "--elf", "Generate symbols in .elf format", false, false,
+                   [&](const std::string&) { symbols = SymbolsMode::Elf; });
   parser.addOption("-l", "--lin",
                    "Write the MSX BASIC line numbers in the binary code", false,
                    false, [&](const std::string&) { lineNumber = true; });

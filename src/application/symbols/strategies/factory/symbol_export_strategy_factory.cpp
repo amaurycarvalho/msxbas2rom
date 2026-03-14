@@ -7,23 +7,25 @@
 
 #include "symbol_export_strategy_factory.h"
 
-#include "cdb_export_strategy.h"
-#include "noice_export_strategy.h"
-#include "omds_export_strategy.h"
-#include "symbol_file_export_strategy.h"
+SymbolExportStrategyFactory::SymbolExportStrategyFactory() {
+  strategies[BuildOptions::SymbolsMode::Symbol] = &symbolExport;
+  strategies[BuildOptions::SymbolsMode::Omds] = &omdsExport;
+  strategies[BuildOptions::SymbolsMode::Cdb] = &cdbExport;
+  strategies[BuildOptions::SymbolsMode::NoICE] = &noiceExport;
+  strategies[BuildOptions::SymbolsMode::Elf] = &elfExport;
+}
 
-unique_ptr<SymbolExportStrategy> SymbolExportStrategyFactory::create(
+SymbolExportStrategyFactory::~SymbolExportStrategyFactory() = default;
+
+SymbolExportStrategy* SymbolExportStrategyFactory::getBySymbolMode(
     BuildOptions::SymbolsMode mode) {
-  switch (mode) {
-    case BuildOptions::SymbolsMode::Symbol:
-      return unique_ptr<SymbolExportStrategy>(new SymbolFileExportStrategy());
-    case BuildOptions::SymbolsMode::Omds:
-      return unique_ptr<SymbolExportStrategy>(new OmdsExportStrategy());
-    case BuildOptions::SymbolsMode::Cdb:
-      return unique_ptr<SymbolExportStrategy>(new CdbExportStrategy());
-    case BuildOptions::SymbolsMode::NoICE:
-      return unique_ptr<SymbolExportStrategy>(new NoIceExportStrategy());
-    default:
-      return NULL;
-  }
+  auto it = strategies.find(mode);
+
+  if (it == strategies.end()) return nullptr;
+
+  return it->second;
+}
+
+size_t SymbolExportStrategyFactory::size() const {
+  return strategies.size();
 }

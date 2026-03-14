@@ -7,7 +7,9 @@
 
 #include "symbol_file_export_strategy.h"
 
+#include "build_options.h"
 #include "code_node.h"
+#include "symbol_manager.h"
 
 bool SymbolFileExportStrategy::save(SymbolManager* symbolManager,
                                     BuildOptions* opts) {

@@ -7,7 +7,9 @@
 
 #include "omds_export_strategy.h"
 
+#include "build_options.h"
 #include "code_node.h"
+#include "symbol_manager.h"
 
 bool OmdsExportStrategy::save(SymbolManager* symbolManager,
                               BuildOptions* opts) {

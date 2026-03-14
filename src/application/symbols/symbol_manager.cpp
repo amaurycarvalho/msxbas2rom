@@ -27,12 +27,13 @@ vector<vector<string>> SymbolManager::getKernelSymbolAddresses() {
 }
 
 bool SymbolManager::saveSymbol(BuildOptions* opts) {
-  unique_ptr<SymbolExportStrategy> strategy =
-      SymbolExportStrategyFactory::create(opts->symbols);
-  return saveWithStrategy(strategy.get(), opts);
-}
-
-bool SymbolManager::saveWithStrategy(SymbolExportStrategy* strategy,
-                                     BuildOptions* opts) {
+  SymbolExportStrategy* strategy =
+      symbolExportFactory->getBySymbolMode(opts->symbols);
   return (strategy) ? strategy->save(this, opts) : false;
 }
+
+SymbolManager::SymbolManager() {
+  symbolExportFactory.reset(new SymbolExportStrategyFactory());
+}
+
+SymbolManager::~SymbolManager() = default;

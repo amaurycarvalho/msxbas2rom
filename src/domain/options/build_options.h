@@ -25,11 +25,11 @@ class BuildOptions {
   enum class CompileMode { Plain, ASCII8, KonamiSCC, Pcoded } compileMode;
 
   //! @brief Symbols output format
-  enum class SymbolsMode { None, NoICE, Omds, Symbol, Cdb } symbols;
+  enum class SymbolsMode { None, NoICE, Omds, Symbol, Cdb, Elf } symbols;
 
   //! @brief File names (input, output and symbol)
   string inputFilename, outputFilename, appFileName;
-  string symbolFilename, omdsFilename, noiceFilename, cdbFilename;
+  string symbolFilename, omdsFilename, noiceFilename, cdbFilename, elfFilename;
 
   //! @brief Options flags
   bool help, debug, quiet, error, version, history, doc, autoROM;

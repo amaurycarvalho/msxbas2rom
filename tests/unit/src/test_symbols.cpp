@@ -121,16 +121,14 @@ TEST_SUITE("Symbols") {
   }
 
   TEST_CASE("Symbol export strategy factory returns expected types") {
-    CHECK(SymbolExportStrategyFactory::create(BuildOptions::SymbolsMode::Symbol)
-              .get() != NULL);
-    CHECK(SymbolExportStrategyFactory::create(BuildOptions::SymbolsMode::Omds)
-              .get() != NULL);
-    CHECK(SymbolExportStrategyFactory::create(BuildOptions::SymbolsMode::NoICE)
-              .get() != NULL);
-    CHECK(SymbolExportStrategyFactory::create(BuildOptions::SymbolsMode::Cdb)
-              .get() != NULL);
-    CHECK(SymbolExportStrategyFactory::create(BuildOptions::SymbolsMode::None)
-              .get() == NULL);
+    SymbolExportStrategyFactory factory;
+    CHECK(factory.size() == 5);
+    CHECK(factory.getBySymbolMode(BuildOptions::SymbolsMode::Symbol) != NULL);
+    CHECK(factory.getBySymbolMode(BuildOptions::SymbolsMode::Omds) != NULL);
+    CHECK(factory.getBySymbolMode(BuildOptions::SymbolsMode::NoICE) != NULL);
+    CHECK(factory.getBySymbolMode(BuildOptions::SymbolsMode::Cdb) != NULL);
+    CHECK(factory.getBySymbolMode(BuildOptions::SymbolsMode::Elf) != NULL);
+    CHECK(factory.getBySymbolMode(BuildOptions::SymbolsMode::None) == NULL);
   }
 
   TEST_CASE("Symbol manager saves .symbol file") {
