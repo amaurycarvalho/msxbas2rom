@@ -27,9 +27,8 @@ class BuildOptions {
   //! @brief Symbols output format
   enum class SymbolsMode { None, NoICE, Omds, Symbol, Cdb, Elf } symbols;
 
-  //! @brief File names (input, output and symbol)
-  string inputFilename, outputFilename, appFileName;
-  string symbolFilename, omdsFilename, noiceFilename, cdbFilename, elfFilename;
+  //! @brief File names (input, output, app and base names)
+  string inputFilename, outputFilename, appFilename, baseFilename;
 
   //! @brief Options flags
   bool help, debug, quiet, error, version, history, doc, autoROM;

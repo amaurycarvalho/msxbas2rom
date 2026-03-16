@@ -20,12 +20,13 @@ bool NoIceExportStrategy::save(SymbolManager* symbolManager,
   char s[255];
   const char* noice_format = "def %s %XH  ; %s\n";
   string comment;
-  vector<vector<string>> kernelSymbols =
-      symbolManager->getKernelSymbolAddresses();
-  vector<CodeNode*>& codeList = symbolManager->codeList;
-  vector<CodeNode*>& dataList = symbolManager->dataList;
+  auto kernelSymbols = symbolManager->getKernelSymbolAddresses();
+  auto& codeList = symbolManager->codeList;
+  auto& dataList = symbolManager->dataList;
 
-  if ((file = fopen(opts->noiceFilename.c_str(), "w"))) {
+  symbolManager->exportFilename = opts->baseFilename + ".noi";
+
+  if ((file = fopen(symbolManager->exportFilename.c_str(), "w"))) {
     t = kernelSymbols.size();
     for (i = 0; i < t; i++) {
       size = snprintf(s, sizeof(s), noice_format, kernelSymbols[i][0].c_str(),

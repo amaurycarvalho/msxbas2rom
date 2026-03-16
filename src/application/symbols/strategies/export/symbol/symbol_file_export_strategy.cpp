@@ -18,12 +18,13 @@ bool SymbolFileExportStrategy::save(SymbolManager* symbolManager,
   int i, t, size;
   char s[255];
   const char* symbol_format[] = {"S%i_%s EQU 0%XH\n", "%s EQU 0%XH\n"};
-  vector<vector<string>> kernelSymbols =
-      symbolManager->getKernelSymbolAddresses();
-  vector<CodeNode*>& codeList = symbolManager->codeList;
-  vector<CodeNode*>& dataList = symbolManager->dataList;
+  auto kernelSymbols = symbolManager->getKernelSymbolAddresses();
+  auto& codeList = symbolManager->codeList;
+  auto& dataList = symbolManager->dataList;
 
-  if ((file = fopen(opts->symbolFilename.c_str(), "w"))) {
+  symbolManager->exportFilename = opts->baseFilename + ".symbol";
+
+  if ((file = fopen(symbolManager->exportFilename.c_str(), "w"))) {
     t = kernelSymbols.size();
     for (i = 0; i < t; i++) {
       size =

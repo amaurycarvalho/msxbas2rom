@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug MSX BASIC",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "echo Debug session started in openMSX",
+      "preLaunchTask": "run-openmsx-debug"
+    }
+  ]
+}

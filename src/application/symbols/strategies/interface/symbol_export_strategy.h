@@ -8,8 +8,12 @@
 #ifndef SYMBOL_EXPORT_STRATEGY_H_INCLUDED
 #define SYMBOL_EXPORT_STRATEGY_H_INCLUDED
 
+#include <string>
+
 class SymbolManager;
 class BuildOptions;
+
+using namespace std;
 
 class SymbolExportStrategy {
  public:

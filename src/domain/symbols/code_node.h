@@ -27,6 +27,7 @@ class CodeNode {
   int addr_within_segm;
   bool is_code;
   bool debug;
+  int lineNumber = 0;
   Lexeme* lexeme;
 };
 

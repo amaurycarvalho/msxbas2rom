@@ -46,11 +46,11 @@ Compile options (optional):
     -a or --auto = auto mode (fallback to ASCII8 when plain ROM overflows)
     -x or -8 or --ascii8 = ASCII8 MegaROM compile mode
     -k or --scc = Konami SCC MegaROM compile mode
-    -s or --noi or --noice = generate symbols in .noi format (default)
+    -s generate symbols in the default format (.noi)
+    --noi or --noice = generate symbols in .noi format (manual debugging)
+    --cdb = generate symbols in .cdb format (debugging via sdcdb)
     --symbol = generate symbols in .symbol format
-    --omds = generate symbols in .omds format
-    --cdb = generate symbols in .cdb format
-    --elf = generate symbols in .elf format
+    --omds = generate symbols in .omds format (openMSX deprecated)
     --lin = write the MSX BASIC line numbers in the binary code
 
 Path options (optional)
@@ -78,7 +78,10 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char* info_history = R"(
 Version history
 
-0.3.3.7 – (2026/03/16) CDB/ELF symbol export feature (issue #17);
+0.3.3.7 – (2026/03/16) CDB symbol export feature (issue #17), 
+                       MAX name bug fix (issue #13), 
+                       plain/megarom auto mode parameter (-a) and 
+                       extensive code refactoring;
 0.3.3.6 – (2026/01/28) LINE statement parameters bug fix (issue #16);
 0.3.3.5 – (2026/01/16) SET/GET SPRITE COLOR/PATTERN new commands;
 0.3.3.4 – (2025/09/26) MSX Tile Forge map loading optimization and 

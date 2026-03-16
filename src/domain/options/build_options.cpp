@@ -17,8 +17,8 @@ BuildOptions::BuildOptions(string filename) : BuildOptions() {
 
 BuildOptions::BuildOptions() {
   /// default file names
-  inputFilename = outputFilename = symbolFilename = "";
-  appFileName = "None";
+  inputFilename = outputFilename = baseFilename = "";
+  appFilename = "None";
 
   /// default options flags
   help = debug = quiet = error = version = doc = history = autoROM = false;
@@ -44,22 +44,16 @@ void BuildOptions::setInputFilename(string filename) {
     if (outputPath.empty()) {
       outputPath = inputPath;
     }
-    outputFilename =
+    baseFilename =
         pathJoin(outputPath, getFileNameWithoutExtension(inputFilename));
 
     if (compileMode == CompileMode::ASCII8 ||
         compileMode == CompileMode::KonamiSCC) {
-      outputFilename += "[" + getCompileModeShortName() + "]";
+      baseFilename += "[" + getCompileModeShortName() + "]";
       megaROM = true;
     }
 
-    symbolFilename = outputFilename + ".symbol";
-    omdsFilename = outputFilename + ".omds";
-    noiceFilename = outputFilename + ".noi";
-    cdbFilename = outputFilename + ".cdb";
-    elfFilename = outputFilename + ".elf";
-
-    outputFilename += ".rom";
+    outputFilename = baseFilename + ".rom";
   }
 }
 

@@ -139,14 +139,14 @@ TEST_SUITE("Symbols") {
     opts.symbols = BuildOptions::SymbolsMode::Symbol;
 
     REQUIRE(fixture.manager.saveSymbol(&opts) == true);
-    CHECK(fileExists(opts.symbolFilename) == true);
+    CHECK(fileExists(fixture.manager.exportFilename) == true);
 
-    std::string content = readFileText(opts.symbolFilename);
+    std::string content = readFileText(fixture.manager.exportFilename);
     CHECK(content.find("LOADER") != std::string::npos);
     CHECK(content.find("TESTCODE") != std::string::npos);
     CHECK(content.find("TESTVAR") != std::string::npos);
 
-    std::remove(opts.symbolFilename.c_str());
+    std::remove(fixture.manager.exportFilename.c_str());
   }
 
   TEST_CASE("Symbol manager saves .omds file") {
@@ -157,14 +157,14 @@ TEST_SUITE("Symbols") {
     opts.symbols = BuildOptions::SymbolsMode::Omds;
 
     REQUIRE(fixture.manager.saveSymbol(&opts) == true);
-    CHECK(fileExists(opts.omdsFilename) == true);
+    CHECK(fileExists(fixture.manager.exportFilename) == true);
 
-    std::string content = readFileText(opts.omdsFilename);
+    std::string content = readFileText(fixture.manager.exportFilename);
     CHECK(content.find("<DebugSession") != std::string::npos);
     CHECK(content.find("<Symbols>") != std::string::npos);
     CHECK(content.find("TESTCODE") != std::string::npos);
 
-    std::remove(opts.omdsFilename.c_str());
+    std::remove(fixture.manager.exportFilename.c_str());
   }
 
   TEST_CASE("Symbol manager saves .noi file") {
@@ -175,14 +175,14 @@ TEST_SUITE("Symbols") {
     opts.symbols = BuildOptions::SymbolsMode::NoICE;
 
     REQUIRE(fixture.manager.saveSymbol(&opts) == true);
-    CHECK(fileExists(opts.noiceFilename) == true);
+    CHECK(fileExists(fixture.manager.exportFilename) == true);
 
-    std::string content = readFileText(opts.noiceFilename);
+    std::string content = readFileText(fixture.manager.exportFilename);
     CHECK(content.find("def LOADER") != std::string::npos);
     CHECK(content.find("def TESTCODE") != std::string::npos);
     CHECK(content.find("def TESTVAR") != std::string::npos);
 
-    std::remove(opts.noiceFilename.c_str());
+    std::remove(fixture.manager.exportFilename.c_str());
   }
 
   TEST_CASE("Symbol manager saves .cdb file") {
@@ -193,15 +193,74 @@ TEST_SUITE("Symbols") {
     opts.symbols = BuildOptions::SymbolsMode::Cdb;
 
     REQUIRE(fixture.manager.saveSymbol(&opts) == true);
-    CHECK(fileExists(opts.cdbFilename) == true);
+    CHECK(fileExists(fixture.manager.exportFilename) == true);
 
-    std::string content = readFileText(opts.cdbFilename);
+    std::string content = readFileText(fixture.manager.exportFilename);
     CHECK(content.find("S:G$TESTVAR") != std::string::npos);
     CHECK(content.find("L:G$TESTVAR") != std::string::npos);
 
-    std::remove(opts.cdbFilename.c_str());
+    std::remove(fixture.manager.exportFilename.c_str());
   }
 
+  TEST_CASE("Symbol manager saves .elf file") {
+    ensureTmpDir();
+
+    SymbolsFixture fixture;
+    BuildOptions opts;
+
+    opts.setInputFilename("tmp/symbols_test.bas");
+    opts.symbols = BuildOptions::SymbolsMode::Elf;
+
+    REQUIRE(fixture.manager.saveSymbol(&opts) == true);
+
+    CHECK(fileExists(fixture.manager.exportFilename) == true);
+
+    std::ifstream ifs(fixture.manager.exportFilename.c_str(), std::ios::binary);
+
+    REQUIRE(ifs.good());
+
+    std::vector<unsigned char> data((std::istreambuf_iterator<char>(ifs)),
+                                    std::istreambuf_iterator<char>());
+
+    REQUIRE(data.size() > 64);
+
+    /* ---------------------------------------------------------
+     * Validate ELF header
+     * --------------------------------------------------------- */
+
+    CHECK(data[0] == 0x7f);
+    CHECK(data[1] == 'E');
+    CHECK(data[2] == 'L');
+    CHECK(data[3] == 'F');
+
+    /* 32-bit ELF */
+
+    CHECK(data[4] == 1);
+
+    /* little endian */
+
+    CHECK(data[5] == 1);
+
+    /* version */
+
+    CHECK(data[6] == 1);
+
+    /* ---------------------------------------------------------
+     * Validate symbol names exist somewhere in file
+     * --------------------------------------------------------- */
+
+    std::string fileContent(data.begin(), data.end());
+
+    CHECK(fileContent.find("TESTCODE") != std::string::npos);
+    CHECK(fileContent.find("TESTVAR") != std::string::npos);
+
+    /* ---------------------------------------------------------
+     * cleanup
+     * --------------------------------------------------------- */
+
+    std::remove(fixture.manager.exportFilename.c_str());
+  }
+  
   TEST_CASE("Symbol manager returns false when symbols mode is none") {
     SymbolsFixture fixture;
     BuildOptions opts;

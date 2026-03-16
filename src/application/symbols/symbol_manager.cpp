@@ -15,15 +15,8 @@ void SymbolManager::clear() {
   dataList.clear();
 }
 
-vector<vector<string>> SymbolManager::getKernelSymbolAddresses() {
-  return {{"LOADER", "4010", "jump"},
-          {"VAR_CURSEGM", "C023", "variable,byte,1"},
-          {"MR_CALL", "41C8", "jump"},
-          {"MR_CALL_TRAP", "41CB", "jump"},
-          {"MR_CHANGE_SGM", "41CE", "jump"},
-          {"MR_GET_BYTE", "41D1", "jump"},
-          {"MR_GET_DATA", "41D4", "jump"},
-          {"MR_JUMP", "41D7", "jump"}};
+vector<vector<string>> SymbolManager::getKernelSymbolAddresses() const {
+  return kernelSymbolAddresses;
 }
 
 bool SymbolManager::saveSymbol(BuildOptions* opts) {
@@ -34,6 +27,14 @@ bool SymbolManager::saveSymbol(BuildOptions* opts) {
 
 SymbolManager::SymbolManager() {
   symbolExportFactory.reset(new SymbolExportStrategyFactory());
+  kernelSymbolAddresses = {{"LOADER", "4010", "jump"},
+                           {"VAR_CURSEGM", "C023", "variable,byte,1"},
+                           {"MR_CALL", "41C8", "jump"},
+                           {"MR_CALL_TRAP", "41CB", "jump"},
+                           {"MR_CHANGE_SGM", "41CE", "jump"},
+                           {"MR_GET_BYTE", "41D1", "jump"},
+                           {"MR_GET_DATA", "41D4", "jump"},
+                           {"MR_JUMP", "41D7", "jump"}};
 }
 
 SymbolManager::~SymbolManager() = default;

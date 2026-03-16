@@ -204,6 +204,7 @@ bool Compiler::build(Parser* parser) {
       codeItem = new CodeNode();
       codeItem->start = context->cpu->context->code_pointer;
       codeItem->name = "LIN_" + tag->name;
+      if (tag->lexerLine) codeItem->lineNumber = tag->lexerLine->lineNumber;
 
       if (!context->evaluator->evaluate(tag)) {
         compiledCodeInfo += " error";

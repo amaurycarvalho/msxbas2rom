@@ -56,7 +56,7 @@ TEST_SUITE("Domain") {
     BuildOptions opts;
     opts.setInputFilename("tmp/test.bas");
     CHECK(opts.outputFilename.find(".rom") != std::string::npos);
-    CHECK(opts.symbolFilename.find(".symbol") != std::string::npos);
+    CHECK(opts.baseFilename.find(".bas") == std::string::npos);
 
     opts.compileMode = BuildOptions::CompileMode::ASCII8;
     opts.setInputFilename("tmp/test2.bas");

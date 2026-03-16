@@ -357,5 +357,8 @@ bool ElfExportStrategy::save(SymbolManager* symbolManager, BuildOptions* opts) {
 
   /* write ELF */
 
-  return ElfWriter::write(opts->elfFilename, symtab, strtab, shstrtab, dwarf);
+  symbolManager->exportFilename = opts->baseFilename + ".elf";
+
+  return ElfWriter::write(symbolManager->exportFilename, symtab, strtab,
+                          shstrtab, dwarf);
 }

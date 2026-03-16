@@ -94,7 +94,7 @@ void BuildOptionsSetup::setupParser() {
 
 bool BuildOptionsSetup::parse(int argc, char* argv[]) {
   try {
-    appFileName = argv[0];
+    appFilename = argv[0];
     parser.parse(argc, argv);
     setInputFilename(parser.getFilename());
 

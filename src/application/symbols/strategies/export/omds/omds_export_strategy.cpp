@@ -29,12 +29,13 @@ bool OmdsExportStrategy::save(SymbolManager* symbolManager,
       "<Symbol><type>%s</type><name>%s</name><value>%i</"
       "value><validSlots>65535</validSlots><validRegisters>3968</"
       "validRegisters><source>0</source><segments>%s</segments></Symbol>\n";
-  vector<vector<string>> kernelSymbols =
-      symbolManager->getKernelSymbolAddresses();
-  vector<CodeNode*>& codeList = symbolManager->codeList;
-  vector<CodeNode*>& dataList = symbolManager->dataList;
+  auto kernelSymbols = symbolManager->getKernelSymbolAddresses();
+  auto& codeList = symbolManager->codeList;
+  auto& dataList = symbolManager->dataList;
 
-  if ((file = fopen(opts->omdsFilename.c_str(), "w"))) {
+  symbolManager->exportFilename = opts->baseFilename + ".omds";
+
+  if ((file = fopen(symbolManager->exportFilename.c_str(), "w"))) {
     fwrite(omds_header, 1, sizeof(omds_header) - 1, file);
 
     t = kernelSymbols.size();

@@ -26,11 +26,13 @@ using namespace std;
 class SymbolManager {
  private:
   unique_ptr<SymbolExportStrategyFactory> symbolExportFactory;
+  vector<vector<string>> kernelSymbolAddresses;
 
  public:
-  vector<vector<string>> getKernelSymbolAddresses();
+  vector<vector<string>> getKernelSymbolAddresses() const;
   vector<CodeNode*> codeList;
   vector<CodeNode*> dataList;
+  string exportFilename;
 
   /***
    * @brief clear all symbol lists
@@ -38,6 +40,7 @@ class SymbolManager {
   void clear();
 
   bool saveSymbol(BuildOptions* opts);
+
   SymbolManager();
   ~SymbolManager();
 };

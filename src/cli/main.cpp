@@ -163,7 +163,7 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
-    print(logger->filter(logLevels).toString());
+    if (!retriedWithAscii8) print(logger->filter(logLevels).toString());
 
     /// SYNTACTIC ANALYSIS
     //! @note parsing the lexing tokens, building the syntax tree
@@ -182,7 +182,7 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
-    print(logger->filter(logLevels).toString());
+    if (!retriedWithAscii8) print(logger->filter(logLevels).toString());
 
     if (parser->getHasPt3()) {
       printf(
