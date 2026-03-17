@@ -72,17 +72,18 @@ TEST_SUITE("Domain") {
   }
 
   TEST_CASE("ActionNode and TagNode toString") {
-    ActionNode root("PRINT");
-    ActionNode* child = new ActionNode("A");
-    root.actions.push_back(child);
+    shared_ptr<ActionNode> root = make_shared<ActionNode>("PRINT");
+    shared_ptr<ActionNode> child = make_shared<ActionNode>("A");
 
-    std::string actionText = root.toString();
+    root->actions.push_back(child);
+
+    std::string actionText = root->toString();
     CHECK(actionText.find("Action") != std::string::npos);
 
     TagNode tag;
     tag.name = "10";
     tag.value = "10";
-    tag.actions.push_back(&root);
+    tag.actions.push_back(root);
 
     std::string tagText = tag.toString();
 

@@ -7,7 +7,7 @@
 void CompilerRestoreStatementStrategy::cmd_restore(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> lexeme;
   int t = context->current_action->actions.size();
   int result_subtype;

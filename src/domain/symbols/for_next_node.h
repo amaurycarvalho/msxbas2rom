@@ -17,11 +17,11 @@
 class ForNextNode {
  public:
   int index;
-  TagNode* tag;
+  shared_ptr<TagNode> tag;
   shared_ptr<Lexeme> for_var, for_to, for_step;
   FixNode* for_end_mark;
   SymbolNode* for_step_mark;
-  ActionNode *for_to_action, *for_step_action;
+  shared_ptr<ActionNode> for_to_action, for_step_action;
 };
 
 #endif  // FOR_NEXT_NODE_H_INCLUDED

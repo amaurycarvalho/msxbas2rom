@@ -5,7 +5,8 @@
 
 bool DimStatementStrategy::parseStatement(ParserContext& context,
                                           LexerLineContext* statement) {
-  ActionNode *action = context.actionRoot, *subaction;
+  shared_ptr<ActionNode> action = context.actionRoot;
+  shared_ptr<ActionNode> subaction;
   shared_ptr<Lexeme> lexeme;
   unsigned int i, t;
 

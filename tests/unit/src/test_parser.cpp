@@ -59,18 +59,20 @@ static Lexeme* findSymbolByValue(Parser& parser, const std::string& value) {
   return nullptr;
 }
 
-static bool hasActionWithValue(ActionNode* action, const std::string& value) {
+static bool hasActionWithValue(shared_ptr<ActionNode> action,
+                               const std::string& value) {
   if (!action || !action->lexeme) return false;
   if (action->lexeme->value == value) return true;
-  for (auto* child : action->actions) {
+  for (auto& child : action->actions) {
     if (hasActionWithValue(child, value)) return true;
   }
   return false;
 }
 
-static bool tagHasAction(const TagNode* tag, const std::string& value) {
+static bool tagHasAction(const shared_ptr<TagNode> tag,
+                         const std::string& value) {
   if (!tag) return false;
-  for (auto* action : tag->actions) {
+  for (auto& action : tag->actions) {
     if (hasActionWithValue(action, value)) return true;
   }
   return false;
@@ -133,7 +135,7 @@ TEST_SUITE("Parser") {
     CHECK(parser.evaluate(&lexer) == true);
     REQUIRE(parser.getTags().size() == 1);
 
-    const TagNode* tag = parser.getTags().front();
+    auto tag = parser.getTags().front();
     CHECK(tag->actions.size() >= 2);
     CHECK(tagHasAction(tag, "LET") == true);
     CHECK(tagHasAction(tag, "PRINT") == true);
@@ -153,7 +155,7 @@ TEST_SUITE("Parser") {
     CHECK(parser.evaluate(&lexer) == true);
     REQUIRE(parser.getTags().size() == 1);
 
-    const TagNode* tag = parser.getTags().front();
+    auto tag = parser.getTags().front();
     CHECK(tagHasAction(tag, "PRINT") == true);
 
     std::remove(filename.c_str());
@@ -223,8 +225,8 @@ TEST_SUITE("Parser") {
     CHECK(parser.evaluate(&lexer) == true);
     REQUIRE(parser.getTags().size() == 2);
 
-    const TagNode* tag1 = parser.getTags()[0];
-    const TagNode* tag2 = parser.getTags()[1];
+    auto tag1 = parser.getTags()[0];
+    auto tag2 = parser.getTags()[1];
     CHECK(tagHasAction(tag1, "LET") == true);
     CHECK(tagHasAction(tag2, "LET") == true);
 
@@ -531,8 +533,8 @@ static shared_ptr<Lexeme> op(const std::string& v) {
 static unique_ptr<ParserContext> createContext() {
   unique_ptr<ParserContext> ctx;
   ctx.reset(new ParserContext());
-  ctx->tag = new TagNode();
-  ctx->actionRoot = new ActionNode();
+  ctx->tag = make_shared<TagNode>();
+  ctx->actionRoot = make_shared<ActionNode>();
   return ctx;
 }
 

@@ -8,10 +8,8 @@ class CompilerContext;
 
 class PadCompilerFunctionStrategy : public ICompilerFunctionStrategy {
  public:
-  int execute(CompilerContext* context,
-              ActionNode* action,
-              int* result,
-              unsigned int parmCount) override;
+  int execute(CompilerContext* context, shared_ptr<ActionNode> action,
+              int* result, unsigned int parmCount) override;
 };
 
 #endif  // PAD_COMPILER_FUNCTION_STRATEGY_H_INCLUDED

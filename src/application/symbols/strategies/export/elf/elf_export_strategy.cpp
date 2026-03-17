@@ -305,7 +305,8 @@ class ElfWriter {
 /* STRATEGY ENTRY                                               */
 /* ============================================================ */
 
-bool ElfExportStrategy::save(SymbolManager* symbolManager, BuildOptions* opts) {
+bool ElfExportStrategy::save(SymbolManager* symbolManager,
+                             shared_ptr<BuildOptions> opts) {
   StringTableBuilder strtab;
   StringTableBuilder shstrtab;
   SymbolTableBuilder symtab;

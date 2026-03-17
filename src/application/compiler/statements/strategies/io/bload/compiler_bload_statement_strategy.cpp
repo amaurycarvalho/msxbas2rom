@@ -11,7 +11,7 @@ void CompilerBloadStatementStrategy::cmd_bload(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& opts = *context->opts;
   shared_ptr<Lexeme> lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   unsigned int t = context->current_action->actions.size();
   bool isTinySprite;
   int resource_number;

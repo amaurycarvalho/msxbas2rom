@@ -8,6 +8,7 @@
 #ifndef TAG_NODE_H_INCLUDED
 #define TAG_NODE_H_INCLUDED
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -24,7 +25,7 @@ class TagNode {
  public:
   string name;
   string value;
-  vector<ActionNode*> actions;
+  vector<shared_ptr<ActionNode>> actions;
   LexerLineContext* lexerLine;
 
   string toString() const;

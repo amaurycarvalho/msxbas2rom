@@ -10,7 +10,7 @@
 void CompilerSetStatementStrategy::cmd_set(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> next_lexeme;
   unsigned int t = context->current_action->actions.size();
   FixNode* mark;
@@ -89,7 +89,8 @@ void CompilerSetStatementStrategy::cmd_set_video(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   auto& codeHelper = *context->codeHelper;
-  ActionNode *action = context->current_action->actions[0], *sub_action;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
   int result_subtype;
 
@@ -150,7 +151,8 @@ void CompilerSetStatementStrategy::cmd_set_adjust(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   auto& codeHelper = *context->codeHelper;
-  ActionNode *action = context->current_action->actions[0], *sub_action;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
   int result_subtype;
 
@@ -217,7 +219,7 @@ void CompilerSetStatementStrategy::cmd_set_adjust(CompilerContext* context) {
 
 void CompilerSetStatementStrategy::cmd_set_screen(CompilerContext* context) {
   auto& codeHelper = *context->codeHelper;
-  ActionNode* action = context->current_action->actions[0];
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
   unsigned int t = action->actions.size();
 
   if (t == 0) {
@@ -237,7 +239,8 @@ void CompilerSetStatementStrategy::cmd_set_beep(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   auto& codeHelper = *context->codeHelper;
-  ActionNode *action = context->current_action->actions[0], *sub_action;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
   int result_subtype;
 
@@ -293,7 +296,8 @@ void CompilerSetStatementStrategy::cmd_set_title(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   auto& codeHelper = *context->codeHelper;
-  ActionNode *action = context->current_action->actions[0], *sub_action;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action;
   unsigned int t = action->actions.size();
   int result_subtype;
 
@@ -364,7 +368,8 @@ void CompilerSetStatementStrategy::cmd_set_prompt(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   auto& codeHelper = *context->codeHelper;
-  ActionNode *action = context->current_action->actions[0], *sub_action;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action;
   unsigned int t = action->actions.size();
   int result_subtype;
 
@@ -410,7 +415,8 @@ void CompilerSetStatementStrategy::cmd_set_prompt(CompilerContext* context) {
 void CompilerSetStatementStrategy::cmd_set_page(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  ActionNode *action = context->current_action->actions[0], *sub_action;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action;
   shared_ptr<Lexeme> lexeme;
   unsigned int t = action->actions.size();
   int result_subtype;
@@ -451,7 +457,8 @@ void CompilerSetStatementStrategy::cmd_set_page(CompilerContext* context) {
 void CompilerSetStatementStrategy::cmd_set_scroll(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  ActionNode *action = context->current_action->actions[0], *sub_action;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action;
   shared_ptr<Lexeme> lexeme;
   unsigned int i, t = action->actions.size();
   int result_subtype;
@@ -519,8 +526,8 @@ void CompilerSetStatementStrategy::cmd_set_tile(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
-  ActionNode *action = context->current_action->actions[0], *sub_action,
-             *sub_sub_action;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action, sub_sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int i, t, tt;
   int result_subtype;
@@ -909,8 +916,8 @@ void CompilerSetStatementStrategy::cmd_set_tile(CompilerContext* context) {
 void CompilerSetStatementStrategy::cmd_set_font(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  ActionNode *action = context->current_action->actions[0], *sub_action1,
-             *sub_action2;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action1, sub_action2;
   unsigned int t;
   int result_subtype;
 
@@ -965,7 +972,8 @@ void CompilerSetStatementStrategy::cmd_set_sprite(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   auto& fixup = *context->fixupResolver;
-  ActionNode *action = context->current_action->actions[0], *sub_action;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int t;
   int result_subtype;
@@ -1107,7 +1115,8 @@ void CompilerSetStatementStrategy::cmd_set_date(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme;
-  ActionNode *action = context->current_action->actions[0], *sub_action;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
   int result_subtype;
 
@@ -1149,7 +1158,8 @@ void CompilerSetStatementStrategy::cmd_set_time(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme;
-  ActionNode *action = context->current_action->actions[0], *sub_action;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
   int result_subtype;
 

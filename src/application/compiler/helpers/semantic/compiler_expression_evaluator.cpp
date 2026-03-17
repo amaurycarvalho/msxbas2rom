@@ -25,7 +25,7 @@ CompilerExpressionEvaluator::CompilerExpressionEvaluator(
 
 CompilerExpressionEvaluator::~CompilerExpressionEvaluator() = default;
 
-int CompilerExpressionEvaluator::evalExpression(ActionNode* action) {
+int CompilerExpressionEvaluator::evalExpression(shared_ptr<ActionNode> action) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& variable = *context->variableEmitter;
@@ -153,13 +153,13 @@ int CompilerExpressionEvaluator::evalExpression(ActionNode* action) {
   return result;
 }
 
-int CompilerExpressionEvaluator::evalOperator(ActionNode* action) {
+int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
   auto& cpu = *context->cpu;
   auto& variable = *context->variableEmitter;
   auto& optimizer = *context->codeOptimizer;
   int result = Lexeme::subtype_unknown;
   shared_ptr<Lexeme> lexeme;
-  ActionNode* next_action;
+  shared_ptr<ActionNode> next_action;
   unsigned int t = action->actions.size(), i, n, k;
   unsigned char* s;
 
@@ -1120,12 +1120,12 @@ int CompilerExpressionEvaluator::evalOperator(ActionNode* action) {
   return result;
 }
 
-bool CompilerExpressionEvaluator::evalOperatorParms(ActionNode* action,
-                                                    int parmCount) {
+bool CompilerExpressionEvaluator::evalOperatorParms(
+    shared_ptr<ActionNode> action, int parmCount) {
   auto& cpu = *context->cpu;
   bool result = false;
   int subtype;
-  ActionNode* next_action;
+  shared_ptr<ActionNode> next_action;
   int i, t = action->actions.size();
 
   if (t == parmCount) {
@@ -1153,10 +1153,11 @@ bool CompilerExpressionEvaluator::evalOperatorParms(ActionNode* action,
   return result;
 }
 
-int CompilerExpressionEvaluator::evalOperatorCast(ActionNode* action) {
+int CompilerExpressionEvaluator::evalOperatorCast(
+    shared_ptr<ActionNode> action) {
   auto& cpu = *context->cpu;
   int result = Lexeme::subtype_unknown;
-  ActionNode *next_action1, *next_action2;
+  shared_ptr<ActionNode> next_action1, next_action2;
 
   next_action1 = action->actions[0];
   next_action2 = action->actions[1];
@@ -1289,10 +1290,10 @@ void CompilerExpressionEvaluator::addCast(int from, int to) {
   }
 }
 
-int CompilerExpressionEvaluator::evalFunction(ActionNode* action) {
+int CompilerExpressionEvaluator::evalFunction(shared_ptr<ActionNode> action) {
   int result[4];
   shared_ptr<Lexeme> lexeme;
-  ActionNode* next_action;
+  shared_ptr<ActionNode> next_action;
   unsigned int i, t = action->actions.size();
 
   for (i = 0; i < 4; i++) result[i] = Lexeme::subtype_unknown;

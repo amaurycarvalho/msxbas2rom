@@ -54,7 +54,7 @@ SymbolNode* CompilerSymbolResolver::addSymbol(shared_ptr<Lexeme> lexeme) {
   return symbol;
 }
 
-SymbolNode* CompilerSymbolResolver::getSymbol(TagNode* tag) {
+SymbolNode* CompilerSymbolResolver::getSymbol(shared_ptr<TagNode> tag) {
   unsigned int i, t = context->symbols.size();
   bool found = false;
   SymbolNode* symbol;
@@ -74,7 +74,7 @@ SymbolNode* CompilerSymbolResolver::getSymbol(TagNode* tag) {
   return symbol;
 }
 
-SymbolNode* CompilerSymbolResolver::addSymbol(TagNode* tag) {
+SymbolNode* CompilerSymbolResolver::addSymbol(shared_ptr<TagNode> tag) {
   SymbolNode* symbol = getSymbol(tag);
 
   if (!symbol) {
@@ -92,7 +92,7 @@ SymbolNode* CompilerSymbolResolver::addSymbol(string line) {
   unsigned int i, t = context->symbols.size();
   bool found = false;
   SymbolNode* symbol;
-  TagNode* tag;
+  shared_ptr<TagNode> tag;
 
   for (i = 0; i < t; i++) {
     symbol = context->symbols[i];
@@ -105,7 +105,7 @@ SymbolNode* CompilerSymbolResolver::addSymbol(string line) {
   }
 
   if (!found) {
-    tag = new TagNode();
+    tag = make_shared<TagNode>();
     tag->name = line;
     if (context->current_tag) {
       tag->value = context->current_tag->name;

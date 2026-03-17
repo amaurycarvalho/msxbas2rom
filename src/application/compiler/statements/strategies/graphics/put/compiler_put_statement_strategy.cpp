@@ -5,7 +5,7 @@
 #include "compiler_hooks.h"
 
 void CompilerPutStatementStrategy::cmd_put(CompilerContext* context) {
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> lexeme;
   unsigned int t = context->current_action->actions.size();
 
@@ -32,7 +32,7 @@ void CompilerPutStatementStrategy::cmd_put(CompilerContext* context) {
 void CompilerPutStatementStrategy::cmd_put_sprite(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  ActionNode *action, *sub_action;
+  shared_ptr<ActionNode> action, sub_action;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype, parm_flag = 0;
   bool has_sprite = false, has_x_coord = false, has_y_coord = false,
@@ -244,7 +244,7 @@ void CompilerPutStatementStrategy::cmd_put_sprite(CompilerContext* context) {
 void CompilerPutStatementStrategy::cmd_put_tile(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  ActionNode *action, *sub_action;
+  shared_ptr<ActionNode> action, sub_action;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
   bool has_tile = false, has_x_coord = false, has_y_coord = false;

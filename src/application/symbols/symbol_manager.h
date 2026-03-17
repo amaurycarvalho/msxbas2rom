@@ -39,7 +39,7 @@ class SymbolManager {
    */
   void clear();
 
-  bool saveSymbol(BuildOptions* opts);
+  bool saveSymbol(shared_ptr<BuildOptions> opts);
 
   SymbolManager();
   ~SymbolManager();

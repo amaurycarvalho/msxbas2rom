@@ -19,7 +19,7 @@ vector<vector<string>> SymbolManager::getKernelSymbolAddresses() const {
   return kernelSymbolAddresses;
 }
 
-bool SymbolManager::saveSymbol(BuildOptions* opts) {
+bool SymbolManager::saveSymbol(shared_ptr<BuildOptions> opts) {
   SymbolExportStrategy* strategy =
       symbolExportFactory->getBySymbolMode(opts->symbols);
   return (strategy) ? strategy->save(this, opts) : false;

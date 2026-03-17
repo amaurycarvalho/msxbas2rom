@@ -29,11 +29,11 @@ class Lexer {
 
  public:
   vector<unique_ptr<LexerLineEvaluator>> lines;
-  BuildOptions* opts;
+  shared_ptr<BuildOptions> opts;
 
   void clear();
   bool load(string filename);
-  bool load(BuildOptions* opts);
+  bool load(shared_ptr<BuildOptions> opts);
   bool evaluate();
   string toString();
 

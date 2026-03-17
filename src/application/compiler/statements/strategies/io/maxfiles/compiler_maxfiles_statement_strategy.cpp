@@ -11,7 +11,7 @@ void CompilerMaxfilesStatementStrategy::cmd_maxfiles(CompilerContext* context) {
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
   auto& codeHelper = *context->codeHelper;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   unsigned int t = context->current_action->actions.size();
   int result_subtype;
   FixNode* mark;

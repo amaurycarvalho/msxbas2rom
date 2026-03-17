@@ -5,7 +5,8 @@
 
 class CompilerCmdPt3Handler : public ICompilerCmdHandler {
  public:
-  bool execute(CompilerContext* context, ActionNode* action) override;
+  bool execute(CompilerContext* context,
+               shared_ptr<ActionNode> action) override;
 };
 
 #endif  // COMPILER_CMD_PT3_HANDLER_H_INCLUDED

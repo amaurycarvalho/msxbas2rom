@@ -6,9 +6,8 @@
 #include "lexeme.h"
 
 int StrCompilerFunctionStrategy::execute(CompilerContext* context,
-                                         ActionNode* action,
-                                         int* result,
-                                         unsigned int parmCount) {
+                                         shared_ptr<ActionNode> action,
+                                         int* result, unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "STR$") return Lexeme::subtype_unknown;

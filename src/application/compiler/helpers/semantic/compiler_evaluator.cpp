@@ -23,8 +23,8 @@ CompilerEvaluator::CompilerEvaluator(CompilerContext* context) {
 
 CompilerEvaluator::~CompilerEvaluator() = default;
 
-bool CompilerEvaluator::evaluate(TagNode* tag) {
-  ActionNode* action;
+bool CompilerEvaluator::evaluate(shared_ptr<TagNode> tag) {
+  shared_ptr<ActionNode> action;
   unsigned int i, t = tag->actions.size(), lin;
 
   context->current_tag = tag;
@@ -52,8 +52,8 @@ bool CompilerEvaluator::evaluate(TagNode* tag) {
   return context->compiled;
 }
 
-bool CompilerEvaluator::evalActions(ActionNode* action) {
-  ActionNode* sub_action;
+bool CompilerEvaluator::evalActions(shared_ptr<ActionNode> action) {
+  shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
 
   for (i = 0; i < t && context->compiled; i++) {
@@ -65,7 +65,7 @@ bool CompilerEvaluator::evalActions(ActionNode* action) {
   return context->compiled;
 }
 
-bool CompilerEvaluator::evalAction(ActionNode* action) {
+bool CompilerEvaluator::evalAction(shared_ptr<ActionNode> action) {
   shared_ptr<Lexeme> lexeme;
   ICompilerStatementStrategy* statement;
 

@@ -61,8 +61,7 @@ static unique_ptr<CompilerContext> createCmdContext(
   cpu.context = &workspace;
   unique_ptr<CompilerContext> ctx(new CompilerContext());
   ctx->cpu = &cpu;
-  static BuildOptions default_opts;
-  ctx->opts = &default_opts;
+  ctx->opts = make_shared<BuildOptions>();
   ctx->compiled = true;
   return ctx;
 }
@@ -80,11 +79,11 @@ static shared_ptr<Lexeme> idLex(const std::string& v) {
                              v);
 }
 
-static ActionNode* makeCmdAction(
+static shared_ptr<ActionNode> makeCmdAction(
     const std::string& keyword, const std::vector<shared_ptr<Lexeme>>& params) {
-  ActionNode* action = new ActionNode(keyword);
+  shared_ptr<ActionNode> action = make_shared<ActionNode>(keyword);
   for (const auto& lex : params) {
-    action->actions.push_back(new ActionNode(lex));
+    action->actions.push_back(make_shared<ActionNode>(lex));
   }
   return action;
 }
@@ -638,7 +637,8 @@ TEST_SUITE("CompilerCmdHandlers") {
         ICompilerCmdHandler* handler = factory.getByKeyword(test_case.keyword);
         REQUIRE(handler != nullptr);
 
-        ActionNode* action = makeCmdAction(test_case.keyword, test_case.params);
+        shared_ptr<ActionNode> action =
+            makeCmdAction(test_case.keyword, test_case.params);
 
         bool ok = handler->execute(ctx.get(), action);
 
@@ -1136,10 +1136,10 @@ TEST_SUITE("CompilerFunctionStrategies") {
             factory.getByKeyword(test_case.keyword);
         REQUIRE(strategy != nullptr);
 
-        ActionNode* action =
+        shared_ptr<ActionNode> action =
             test_case.use_action_params
                 ? makeCmdAction(test_case.keyword, test_case.action_params)
-                : new ActionNode(test_case.keyword);
+                : make_shared<ActionNode>(test_case.keyword);
 
         int result[4] = {Lexeme::subtype_unknown, Lexeme::subtype_unknown,
                          Lexeme::subtype_unknown, Lexeme::subtype_unknown};

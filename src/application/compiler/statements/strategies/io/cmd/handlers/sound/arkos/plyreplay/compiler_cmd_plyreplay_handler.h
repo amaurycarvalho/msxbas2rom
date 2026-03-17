@@ -10,7 +10,8 @@ class CompilerCmdPlyReplayHandler : public ICompilerCmdHandler {
    * @param context Compiler context
    * @param action Current action node
    */
-  bool execute(CompilerContext* context, ActionNode* action) override;
+  bool execute(CompilerContext* context,
+               shared_ptr<ActionNode> action) override;
 };
 
 #endif  // COMPILER_CMD_PLYREPLAY_HANDLER_H_INCLUDED

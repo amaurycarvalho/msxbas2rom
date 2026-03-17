@@ -74,10 +74,10 @@ int Parser::getLineNumber() const {
   return ctx.lineNumber;
 }
 
-vector<TagNode*>& Parser::getTags() {
+vector<shared_ptr<TagNode>>& Parser::getTags() {
   return ctx.tags;
 }
-const vector<TagNode*>& Parser::getTags() const {
+const vector<shared_ptr<TagNode>>& Parser::getTags() const {
   return ctx.tags;
 }
 
@@ -136,7 +136,7 @@ int Parser::getResourceCount() const {
 Lexer* Parser::getLexer() const {
   return lexer;
 }
-BuildOptions* Parser::getOpts() const {
+shared_ptr<BuildOptions> Parser::getOpts() const {
   return opts;
 }
 

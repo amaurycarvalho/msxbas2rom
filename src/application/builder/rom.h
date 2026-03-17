@@ -30,7 +30,7 @@ using namespace std;
 class Rom {
  private:
   Compiler* compiler;
-  BuildOptions* opts;
+  shared_ptr<BuildOptions> opts;
   ResourceManager* resourceManager;
   unique_ptr<Logger> logger;
 

@@ -5,7 +5,7 @@
 
 void CompilerTextStatementStrategy::cmd_text(CompilerContext* context) {
   shared_ptr<Lexeme> lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   unsigned int t = context->current_action->actions.size();
 
   if (t == 1) {

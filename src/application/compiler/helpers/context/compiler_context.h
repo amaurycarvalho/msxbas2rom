@@ -31,7 +31,7 @@ using namespace std;
 class CompilerContext {
  public:
   Parser* parser;
-  BuildOptions* opts;
+  shared_ptr<BuildOptions> opts;
   ICpuOpcodeWriter* cpu;
 
   unique_ptr<CompilerEvaluator> evaluator;
@@ -55,14 +55,14 @@ class CompilerContext {
 
   int mark_count, for_count;
 
-  TagNode* current_tag;
+  shared_ptr<TagNode> current_tag;
   shared_ptr<SymbolNode> heap_mark;
   shared_ptr<SymbolNode> temp_str_mark;
   SymbolNode* end_mark;
   FixNode *enable_basic_mark, *disable_basic_mark;
   FixNode* draw_mark;
   FixNode *io_redirect_mark, *io_screen_mark;
-  ActionNode* current_action;
+  shared_ptr<ActionNode> current_action;
 
   vector<SymbolNode*> symbols;
   vector<FixNode*> fixes;

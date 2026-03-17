@@ -27,7 +27,7 @@ class ActionNode {
  public:
   int subtype;
   shared_ptr<Lexeme> lexeme;
-  vector<ActionNode*> actions;
+  vector<shared_ptr<ActionNode>> actions;
   string toString(int indent = 0) const;
 
   /***

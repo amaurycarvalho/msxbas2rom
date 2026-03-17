@@ -11,14 +11,14 @@ bool GetStatementStrategy::parseGetTile(ParserContext& context,
 bool GetStatementStrategy::parseGetSprite(ParserContext& context,
                                           LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
     context.coalesceSymbols(next_lexeme);
 
     next_lexeme = statement->getCurrentLexeme();
-    action = new ActionNode(next_lexeme);
+    action = make_shared<ActionNode>(next_lexeme);
     context.pushActionRoot(action);
 
     if (next_lexeme->type == Lexeme::type_keyword) {
@@ -37,14 +37,14 @@ bool GetStatementStrategy::parseGetSprite(ParserContext& context,
 bool GetStatementStrategy::parseStatement(ParserContext& context,
                                           LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
     context.coalesceSymbols(next_lexeme);
 
     next_lexeme = statement->getCurrentLexeme();
-    action = new ActionNode(next_lexeme);
+    action = make_shared<ActionNode>(next_lexeme);
     context.pushActionRoot(action);
 
     if (next_lexeme->type == Lexeme::type_keyword) {

@@ -16,7 +16,7 @@
  */
 class CdbExportStrategy : public SymbolExportStrategy {
  public:
-  bool save(SymbolManager* symbolManager, BuildOptions* opts);
+  bool save(SymbolManager* symbolManager, shared_ptr<BuildOptions> opts);
 };
 
 #endif  // CDB_EXPORT_STRATEGY_H_INCLUDED

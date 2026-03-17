@@ -32,10 +32,10 @@ void Lexer::clear() {
 }
 
 bool Lexer::load(string filename) {
-  return load(new BuildOptions(filename));
+  return load(make_shared<BuildOptions>(filename));
 }
 
-bool Lexer::load(BuildOptions* opts) {
+bool Lexer::load(shared_ptr<BuildOptions> opts) {
   FILE* file;
   char lineText[255];
   unsigned char header[3];

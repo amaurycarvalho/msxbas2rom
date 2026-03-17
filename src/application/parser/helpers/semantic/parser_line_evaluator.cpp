@@ -19,7 +19,6 @@ ParserLineEvaluator::~ParserLineEvaluator() = default;
 
 bool ParserLineEvaluator::evaluateLine(LexerLineEvaluator* lexerLine) {
   shared_ptr<Lexeme> lexeme = lexerLine->getFirstLexeme();
-  ActionNode* action;
   LexerLineEvaluator phrase;
   int if_count = 0;
 
@@ -30,11 +29,12 @@ bool ParserLineEvaluator::evaluateLine(LexerLineEvaluator* lexerLine) {
     lexeme = ctx.coalesceSymbols(lexeme);
 
     if (lexeme->isLiteralNumeric()) {
-      ctx.tag = new TagNode();  // register line number tag
-      ctx.tag->name = lexeme->value;
-      ctx.tag->value = ctx.tag->name;
-      ctx.tag->lexerLine = lexerLine;
-      ctx.tags.push_back(ctx.tag);
+      auto tag = make_shared<TagNode>();  // register line number tag
+      tag->name = lexeme->value;
+      tag->value = tag->name;
+      tag->lexerLine = lexerLine;
+      ctx.tags.push_back(tag);
+      ctx.tag = tag;
 
       while ((lexeme = lexerLine->getNextLexeme())) {
         lexeme = ctx.coalesceSymbols(lexeme);
@@ -67,13 +67,14 @@ bool ParserLineEvaluator::evaluateLine(LexerLineEvaluator* lexerLine) {
       if (lexeme->value == "FILE" || lexeme->value == "TEXT") {
         ctx.resourceCount++;
 
-        ctx.tag = new TagNode();  // register line number tag
-        ctx.tag->name = "DIRECTIVE";
-        ctx.tag->value = ctx.tag->name;
-        ctx.tag->lexerLine = lexerLine;
-        ctx.tags.push_back(ctx.tag);
+        auto tag = make_shared<TagNode>();  // register line number tag
+        tag->name = "DIRECTIVE";
+        tag->value = tag->name;
+        tag->lexerLine = lexerLine;
+        ctx.tags.push_back(tag);
+        ctx.tag = tag;
 
-        action = new ActionNode(lexeme);
+        auto action = make_shared<ActionNode>(lexeme);
         ctx.pushActionRoot(action);
 
         lexeme = lexerLine->getNextLexeme();
@@ -130,9 +131,8 @@ bool ParserLineEvaluator::evaluatePhrase(LexerLineContext* phrase) {
 
 bool ParserLineEvaluator::evaluateStatement(LexerLineContext* statement) {
   shared_ptr<Lexeme> lexeme;
-  ActionNode* action;
   IParserStatementStrategy* strategy;
-  ActionNode* actionSaved = ctx.actionRoot;
+  shared_ptr<ActionNode> actionSaved = ctx.actionRoot;
   unsigned int actionCount = ctx.actionStack.size();
   bool result = true;
 
@@ -141,7 +141,7 @@ bool ParserLineEvaluator::evaluateStatement(LexerLineContext* statement) {
   if (lexeme) {
     lexeme = ctx.coalesceSymbols(lexeme);
 
-    action = new ActionNode(lexeme);
+    auto action = make_shared<ActionNode>(lexeme);
     ctx.pushActionRoot(action);
 
     strategy = statementStrategyFactory.getStrategyByKeyword(lexeme->value);

@@ -9,7 +9,8 @@
 #include "lexeme.h"
 
 int UsingCompilerFunctionStrategy::execute(CompilerContext* context,
-                                           ActionNode* action, int* result,
+                                           shared_ptr<ActionNode> action,
+                                           int* result,
                                            unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (parmCount != 2) return Lexeme::subtype_unknown;
@@ -22,7 +23,7 @@ int UsingCompilerFunctionStrategy::execute(CompilerContext* context,
 
   // Preprocess format string before parameter evaluation.
   if (parmCount >= 2) {
-    ActionNode* next_action = action->actions[1];
+    shared_ptr<ActionNode> next_action = action->actions[1];
     shared_ptr<Lexeme> lexeme2 = next_action ? next_action->lexeme : 0;
     if (lexeme2 && lexeme2->type == Lexeme::type_literal &&
         lexeme2->subtype == Lexeme::subtype_string) {
@@ -37,7 +38,7 @@ int UsingCompilerFunctionStrategy::execute(CompilerContext* context,
   }
 
   for (unsigned int i = 0; i < parmCount; i++) {
-    ActionNode* next_action = action->actions[i];
+    shared_ptr<ActionNode> next_action = action->actions[i];
     result[i] = next_action->subtype;
     if (result[i] == Lexeme::subtype_unknown) return result[i];
   }

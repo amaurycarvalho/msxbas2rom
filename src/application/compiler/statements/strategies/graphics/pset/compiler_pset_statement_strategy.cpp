@@ -8,7 +8,7 @@ void CompilerPsetStatementStrategy::cmd_pset(CompilerContext* context,
                                              bool forecolor) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  ActionNode *action, *sub_action;
+  shared_ptr<ActionNode> action, sub_action;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
   bool has_x_coord = false, has_y_coord = false, has_color = false,

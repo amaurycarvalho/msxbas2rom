@@ -97,7 +97,7 @@ int Compiler::getRamSize() const {
   return context->cpu->context->ram_size;
 }
 
-TagNode* Compiler::getCurrentTag() const {
+shared_ptr<TagNode> Compiler::getCurrentTag() const {
   return context->current_tag;
 }
 
@@ -105,7 +105,7 @@ Parser* Compiler::getParser() const {
   return context->parser;
 }
 
-BuildOptions* Compiler::getOpts() const {
+shared_ptr<BuildOptions> Compiler::getOpts() const {
   return context->opts;
 }
 
@@ -116,7 +116,7 @@ bool Compiler::isCompiled() const {
 bool Compiler::build(Parser* parser) {
   CompilerStartStatementStrategy startStmt;
   CompilerEndStatementStrategy endStmt;
-  TagNode* tag;
+  shared_ptr<TagNode> tag;
   SymbolNode* symbol;
   CodeNode* codeItem;
   unsigned int i, t;

@@ -10,7 +10,7 @@ void CompilerPrintStatementStrategy::cmd_print(CompilerContext* context) {
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme, last_lexeme = 0;
-  ActionNode *action, *subaction;
+  shared_ptr<ActionNode> action, subaction;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
   bool redirected = false;

@@ -6,17 +6,21 @@
 #ifndef COMPILER_VARIABLE_EMITTER_H
 #define COMPILER_VARIABLE_EMITTER_H
 
+#include <memory>
+
 class CompilerContext;
 class ActionNode;
+
+using namespace std;
 
 class CompilerVariableEmitter {
  private:
   CompilerContext* context;
 
  public:
-  bool addVarAddress(ActionNode* action);
+  bool addVarAddress(shared_ptr<ActionNode> action);
   void addTempStr(bool atHL);
-  bool addAssignment(ActionNode* action);
+  bool addAssignment(shared_ptr<ActionNode> action);
 
   CompilerVariableEmitter(CompilerContext* context);
   ~CompilerVariableEmitter();

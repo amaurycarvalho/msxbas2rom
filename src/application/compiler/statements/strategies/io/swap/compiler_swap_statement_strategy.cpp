@@ -10,7 +10,7 @@ void CompilerSwapStatementStrategy::cmd_swap(CompilerContext* context) {
   auto& optimizer = *context->codeOptimizer;
   auto& variable = *context->variableEmitter;
   shared_ptr<Lexeme> lexeme1, lexeme2;
-  ActionNode *action1, *action2;
+  shared_ptr<ActionNode> action1, action2;
   unsigned int t = context->current_action->actions.size();
 
   if (t == 2) {

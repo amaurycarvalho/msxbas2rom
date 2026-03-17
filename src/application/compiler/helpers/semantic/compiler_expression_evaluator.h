@@ -21,11 +21,11 @@ class CompilerExpressionEvaluator {
   unique_ptr<CompilerFunctionStrategyFactory> functionFactory;
 
  public:
-  int evalExpression(ActionNode* action);
-  int evalOperator(ActionNode* action);
-  int evalFunction(ActionNode* action);
-  bool evalOperatorParms(ActionNode* action, int parmCount);
-  int evalOperatorCast(ActionNode* action);
+  int evalExpression(shared_ptr<ActionNode> action);
+  int evalOperator(shared_ptr<ActionNode> action);
+  int evalFunction(shared_ptr<ActionNode> action);
+  bool evalOperatorParms(shared_ptr<ActionNode> action, int parmCount);
+  int evalOperatorCast(shared_ptr<ActionNode> action);
   void addCast(int from, int to);
 
   CompilerExpressionEvaluator(CompilerContext* context);

@@ -21,11 +21,11 @@ bool IfStatementStrategy::parseStatement(ParserContext& context,
                                          int level) {
   shared_ptr<Lexeme> next_lexeme, last_lexeme = statement->getCurrentLexeme();
   LexerLineContext parm;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   int state = 0;
   bool testGotoGosub = false, testIf = false, skipEmptyStmtCheck = false;
 
-  action = new ActionNode("COND");
+  action = make_shared<ActionNode>("COND");
   context.pushActionRoot(action);
 
   parm.clearLexemes();
@@ -51,7 +51,7 @@ bool IfStatementStrategy::parseStatement(ParserContext& context,
 
           context.popActionRoot();
 
-          action = new ActionNode(next_lexeme);
+          action = make_shared<ActionNode>(next_lexeme);
           context.pushActionRoot(action);
 
           last_lexeme = next_lexeme;
@@ -91,7 +91,7 @@ bool IfStatementStrategy::parseStatement(ParserContext& context,
             }
 
             next_lexeme = context.coalesceSymbols(next_lexeme);
-            action = new ActionNode(next_lexeme);
+            action = make_shared<ActionNode>(next_lexeme);
             context.pushActionRoot(action);
             if (!parseStatement(context, statement, level + 1)) {
               return false;
@@ -111,7 +111,7 @@ bool IfStatementStrategy::parseStatement(ParserContext& context,
           if (next_lexeme->isLiteralNumeric()) {
             if (last_lexeme->isKeyword("THEN") ||
                 last_lexeme->isKeyword("ELSE")) {
-              action = new ActionNode("GOTO");
+              action = make_shared<ActionNode>("GOTO");
               context.pushActionRoot(action);
               context.pushActionFromLexeme(next_lexeme);
               context.popActionRoot();
@@ -121,7 +121,7 @@ bool IfStatementStrategy::parseStatement(ParserContext& context,
               else
                 last_lexeme->value = "ELSE";
               last_lexeme->name = last_lexeme->value;
-              action = new ActionNode("GOTO");
+              action = make_shared<ActionNode>("GOTO");
               context.pushActionRoot(action);
               context.pushActionFromLexeme(next_lexeme);
               context.popActionRoot();
@@ -131,7 +131,7 @@ bool IfStatementStrategy::parseStatement(ParserContext& context,
               else
                 last_lexeme->value = "ELSE";
               last_lexeme->name = last_lexeme->value;
-              action = new ActionNode("GOSUB");
+              action = make_shared<ActionNode>("GOSUB");
               context.pushActionRoot(action);
               context.pushActionFromLexeme(next_lexeme);
               context.popActionRoot();
@@ -169,7 +169,7 @@ bool IfStatementStrategy::parseStatement(ParserContext& context,
             context.popActionRoot();
 
             if (state == 1) {
-              action = new ActionNode(next_lexeme);
+              action = make_shared<ActionNode>(next_lexeme);
               context.pushActionRoot(action);
               last_lexeme = next_lexeme;
               testGotoGosub = true;
@@ -211,7 +211,7 @@ bool IfStatementStrategy::parseStatement(ParserContext& context,
     if (testGotoGosub) {
       next_lexeme = parm.getFirstLexeme();
       if (next_lexeme->isLiteralNumeric()) {
-        action = new ActionNode("GOTO");
+        action = make_shared<ActionNode>("GOTO");
         context.pushActionRoot(action);
         context.pushActionFromLexeme(next_lexeme);
         context.popActionRoot();

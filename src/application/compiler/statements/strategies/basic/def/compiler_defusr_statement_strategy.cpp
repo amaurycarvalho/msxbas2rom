@@ -7,7 +7,7 @@
 void CompilerDefUsrStatementStrategy::cmd_defusr(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  ActionNode *action, *subaction;
+  shared_ptr<ActionNode> action, subaction;
   unsigned int t;
   int result_subtype;
 

@@ -9,7 +9,7 @@ bool ForStatementStrategy::parseStatement(ParserContext& context,
                                           LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme, last_lexeme = nullptr;
   LexerLineContext parm;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   int state = 0;
   ExpressionEvaluator exprEval(context);
   AssignmentEvaluator assignEval(context, exprEval);
@@ -29,7 +29,7 @@ bool ForStatementStrategy::parseStatement(ParserContext& context,
 
           parm.clearLexemes();
 
-          action = new ActionNode(next_lexeme);
+          action = make_shared<ActionNode>(next_lexeme);
           context.pushActionRoot(action);
 
           last_lexeme = next_lexeme;
@@ -59,7 +59,7 @@ bool ForStatementStrategy::parseStatement(ParserContext& context,
           parm.clearLexemes();
           context.popActionRoot();
 
-          action = new ActionNode(next_lexeme);
+          action = make_shared<ActionNode>(next_lexeme);
           context.pushActionRoot(action);
 
           last_lexeme = next_lexeme;

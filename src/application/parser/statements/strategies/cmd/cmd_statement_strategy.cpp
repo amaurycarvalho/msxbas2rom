@@ -4,12 +4,12 @@
 
 bool CmdStatementStrategy::parseStatement(ParserContext& context,
                                           LexerLineContext* statement) {
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> lexeme = statement->getNextLexeme();
 
   if (!lexeme) return false;
 
-  action = new ActionNode(lexeme);
+  action = make_shared<ActionNode>(lexeme);
   context.pushActionRoot(action);
 
   if (lexeme->value == "WRTFNT" || lexeme->value == "SETFNT" ||

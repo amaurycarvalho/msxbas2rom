@@ -7,7 +7,7 @@
 
 void CompilerStopStatementStrategy::cmd_stop(CompilerContext* context) {
   auto& cpu = *context->cpu;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> next_lexeme;
   unsigned int t = context->current_action->actions.size();
 

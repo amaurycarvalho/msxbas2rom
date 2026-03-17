@@ -3,14 +3,13 @@
 #include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
-#include "compiler_variable_emitter.h"
 #include "compiler_hooks.h"
+#include "compiler_variable_emitter.h"
 #include "lexeme.h"
 
 int MidCompilerFunctionStrategy::execute(CompilerContext* context,
-                                         ActionNode* action,
-                                         int* result,
-                                         unsigned int parmCount) {
+                                         shared_ptr<ActionNode> action,
+                                         int* result, unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "MID$") return Lexeme::subtype_unknown;
 

@@ -5,11 +5,11 @@
 bool PutStatementStrategy::parsePutSprite(ParserContext& context,
                                           LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode *action, *act_coord;
+  shared_ptr<ActionNode> action, act_coord;
   LexerLineContext parm;
   int state = 0, sepCount = 0;
 
-  act_coord = new ActionNode("COORD");
+  act_coord = make_shared<ActionNode>("COORD");
 
   parm.clearLexemes();
 
@@ -35,7 +35,7 @@ bool PutStatementStrategy::parsePutSprite(ParserContext& context,
 
       case 1: {
         if (next_lexeme->isKeyword("STEP")) {
-          action = new ActionNode(next_lexeme);
+          action = make_shared<ActionNode>(next_lexeme);
           context.pushActionRoot(action);
           continue;
         } else if (next_lexeme->isSeparator("(")) {
@@ -148,11 +148,11 @@ bool PutStatementStrategy::parsePutSprite(ParserContext& context,
 bool PutStatementStrategy::parsePutTile(ParserContext& context,
                                         LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode *action, *act_coord;
+  shared_ptr<ActionNode> action, act_coord;
   LexerLineContext parm;
   int state = 0, sepCount = 0;
 
-  act_coord = new ActionNode("COORD");
+  act_coord = make_shared<ActionNode>("COORD");
 
   parm.clearLexemes();
 
@@ -178,7 +178,7 @@ bool PutStatementStrategy::parsePutTile(ParserContext& context,
 
       case 1: {
         if (next_lexeme->isKeyword("STEP")) {
-          action = new ActionNode(next_lexeme);
+          action = make_shared<ActionNode>(next_lexeme);
           context.pushActionRoot(action);
           continue;
         } else if (next_lexeme->isSeparator("(")) {
@@ -291,14 +291,14 @@ bool PutStatementStrategy::parsePutTile(ParserContext& context,
 bool PutStatementStrategy::parseStatement(ParserContext& context,
                                           LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
     next_lexeme = context.coalesceSymbols(next_lexeme);
 
     if (next_lexeme->type == Lexeme::type_keyword) {
-      action = new ActionNode(next_lexeme);
+      action = make_shared<ActionNode>(next_lexeme);
       context.pushActionRoot(action);
 
       if (next_lexeme->value == "SPRITE") {

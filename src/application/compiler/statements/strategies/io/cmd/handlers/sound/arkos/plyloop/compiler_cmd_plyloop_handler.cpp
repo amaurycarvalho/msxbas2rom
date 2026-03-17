@@ -12,7 +12,7 @@
 #include "compiler_hooks.h"
 
 bool CompilerCmdPlyLoopHandler::execute(CompilerContext* context,
-                                        ActionNode* action) {
+                                        shared_ptr<ActionNode> action) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
 

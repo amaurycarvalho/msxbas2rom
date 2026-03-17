@@ -6,7 +6,7 @@ bool PrintStatementStrategy::parseStatement(ParserContext& context,
                                             LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   LexerLineContext parm;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   int sepcount = 0, state = 0, i;
   bool print_using = false;
   shared_ptr<Lexeme> lex_using[5] = {0, 0, 0, 0, 0};
@@ -44,7 +44,7 @@ bool PrintStatementStrategy::parseStatement(ParserContext& context,
             parm.clearLexemes();
           }
 
-          action = new ActionNode(next_lexeme);
+          action = make_shared<ActionNode>(next_lexeme);
           context.actionRoot->actions.push_back(action);
 
           continue;

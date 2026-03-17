@@ -26,14 +26,14 @@ static int COMPILE(string filename, bool megarom = false) {
   Parser parser;
   Z80OpcodeWriter cpuOpcodeWriter;
   Compiler compiler(&cpuOpcodeWriter);
-  BuildOptions opts;
+  shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
 
   // build options
-  opts.setInputFilename(filename);
-  opts.megaROM = megarom;
+  opts->setInputFilename(filename);
+  opts->megaROM = megarom;
 
   // lexing
-  CHECK(lexer.load(&opts) == true);
+  CHECK(lexer.load(opts) == true);
   CHECK(lexer.evaluate() == true);
 
   // parsing

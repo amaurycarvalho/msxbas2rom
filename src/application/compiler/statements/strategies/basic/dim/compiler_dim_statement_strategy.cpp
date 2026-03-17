@@ -6,7 +6,7 @@
 
 void CompilerDimStatementStrategy::cmd_dim(CompilerContext* context) {
   shared_ptr<Lexeme> lexeme, parm_lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   unsigned int i, k, w, tt, t = context->current_action->actions.size();
   int new_size;
 
@@ -40,7 +40,7 @@ void CompilerDimStatementStrategy::cmd_dim(CompilerContext* context) {
             w = 0;
           }
 
-          parm_lexeme = action->actions[k]->lexeme;
+          parm_lexeme = action->actions[k].get()->lexeme;
           if (parm_lexeme->type == Lexeme::type_literal &&
               parm_lexeme->subtype == Lexeme::subtype_numeric) {
             try {
@@ -62,7 +62,7 @@ void CompilerDimStatementStrategy::cmd_dim(CompilerContext* context) {
           }
 
           if (tt == 2) {
-            parm_lexeme = action->actions[w]->lexeme;
+            parm_lexeme = action->actions[w].get()->lexeme;
             if (parm_lexeme->type == Lexeme::type_literal &&
                 parm_lexeme->subtype == Lexeme::subtype_numeric) {
               try {

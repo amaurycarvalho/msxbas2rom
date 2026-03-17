@@ -9,7 +9,7 @@ void CompilerLocateStatementStrategy::cmd_locate(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   auto& optimizer = *context->codeOptimizer;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   unsigned int t = context->current_action->actions.size();
   int result_subtype;
 

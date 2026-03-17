@@ -5,7 +5,8 @@
 
 class CompilerCmdClrKeyHandler : public ICompilerCmdHandler {
  public:
-  bool execute(CompilerContext* context, ActionNode* action) override;
+  bool execute(CompilerContext* context,
+               shared_ptr<ActionNode> action) override;
 };
 
 #endif  // COMPILER_CMD_CLRKEY_HANDLER_H_INCLUDED

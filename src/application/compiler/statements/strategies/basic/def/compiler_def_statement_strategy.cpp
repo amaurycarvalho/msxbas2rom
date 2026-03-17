@@ -4,7 +4,7 @@
 #include "compiler_defusr_statement_strategy.h"
 
 void CompilerDefStatementStrategy::cmd_def(CompilerContext* context) {
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> lexeme;
   unsigned int t = context->current_action->actions.size();
 

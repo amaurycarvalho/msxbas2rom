@@ -28,13 +28,13 @@ static std::string createTempBas(const std::string& filename,
 }
 
 static bool compileWithOpts(const std::string& filename, Compiler& compiler,
-                            BuildOptions& opts) {
+                            shared_ptr<BuildOptions> opts) {
   Lexer lexer;
   Parser parser;
 
-  opts.setInputFilename(filename);
+  opts->setInputFilename(filename);
 
-  if (!lexer.load(&opts)) return false;
+  if (!lexer.load(opts)) return false;
   if (!lexer.evaluate()) return false;
   if (!parser.evaluate(&lexer)) return false;
   return compiler.build(&parser);
@@ -54,7 +54,7 @@ TEST_SUITE("Rom") {
     const std::string filename =
         createTempBas("rom_valid.bas", "10 PRINT \"HI\"\n20 END\n");
 
-    BuildOptions opts;
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
     Z80OpcodeWriter cpuOpcodeWriter;
     Compiler compiler(&cpuOpcodeWriter);
 
@@ -63,27 +63,27 @@ TEST_SUITE("Rom") {
     Rom rom;
     CHECK(rom.build(&compiler) == true);
 
-    std::ifstream out(opts.outputFilename, std::ios::binary);
+    std::ifstream out(opts->outputFilename, std::ios::binary);
     CHECK(out.good());
     out.seekg(0, std::ios::end);
     CHECK(out.tellg() > 0);
     out.close();
 
     std::remove(filename.c_str());
-    std::remove(opts.outputFilename.c_str());
+    std::remove(opts->outputFilename.c_str());
   }
 
   TEST_CASE("Fails when output file cannot be created") {
     const std::string filename =
         createTempBas("rom_invalid_output.bas", "10 PRINT \"HI\"\n20 END\n");
 
-    BuildOptions opts;
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
     Z80OpcodeWriter cpuOpcodeWriter;
     Compiler compiler(&cpuOpcodeWriter);
 
     REQUIRE(compileWithOpts(filename, compiler, opts) == true);
 
-    opts.outputFilename = "tmp/no_such_dir/out.rom";
+    opts->outputFilename = "tmp/no_such_dir/out.rom";
 
     Rom rom;
     CHECK(rom.build(&compiler) == false);

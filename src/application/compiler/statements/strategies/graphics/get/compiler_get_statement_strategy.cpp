@@ -7,7 +7,7 @@
 #include "compiler_variable_emitter.h"
 
 void CompilerGetStatementStrategy::cmd_get(CompilerContext* context) {
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> next_lexeme;
   unsigned int t = context->current_action->actions.size();
 
@@ -39,7 +39,8 @@ void CompilerGetStatementStrategy::cmd_get(CompilerContext* context) {
 void CompilerGetStatementStrategy::cmd_get_date(CompilerContext* context) {
   auto& cpu = *context->cpu;
   shared_ptr<Lexeme> lexeme;
-  ActionNode *action = context->current_action->actions[0], *sub_action;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
 
   if (t >= 3 && t <= 5) {
@@ -101,7 +102,8 @@ void CompilerGetStatementStrategy::cmd_get_date(CompilerContext* context) {
 void CompilerGetStatementStrategy::cmd_get_time(CompilerContext* context) {
   auto& cpu = *context->cpu;
   shared_ptr<Lexeme> lexeme;
-  ActionNode *action = context->current_action->actions[0], *sub_action;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
 
   if (t == 3) {
@@ -152,7 +154,8 @@ void CompilerGetStatementStrategy::cmd_get_tile(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
-  ActionNode *action = context->current_action->actions[0], *sub_action;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int t;
   int result_subtype;
@@ -243,7 +246,8 @@ void CompilerGetStatementStrategy::cmd_get_sprite(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
-  ActionNode *action = context->current_action->actions[0], *sub_action;
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int t;
   int result_subtype;

@@ -9,7 +9,7 @@ void CompilerCopyStatementStrategy::cmd_copy(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
-  ActionNode *action, *sub_action;
+  shared_ptr<ActionNode> action, sub_action;
   shared_ptr<Lexeme> lexeme;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype, state;
@@ -559,7 +559,8 @@ void CompilerCopyStatementStrategy::cmd_copy_screen(CompilerContext* context) {
     if (t == 0) {
       // xor a
     } else if (t == 1) {
-      ActionNode *action = context->current_action->actions[0], *sub_action;
+      shared_ptr<ActionNode> action = context->current_action->actions[0];
+      shared_ptr<ActionNode> sub_action;
       int result_subtype;
 
       sub_action = action->actions[0];

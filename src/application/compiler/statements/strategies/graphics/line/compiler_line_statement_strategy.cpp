@@ -10,7 +10,7 @@ void CompilerLineStatementStrategy::cmd_line(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme;
-  ActionNode *action, *sub_action;
+  shared_ptr<ActionNode> action, sub_action;
   unsigned int i, t = context->current_action->actions.size();
   int line_type = 0, result_subtype, state;
   bool has_x0_coord = false, has_x1_coord = false, has_y0_coord = false,

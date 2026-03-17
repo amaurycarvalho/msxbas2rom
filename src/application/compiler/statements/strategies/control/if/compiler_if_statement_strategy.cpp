@@ -13,7 +13,8 @@ void CompilerIfStatementStrategy::cmd_if(CompilerContext* context) {
   auto& expression = *context->expressionEvaluator;
   auto& evaluator = *context->evaluator;
   shared_ptr<Lexeme> lexeme, last_lexeme;
-  ActionNode *action, *saved_action = context->current_action, *last_action;
+  shared_ptr<ActionNode> action, last_action;
+  shared_ptr<ActionNode> saved_action = context->current_action;
   unsigned int i, t = saved_action->actions.size(), tt;
   int result_subtype;
   FixNode *mark_else = 0, *mark_endif = 0;

@@ -10,7 +10,7 @@ void CompilerGotoStatementStrategy::cmd_goto(CompilerContext* context) {
   shared_ptr<Lexeme> lexeme;
 
   if (context->current_action->actions.size() == 1) {
-    lexeme = context->current_action->actions[0]->lexeme;
+    lexeme = context->current_action->actions[0].get()->lexeme;
     if (lexeme) {
       if (lexeme->type == Lexeme::type_literal &&
           lexeme->subtype == Lexeme::subtype_numeric) {

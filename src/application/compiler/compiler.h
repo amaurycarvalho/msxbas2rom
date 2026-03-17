@@ -75,10 +75,10 @@ class Compiler {
 
   int getRamSize() const;
 
-  TagNode* getCurrentTag() const;
+  shared_ptr<TagNode> getCurrentTag() const;
 
   Parser* getParser() const;
-  BuildOptions* getOpts() const;
+  shared_ptr<BuildOptions> getOpts() const;
 
   bool isCompiled() const;
 };

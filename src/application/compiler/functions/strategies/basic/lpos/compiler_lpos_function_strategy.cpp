@@ -5,9 +5,8 @@
 #include "lexeme.h"
 
 int LposCompilerFunctionStrategy::execute(CompilerContext* context,
-                                          ActionNode* action,
-                                          int* result,
-                                          unsigned int parmCount) {
+                                          shared_ptr<ActionNode> action,
+                                          int* result, unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (parmCount != 0 && parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "LPOS") return Lexeme::subtype_unknown;

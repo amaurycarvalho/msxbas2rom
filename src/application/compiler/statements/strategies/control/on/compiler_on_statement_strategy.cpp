@@ -9,7 +9,7 @@
 #include "compiler_hooks.h"
 
 void CompilerOnStatementStrategy::cmd_on(CompilerContext* context) {
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> next_lexeme;
   unsigned int t = context->current_action->actions.size();
 
@@ -57,7 +57,7 @@ void CompilerOnStatementStrategy::cmd_on_interval(CompilerContext* context) {
   auto& opts = *context->opts;
   auto& expression = *context->expressionEvaluator;
   auto& optimizer = *context->codeOptimizer;
-  ActionNode *action, *sub_action, *parm_action;
+  shared_ptr<ActionNode> action, sub_action, parm_action;
   shared_ptr<Lexeme> lexeme, parm_lexeme;
   unsigned int t;
   int result_subtype;
@@ -151,7 +151,7 @@ void CompilerOnStatementStrategy::cmd_on_key(CompilerContext* context) {
   auto& fixup = *context->fixupResolver;
   auto& opts = *context->opts;
   auto& optimizer = *context->codeOptimizer;
-  ActionNode *action, *sub_action;
+  shared_ptr<ActionNode> action, sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int i, t;
 
@@ -227,7 +227,7 @@ void CompilerOnStatementStrategy::cmd_on_sprite(CompilerContext* context) {
   auto& fixup = *context->fixupResolver;
   auto& opts = *context->opts;
   auto& optimizer = *context->codeOptimizer;
-  ActionNode *action, *sub_action;
+  shared_ptr<ActionNode> action, sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int t, i = 0;
 
@@ -290,7 +290,7 @@ void CompilerOnStatementStrategy::cmd_on_stop(CompilerContext* context) {
   auto& fixup = *context->fixupResolver;
   auto& opts = *context->opts;
   auto& optimizer = *context->codeOptimizer;
-  ActionNode *action, *sub_action;
+  shared_ptr<ActionNode> action, sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int t, i = 0;
 
@@ -353,7 +353,7 @@ void CompilerOnStatementStrategy::cmd_on_strig(CompilerContext* context) {
   auto& fixup = *context->fixupResolver;
   auto& opts = *context->opts;
   auto& optimizer = *context->codeOptimizer;
-  ActionNode *action, *sub_action;
+  shared_ptr<ActionNode> action, sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int i, t;
 
@@ -429,7 +429,7 @@ void CompilerOnStatementStrategy::cmd_on_goto_gosub(CompilerContext* context) {
   auto& fixup = *context->fixupResolver;
   auto& opts = *context->opts;
   auto& expression = *context->expressionEvaluator;
-  ActionNode *action, *sub_action;
+  shared_ptr<ActionNode> action, sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   FixNode* mark;
   unsigned int i, t = context->current_action->actions.size();

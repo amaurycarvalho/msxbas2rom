@@ -27,10 +27,10 @@ class CompilerEvaluator {
    * @param tag TagNode object (action list)
    * @return True, if semanthic analysis success
    */
-  bool evaluate(TagNode* tag);
+  bool evaluate(shared_ptr<TagNode> tag);
 
-  bool evalAction(ActionNode* action);
-  bool evalActions(ActionNode* action);
+  bool evalAction(shared_ptr<ActionNode> action);
+  bool evalActions(shared_ptr<ActionNode> action);
 
   CompilerEvaluator(CompilerContext* context);
   ~CompilerEvaluator();

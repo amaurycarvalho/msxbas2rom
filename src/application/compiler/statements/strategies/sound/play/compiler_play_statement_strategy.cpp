@@ -7,7 +7,7 @@
 void CompilerPlayStatementStrategy::cmd_play(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
   bool xor_a = true;

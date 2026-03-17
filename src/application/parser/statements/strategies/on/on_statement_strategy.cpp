@@ -35,7 +35,7 @@ bool OnStatementStrategy::parseOn(ParserContext& context,
 bool OnStatementStrategy::parseOnGotoGosub(ParserContext& context,
                                            LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode *action, *action_index;
+  shared_ptr<ActionNode> action, action_index;
   LexerLineContext parm;
   int state = 0;
   bool next_is_sep = false;
@@ -43,7 +43,7 @@ bool OnStatementStrategy::parseOnGotoGosub(ParserContext& context,
   next_lexeme = statement->getPreviousLexeme();
   if (!next_lexeme) return false;
 
-  action_index = new ActionNode(context.lex_index);
+  action_index = make_shared<ActionNode>(context.lex_index);
 
   while ((next_lexeme = statement->getNextLexeme())) {
     switch (state) {
@@ -63,7 +63,7 @@ bool OnStatementStrategy::parseOnGotoGosub(ParserContext& context,
 
           context.popActionRoot();
 
-          action = new ActionNode(next_lexeme);
+          action = make_shared<ActionNode>(next_lexeme);
           context.pushActionRoot(action);
 
           state++;
@@ -111,7 +111,7 @@ bool OnStatementStrategy::parseOnError(ParserContext& context,
 bool OnStatementStrategy::parseOnInterval(ParserContext& context,
                                           LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode *action, *action_index;
+  shared_ptr<ActionNode> action, action_index;
   LexerLineContext parm;
   int state = 0;
   bool first = true;
@@ -119,10 +119,10 @@ bool OnStatementStrategy::parseOnInterval(ParserContext& context,
   next_lexeme = statement->getCurrentLexeme();
   if (!next_lexeme) return false;
 
-  action = new ActionNode(next_lexeme);
+  action = make_shared<ActionNode>(next_lexeme);
   context.pushActionRoot(action);
 
-  action_index = new ActionNode(context.lex_index);
+  action_index = make_shared<ActionNode>(context.lex_index);
 
   while ((next_lexeme = statement->getNextLexeme())) {
     switch (state) {
@@ -149,7 +149,7 @@ bool OnStatementStrategy::parseOnInterval(ParserContext& context,
 
           context.popActionRoot();
 
-          action = new ActionNode(next_lexeme);
+          action = make_shared<ActionNode>(next_lexeme);
           context.pushActionRoot(action);
 
           state++;
@@ -187,21 +187,21 @@ bool OnStatementStrategy::parseOnInterval(ParserContext& context,
 bool OnStatementStrategy::parseOnKey(ParserContext& context,
                                      LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   int state = 0;
   bool next_is_sep = false;
 
   next_lexeme = statement->getCurrentLexeme();
   if (!next_lexeme) return false;
 
-  action = new ActionNode(next_lexeme);
+  action = make_shared<ActionNode>(next_lexeme);
   context.pushActionRoot(action);
 
   while ((next_lexeme = statement->getNextLexeme())) {
     switch (state) {
       case 0: {
         if (next_lexeme->isKeyword("GOSUB")) {
-          action = new ActionNode(next_lexeme);
+          action = make_shared<ActionNode>(next_lexeme);
           context.pushActionRoot(action);
 
           state++;

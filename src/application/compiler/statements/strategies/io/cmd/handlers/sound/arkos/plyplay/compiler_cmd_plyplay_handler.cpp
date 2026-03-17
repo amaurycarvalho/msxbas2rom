@@ -11,7 +11,7 @@
 #include "compiler_hooks.h"
 
 bool CompilerCmdPlyPlayHandler::execute(CompilerContext* context,
-                                        ActionNode* action) {
+                                        shared_ptr<ActionNode> action) {
   auto& cpu = *context->cpu;
 
   context->akm = true;

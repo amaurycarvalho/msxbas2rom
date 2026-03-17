@@ -5,7 +5,7 @@
 #include "compiler_hooks.h"
 
 bool CompilerCmdClrKeyHandler::execute(CompilerContext* context,
-                                       ActionNode* action) {
+                                       shared_ptr<ActionNode> action) {
   auto& cpu = *context->cpu;
 
   // call cmd_clrkey

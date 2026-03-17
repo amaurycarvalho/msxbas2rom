@@ -43,7 +43,7 @@ class Parser {
   ParserLineEvaluator lineEval;
 
   Lexer* lexer;
-  BuildOptions* opts;
+  shared_ptr<BuildOptions> opts;
 
  public:
   /***
@@ -56,8 +56,8 @@ class Parser {
 
   int getLineNumber() const;
 
-  vector<TagNode*>& getTags();
-  const vector<TagNode*>& getTags() const;
+  vector<shared_ptr<TagNode>>& getTags();
+  const vector<shared_ptr<TagNode>>& getTags() const;
 
   vector<shared_ptr<Lexeme>>& getSymbolList();
   const vector<shared_ptr<Lexeme>>& getSymbolList() const;
@@ -80,7 +80,7 @@ class Parser {
   int getResourceCount() const;
 
   Lexer* getLexer() const;
-  BuildOptions* getOpts() const;
+  shared_ptr<BuildOptions> getOpts() const;
 
   /***
    * @brief Return all tags and it's syntax tree as a string

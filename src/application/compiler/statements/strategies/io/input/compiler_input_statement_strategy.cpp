@@ -12,7 +12,7 @@ void CompilerInputStatementStrategy::cmd_input(CompilerContext* context,
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme;
-  ActionNode *action, *subaction;
+  shared_ptr<ActionNode> action, subaction;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
   bool redirected = false;

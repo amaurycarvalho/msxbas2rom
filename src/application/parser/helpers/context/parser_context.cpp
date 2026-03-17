@@ -122,10 +122,9 @@ void ParserContext::pushStackFromLexeme(shared_ptr<Lexeme> lexeme) {
   expressionList.push(lexeme);
 }
 
-ActionNode* ParserContext::pushActionFromLexeme(shared_ptr<Lexeme> lexeme) {
-  ActionNode* actionExpr = 0;
-
-  actionExpr = new ActionNode(lexeme);
+shared_ptr<ActionNode> ParserContext::pushActionFromLexeme(
+    shared_ptr<Lexeme> lexeme) {
+  auto actionExpr = make_shared<ActionNode>(lexeme);
 
   if (lexeme->type == Lexeme::type_operator ||
       lexeme->type == Lexeme::type_separator ||
@@ -170,7 +169,7 @@ int ParserContext::gfxOperatorCode(shared_ptr<Lexeme> lexeme) {
   return result;
 }
 
-void ParserContext::pushActionRoot(ActionNode* action) {
+void ParserContext::pushActionRoot(shared_ptr<ActionNode> action) {
   if (actionRoot) {
     actionRoot->actions.push_back(action);
     actionStack.push(actionRoot);

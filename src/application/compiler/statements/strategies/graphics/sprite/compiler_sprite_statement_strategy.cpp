@@ -6,7 +6,7 @@
 
 void CompilerSpriteStatementStrategy::cmd_sprite(CompilerContext* context) {
   auto& cpu = *context->cpu;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> next_lexeme;
   unsigned int t = context->current_action->actions.size();
 
@@ -48,7 +48,7 @@ void CompilerSpriteStatementStrategy::cmd_sprite_load(
     CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
 

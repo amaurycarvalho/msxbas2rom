@@ -7,7 +7,7 @@ void CompilerPokeStatementStrategy::cmd_poke(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
 

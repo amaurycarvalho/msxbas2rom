@@ -23,8 +23,8 @@ class CompilerSymbolResolver {
  public:
   SymbolNode* getSymbol(shared_ptr<Lexeme> lexeme);
   SymbolNode* addSymbol(shared_ptr<Lexeme> lexeme);
-  SymbolNode* getSymbol(TagNode* tag);
-  SymbolNode* addSymbol(TagNode* tag);
+  SymbolNode* getSymbol(shared_ptr<TagNode> tag);
+  SymbolNode* addSymbol(shared_ptr<TagNode> tag);
   SymbolNode* addSymbol(string line);
 
   void addSupportSymbols();

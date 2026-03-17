@@ -44,7 +44,7 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
-  BuildOptionsSetup opts;
+  shared_ptr<BuildOptionsSetup> opts = make_shared<BuildOptionsSetup>();
   set<Logger::LogLevel> logLevels = {Logger::LogLevel::ERROR};
   unique_ptr<Lexer> lexer;
   unique_ptr<Rom> rom;
@@ -56,24 +56,24 @@ int main(int argc, char* argv[]) {
 
   /// parsing parameters
 
-  if (!opts.parse(argc, argv)) {
+  if (!opts->parse(argc, argv)) {
     printHeader();
-    printf("ERROR: Invalid parameter(s)\n%s\n", opts.errorMessage.c_str());
+    printf("ERROR: Invalid parameter(s)\n%s\n", opts->errorMessage.c_str());
     return 1;
   };
 
-  if (opts.debug) {
+  if (opts->debug) {
     logLevels.insert(Logger::LogLevel::DEBUG);
   }
 
-  if (!opts.quiet) {
+  if (!opts->quiet) {
     bool footer = false;
 
     logLevels.insert(Logger::LogLevel::INFO);
     logLevels.insert(Logger::LogLevel::WARNING);
 
     /// version
-    if (opts.version) {
+    if (opts->version) {
       printVersion();
       return 0;
     }
@@ -82,17 +82,17 @@ int main(int argc, char* argv[]) {
     printHeader();
 
     /// quick reference
-    if (opts.doc) {
+    if (opts->doc) {
       printDocs();
       footer = true;
 
       /// history
-    } else if (opts.history) {
+    } else if (opts->history) {
       printHistory();
       footer = true;
 
       /// help hint
-    } else if (argc == 1 || opts.help) {
+    } else if (argc == 1 || opts->help) {
       printHelp();
       footer = true;
     }
@@ -102,23 +102,24 @@ int main(int argc, char* argv[]) {
       return 0;
     }
   } else {
-    if (argc == 1 || opts.help || opts.doc || opts.version || opts.history) {
+    if (argc == 1 || opts->help || opts->doc || opts->version ||
+        opts->history) {
       printf("ERROR: Invalid parameter for quiet mode\n");
       return 1;
     }
   }
 
-  if (opts.inputFilename.empty()) {
+  if (opts->inputFilename.empty()) {
     printf("ERROR: Input file name parameter is missing!\n");
     return 1;
   }
 
-  if (!fileExists(opts.inputFilename)) {
+  if (!fileExists(opts->inputFilename)) {
     printf("ERROR: Input file not found!\n");
     return 1;
   }
 
-  if (opts.compileMode == BuildOptions::CompileMode::Pcoded) {
+  if (opts->compileMode == BuildOptions::CompileMode::Pcoded) {
     printf(
         "ERROR: P-code mode is now DEPRECATED\n"
         "If you really need it, try to use v0.3.3.1 release.\n"
@@ -134,13 +135,13 @@ int main(int argc, char* argv[]) {
     compiler.reset(new Compiler(cpu.get()));
     rom.reset(new Rom());
 
-    if (fileExists(opts.outputFilename)) {
-      remove(opts.outputFilename.c_str());
+    if (fileExists(opts->outputFilename)) {
+      remove(opts->outputFilename.c_str());
     }
 
-    if (!opts.quiet)
-      printf("Converting %s to %s ...\n", opts.inputFilename.c_str(),
-             opts.outputFilename.c_str());
+    if (!opts->quiet)
+      printf("Converting %s to %s ...\n", opts->inputFilename.c_str(),
+             opts->outputFilename.c_str());
 
     /// LEXICAL ANALYSIS
     //! @note lexing the input file, tokenizing it
@@ -149,7 +150,7 @@ int main(int argc, char* argv[]) {
 
     logger->info("(1) Doing lexical analysis...");
 
-    if (!lexer->load(&opts)) {
+    if (!lexer->load(opts)) {
       logger->error("Cannot load input file for lexical analysis");
       print(logger->trace().toString());
       return 1;
@@ -208,8 +209,8 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
-    if (opts.megaROM) {
-      if (opts.compileMode == BuildOptions::CompileMode::KonamiSCC) {
+    if (opts->megaROM) {
+      if (opts->compileMode == BuildOptions::CompileMode::KonamiSCC) {
         logger->info(
             "    Compiling for MegaROM format (Konami with SCC mapper)");
       } else
@@ -230,8 +231,8 @@ int main(int argc, char* argv[]) {
 
     if (!rom->build(compiler.get())) {
       bool shouldRetryWithAscii8 =
-          opts.autoROM && !retriedWithAscii8 &&
-          opts.compileMode == BuildOptions::CompileMode::Plain &&
+          opts->autoROM && !retriedWithAscii8 &&
+          opts->compileMode == BuildOptions::CompileMode::Plain &&
           rom->getLogger()->errors().toString().find("plain ROM limit") !=
               string::npos;
 
@@ -242,9 +243,9 @@ int main(int argc, char* argv[]) {
             "Auto mode activated to retry as an ASCII8 MegaROM...\n");
         print(logger->filter(logLevels).toString());
 
-        opts.compileMode = BuildOptions::CompileMode::ASCII8;
-        opts.megaROM = true;
-        opts.setInputFilename(opts.inputFilename);
+        opts->compileMode = BuildOptions::CompileMode::ASCII8;
+        opts->megaROM = true;
+        opts->setInputFilename(opts->inputFilename);
         retriedWithAscii8 = true;
         continue;
       }
@@ -256,9 +257,9 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
-    if (opts.symbols != BuildOptions::SymbolsMode::None) {
+    if (opts->symbols != BuildOptions::SymbolsMode::None) {
       auto symbolManager = compiler->getSymbolManager();
-      symbolManager->saveSymbol(&opts);
+      symbolManager->saveSymbol(opts);
     }
 
     break;
@@ -268,9 +269,9 @@ int main(int argc, char* argv[]) {
 
   /// FINAL SUMMARY WITH COMPILATION STATISTICS
 
-  if (!opts.quiet) {
-    if (opts.megaROM) {
-      if (opts.compileMode == BuildOptions::CompileMode::KonamiSCC) {
+  if (!opts->quiet) {
+    if (opts->megaROM) {
+      if (opts->compileMode == BuildOptions::CompileMode::KonamiSCC) {
         printf(
             "    MegaROM mode activated (Konami with SCC "
             "mapper).\n");
@@ -294,7 +295,7 @@ int main(int argc, char* argv[]) {
         printf(", %.1f%% packed rate", resourceManager->packedRate);
       }
       printf(")\n");
-      if (opts.debug) printf("%s", resourceManager->toString().c_str());
+      if (opts->debug) printf("%s", resourceManager->toString().c_str());
     }
 
     printf("    Kernel code occupied %.1f%% of avaliable space\n",

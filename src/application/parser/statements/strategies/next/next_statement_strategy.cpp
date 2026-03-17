@@ -4,7 +4,7 @@ bool NextStatementStrategy::parseStatement(ParserContext& context,
                                            LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   shared_ptr<Lexeme> current_lexeme = context.actionRoot->lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   int sepCount = 0;
 
   while ((next_lexeme = statement->getNextLexeme())) {
@@ -14,7 +14,7 @@ bool NextStatementStrategy::parseStatement(ParserContext& context,
       if (sepCount) sepCount--;
     } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
       context.popActionRoot();
-      action = new ActionNode(current_lexeme);
+      action = make_shared<ActionNode>(current_lexeme);
       context.pushActionRoot(action);
     }
   }

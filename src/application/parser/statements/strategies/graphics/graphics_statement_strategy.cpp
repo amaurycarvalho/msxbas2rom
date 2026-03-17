@@ -8,7 +8,7 @@
 bool GraphicsStatementStrategy::parsePset(ParserContext& context,
                                           LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   LexerLineContext parm;
   int state = 0, sepCount = 0, parmCount = 0;
   bool mustPopAction = false, isKeyword = false;
@@ -21,14 +21,14 @@ bool GraphicsStatementStrategy::parsePset(ParserContext& context,
 
     if (state == 0) {
       if (next_lexeme->isKeyword("STEP")) {
-        action = new ActionNode(next_lexeme);
+        action = make_shared<ActionNode>(next_lexeme);
         context.pushActionRoot(action);
         continue;
       } else if (next_lexeme->isSeparator("(")) {
         state++;
         parmCount++;
         if (context.actionRoot->lexeme->value != "STEP") {
-          action = new ActionNode("COORD");
+          action = make_shared<ActionNode>("COORD");
           context.pushActionRoot(action);
         }
         continue;
@@ -111,7 +111,7 @@ bool GraphicsStatementStrategy::parsePset(ParserContext& context,
 bool GraphicsStatementStrategy::parseLine(ParserContext& context,
                                           LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   LexerLineContext parm;
   int state = 0, sepCount = 0, parmCount = 0;
   bool startAsParm2 = false, mustPopAction = false;
@@ -132,10 +132,10 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context,
           return printStrategy.parseStatement(context, statement);
         } else if (next_lexeme->isKeyword("STEP")) {
           if (startAsParm2) {
-            action = new ActionNode("TO_STEP");
+            action = make_shared<ActionNode>("TO_STEP");
             context.pushActionRoot(action);
           } else {
-            action = new ActionNode(next_lexeme);
+            action = make_shared<ActionNode>(next_lexeme);
             context.pushActionRoot(action);
           }
           continue;
@@ -147,7 +147,7 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context,
             state++;
           if (context.actionRoot->lexeme->value != "STEP" &&
               context.actionRoot->lexeme->value != "TO_STEP") {
-            action = new ActionNode("COORD");
+            action = make_shared<ActionNode>("COORD");
             if (startAsParm2) action->lexeme->name = "TO_COORD";
             action->lexeme->value = action->lexeme->name;
             context.pushActionRoot(action);
@@ -205,14 +205,14 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context,
 
       case 2: {
         if (next_lexeme->isKeyword("STEP")) {
-          action = new ActionNode("TO_STEP");
+          action = make_shared<ActionNode>("TO_STEP");
           context.pushActionRoot(action);
           continue;
         } else if (next_lexeme->isSeparator("(")) {
           state++;
           if (context.actionRoot) {
             if (context.actionRoot->lexeme->value != "TO_STEP") {
-              action = new ActionNode("TO_COORD");
+              action = make_shared<ActionNode>("TO_COORD");
               context.pushActionRoot(action);
             }
           } else {
@@ -352,7 +352,7 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context,
 bool GraphicsStatementStrategy::parseCircle(ParserContext& context,
                                             LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   LexerLineContext parm;
   int state = 0, sepCount = 0, parmCount = 0;
   bool mustPopAction = false;
@@ -364,14 +364,14 @@ bool GraphicsStatementStrategy::parseCircle(ParserContext& context,
 
     if (state == 0) {
       if (next_lexeme->isKeyword("STEP")) {
-        action = new ActionNode(next_lexeme);
+        action = make_shared<ActionNode>(next_lexeme);
         context.pushActionRoot(action);
         continue;
       } else if (next_lexeme->isSeparator("(")) {
         state++;
         parmCount++;
         if (context.actionRoot->lexeme->value != "STEP") {
-          action = new ActionNode("COORD");
+          action = make_shared<ActionNode>("COORD");
           context.pushActionRoot(action);
         }
         continue;
@@ -429,7 +429,7 @@ bool GraphicsStatementStrategy::parseCircle(ParserContext& context,
 bool GraphicsStatementStrategy::parsePaint(ParserContext& context,
                                            LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   LexerLineContext parm;
   int state = 0, sepCount = 0, parmCount = 0;
   bool mustPopAction = false;
@@ -441,14 +441,14 @@ bool GraphicsStatementStrategy::parsePaint(ParserContext& context,
 
     if (state == 0) {
       if (next_lexeme->isKeyword("STEP")) {
-        action = new ActionNode(next_lexeme);
+        action = make_shared<ActionNode>(next_lexeme);
         context.pushActionRoot(action);
         continue;
       } else if (next_lexeme->isSeparator("(")) {
         state++;
         parmCount++;
         if (context.actionRoot->lexeme->value != "STEP") {
-          action = new ActionNode("COORD");
+          action = make_shared<ActionNode>("COORD");
           context.pushActionRoot(action);
         }
         continue;
@@ -505,7 +505,7 @@ bool GraphicsStatementStrategy::parsePaint(ParserContext& context,
 bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
                                           LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   LexerLineContext parm;
   int state = 0, sepCount = 0, parmCount = 0;
   bool isKeyword = false;
@@ -527,7 +527,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
           parmCount++;
           state = 1;
 
-          action = new ActionNode("COORD");
+          action = make_shared<ActionNode>("COORD");
           context.pushActionRoot(action);
 
           continue;
@@ -576,14 +576,14 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
 
       case 2: {
         if (next_lexeme->isKeyword("STEP")) {
-          action = new ActionNode("TO_STEP");
+          action = make_shared<ActionNode>("TO_STEP");
           context.pushActionRoot(action);
           continue;
         } else if (next_lexeme->isSeparator("(")) {
           parmCount++;
           state = 3;
           if (context.actionRoot->lexeme->value != "TO_STEP") {
-            action = new ActionNode("TO_COORD");
+            action = make_shared<ActionNode>("TO_COORD");
             context.pushActionRoot(action);
           }
           continue;
@@ -662,7 +662,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
         if (next_lexeme->isSeparator("(")) {
           state = 6;
 
-          action = new ActionNode("TO_DEST");
+          action = make_shared<ActionNode>("TO_DEST");
           context.pushActionRoot(action);
 
           continue;

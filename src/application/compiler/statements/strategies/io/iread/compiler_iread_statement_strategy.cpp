@@ -9,7 +9,7 @@ void CompilerIreadStatementStrategy::cmd_iread(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   auto& variable = *context->variableEmitter;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> lexeme;
   unsigned int i, t = context->current_action->actions.size();
 

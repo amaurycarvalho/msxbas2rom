@@ -16,7 +16,8 @@
 
 using namespace std;
 
-bool CdbExportStrategy::save(SymbolManager* symbolManager, BuildOptions* opts) {
+bool CdbExportStrategy::save(SymbolManager* symbolManager,
+                             shared_ptr<BuildOptions> opts) {
   FILE* file;
   CodeNode* codeItem;
   int i, t, size;

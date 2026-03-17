@@ -16,7 +16,7 @@ ExpressionEvaluator::ExpressionEvaluator(ParserContext& context)
 ExpressionEvaluator::~ExpressionEvaluator() = default;
 
 bool ExpressionEvaluator::evaluate(LexerLineContext* expression) {
-  ActionNode* actionSaved = ctx.actionRoot;
+  shared_ptr<ActionNode> actionSaved = ctx.actionRoot;
   unsigned int actionCount = ctx.actionStack.size();
 
   while (!ctx.expressionList.empty()) ctx.expressionList.pop();

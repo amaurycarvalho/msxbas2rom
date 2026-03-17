@@ -20,7 +20,7 @@ void CompilerReturnStatementStrategy::cmd_return(CompilerContext* context) {
     return;
 
   } else if (t == 1) {
-    lexeme = context->current_action->actions[0]->lexeme;
+    lexeme = context->current_action->actions[0].get()->lexeme;
     if (lexeme) {
       if (lexeme->type == Lexeme::type_literal &&
           lexeme->subtype == Lexeme::subtype_numeric) {

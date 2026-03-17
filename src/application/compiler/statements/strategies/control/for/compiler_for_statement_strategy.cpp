@@ -1,5 +1,7 @@
 #include "compiler_for_statement_strategy.h"
 
+#include <memory>
+
 #include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_evaluator.h"
@@ -9,6 +11,8 @@
 #include "compiler_symbol_resolver.h"
 #include "compiler_variable_emitter.h"
 
+using namespace std;
+
 void CompilerForStatementStrategy::cmd_for(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
@@ -16,7 +20,8 @@ void CompilerForStatementStrategy::cmd_for(CompilerContext* context) {
   auto& optimizer = *context->codeOptimizer;
   auto& evaluator = *context->evaluator;
   shared_ptr<Lexeme> lexeme, lex_var = nullptr;
-  ActionNode *action, *var_action, *saved_action = context->current_action;
+  shared_ptr<ActionNode> action, var_action;
+  shared_ptr<ActionNode> saved_action = context->current_action;
   unsigned int i, t = saved_action->actions.size();
   int result_subtype;
   ForNextNode* forNext;
@@ -35,14 +40,14 @@ void CompilerForStatementStrategy::cmd_for(CompilerContext* context) {
     forNext->for_to =
         make_shared<Lexeme>(Lexeme::type_identifier, Lexeme::subtype_numeric,
                             "FOR_TO_" + to_string(context->for_count));
-    forNext->for_to_action = new ActionNode();
+    forNext->for_to_action = make_shared<ActionNode>();
     forNext->for_to_action->lexeme = forNext->for_to;
     context->symbolResolver->addSymbol(forNext->for_to);
 
     forNext->for_step =
         make_shared<Lexeme>(Lexeme::type_identifier, Lexeme::subtype_numeric,
                             "FOR_STEP_" + to_string(context->for_count));
-    forNext->for_step_action = new ActionNode();
+    forNext->for_step_action = make_shared<ActionNode>();
     forNext->for_step_action->lexeme = forNext->for_step;
     context->symbolResolver->addSymbol(forNext->for_step);
 

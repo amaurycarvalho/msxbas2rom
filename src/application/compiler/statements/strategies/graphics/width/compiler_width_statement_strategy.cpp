@@ -7,7 +7,7 @@
 void CompilerWidthStatementStrategy::cmd_width(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   unsigned int t = context->current_action->actions.size();
   int result_subtype;
 

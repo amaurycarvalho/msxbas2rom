@@ -6,7 +6,7 @@
 #include "lexeme.h"
 
 int VarptrCompilerFunctionStrategy::execute(CompilerContext* context,
-                                            ActionNode* action,
+                                            shared_ptr<ActionNode> action,
                                             int* result,
                                             unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
@@ -15,7 +15,7 @@ int VarptrCompilerFunctionStrategy::execute(CompilerContext* context,
 
   (void)result;
 
-  ActionNode* next_action = action->actions[0];
+  shared_ptr<ActionNode> next_action = action->actions[0];
   if (next_action && next_action->lexeme &&
       next_action->lexeme->type == Lexeme::type_identifier) {
     context->variableEmitter->addVarAddress(next_action);

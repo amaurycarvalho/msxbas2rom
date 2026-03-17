@@ -13,10 +13,10 @@
 #include "compiler_hooks.h"
 #include "logger.h"
 
-bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
+bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
   auto& cpu = *context->cpu;
   shared_ptr<Lexeme> lexeme, lexeme1, lexeme2;
-  ActionNode *action1, *action2;
+  shared_ptr<ActionNode> action1, action2;
   unsigned int i, t;
   int factor, diff;
   int result_subtype;
@@ -295,7 +295,7 @@ void CompilerVariableEmitter::addTempStr(bool atHL) {
   }
 }
 
-bool CompilerVariableEmitter::addAssignment(ActionNode* action) {
+bool CompilerVariableEmitter::addAssignment(shared_ptr<ActionNode> action) {
   auto& cpu = *context->cpu;
   if (action->lexeme->type == Lexeme::type_keyword) {
     if (action->lexeme->value == "TIME") {

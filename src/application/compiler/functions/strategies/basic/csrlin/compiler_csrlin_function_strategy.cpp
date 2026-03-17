@@ -5,7 +5,7 @@
 #include "lexeme.h"
 
 int CsrlinCompilerFunctionStrategy::execute(CompilerContext* context,
-                                            ActionNode* action,
+                                            shared_ptr<ActionNode> action,
                                             int* result,
                                             unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;

@@ -5,7 +5,8 @@
 
 class CompilerCmdSetFntHandler : public ICompilerCmdHandler {
  public:
-  bool execute(CompilerContext* context, ActionNode* action) override;
+  bool execute(CompilerContext* context,
+               shared_ptr<ActionNode> action) override;
 };
 
 #endif  // COMPILER_CMD_SETFNT_HANDLER_H_INCLUDED

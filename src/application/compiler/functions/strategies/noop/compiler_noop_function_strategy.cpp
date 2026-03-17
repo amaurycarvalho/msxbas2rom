@@ -4,9 +4,8 @@
 #include "lexeme.h"
 
 int NoopCompilerFunctionStrategy::execute(CompilerContext* context,
-                                          ActionNode* action,
-                                          int* result,
-                                          unsigned int parmCount) {
+                                          shared_ptr<ActionNode> action,
+                                          int* result, unsigned int parmCount) {
   (void)context;
   (void)action;
   (void)result;

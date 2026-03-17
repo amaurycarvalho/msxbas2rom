@@ -1,5 +1,7 @@
 #include "set_statement_strategy.h"
 
+#include <memory>
+
 #include "generic_statement_strategy.h"
 #include "logger.h"
 
@@ -69,14 +71,14 @@ bool SetStatementStrategy::parseSetAdjust(ParserContext& context,
 bool SetStatementStrategy::parseSetTile(ParserContext& context,
                                         LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
     context.coalesceSymbols(next_lexeme);
 
     next_lexeme = statement->getCurrentLexeme();
-    action = new ActionNode(next_lexeme);
+    action = make_shared<ActionNode>(next_lexeme);
     context.pushActionRoot(action);
 
     if (next_lexeme->type == Lexeme::type_keyword) {
@@ -97,7 +99,7 @@ bool SetStatementStrategy::parseSetTile(ParserContext& context,
 bool SetStatementStrategy::parseSetTileColpat(ParserContext& context,
                                               LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode* act_coord;
+  shared_ptr<ActionNode> act_coord;
   LexerLineContext parm;
   int state = 1, sepCount = 0;
   bool hasArrayParm = false;
@@ -112,7 +114,7 @@ bool SetStatementStrategy::parseSetTileColpat(ParserContext& context,
         if (next_lexeme->isSeparator("(")) {
           state = 2;
           sepCount = 0;
-          act_coord = new ActionNode("ARRAY");
+          act_coord = make_shared<ActionNode>("ARRAY");
           context.pushActionRoot(act_coord);
           hasArrayParm = true;
           continue;
@@ -189,14 +191,14 @@ bool SetStatementStrategy::parseSetTileColpat(ParserContext& context,
 bool SetStatementStrategy::parseSetSprite(ParserContext& context,
                                           LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
     context.coalesceSymbols(next_lexeme);
 
     next_lexeme = statement->getCurrentLexeme();
-    action = new ActionNode(next_lexeme);
+    action = make_shared<ActionNode>(next_lexeme);
     context.pushActionRoot(action);
 
     if (next_lexeme->type == Lexeme::type_keyword) {
@@ -215,7 +217,7 @@ bool SetStatementStrategy::parseSetSprite(ParserContext& context,
 bool SetStatementStrategy::parseSetSpriteColpattra(
     ParserContext& context, LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode* act_coord;
+  shared_ptr<ActionNode> act_coord;
   LexerLineContext parm;
   int state = 1, sepCount = 0;
   bool hasArrayParm = false;
@@ -230,7 +232,7 @@ bool SetStatementStrategy::parseSetSpriteColpattra(
         if (next_lexeme->isSeparator("(")) {
           state = 2;
           sepCount = 0;
-          act_coord = new ActionNode("ARRAY");
+          act_coord = make_shared<ActionNode>("ARRAY");
           context.pushActionRoot(act_coord);
           hasArrayParm = true;
           continue;
@@ -307,14 +309,14 @@ bool SetStatementStrategy::parseSetSpriteColpattra(
 bool SetStatementStrategy::parseStatement(ParserContext& context,
                                           LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
     context.coalesceSymbols(next_lexeme);
 
     next_lexeme = statement->getCurrentLexeme();
-    action = new ActionNode(next_lexeme);
+    action = make_shared<ActionNode>(next_lexeme);
     context.pushActionRoot(action);
 
     if (next_lexeme->type == Lexeme::type_keyword) {

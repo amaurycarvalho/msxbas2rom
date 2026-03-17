@@ -8,10 +8,8 @@ class CompilerContext;
 
 class PlayCompilerFunctionStrategy : public ICompilerFunctionStrategy {
  public:
-  int execute(CompilerContext* context,
-              ActionNode* action,
-              int* result,
-              unsigned int parmCount) override;
+  int execute(CompilerContext* context, shared_ptr<ActionNode> action,
+              int* result, unsigned int parmCount) override;
 };
 
 #endif  // PLAY_COMPILER_FUNCTION_STRATEGY_H_INCLUDED

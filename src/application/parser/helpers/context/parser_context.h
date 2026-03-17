@@ -32,9 +32,9 @@ class ParserContext {
   shared_ptr<Lexeme> lex_rgb, lex_zero;
 
   //! collections
-  stack<ActionNode*> actionStack;
+  stack<shared_ptr<ActionNode>> actionStack;
   stack<shared_ptr<Lexeme>> expressionList;
-  vector<TagNode*> tags;
+  vector<shared_ptr<TagNode>> tags;
   vector<shared_ptr<Lexeme>> symbolList;
   vector<shared_ptr<Lexeme>> datas;
 
@@ -52,17 +52,17 @@ class ParserContext {
   //! helper objects
   unique_ptr<Logger> logger;
 
-  TagNode* tag;
-  ActionNode* actionRoot;
+  shared_ptr<TagNode> tag;
+  shared_ptr<ActionNode> actionRoot;
   LexerLineContext* error_line;
 
   //! helper methods
   void reset();
 
   int gfxOperatorCode(shared_ptr<Lexeme> lexeme);
-  ActionNode* pushActionFromLexeme(shared_ptr<Lexeme> lexeme);
+  shared_ptr<ActionNode> pushActionFromLexeme(shared_ptr<Lexeme> lexeme);
   void pushStackFromLexeme(shared_ptr<Lexeme> lexeme);
-  void pushActionRoot(ActionNode* action);
+  void pushActionRoot(shared_ptr<ActionNode> action);
   void popActionRoot();
   shared_ptr<Lexeme> coalesceSymbols(shared_ptr<Lexeme> lexeme);
 

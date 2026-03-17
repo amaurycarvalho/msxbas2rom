@@ -131,11 +131,11 @@ TEST_SUITE("Symbols") {
   TEST_CASE("Symbol manager saves .symbol file") {
     ensureTmpDir();
     SymbolsFixture fixture;
-    BuildOptions opts;
-    opts.setInputFilename("tmp/symbols_test.bas");
-    opts.symbols = BuildOptions::SymbolsMode::Symbol;
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->setInputFilename("tmp/symbols_test.bas");
+    opts->symbols = BuildOptions::SymbolsMode::Symbol;
 
-    REQUIRE(fixture.manager.saveSymbol(&opts) == true);
+    REQUIRE(fixture.manager.saveSymbol(opts) == true);
     CHECK(fileExists(fixture.manager.exportFilename) == true);
 
     std::string content = readFileText(fixture.manager.exportFilename);
@@ -149,11 +149,11 @@ TEST_SUITE("Symbols") {
   TEST_CASE("Symbol manager saves .omds file") {
     ensureTmpDir();
     SymbolsFixture fixture;
-    BuildOptions opts;
-    opts.setInputFilename("tmp/symbols_test.bas");
-    opts.symbols = BuildOptions::SymbolsMode::Omds;
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->setInputFilename("tmp/symbols_test.bas");
+    opts->symbols = BuildOptions::SymbolsMode::Omds;
 
-    REQUIRE(fixture.manager.saveSymbol(&opts) == true);
+    REQUIRE(fixture.manager.saveSymbol(opts) == true);
     CHECK(fileExists(fixture.manager.exportFilename) == true);
 
     std::string content = readFileText(fixture.manager.exportFilename);
@@ -167,11 +167,11 @@ TEST_SUITE("Symbols") {
   TEST_CASE("Symbol manager saves .noi file") {
     ensureTmpDir();
     SymbolsFixture fixture;
-    BuildOptions opts;
-    opts.setInputFilename("tmp/symbols_test.bas");
-    opts.symbols = BuildOptions::SymbolsMode::NoICE;
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->setInputFilename("tmp/symbols_test.bas");
+    opts->symbols = BuildOptions::SymbolsMode::NoICE;
 
-    REQUIRE(fixture.manager.saveSymbol(&opts) == true);
+    REQUIRE(fixture.manager.saveSymbol(opts) == true);
     CHECK(fileExists(fixture.manager.exportFilename) == true);
 
     std::string content = readFileText(fixture.manager.exportFilename);
@@ -185,11 +185,11 @@ TEST_SUITE("Symbols") {
   TEST_CASE("Symbol manager saves .cdb file") {
     ensureTmpDir();
     SymbolsFixture fixture;
-    BuildOptions opts;
-    opts.setInputFilename("tmp/symbols_test.bas");
-    opts.symbols = BuildOptions::SymbolsMode::Cdb;
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->setInputFilename("tmp/symbols_test.bas");
+    opts->symbols = BuildOptions::SymbolsMode::Cdb;
 
-    REQUIRE(fixture.manager.saveSymbol(&opts) == true);
+    REQUIRE(fixture.manager.saveSymbol(opts) == true);
     CHECK(fileExists(fixture.manager.exportFilename) == true);
 
     std::string content = readFileText(fixture.manager.exportFilename);
@@ -203,12 +203,12 @@ TEST_SUITE("Symbols") {
     ensureTmpDir();
 
     SymbolsFixture fixture;
-    BuildOptions opts;
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
 
-    opts.setInputFilename("tmp/symbols_test.bas");
-    opts.symbols = BuildOptions::SymbolsMode::Elf;
+    opts->setInputFilename("tmp/symbols_test.bas");
+    opts->symbols = BuildOptions::SymbolsMode::Elf;
 
-    REQUIRE(fixture.manager.saveSymbol(&opts) == true);
+    REQUIRE(fixture.manager.saveSymbol(opts) == true);
 
     CHECK(fileExists(fixture.manager.exportFilename) == true);
 
@@ -260,11 +260,11 @@ TEST_SUITE("Symbols") {
 
   TEST_CASE("Symbol manager returns false when symbols mode is none") {
     SymbolsFixture fixture;
-    BuildOptions opts;
-    opts.setInputFilename("tmp/symbols_test.bas");
-    opts.symbols = BuildOptions::SymbolsMode::None;
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->setInputFilename("tmp/symbols_test.bas");
+    opts->symbols = BuildOptions::SymbolsMode::None;
 
-    CHECK(fixture.manager.saveSymbol(&opts) == false);
+    CHECK(fixture.manager.saveSymbol(opts) == false);
   }
 }
 

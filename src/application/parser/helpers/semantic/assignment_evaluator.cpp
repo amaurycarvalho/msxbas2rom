@@ -17,7 +17,7 @@ AssignmentEvaluator::AssignmentEvaluator(ParserContext& context,
 bool AssignmentEvaluator::evaluate(LexerLineContext* assignment) {
   shared_ptr<Lexeme> lexeme = assignment->getNextLexeme(), next_lexeme;
   LexerLineContext parm;
-  ActionNode* action;
+  shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> lexLet;
   bool result, add_let_action = true;
 
@@ -35,7 +35,7 @@ bool AssignmentEvaluator::evaluate(LexerLineContext* assignment) {
       }
 
       if (add_let_action) {
-        action = new ActionNode("LET");
+        action = make_shared<ActionNode>("LET");
         /// @note "lexLet" value really needs to be updated?
         /// NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
         // lexLet = action->lexeme;

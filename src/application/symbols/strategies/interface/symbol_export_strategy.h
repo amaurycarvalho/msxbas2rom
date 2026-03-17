@@ -8,6 +8,7 @@
 #ifndef SYMBOL_EXPORT_STRATEGY_H_INCLUDED
 #define SYMBOL_EXPORT_STRATEGY_H_INCLUDED
 
+#include <memory>
 #include <string>
 
 class SymbolManager;
@@ -19,7 +20,8 @@ class SymbolExportStrategy {
  public:
   virtual ~SymbolExportStrategy() {}
 
-  virtual bool save(SymbolManager* symbolManager, BuildOptions* opts) = 0;
+  virtual bool save(SymbolManager* symbolManager,
+                    shared_ptr<BuildOptions> opts) = 0;
 };
 
 #endif  // SYMBOL_EXPORT_STRATEGY_H_INCLUDED
