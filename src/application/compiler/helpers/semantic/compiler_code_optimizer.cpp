@@ -6,6 +6,7 @@
 
 #include "compiler_code_optimizer.h"
 
+#include "build_options.h"
 #include "compiler_context.h"
 
 extern unsigned char bin_header_bin[];

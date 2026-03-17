@@ -15,7 +15,7 @@ ExpressionEvaluator::ExpressionEvaluator(ParserContext& context)
 
 ExpressionEvaluator::~ExpressionEvaluator() = default;
 
-bool ExpressionEvaluator::evaluate(LexerLine* expression) {
+bool ExpressionEvaluator::evaluate(LexerLineContext* expression) {
   ActionNode* actionSaved = ctx.actionRoot;
   unsigned int actionCount = ctx.actionStack.size();
 
@@ -34,10 +34,10 @@ bool ExpressionEvaluator::evaluate(LexerLine* expression) {
   return true;
 }
 
-bool ExpressionEvaluator::push(LexerLine* expression) {
+bool ExpressionEvaluator::push(LexerLineContext* expression) {
   stack<shared_ptr<Lexeme>> operatorStack;
   shared_ptr<Lexeme> lexeme, next_lexeme, check_lexeme;
-  LexerLine functionLexemes;
+  LexerLineContext functionLexemes;
   int thisPreced, stackPreced;
   int outputCount = 0, sepcount = 0, parmcount = 0;
   bool ok, unary = false, lastWasFunction = false, lastWasIdentifier = false;

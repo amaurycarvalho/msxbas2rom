@@ -11,7 +11,12 @@
 
 #include "parser.h"
 
+#include "action_node.h"
+#include "build_options.h"
+#include "lexer.h"
+#include "lexer_line_evaluator.h"
 #include "logger.h"
+#include "tag_node.h"
 
 /***
  * @name Parser class code

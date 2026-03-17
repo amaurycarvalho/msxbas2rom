@@ -5,12 +5,12 @@
 
 class FileStatementStrategy : public IParserStatementStrategy {
  private:
-  bool parseOpen(ParserContext& context, LexerLine* statement);
-  bool parseClose(ParserContext& context, LexerLine* statement);
-  bool parseMaxfiles(ParserContext& context, LexerLine* statement);
+  bool parseOpen(ParserContext& context, LexerLineContext* statement);
+  bool parseClose(ParserContext& context, LexerLineContext* statement);
+  bool parseMaxfiles(ParserContext& context, LexerLineContext* statement);
 
  public:
-  bool execute(ParserContext& context, LexerLine* statement,
+  bool execute(ParserContext& context, LexerLineContext* statement,
                shared_ptr<Lexeme> lexeme) override;
 };
 

@@ -13,7 +13,7 @@
 #include <cstring>
 
 #include "build_options.h"
-#include "lexer_line.h"
+#include "lexer_line_evaluator.h"
 #include "logger.h"
 
 /***
@@ -79,7 +79,7 @@ bool Lexer::load(BuildOptions* opts) {
   if ((file = fopen(opts->inputFilename.c_str(), "r"))) {
     int lineNumber = 0;
     while (fgets(lineText, len, file)) {
-      lines.emplace_back(new LexerLine());
+      lines.emplace_back(new LexerLineEvaluator());
       auto& lexerLine = lines.back();
       if (lexerLine) {
         lexerLine->lineText = lineText;

@@ -16,17 +16,17 @@
 #include <string>
 #include <vector>
 
-#include "action_node.h"
 #include "assignment_evaluator.h"
-#include "build_options.h"
 #include "expression_evaluator.h"
-#include "lexer.h"
 #include "parser_context.h"
 #include "parser_line_evaluator.h"
 #include "parser_statement_strategy_factory.h"
-#include "tag_node.h"
 
 class Logger;
+class Lexer;
+class BuildOptions;
+class TagNode;
+class Lexeme;
 
 using namespace std;
 

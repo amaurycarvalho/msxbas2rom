@@ -5,7 +5,7 @@
 
 class NoopStatementStrategy : public IParserStatementStrategy {
  public:
-  bool execute(ParserContext& context, LexerLine* statement,
+  bool execute(ParserContext& context, LexerLineContext* statement,
                shared_ptr<Lexeme> lexeme) override;
 };
 

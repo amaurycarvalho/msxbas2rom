@@ -14,7 +14,7 @@ class AssignmentEvaluator {
    * @brief Assignments syntatic analysis
    * @return True, if syntatic analysis success
    */
-  bool evaluate(LexerLine* assignment);
+  bool evaluate(LexerLineContext* assignment);
 
  private:
   ParserContext& ctx;

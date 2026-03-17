@@ -9,6 +9,7 @@
 #include <fstream>
 #include <string>
 
+#include "build_options.h"
 #include "compiler.h"
 #include "doctest/doctest.h"
 #include "fswrapper.h"

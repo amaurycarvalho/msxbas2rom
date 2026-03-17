@@ -7,7 +7,7 @@
 #include "parser_statement_strategy_factory.h"
 
 bool IfStatementStrategy::evalPhrase(ParserContext& context,
-                                     LexerLine* phrase) {
+                                     LexerLineContext* phrase) {
   ParserStatementStrategyFactory statementStrategyFactory;
   ExpressionEvaluator exprEval(context);
   AssignmentEvaluator assignEval(context, exprEval);
@@ -17,9 +17,10 @@ bool IfStatementStrategy::evalPhrase(ParserContext& context,
 }
 
 bool IfStatementStrategy::parseStatement(ParserContext& context,
-                                         LexerLine* statement, int level) {
+                                         LexerLineContext* statement,
+                                         int level) {
   shared_ptr<Lexeme> next_lexeme, last_lexeme = statement->getCurrentLexeme();
-  LexerLine parm;
+  LexerLineContext parm;
   ActionNode* action;
   int state = 0;
   bool testGotoGosub = false, testIf = false, skipEmptyStmtCheck = false;
@@ -233,7 +234,8 @@ bool IfStatementStrategy::parseStatement(ParserContext& context,
   return true;
 }
 
-bool IfStatementStrategy::execute(ParserContext& context, LexerLine* statement,
+bool IfStatementStrategy::execute(ParserContext& context,
+                                  LexerLineContext* statement,
                                   shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement, 0);

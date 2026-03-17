@@ -2,10 +2,11 @@
 
 #include <cctype>
 
+#include "lexer_line_context.h"
 #include "logger.h"
 
 bool FileStatementStrategy::parseOpen(ParserContext& context,
-                                      LexerLine* statement) {
+                                      LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   char* s;
   string stext;
@@ -159,7 +160,7 @@ bool FileStatementStrategy::parseOpen(ParserContext& context,
 }
 
 bool FileStatementStrategy::parseClose(ParserContext& context,
-                                       LexerLine* statement) {
+                                       LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   int state = 0;
 
@@ -200,9 +201,9 @@ bool FileStatementStrategy::parseClose(ParserContext& context,
 }
 
 bool FileStatementStrategy::parseMaxfiles(ParserContext& context,
-                                          LexerLine* statement) {
+                                          LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  LexerLine parm;
+  LexerLineContext parm;
   int state = 0;
 
   next_lexeme = statement->getCurrentLexeme();
@@ -237,7 +238,7 @@ bool FileStatementStrategy::parseMaxfiles(ParserContext& context,
 }
 
 bool FileStatementStrategy::execute(ParserContext& context,
-                                    LexerLine* statement,
+                                    LexerLineContext* statement,
                                     shared_ptr<Lexeme> lexeme) {
   if (lexeme->value == "OPEN") return parseOpen(context, statement);
   if (lexeme->value == "CLOSE") return parseClose(context, statement);

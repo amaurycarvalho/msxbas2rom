@@ -8,7 +8,7 @@
 
 #include "action_node.h"
 #include "lexeme.h"
-#include "lexer_line.h"
+#include "lexer_line_context.h"
 #include "logger.h"
 #include "tag_node.h"
 

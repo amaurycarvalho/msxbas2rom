@@ -3,13 +3,13 @@
 #include "print_statement_strategy.h"
 
 bool InputStatementStrategy::parseStatement(ParserContext& context,
-                                            LexerLine* statement) {
+                                            LexerLineContext* statement) {
   PrintStatementStrategy printStrategy;
   return printStrategy.parseStatement(context, statement);
 }
 
 bool InputStatementStrategy::execute(ParserContext& context,
-                                     LexerLine* statement,
+                                     LexerLineContext* statement,
                                      shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   context.has_input = true;

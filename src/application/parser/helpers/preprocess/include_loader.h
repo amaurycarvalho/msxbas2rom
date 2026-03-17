@@ -8,14 +8,14 @@
 using namespace std;
 
 class ParserLineEvaluator;
-class LexerLine;
+class LexerLineEvaluator;
 
 class IncludeLoader {
  public:
   IncludeLoader(ParserLineEvaluator& lineEvaluator);
 
-  bool load(shared_ptr<Lexeme> lexeme, LexerLine* lexerLine);
-  bool load(const string& filename, LexerLine* lexerLine);
+  bool load(shared_ptr<Lexeme> lexeme, LexerLineEvaluator* lexerLine);
+  bool load(const string& filename, LexerLineEvaluator* lexerLine);
 
  private:
   ParserLineEvaluator& lineEvaluator;

@@ -6,6 +6,7 @@
 
 #include "compiler_code_helper.h"
 
+#include "build_options.h"
 #include "compiler_context.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"

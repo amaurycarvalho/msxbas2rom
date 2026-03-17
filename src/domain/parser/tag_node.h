@@ -12,7 +12,7 @@
 #include <vector>
 
 class ActionNode;
-class LexerLine;
+class LexerLineContext;
 
 using namespace std;
 
@@ -25,7 +25,7 @@ class TagNode {
   string name;
   string value;
   vector<ActionNode*> actions;
-  LexerLine* lexerLine;
+  LexerLineContext* lexerLine;
 
   string toString() const;
 

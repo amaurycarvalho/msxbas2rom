@@ -13,7 +13,7 @@ class ExpressionEvaluator {
    * @note Math/Logical/String expressions parser
    * @return True, if syntatic analysis success
    */
-  bool evaluate(LexerLine* expression);
+  bool evaluate(LexerLineContext* expression);
 
  private:
   ParserContext& ctx;
@@ -22,7 +22,7 @@ class ExpressionEvaluator {
    * @brief Expressions stack helper (push)
    * @return True, if success
    */
-  bool push(LexerLine* expression);
+  bool push(LexerLineContext* expression);
 
   /***
    * @brief Expressions stack helper (pop)

@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "lexer_line_evaluator.h"
 #include "logger.h"
 
 ParserLineEvaluator::ParserLineEvaluator(
@@ -16,10 +17,10 @@ ParserLineEvaluator::ParserLineEvaluator(
 
 ParserLineEvaluator::~ParserLineEvaluator() = default;
 
-bool ParserLineEvaluator::evaluateLine(LexerLine* lexerLine) {
+bool ParserLineEvaluator::evaluateLine(LexerLineEvaluator* lexerLine) {
   shared_ptr<Lexeme> lexeme = lexerLine->getFirstLexeme();
   ActionNode* action;
-  LexerLine phrase;
+  LexerLineEvaluator phrase;
   int if_count = 0;
 
   ctx.error_line = lexerLine;
@@ -102,7 +103,7 @@ bool ParserLineEvaluator::evaluateLine(LexerLine* lexerLine) {
   return true;
 }
 
-bool ParserLineEvaluator::evaluatePhrase(LexerLine* phrase) {
+bool ParserLineEvaluator::evaluatePhrase(LexerLineContext* phrase) {
   shared_ptr<Lexeme> lexeme = phrase->getFirstLexeme();
 
   if (lexeme) {
@@ -127,7 +128,7 @@ bool ParserLineEvaluator::evaluatePhrase(LexerLine* phrase) {
   return false;
 }
 
-bool ParserLineEvaluator::evaluateStatement(LexerLine* statement) {
+bool ParserLineEvaluator::evaluateStatement(LexerLineContext* statement) {
   shared_ptr<Lexeme> lexeme;
   ActionNode* action;
   IParserStatementStrategy* strategy;

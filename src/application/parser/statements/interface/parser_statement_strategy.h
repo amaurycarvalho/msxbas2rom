@@ -4,7 +4,8 @@
 #include "expression_evaluator.h"
 #include "parser_context.h"
 
-inline bool evaluateExpression(ParserContext& ctx, LexerLine* expression) {
+inline bool evaluateExpression(ParserContext& ctx,
+                               LexerLineContext* expression) {
   ExpressionEvaluator exprEval(ctx);
   return exprEval.evaluate(expression);
 }
@@ -12,7 +13,7 @@ inline bool evaluateExpression(ParserContext& ctx, LexerLine* expression) {
 class IParserStatementStrategy {
  public:
   virtual ~IParserStatementStrategy() {}
-  virtual bool execute(ParserContext& ctx, LexerLine* statement,
+  virtual bool execute(ParserContext& ctx, LexerLineContext* statement,
                        shared_ptr<Lexeme> lexeme) = 0;
 };
 

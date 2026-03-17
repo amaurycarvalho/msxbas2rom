@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-class LexerLine;
+class LexerLineEvaluator;
 class BuildOptions;
 class Logger;
 
@@ -28,7 +28,7 @@ class Lexer {
   unique_ptr<Logger> logger;
 
  public:
-  vector<unique_ptr<LexerLine>> lines;
+  vector<unique_ptr<LexerLineEvaluator>> lines;
   BuildOptions* opts;
 
   void clear();

@@ -1,14 +1,15 @@
 #include "graphics_statement_strategy.h"
 
 #include "generic_statement_strategy.h"
+#include "lexer_line_context.h"
 #include "logger.h"
 #include "print_statement_strategy.h"
 
 bool GraphicsStatementStrategy::parsePset(ParserContext& context,
-                                          LexerLine* statement) {
+                                          LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
-  LexerLine parm;
+  LexerLineContext parm;
   int state = 0, sepCount = 0, parmCount = 0;
   bool mustPopAction = false, isKeyword = false;
   string parmValue;
@@ -108,10 +109,10 @@ bool GraphicsStatementStrategy::parsePset(ParserContext& context,
 }
 
 bool GraphicsStatementStrategy::parseLine(ParserContext& context,
-                                          LexerLine* statement) {
+                                          LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
-  LexerLine parm;
+  LexerLineContext parm;
   int state = 0, sepCount = 0, parmCount = 0;
   bool startAsParm2 = false, mustPopAction = false;
   bool sepTime = false, isSpecialParameter = false;
@@ -349,10 +350,10 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context,
 }
 
 bool GraphicsStatementStrategy::parseCircle(ParserContext& context,
-                                            LexerLine* statement) {
+                                            LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
-  LexerLine parm;
+  LexerLineContext parm;
   int state = 0, sepCount = 0, parmCount = 0;
   bool mustPopAction = false;
 
@@ -426,10 +427,10 @@ bool GraphicsStatementStrategy::parseCircle(ParserContext& context,
 }
 
 bool GraphicsStatementStrategy::parsePaint(ParserContext& context,
-                                           LexerLine* statement) {
+                                           LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
-  LexerLine parm;
+  LexerLineContext parm;
   int state = 0, sepCount = 0, parmCount = 0;
   bool mustPopAction = false;
 
@@ -502,10 +503,10 @@ bool GraphicsStatementStrategy::parsePaint(ParserContext& context,
 }
 
 bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
-                                          LexerLine* statement) {
+                                          LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
-  LexerLine parm;
+  LexerLineContext parm;
   int state = 0, sepCount = 0, parmCount = 0;
   bool isKeyword = false;
   string parmValue;
@@ -833,7 +834,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
 }
 
 bool GraphicsStatementStrategy::execute(ParserContext& context,
-                                        LexerLine* statement,
+                                        LexerLineContext* statement,
                                         shared_ptr<Lexeme> lexeme) {
   if (lexeme->value == "PSET" || lexeme->value == "PRESET")
     return parsePset(context, statement);

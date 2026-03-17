@@ -3,10 +3,10 @@
 #include "logger.h"
 
 bool PutStatementStrategy::parsePutSprite(ParserContext& context,
-                                          LexerLine* statement) {
+                                          LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   ActionNode *action, *act_coord;
-  LexerLine parm;
+  LexerLineContext parm;
   int state = 0, sepCount = 0;
 
   act_coord = new ActionNode("COORD");
@@ -146,10 +146,10 @@ bool PutStatementStrategy::parsePutSprite(ParserContext& context,
 }
 
 bool PutStatementStrategy::parsePutTile(ParserContext& context,
-                                        LexerLine* statement) {
+                                        LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   ActionNode *action, *act_coord;
-  LexerLine parm;
+  LexerLineContext parm;
   int state = 0, sepCount = 0;
 
   act_coord = new ActionNode("COORD");
@@ -289,7 +289,7 @@ bool PutStatementStrategy::parsePutTile(ParserContext& context,
 }
 
 bool PutStatementStrategy::parseStatement(ParserContext& context,
-                                          LexerLine* statement) {
+                                          LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   bool result = false;
@@ -314,7 +314,8 @@ bool PutStatementStrategy::parseStatement(ParserContext& context,
   return result;
 }
 
-bool PutStatementStrategy::execute(ParserContext& context, LexerLine* statement,
+bool PutStatementStrategy::execute(ParserContext& context,
+                                   LexerLineContext* statement,
                                    shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);

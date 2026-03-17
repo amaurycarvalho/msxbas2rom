@@ -11,19 +11,13 @@
 #include <vector>
 
 #include "action_node.h"
-#include "doctest/doctest.h"
-#include "lexeme.h"
-#include "lexer.h"
-#include "lexer_line.h"
-#include "logger.h"
-#include "parser.h"
-#include "parser_context.h"
 #include "call_statement_strategy.h"
 #include "cmd_statement_strategy.h"
 #include "color_statement_strategy.h"
 #include "data_statement_strategy.h"
 #include "def_statement_strategy.h"
 #include "dim_statement_strategy.h"
+#include "doctest/doctest.h"
 #include "file_statement_strategy.h"
 #include "for_statement_strategy.h"
 #include "generic_statement_strategy.h"
@@ -33,9 +27,15 @@
 #include "if_statement_strategy.h"
 #include "input_statement_strategy.h"
 #include "let_statement_strategy.h"
+#include "lexeme.h"
+#include "lexer.h"
+#include "lexer_line_evaluator.h"
+#include "logger.h"
 #include "next_statement_strategy.h"
 #include "noop_statement_strategy.h"
 #include "on_statement_strategy.h"
+#include "parser.h"
+#include "parser_context.h"
 #include "print_statement_strategy.h"
 #include "put_statement_strategy.h"
 #include "screen_statement_strategy.h"
@@ -546,7 +546,7 @@ TEST_SUITE("PrintStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     PrintStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(lit("\"HELLO\""));
 
     line.setLexemeBOF();
@@ -560,7 +560,7 @@ TEST_SUITE("PrintStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     PrintStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(lit("\"A\""));
     line.addLexeme(sep(","));
     line.addLexeme(lit("\"B\""));
@@ -576,7 +576,7 @@ TEST_SUITE("PrintStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     PrintStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(lit("\"A\""));
     line.addLexeme(sep(";"));
     line.addLexeme(lit("\"B\""));
@@ -592,7 +592,7 @@ TEST_SUITE("PrintStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     PrintStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(sep("#"));
     line.addLexeme(lit("1"));
     line.addLexeme(sep(","));
@@ -609,7 +609,7 @@ TEST_SUITE("PrintStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     PrintStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
 
     line.addLexeme(kw("USING"));
     line.addLexeme(lit("\"###\""));
@@ -627,7 +627,7 @@ TEST_SUITE("PrintStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     PrintStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
 
     line.addLexeme(kw("USING"));
     line.addLexeme(sep(","));  // inválido
@@ -643,7 +643,7 @@ TEST_SUITE("PrintStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     PrintStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(lit("\"HELLO\""));
 
     shared_ptr<Lexeme> lex =
@@ -661,7 +661,7 @@ TEST_SUITE("GenericStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     GenericStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(num("1"));
     line.addLexeme(sep(","));
     line.addLexeme(num("2"));
@@ -679,7 +679,7 @@ TEST_SUITE("LetStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     LetStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(id("A"));
     line.addLexeme(op("="));
     line.addLexeme(num("1"));
@@ -697,7 +697,7 @@ TEST_SUITE("InputStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     InputStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(lit("\"A?\""));
     line.addLexeme(sep(";"));
     line.addLexeme(id("A"));
@@ -715,7 +715,7 @@ TEST_SUITE("TimeStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     TimeStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(id("T"));
     line.addLexeme(op("="));
     line.addLexeme(num("1"));
@@ -734,7 +734,7 @@ TEST_SUITE("NoopStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     NoopStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.setLexemeBOF();
 
     shared_ptr<Lexeme> lex =
@@ -755,7 +755,7 @@ TEST_SUITE("NextStatementStrategy") {
 
     setActionRoot(*ctx, "NEXT");
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(id("I"));
     line.addLexeme(sep(","));
     line.addLexeme(id("J"));
@@ -773,7 +773,7 @@ TEST_SUITE("ForStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     ForStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(id("I"));
     line.addLexeme(op("="));
     line.addLexeme(num("1"));
@@ -793,7 +793,7 @@ TEST_SUITE("IfStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     IfStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(id("A"));
     line.addLexeme(op("="));
     line.addLexeme(num("1"));
@@ -814,7 +814,7 @@ TEST_SUITE("DefStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     DefStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(id("A"));
 
     line.setLexemeBOF();
@@ -829,7 +829,7 @@ TEST_SUITE("DefStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     DefStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(kw("USR"));
     line.addLexeme(op("="));
     line.addLexeme(num("1"));
@@ -850,7 +850,7 @@ TEST_SUITE("DimStatementStrategy") {
 
     setActionRoot(*ctx, "DIM");
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(id("A"));
     line.addLexeme(sep("("));
     line.addLexeme(num("1"));
@@ -869,7 +869,7 @@ TEST_SUITE("DimStatementStrategy") {
 
     setActionRoot(*ctx, "DIM");
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(id("A"));
 
     line.setLexemeBOF();
@@ -885,7 +885,7 @@ TEST_SUITE("DataStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     DataStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(num("1"));
     line.addLexeme(sep(","));
     line.addLexeme(num("2"));
@@ -905,7 +905,7 @@ TEST_SUITE("IDataStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     IDataStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(num("1"));
     line.addLexeme(sep(","));
     line.addLexeme(num("2"));
@@ -927,7 +927,7 @@ TEST_SUITE("FileStatementStrategy") {
 
     setActionRoot(*ctx, "OPEN");
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(lit("\"A\""));
     line.addLexeme(kw("FOR"));
     line.addLexeme(kw("INPUT"));
@@ -950,7 +950,7 @@ TEST_SUITE("FileStatementStrategy") {
 
     setActionRoot(*ctx, "CLOSE");
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(sep("#"));
     line.addLexeme(num("1"));
 
@@ -967,7 +967,7 @@ TEST_SUITE("FileStatementStrategy") {
 
     setActionRoot(*ctx, "MAXFILES");
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(kw("MAXFILES"));
     line.addLexeme(op("="));
     line.addLexeme(num("5"));
@@ -987,7 +987,7 @@ TEST_SUITE("CmdStatementStrategy") {
 
     setActionRoot(*ctx, "CMD");
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(kw("WRTFNT"));
 
     line.setLexemeBOF();
@@ -1004,7 +1004,7 @@ TEST_SUITE("CallStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     CallStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(id("USR"));
 
     line.setLexemeBOF();
@@ -1024,7 +1024,7 @@ TEST_SUITE("ColorStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     ColorStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(op("="));
     line.addLexeme(sep("("));
     line.addLexeme(num("1"));
@@ -1047,7 +1047,7 @@ TEST_SUITE("GetStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     GetStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(kw("DATE"));
     line.addLexeme(num("1"));
 
@@ -1064,7 +1064,7 @@ TEST_SUITE("SetStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     SetStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(kw("SCREEN"));
     line.addLexeme(num("0"));
 
@@ -1081,7 +1081,7 @@ TEST_SUITE("ScreenStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     ScreenStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(kw("COPY"));
     line.addLexeme(kw("TO"));
     line.addLexeme(num("1"));
@@ -1099,7 +1099,7 @@ TEST_SUITE("SpriteStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     SpriteStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(kw("ON"));
 
     line.setLexemeBOF();
@@ -1115,7 +1115,7 @@ TEST_SUITE("PutStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     PutStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(kw("SPRITE"));
     line.addLexeme(num("1"));
     line.addLexeme(sep(","));
@@ -1137,7 +1137,7 @@ TEST_SUITE("GraphicsStatementStrategy") {
 
     setActionRoot(*ctx, "PSET");
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(sep("("));
     line.addLexeme(num("1"));
     line.addLexeme(sep(","));
@@ -1157,7 +1157,7 @@ TEST_SUITE("OnStatementStrategy") {
     unique_ptr<ParserContext> ctx = createContext();
     OnStatementStrategy strategy;
 
-    LexerLine line;
+    LexerLineContext line;
     line.addLexeme(kw("ON"));
     line.addLexeme(num("1"));
     line.addLexeme(kw("GOTO"));

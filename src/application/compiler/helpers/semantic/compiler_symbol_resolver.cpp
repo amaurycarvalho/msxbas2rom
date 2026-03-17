@@ -12,7 +12,7 @@
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
 #include "lexeme.h"
-#include "lexer_line.h"
+#include "lexer_line_context.h"
 #include "symbol_manager.h"
 #include "symbol_node.h"
 #include "tag_node.h"

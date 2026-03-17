@@ -5,12 +5,13 @@
 
 class IfStatementStrategy : public IParserStatementStrategy {
  public:
-  bool parseStatement(ParserContext& context, LexerLine* statement, int level);
-  bool execute(ParserContext& context, LexerLine* statement,
+  bool parseStatement(ParserContext& context, LexerLineContext* statement,
+                      int level);
+  bool execute(ParserContext& context, LexerLineContext* statement,
                shared_ptr<Lexeme> lexeme) override;
 
  private:
-  bool evalPhrase(ParserContext& context, LexerLine* phrase);
+  bool evalPhrase(ParserContext& context, LexerLineContext* phrase);
 };
 
 #endif  // IF_STATEMENT_STRATEGY_H_INCLUDED

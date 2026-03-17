@@ -5,10 +5,10 @@
 
 class PutStatementStrategy : public IParserStatementStrategy {
  public:
-  bool parsePutSprite(ParserContext& context, LexerLine* statement);
-  bool parsePutTile(ParserContext& context, LexerLine* statement);
-  bool parseStatement(ParserContext& context, LexerLine* statement);
-  bool execute(ParserContext& context, LexerLine* statement,
+  bool parsePutSprite(ParserContext& context, LexerLineContext* statement);
+  bool parsePutTile(ParserContext& context, LexerLineContext* statement);
+  bool parseStatement(ParserContext& context, LexerLineContext* statement);
+  bool execute(ParserContext& context, LexerLineContext* statement,
                shared_ptr<Lexeme> lexeme) override;
 };
 

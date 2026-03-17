@@ -4,7 +4,8 @@
 #include "logger.h"
 
 bool DataStatementStrategy::parseData(ParserContext& context,
-                                      LexerLine* statement, bool isBinaryData) {
+                                      LexerLineContext* statement,
+                                      bool isBinaryData) {
   shared_ptr<Lexeme> next_lexeme, lexeme;
   Lexeme::LexemeSubType subtype;
   string stext = "", sname;
@@ -129,7 +130,7 @@ bool DataStatementStrategy::parseData(ParserContext& context,
 }
 
 bool DataStatementStrategy::execute(ParserContext& context,
-                                    LexerLine* statement,
+                                    LexerLineContext* statement,
                                     shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseData(context, statement, false);

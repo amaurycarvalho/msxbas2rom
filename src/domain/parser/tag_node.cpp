@@ -8,7 +8,7 @@
 #include "tag_node.h"
 
 #include "action_node.h"
-#include "lexer_line.h"
+#include "lexer_line_context.h"
 
 string TagNode::toString() const {
   string out = "";

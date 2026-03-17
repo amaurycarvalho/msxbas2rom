@@ -14,7 +14,7 @@
 
 #include "action_node.h"
 #include "lexeme.h"
-#include "lexer_line.h"
+#include "lexer_line_context.h"
 #include "tag_node.h"
 
 class Logger;
@@ -54,7 +54,7 @@ class ParserContext {
 
   TagNode* tag;
   ActionNode* actionRoot;
-  LexerLine* error_line;
+  LexerLineContext* error_line;
 
   //! helper methods
   void reset();

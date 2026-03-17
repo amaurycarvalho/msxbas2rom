@@ -16,7 +16,7 @@
 #include "keyword_state.h"
 #include "lexeme.h"
 #include "lexer.h"
-#include "lexer_line.h"
+#include "lexer_line_evaluator.h"
 #include "lexer_line_state_factory.h"
 #include "literal_state.h"
 #include "logger.h"
@@ -42,7 +42,7 @@ static std::string createTempBin(const std::string& filename,
   return path;
 }
 
-static shared_ptr<Lexeme> findLexemeByValue(LexerLine* line,
+static shared_ptr<Lexeme> findLexemeByValue(LexerLineContext* line,
                                             const std::string& value) {
   if (!line) return nullptr;
   for (int i = 0; i < line->getLexemeCount(); i++) {
@@ -71,7 +71,7 @@ TEST_SUITE("Lexer") {
     REQUIRE(lexer.evaluate() == true);
     REQUIRE(lexer.lines.size() == 1);
 
-    LexerLine* line = lexer.lines[0].get();
+    LexerLineContext* line = lexer.lines[0].get();
     REQUIRE(line != nullptr);
     CHECK(line->getLexemeCount() >= 3);
 
@@ -157,7 +157,7 @@ TEST_SUITE("Lexer") {
     REQUIRE(lexer.evaluate() == true);
     REQUIRE(lexer.lines.size() == 1);
 
-    LexerLine* line = lexer.lines[0].get();
+    LexerLineContext* line = lexer.lines[0].get();
     REQUIRE(line != nullptr);
 
     shared_ptr<Lexeme> num32767 = findLexemeByValue(line, "32767");
@@ -190,7 +190,7 @@ TEST_SUITE("Lexer") {
     REQUIRE(lexer.evaluate() == true);
     REQUIRE(lexer.lines.size() == 1);
 
-    LexerLine* line = lexer.lines[0].get();
+    LexerLineContext* line = lexer.lines[0].get();
     REQUIRE(line != nullptr);
 
     shared_ptr<Lexeme> hex = findLexemeByValue(line, "&HFF");
@@ -226,7 +226,7 @@ TEST_SUITE("Lexer") {
       REQUIRE(lexer.evaluate() == true);
       REQUIRE(lexer.lines.size() == 1);
 
-      LexerLine* line = lexer.lines[0].get();
+      LexerLineContext* line = lexer.lines[0].get();
       REQUIRE(line != nullptr);
       shared_ptr<Lexeme> rem = findLexemeByValue(line, "REM");
       REQUIRE(rem != nullptr);
@@ -244,7 +244,7 @@ TEST_SUITE("Lexer") {
       REQUIRE(lexer.evaluate() == true);
       REQUIRE(lexer.lines.size() == 1);
 
-      LexerLine* line = lexer.lines[0].get();
+      LexerLineContext* line = lexer.lines[0].get();
       REQUIRE(line != nullptr);
 
       shared_ptr<Lexeme> apostrophe = findLexemeByValue(line, "'");
@@ -289,7 +289,7 @@ TEST_SUITE("Lexer") {
     UnknownState state;
 
     SUBCASE("Whitespace is ignored") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = " ";
       LexerLineStateContext context(&line);
       context.current = ' ';
@@ -299,7 +299,7 @@ TEST_SUITE("Lexer") {
     }
 
     SUBCASE("Numeric literal starts") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "1";
       LexerLineStateContext context(&line);
       context.current = '1';
@@ -311,7 +311,7 @@ TEST_SUITE("Lexer") {
     }
 
     SUBCASE("Operator is pushed immediately") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "+";
       LexerLineStateContext context(&line);
       context.current = '+';
@@ -325,7 +325,7 @@ TEST_SUITE("Lexer") {
     }
 
     SUBCASE("Apostrophe comment creates operator and comment lexemes") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "'#COMMENT\n";
       LexerLineStateContext context(&line);
       context.current = '\'';
@@ -344,7 +344,7 @@ TEST_SUITE("Lexer") {
     }
 
     SUBCASE("Invalid character rejects") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "@";
       LexerLineStateContext context(&line);
       context.current = '@';
@@ -362,7 +362,7 @@ TEST_SUITE("Lexer") {
     LiteralState state;
 
     SUBCASE("String literal closes on quote") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "\"HELLO\"";
       LexerLineStateContext context(&line);
       seedLexeme(context, Lexeme::type_literal, Lexeme::subtype_string,
@@ -377,7 +377,7 @@ TEST_SUITE("Lexer") {
     }
 
     SUBCASE("Hex literal accepts valid digit and rejects invalid") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "&HFG";
       LexerLineStateContext context(&line);
       seedLexeme(context, Lexeme::type_literal, Lexeme::subtype_numeric, "&H");
@@ -399,7 +399,7 @@ TEST_SUITE("Lexer") {
     }
 
     SUBCASE("Double decimal rejects second dot") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "1..";
       LexerLineStateContext context(&line);
       seedLexeme(context, Lexeme::type_literal, Lexeme::subtype_double_decimal,
@@ -415,7 +415,7 @@ TEST_SUITE("Lexer") {
     }
 
     SUBCASE("Numeric range promotes subtype") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "327678";
       LexerLineStateContext context(&line);
       seedLexeme(context, Lexeme::type_literal, Lexeme::subtype_numeric,
@@ -427,7 +427,7 @@ TEST_SUITE("Lexer") {
     }
 
     SUBCASE("Single decimal grows to double decimal") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "1234567";
       LexerLineStateContext context(&line);
       seedLexeme(context, Lexeme::type_literal, Lexeme::subtype_single_decimal,
@@ -439,7 +439,7 @@ TEST_SUITE("Lexer") {
     }
 
     SUBCASE("Numeric suffix adjusts subtype") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "10%";
       LexerLineStateContext context(&line);
       seedLexeme(context, Lexeme::type_literal, Lexeme::subtype_numeric, "10");
@@ -454,7 +454,7 @@ TEST_SUITE("Lexer") {
     IdentifierState state;
 
     SUBCASE("Non-identifier terminates and normalizes keyword") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "PRINT ";
       LexerLineStateContext context(&line);
       seedLexeme(context, Lexeme::type_identifier, Lexeme::subtype_any,
@@ -470,7 +470,7 @@ TEST_SUITE("Lexer") {
     }
 
     SUBCASE("REM accepts and stops line") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "REM X";
       LexerLineStateContext context(&line);
       seedLexeme(context, Lexeme::type_identifier, Lexeme::subtype_any, "RE");
@@ -486,7 +486,7 @@ TEST_SUITE("Lexer") {
     }
 
     SUBCASE("Suffix sets identifier subtype") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "A%";
       LexerLineStateContext context(&line);
       seedLexeme(context, Lexeme::type_identifier,
@@ -502,7 +502,7 @@ TEST_SUITE("Lexer") {
     KeywordState state;
 
     SUBCASE("Identifier character continues") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "PRIN";
       LexerLineStateContext context(&line);
       seedLexeme(context, Lexeme::type_keyword, Lexeme::subtype_any, "PRI");
@@ -513,7 +513,7 @@ TEST_SUITE("Lexer") {
     }
 
     SUBCASE("Whitespace pushes lexeme") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "PRINT ";
       LexerLineStateContext context(&line);
       seedLexeme(context, Lexeme::type_keyword, Lexeme::subtype_any, "PRINT");
@@ -531,7 +531,7 @@ TEST_SUITE("Lexer") {
     OperatorState state;
 
     SUBCASE("Operator character appends") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "+=";
       LexerLineStateContext context(&line);
       seedLexeme(context, Lexeme::type_operator, Lexeme::subtype_any, "+");
@@ -542,7 +542,7 @@ TEST_SUITE("Lexer") {
     }
 
     SUBCASE("Non-operator pushes lexeme") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "+A";
       LexerLineStateContext context(&line);
       seedLexeme(context, Lexeme::type_operator, Lexeme::subtype_any, "+");
@@ -560,7 +560,7 @@ TEST_SUITE("Lexer") {
     SeparatorState state;
 
     SUBCASE("Separator character appends") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = "::";
       LexerLineStateContext context(&line);
       seedLexeme(context, Lexeme::type_separator, Lexeme::subtype_any, ":");
@@ -571,7 +571,7 @@ TEST_SUITE("Lexer") {
     }
 
     SUBCASE("Non-separator pushes lexeme") {
-      LexerLine line;
+      LexerLineEvaluator line;
       line.lineText = ":A";
       LexerLineStateContext context(&line);
       seedLexeme(context, Lexeme::type_separator, Lexeme::subtype_any, ":");
@@ -588,7 +588,7 @@ TEST_SUITE("Lexer") {
   TEST_CASE("CommentState currently ends immediately") {
     CommentState state;
 
-    LexerLine line;
+    LexerLineEvaluator line;
     line.lineText = "REM A";
     LexerLineStateContext context(&line);
     seedLexeme(context, Lexeme::type_comment, Lexeme::subtype_any, "REM");
@@ -602,7 +602,7 @@ TEST_SUITE("Lexer") {
   }
 
   TEST_CASE("Navigates lexemes in LexerLine") {
-    LexerLine line;
+    LexerLineEvaluator line;
     line.lineText = "10 PRINT A\n";
     REQUIRE(line.evaluate() == true);
     REQUIRE(line.getLexemeCount() >= 3);

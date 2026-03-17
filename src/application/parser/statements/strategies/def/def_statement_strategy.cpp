@@ -1,11 +1,12 @@
 #include "def_statement_strategy.h"
 
+#include "lexer_line_context.h"
 #include "logger.h"
 
 bool DefStatementStrategy::parseDefUsr(ParserContext& context,
-                                       LexerLine* statement) {
+                                       LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  LexerLine parm;
+  LexerLineContext parm;
   int state = 0;
 
   context.has_defusr = true;
@@ -69,7 +70,8 @@ bool DefStatementStrategy::parseDefUsr(ParserContext& context,
 }
 
 bool DefStatementStrategy::parseWithType(ParserContext& context,
-                                         LexerLine* statement, int vartype) {
+                                         LexerLineContext* statement,
+                                         int vartype) {
   shared_ptr<Lexeme> next_lexeme;
   int state = 0, c[2], i;
 
@@ -131,7 +133,8 @@ bool DefStatementStrategy::parseWithType(ParserContext& context,
   return true;
 }
 
-bool DefStatementStrategy::execute(ParserContext& context, LexerLine* statement,
+bool DefStatementStrategy::execute(ParserContext& context,
+                                   LexerLineContext* statement,
                                    shared_ptr<Lexeme> lexeme) {
   int vartype = 0;
 

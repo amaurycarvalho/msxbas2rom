@@ -1,12 +1,13 @@
 #include "color_statement_strategy.h"
 
 #include "generic_statement_strategy.h"
+#include "lexer_line_context.h"
 #include "logger.h"
 
 bool ColorStatementStrategy::parseColorRgb(ParserContext& context,
-                                           LexerLine* statement) {
+                                           LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  LexerLine parm;
+  LexerLineContext parm;
   int state = 0, sepCount = 0;
 
   while ((next_lexeme = statement->getNextLexeme())) {
@@ -66,9 +67,9 @@ bool ColorStatementStrategy::parseColorRgb(ParserContext& context,
 }
 
 bool ColorStatementStrategy::parseColorSprite(ParserContext& context,
-                                              LexerLine* statement) {
+                                              LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  LexerLine parm;
+  LexerLineContext parm;
   int state = 0, sepCount = 0;
 
   next_lexeme = statement->getCurrentLexeme();
@@ -131,7 +132,7 @@ bool ColorStatementStrategy::parseColorSprite(ParserContext& context,
 }
 
 bool ColorStatementStrategy::parseStatement(ParserContext& context,
-                                            LexerLine* statement) {
+                                            LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme = statement->getNextLexeme();
 
   if (next_lexeme) {
@@ -154,7 +155,7 @@ bool ColorStatementStrategy::parseStatement(ParserContext& context,
 }
 
 bool ColorStatementStrategy::execute(ParserContext& context,
-                                     LexerLine* statement,
+                                     LexerLineContext* statement,
                                      shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);

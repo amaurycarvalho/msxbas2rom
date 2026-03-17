@@ -4,7 +4,7 @@
 #include "logger.h"
 
 bool DimStatementStrategy::parseStatement(ParserContext& context,
-                                          LexerLine* statement) {
+                                          LexerLineContext* statement) {
   ActionNode *action = context.actionRoot, *subaction;
   shared_ptr<Lexeme> lexeme;
   unsigned int i, t;
@@ -30,7 +30,8 @@ bool DimStatementStrategy::parseStatement(ParserContext& context,
   return true;
 }
 
-bool DimStatementStrategy::execute(ParserContext& context, LexerLine* statement,
+bool DimStatementStrategy::execute(ParserContext& context,
+                                   LexerLineContext* statement,
                                    shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);

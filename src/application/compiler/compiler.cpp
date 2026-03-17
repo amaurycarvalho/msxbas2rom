@@ -15,6 +15,7 @@
 
 #include "compiler.h"
 
+#include "build_options.h"
 #include "code_node.h"
 #include "compiler_code_helper.h"
 #include "compiler_context.h"
@@ -24,6 +25,7 @@
 #include "compiler_hooks.h"
 #include "compiler_start_statement_strategy.h"
 #include "compiler_symbol_resolver.h"
+#include "lexer_line_context.h"
 #include "logger.h"
 #include "resources.h"
 #include "symbol_manager.h"

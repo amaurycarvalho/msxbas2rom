@@ -4,9 +4,9 @@
 #include "logger.h"
 
 bool SetStatementStrategy::parseSetAdjust(ParserContext& context,
-                                          LexerLine* statement) {
+                                          LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  LexerLine parm;
+  LexerLineContext parm;
   int state = 0, sepCount = 0;
   bool mustPopAction = false;
 
@@ -67,7 +67,7 @@ bool SetStatementStrategy::parseSetAdjust(ParserContext& context,
 }
 
 bool SetStatementStrategy::parseSetTile(ParserContext& context,
-                                        LexerLine* statement) {
+                                        LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   bool result = false;
@@ -95,10 +95,10 @@ bool SetStatementStrategy::parseSetTile(ParserContext& context,
 }
 
 bool SetStatementStrategy::parseSetTileColpat(ParserContext& context,
-                                              LexerLine* statement) {
+                                              LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   ActionNode* act_coord;
-  LexerLine parm;
+  LexerLineContext parm;
   int state = 1, sepCount = 0;
   bool hasArrayParm = false;
 
@@ -187,7 +187,7 @@ bool SetStatementStrategy::parseSetTileColpat(ParserContext& context,
 }
 
 bool SetStatementStrategy::parseSetSprite(ParserContext& context,
-                                          LexerLine* statement) {
+                                          LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   bool result = false;
@@ -212,11 +212,11 @@ bool SetStatementStrategy::parseSetSprite(ParserContext& context,
   return result;
 }
 
-bool SetStatementStrategy::parseSetSpriteColpattra(ParserContext& context,
-                                                   LexerLine* statement) {
+bool SetStatementStrategy::parseSetSpriteColpattra(
+    ParserContext& context, LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   ActionNode* act_coord;
-  LexerLine parm;
+  LexerLineContext parm;
   int state = 1, sepCount = 0;
   bool hasArrayParm = false;
 
@@ -305,7 +305,7 @@ bool SetStatementStrategy::parseSetSpriteColpattra(ParserContext& context,
 }
 
 bool SetStatementStrategy::parseStatement(ParserContext& context,
-                                          LexerLine* statement) {
+                                          LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   bool result = false;
@@ -341,7 +341,8 @@ bool SetStatementStrategy::parseStatement(ParserContext& context,
   return result;
 }
 
-bool SetStatementStrategy::execute(ParserContext& context, LexerLine* statement,
+bool SetStatementStrategy::execute(ParserContext& context,
+                                   LexerLineContext* statement,
                                    shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);

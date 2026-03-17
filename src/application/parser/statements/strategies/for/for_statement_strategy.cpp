@@ -2,12 +2,13 @@
 
 #include "assignment_evaluator.h"
 #include "expression_evaluator.h"
+#include "lexer_line_context.h"
 #include "logger.h"
 
 bool ForStatementStrategy::parseStatement(ParserContext& context,
-                                          LexerLine* statement) {
+                                          LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme, last_lexeme = nullptr;
-  LexerLine parm;
+  LexerLineContext parm;
   ActionNode* action;
   int state = 0;
   ExpressionEvaluator exprEval(context);
@@ -99,7 +100,8 @@ bool ForStatementStrategy::parseStatement(ParserContext& context,
   return true;
 }
 
-bool ForStatementStrategy::execute(ParserContext& context, LexerLine* statement,
+bool ForStatementStrategy::execute(ParserContext& context,
+                                   LexerLineContext* statement,
                                    shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);

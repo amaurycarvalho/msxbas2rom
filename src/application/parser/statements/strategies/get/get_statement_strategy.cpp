@@ -4,12 +4,12 @@
 #include "set_statement_strategy.h"
 
 bool GetStatementStrategy::parseGetTile(ParserContext& context,
-                                        LexerLine* statement) {
+                                        LexerLineContext* statement) {
   return parseGetSprite(context, statement);
 }
 
 bool GetStatementStrategy::parseGetSprite(ParserContext& context,
-                                          LexerLine* statement) {
+                                          LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   bool result = false;
@@ -35,7 +35,7 @@ bool GetStatementStrategy::parseGetSprite(ParserContext& context,
 }
 
 bool GetStatementStrategy::parseStatement(ParserContext& context,
-                                          LexerLine* statement) {
+                                          LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   bool result = false;
@@ -64,7 +64,8 @@ bool GetStatementStrategy::parseStatement(ParserContext& context,
   return result;
 }
 
-bool GetStatementStrategy::execute(ParserContext& context, LexerLine* statement,
+bool GetStatementStrategy::execute(ParserContext& context,
+                                   LexerLineContext* statement,
                                    shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);

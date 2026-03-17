@@ -6,13 +6,14 @@
 
 #include "include_loader.h"
 
-#include "lexer_line.h"
+#include "lexer_line_evaluator.h"
 #include "parser_line_evaluator.h"
 
 IncludeLoader::IncludeLoader(ParserLineEvaluator& lineEvaluator)
     : lineEvaluator(lineEvaluator) {}
 
-bool IncludeLoader::load(shared_ptr<Lexeme> lexeme, LexerLine* lexerLine) {
+bool IncludeLoader::load(shared_ptr<Lexeme> lexeme,
+                         LexerLineEvaluator* lexerLine) {
   if (lexeme) {
     string s = lexeme->value;
 
@@ -30,7 +31,8 @@ bool IncludeLoader::load(shared_ptr<Lexeme> lexeme, LexerLine* lexerLine) {
   return false;
 }
 
-bool IncludeLoader::load(const string& filename, LexerLine* lexerLine) {
+bool IncludeLoader::load(const string& filename,
+                         LexerLineEvaluator* lexerLine) {
   FILE* file;
 
   /***

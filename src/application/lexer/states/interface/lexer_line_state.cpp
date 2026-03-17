@@ -4,7 +4,7 @@
 
 #include "lexeme.h"
 
-LexerLineStateContext::LexerLineStateContext(LexerLine* lexerLine)
+LexerLineStateContext::LexerLineStateContext(LexerLineContext* lexerLine)
     : lexerLine(lexerLine),
       index(0),
       length(lexerLine->lineText.length()),

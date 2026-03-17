@@ -6,6 +6,7 @@
 
 #include "compiler_expression_evaluator.h"
 
+#include "build_options.h"
 #include "compiler_code_helper.h"
 #include "compiler_code_optimizer.h"
 #include "compiler_context.h"

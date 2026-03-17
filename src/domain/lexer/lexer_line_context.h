@@ -1,11 +1,11 @@
 /***
- * @file lexer_line.h
- * @brief MSX BASIC lexer line class header
- * @author Amaury Carvalho (2019-2025)
+ * @file lexer_line_context.h
+ * @brief MSX BASIC lexer line context
+ * @author Amaury Carvalho (2019-2026)
  */
 
-#ifndef LEXER_LINE_H_INCLUDED
-#define LEXER_LINE_H_INCLUDED
+#ifndef LEXER_LINE_CONTEXT_H_INCLUDED
+#define LEXER_LINE_CONTEXT_H_INCLUDED
 
 #include <memory>
 #include <stack>
@@ -17,11 +17,11 @@ class Lexeme;
 using namespace std;
 
 /***
- * @class LexerLine
+ * @class LexerLineContext
  * @brief It represents a set of MSX BASIC lexemes forming a line.
  */
-class LexerLine {
- private:
+class LexerLineContext {
+ protected:
   int lexemeIndex;
   vector<shared_ptr<Lexeme>> lexemes;
   stack<int> lexemeStack;
@@ -30,7 +30,6 @@ class LexerLine {
   string lineText;
   int lineNumber;
 
-  bool evaluate();
   string toString();
   void clearLexemes();
   void addLexeme(shared_ptr<Lexeme> lexeme);
@@ -46,8 +45,8 @@ class LexerLine {
   void popLexeme();
   void popLexemeDiscarding();
 
-  LexerLine();
-  ~LexerLine();
+  LexerLineContext();
+  ~LexerLineContext();
 };
 
-#endif  // LEXER_LINE_H_INCLUDED
+#endif  // LEXER_LINE_CONTEXT_H_INCLUDED

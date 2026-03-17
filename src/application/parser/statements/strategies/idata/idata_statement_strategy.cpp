@@ -3,7 +3,7 @@
 #include "lexer.h"
 
 bool IDataStatementStrategy::execute(ParserContext& context,
-                                     LexerLine* statement,
+                                     LexerLineContext* statement,
                                      shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseData(context, statement, true);

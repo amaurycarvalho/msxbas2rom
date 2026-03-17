@@ -3,7 +3,7 @@
 #include "lexer.h"
 
 bool CallStatementStrategy::parseCall(ParserContext& context,
-                                      LexerLine* statement) {
+                                      LexerLineContext* statement) {
   (void)context;
   shared_ptr<Lexeme> next_lexeme;
 
@@ -15,7 +15,7 @@ bool CallStatementStrategy::parseCall(ParserContext& context,
 }
 
 bool CallStatementStrategy::execute(ParserContext& context,
-                                    LexerLine* statement,
+                                    LexerLineContext* statement,
                                     shared_ptr<Lexeme> lexeme) {
   if (lexeme->value == "_") {
     lexeme->value = "CALL";

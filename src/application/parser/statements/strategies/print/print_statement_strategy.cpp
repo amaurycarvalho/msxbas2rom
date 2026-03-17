@@ -3,9 +3,9 @@
 #include "lexer.h"
 
 bool PrintStatementStrategy::parseStatement(ParserContext& context,
-                                            LexerLine* statement) {
+                                            LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
-  LexerLine parm;
+  LexerLineContext parm;
   ActionNode* action;
   int sepcount = 0, state = 0, i;
   bool print_using = false;
@@ -120,7 +120,7 @@ bool PrintStatementStrategy::parseStatement(ParserContext& context,
 }
 
 bool PrintStatementStrategy::execute(ParserContext& context,
-                                     LexerLine* statement,
+                                     LexerLineContext* statement,
                                      shared_ptr<Lexeme> lexeme) {
   if (lexeme->value == "?") {
     lexeme->value = "PRINT";

@@ -7,6 +7,7 @@
 #include "compiler_evaluator.h"
 
 #include "action_node.h"
+#include "build_options.h"
 #include "compiler_code_helper.h"
 #include "compiler_context.h"
 #include "compiler_hooks.h"

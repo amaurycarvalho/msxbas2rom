@@ -3,9 +3,9 @@
 #include "generic_statement_strategy.h"
 
 bool ScreenStatementStrategy::parseScreenCopy(ParserContext& context,
-                                              LexerLine* statement) {
+                                              LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme = statement->getCurrentLexeme();
-  LexerLine parm;
+  LexerLineContext parm;
   int state = 0;
   bool result = false;
 
@@ -59,7 +59,7 @@ bool ScreenStatementStrategy::parseScreenCopy(ParserContext& context,
 }
 
 bool ScreenStatementStrategy::parseScreenPaste(ParserContext& context,
-                                               LexerLine* statement) {
+                                               LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme = statement->getCurrentLexeme();
   bool result = false;
 
@@ -77,7 +77,7 @@ bool ScreenStatementStrategy::parseScreenPaste(ParserContext& context,
 }
 
 bool ScreenStatementStrategy::parseScreenScroll(ParserContext& context,
-                                                LexerLine* statement) {
+                                                LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme = statement->getCurrentLexeme();
   bool result;
 
@@ -90,7 +90,7 @@ bool ScreenStatementStrategy::parseScreenScroll(ParserContext& context,
 }
 
 bool ScreenStatementStrategy::parseScreenLoad(ParserContext& context,
-                                              LexerLine* statement) {
+                                              LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme = statement->getCurrentLexeme();
   bool result;
 
@@ -103,7 +103,7 @@ bool ScreenStatementStrategy::parseScreenLoad(ParserContext& context,
 }
 
 bool ScreenStatementStrategy::parseScreenOn(ParserContext& context,
-                                            LexerLine* statement) {
+                                            LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme = statement->getCurrentLexeme();
   context.pushActionFromLexeme(next_lexeme);
   context.popActionRoot();
@@ -111,12 +111,12 @@ bool ScreenStatementStrategy::parseScreenOn(ParserContext& context,
 }
 
 bool ScreenStatementStrategy::parseScreenOff(ParserContext& context,
-                                             LexerLine* statement) {
+                                             LexerLineContext* statement) {
   return parseScreenOn(context, statement);
 }
 
 bool ScreenStatementStrategy::parseStatement(ParserContext& context,
-                                             LexerLine* statement) {
+                                             LexerLineContext* statement) {
   shared_ptr<Lexeme> next_lexeme;
 
   if ((next_lexeme = statement->getNextLexeme())) {
@@ -145,7 +145,7 @@ bool ScreenStatementStrategy::parseStatement(ParserContext& context,
 }
 
 bool ScreenStatementStrategy::execute(ParserContext& context,
-                                      LexerLine* statement,
+                                      LexerLineContext* statement,
                                       shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);

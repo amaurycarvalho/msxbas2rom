@@ -3,13 +3,13 @@
 #include "let_statement_strategy.h"
 
 bool TimeStatementStrategy::parseStatement(ParserContext& context,
-                                           LexerLine* statement) {
+                                           LexerLineContext* statement) {
   LetStatementStrategy letStrategy;
   return letStrategy.parseStatement(context, statement);
 }
 
 bool TimeStatementStrategy::execute(ParserContext& context,
-                                    LexerLine* statement,
+                                    LexerLineContext* statement,
                                     shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   context.has_input = true;

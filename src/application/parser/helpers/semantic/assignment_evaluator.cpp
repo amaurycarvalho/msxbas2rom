@@ -14,9 +14,9 @@ AssignmentEvaluator::AssignmentEvaluator(ParserContext& context,
                                          ExpressionEvaluator& exprEval)
     : ctx(context), exprEval(exprEval) {}
 
-bool AssignmentEvaluator::evaluate(LexerLine* assignment) {
+bool AssignmentEvaluator::evaluate(LexerLineContext* assignment) {
   shared_ptr<Lexeme> lexeme = assignment->getNextLexeme(), next_lexeme;
-  LexerLine parm;
+  LexerLineContext parm;
   ActionNode* action;
   shared_ptr<Lexeme> lexLet;
   bool result, add_let_action = true;

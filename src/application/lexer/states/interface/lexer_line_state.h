@@ -1,7 +1,7 @@
 #ifndef LEXER_LINE_STATE_H_INCLUDED
 #define LEXER_LINE_STATE_H_INCLUDED
 
-#include "lexer_line.h"
+#include "lexer_line_context.h"
 
 enum class LexerLineProcessResult {
   Continue,
@@ -14,14 +14,14 @@ class LexerLineStateContext {
   bool isNumeric(char c) const;
 
  public:
-  LexerLine* lexerLine;
+  LexerLineContext* lexerLine;
   int index;
   int length;
   bool hexa;
   char current;
   shared_ptr<Lexeme> lexeme;
 
-  explicit LexerLineStateContext(LexerLine* lexerLine);
+  explicit LexerLineStateContext(LexerLineContext* lexerLine);
   ~LexerLineStateContext();
 
   bool hasNextChar() const;

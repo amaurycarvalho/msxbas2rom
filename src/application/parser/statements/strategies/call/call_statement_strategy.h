@@ -5,8 +5,8 @@
 
 class CallStatementStrategy : public IParserStatementStrategy {
  public:
-  bool parseCall(ParserContext& context, LexerLine* statement);
-  bool execute(ParserContext& context, LexerLine* statement,
+  bool parseCall(ParserContext& context, LexerLineContext* statement);
+  bool execute(ParserContext& context, LexerLineContext* statement,
                shared_ptr<Lexeme> lexeme) override;
 };
 

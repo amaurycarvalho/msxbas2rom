@@ -7,6 +7,9 @@
 #include "parser_context.h"
 #include "parser_statement_strategy_factory.h"
 
+class LexerLineEvaluator;
+class LexerLineContext;
+
 class ParserLineEvaluator {
  public:
   ParserLineEvaluator(ParserContext& context,
@@ -15,9 +18,9 @@ class ParserLineEvaluator {
                       AssignmentEvaluator& assignmentEvaluator);
   ~ParserLineEvaluator();
 
-  bool evaluateLine(LexerLine* lexerLine);
-  bool evaluatePhrase(LexerLine* phrase);
-  bool evaluateStatement(LexerLine* statement);
+  bool evaluateLine(LexerLineEvaluator* lexerLine);
+  bool evaluatePhrase(LexerLineContext* phrase);
+  bool evaluateStatement(LexerLineContext* statement);
 
  private:
   ParserContext& ctx;

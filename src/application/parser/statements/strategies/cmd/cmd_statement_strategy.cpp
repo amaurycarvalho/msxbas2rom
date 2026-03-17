@@ -3,7 +3,7 @@
 #include "generic_statement_strategy.h"
 
 bool CmdStatementStrategy::parseStatement(ParserContext& context,
-                                          LexerLine* statement) {
+                                          LexerLineContext* statement) {
   ActionNode* action;
   shared_ptr<Lexeme> lexeme = statement->getNextLexeme();
 
@@ -37,7 +37,8 @@ bool CmdStatementStrategy::parseStatement(ParserContext& context,
   return result;
 }
 
-bool CmdStatementStrategy::execute(ParserContext& context, LexerLine* statement,
+bool CmdStatementStrategy::execute(ParserContext& context,
+                                   LexerLineContext* statement,
                                    shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);
