@@ -9,7 +9,7 @@ void CompilerScreenStatementStrategy::cmd_screen(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   ActionNode* action;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
 
@@ -162,7 +162,7 @@ void CompilerScreenStatementStrategy::cmd_screen_copy(
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ActionNode* action;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
@@ -219,7 +219,7 @@ void CompilerScreenStatementStrategy::cmd_screen_paste(
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ActionNode* action;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;

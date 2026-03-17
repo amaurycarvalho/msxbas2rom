@@ -4,7 +4,7 @@
 #include "resources.h"
 
 void CompilerTextStatementStrategy::cmd_text(CompilerContext* context) {
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ActionNode* action;
   unsigned int t = context->current_action->actions.size();
 

@@ -13,7 +13,7 @@ class IParserStatementStrategy {
  public:
   virtual ~IParserStatementStrategy() {}
   virtual bool execute(ParserContext& ctx, LexerLine* statement,
-                       Lexeme* lexeme) = 0;
+                       shared_ptr<Lexeme> lexeme) = 0;
 };
 
 #endif  // PARSER_STATEMENT_STRATEGY_H_INCLUDED

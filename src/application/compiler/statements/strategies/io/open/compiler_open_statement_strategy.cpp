@@ -15,7 +15,7 @@ void CompilerOpenStatementStrategy::cmd_open(CompilerContext* context) {
   auto& fixup = *context->fixupResolver;
   auto& codeHelper = *context->codeHelper;
   ActionNode* action;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype, state = 0;
   FixNode* mark;

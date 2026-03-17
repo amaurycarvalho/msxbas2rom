@@ -25,7 +25,7 @@ bool ResourceDataReader::load() {
 
 bool ResourceDataReader::populateFields() {
   int fieldCount = parser->getDatas().size(), i;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   string lineNumber;
   /// DATA/IDATA resource data
   lineFields.clear();

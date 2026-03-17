@@ -12,7 +12,7 @@
 IncludeLoader::IncludeLoader(ParserLineEvaluator& lineEvaluator)
     : lineEvaluator(lineEvaluator) {}
 
-bool IncludeLoader::load(Lexeme* lexeme, LexerLine* lexerLine) {
+bool IncludeLoader::load(shared_ptr<Lexeme> lexeme, LexerLine* lexerLine) {
   if (lexeme) {
     string s = lexeme->value;
 

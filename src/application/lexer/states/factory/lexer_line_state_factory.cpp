@@ -1,5 +1,7 @@
 #include "lexer_line_state_factory.h"
 
+#include "lexeme.h"
+
 ILexerLineState* LexerLineStateFactory::getState(Lexeme::LexemeType type) {
   switch (type) {
     case Lexeme::type_unknown:

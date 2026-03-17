@@ -4,6 +4,7 @@
 #include "comment_state.h"
 #include "identifier_state.h"
 #include "keyword_state.h"
+#include "lexeme.h"
 #include "literal_state.h"
 #include "operator_state.h"
 #include "separator_state.h"

@@ -6,8 +6,7 @@
 #include "lexeme.h"
 
 int CdblCompilerFunctionStrategy::execute(CompilerContext* context,
-                                          ActionNode* action,
-                                          int* result,
+                                          ActionNode* action, int* result,
                                           unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (parmCount != 1) return Lexeme::subtype_unknown;

@@ -14,12 +14,16 @@
 
 ParserContext::ParserContext() {
   logger.reset(new Logger());
-  lex_null.reset(
-      new Lexeme(Lexeme::type_literal, Lexeme::subtype_null, "NULL"));
-  lex_empty_string.reset(
-      new Lexeme(Lexeme::type_literal, Lexeme::subtype_string, ""));
-  lex_index.reset(
-      new Lexeme(Lexeme::type_keyword, Lexeme::subtype_numeric, "INDEX"));
+  lex_null =
+      make_shared<Lexeme>(Lexeme::type_literal, Lexeme::subtype_null, "NULL");
+  lex_empty_string =
+      make_shared<Lexeme>(Lexeme::type_literal, Lexeme::subtype_string, "");
+  lex_index = make_shared<Lexeme>(Lexeme::type_keyword, Lexeme::subtype_numeric,
+                                  "INDEX");
+  lex_rgb =
+      make_shared<Lexeme>(Lexeme::type_keyword, Lexeme::subtype_any, "RGB");
+  lex_zero =
+      make_shared<Lexeme>(Lexeme::type_literal, Lexeme::subtype_numeric, "0");
 
   reset();
 }
@@ -59,8 +63,8 @@ void ParserContext::reset() {
   while (!expressionList.empty()) expressionList.pop();
 }
 
-Lexeme* ParserContext::coalesceSymbols(Lexeme* lexeme) {
-  Lexeme* result = lexeme;
+shared_ptr<Lexeme> ParserContext::coalesceSymbols(shared_ptr<Lexeme> lexeme) {
+  shared_ptr<Lexeme> result = lexeme;
   unsigned int i, t = symbolList.size();
   bool ok = false;
   int c;
@@ -114,11 +118,11 @@ Lexeme* ParserContext::coalesceSymbols(Lexeme* lexeme) {
   return result;
 }
 
-void ParserContext::pushStackFromLexeme(Lexeme* lexeme) {
+void ParserContext::pushStackFromLexeme(shared_ptr<Lexeme> lexeme) {
   expressionList.push(lexeme);
 }
 
-ActionNode* ParserContext::pushActionFromLexeme(Lexeme* lexeme) {
+ActionNode* ParserContext::pushActionFromLexeme(shared_ptr<Lexeme> lexeme) {
   ActionNode* actionExpr = 0;
 
   actionExpr = new ActionNode(lexeme);
@@ -138,7 +142,7 @@ ActionNode* ParserContext::pushActionFromLexeme(Lexeme* lexeme) {
   return actionExpr;
 }
 
-int ParserContext::gfxOperatorCode(Lexeme* lexeme) {
+int ParserContext::gfxOperatorCode(shared_ptr<Lexeme> lexeme) {
   int result = -1;
 
   if (lexeme->value == "PSET") {

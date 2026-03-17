@@ -17,7 +17,7 @@
 #include "symbol_node.h"
 #include "tag_node.h"
 
-SymbolNode* CompilerSymbolResolver::getSymbol(Lexeme* lexeme) {
+SymbolNode* CompilerSymbolResolver::getSymbol(shared_ptr<Lexeme> lexeme) {
   unsigned int i, t = context->symbols.size();
   bool found = false;
   SymbolNode* symbol;
@@ -40,7 +40,7 @@ SymbolNode* CompilerSymbolResolver::getSymbol(Lexeme* lexeme) {
   return symbol;
 }
 
-SymbolNode* CompilerSymbolResolver::addSymbol(Lexeme* lexeme) {
+SymbolNode* CompilerSymbolResolver::addSymbol(shared_ptr<Lexeme> lexeme) {
   SymbolNode* symbol = getSymbol(lexeme);
 
   if (!symbol) {
@@ -243,7 +243,7 @@ int CompilerSymbolResolver::saveSymbols() {
   unsigned int i, t = context->symbols.size();
   SymbolNode* symbol;
   CodeNode* codeItem;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   char* s;
   int length = 0, var_size = 0, literal_count = 0;
 
@@ -372,3 +372,8 @@ int CompilerSymbolResolver::saveSymbols() {
 
   return length;
 }
+
+CompilerSymbolResolver::CompilerSymbolResolver(CompilerContext* context)
+    : context(context) {}
+
+CompilerSymbolResolver::~CompilerSymbolResolver() = default;

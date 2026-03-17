@@ -4,10 +4,9 @@
 
 bool DefStatementStrategy::parseDefUsr(ParserContext& context,
                                        LexerLine* statement) {
-  Lexeme *next_lexeme, *lex_zero;
+  shared_ptr<Lexeme> next_lexeme;
   LexerLine parm;
   int state = 0;
-  bool lex_zero_used = false;
 
   context.has_defusr = true;
 
@@ -16,13 +15,10 @@ bool DefStatementStrategy::parseDefUsr(ParserContext& context,
     return false;
   }
 
-  lex_zero = new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, "0");
-
   if (next_lexeme->value == "USR0") {
     next_lexeme->name = "USR";
     next_lexeme->value = next_lexeme->name;
-    context.pushActionFromLexeme(lex_zero);
-    lex_zero_used = true;
+    context.pushActionFromLexeme(context.lex_zero);
     state = 1;
   }
 
@@ -37,11 +33,9 @@ bool DefStatementStrategy::parseDefUsr(ParserContext& context,
           continue;
         } else if (next_lexeme->isOperator("=")) {
           state = 2;
-          context.pushActionFromLexeme(lex_zero);
-          lex_zero_used = true;
+          context.pushActionFromLexeme(context.lex_zero);
         } else {
           context.logger->error("Invalid DEF USR assignment");
-          if (!lex_zero_used) delete lex_zero;
           return false;
         }
       } break;
@@ -51,7 +45,6 @@ bool DefStatementStrategy::parseDefUsr(ParserContext& context,
           state = 2;
         } else {
           context.logger->error("DEF USR assignment is missing");
-          if (!lex_zero_used) delete lex_zero;
           return false;
         }
       } break;
@@ -65,7 +58,6 @@ bool DefStatementStrategy::parseDefUsr(ParserContext& context,
   if (parm.getLexemeCount()) {
     parm.setLexemeBOF();
     if (!evaluateExpression(context, &parm)) {
-      if (!lex_zero_used) delete lex_zero;
       return false;
     }
     parm.clearLexemes();
@@ -73,14 +65,12 @@ bool DefStatementStrategy::parseDefUsr(ParserContext& context,
 
   context.popActionRoot();
 
-  if (!lex_zero_used) delete lex_zero;
-
   return true;
 }
 
 bool DefStatementStrategy::parseWithType(ParserContext& context,
                                          LexerLine* statement, int vartype) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   int state = 0, c[2], i;
 
   if (vartype == 0) {
@@ -142,7 +132,7 @@ bool DefStatementStrategy::parseWithType(ParserContext& context,
 }
 
 bool DefStatementStrategy::execute(ParserContext& context, LexerLine* statement,
-                                   Lexeme* lexeme) {
+                                   shared_ptr<Lexeme> lexeme) {
   int vartype = 0;
 
   if (lexeme->value == "DEFINT")

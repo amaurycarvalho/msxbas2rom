@@ -8,7 +8,8 @@ class PutStatementStrategy : public IParserStatementStrategy {
   bool parsePutSprite(ParserContext& context, LexerLine* statement);
   bool parsePutTile(ParserContext& context, LexerLine* statement);
   bool parseStatement(ParserContext& context, LexerLine* statement);
-  bool execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) override;
+  bool execute(ParserContext& context, LexerLine* statement,
+               shared_ptr<Lexeme> lexeme) override;
 };
 
 #endif  // PUT_STATEMENT_STRATEGY_H_INCLUDED

@@ -5,7 +5,7 @@
 
 bool SetStatementStrategy::parseSetAdjust(ParserContext& context,
                                           LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   LexerLine parm;
   int state = 0, sepCount = 0;
   bool mustPopAction = false;
@@ -46,7 +46,7 @@ bool SetStatementStrategy::parseSetAdjust(ParserContext& context,
             mustPopAction = false;
           }
         } else {
-          context.pushActionFromLexeme(context.lex_null.get());
+          context.pushActionFromLexeme(context.lex_null);
         }
         continue;
       }
@@ -68,7 +68,7 @@ bool SetStatementStrategy::parseSetAdjust(ParserContext& context,
 
 bool SetStatementStrategy::parseSetTile(ParserContext& context,
                                         LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   bool result = false;
 
@@ -96,7 +96,7 @@ bool SetStatementStrategy::parseSetTile(ParserContext& context,
 
 bool SetStatementStrategy::parseSetTileColpat(ParserContext& context,
                                               LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode* act_coord;
   LexerLine parm;
   int state = 1, sepCount = 0;
@@ -131,7 +131,7 @@ bool SetStatementStrategy::parseSetTileColpat(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            context.pushActionFromLexeme(context.lex_null.get());
+            context.pushActionFromLexeme(context.lex_null);
           }
           if (hasArrayParm) {
             context.popActionRoot();
@@ -159,7 +159,7 @@ bool SetStatementStrategy::parseSetTileColpat(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            context.pushActionFromLexeme(context.lex_null.get());
+            context.pushActionFromLexeme(context.lex_null);
           }
           continue;
         }
@@ -188,7 +188,7 @@ bool SetStatementStrategy::parseSetTileColpat(ParserContext& context,
 
 bool SetStatementStrategy::parseSetSprite(ParserContext& context,
                                           LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   bool result = false;
 
@@ -214,7 +214,7 @@ bool SetStatementStrategy::parseSetSprite(ParserContext& context,
 
 bool SetStatementStrategy::parseSetSpriteColpattra(ParserContext& context,
                                                    LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode* act_coord;
   LexerLine parm;
   int state = 1, sepCount = 0;
@@ -249,7 +249,7 @@ bool SetStatementStrategy::parseSetSpriteColpattra(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            context.pushActionFromLexeme(context.lex_null.get());
+            context.pushActionFromLexeme(context.lex_null);
           }
           if (hasArrayParm) {
             context.popActionRoot();
@@ -277,7 +277,7 @@ bool SetStatementStrategy::parseSetSpriteColpattra(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            context.pushActionFromLexeme(context.lex_null.get());
+            context.pushActionFromLexeme(context.lex_null);
           }
           continue;
         }
@@ -306,7 +306,7 @@ bool SetStatementStrategy::parseSetSpriteColpattra(ParserContext& context,
 
 bool SetStatementStrategy::parseStatement(ParserContext& context,
                                           LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   bool result = false;
 
@@ -342,7 +342,7 @@ bool SetStatementStrategy::parseStatement(ParserContext& context,
 }
 
 bool SetStatementStrategy::execute(ParserContext& context, LexerLine* statement,
-                                   Lexeme* lexeme) {
+                                   shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);
 }

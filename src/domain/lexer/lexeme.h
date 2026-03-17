@@ -7,6 +7,7 @@
 #ifndef LEXEME_H_INCLUDED
 #define LEXEME_H_INCLUDED
 
+#include <memory>
 #include <string>
 
 using namespace std;
@@ -63,7 +64,7 @@ class Lexeme {
   int array_size;
 
   void clear();
-  Lexeme* clone();
+  shared_ptr<Lexeme> clone();
   string toString(int indentOverride = -1);
   const char* getTypeName();
   const char* getSubTypeName();
@@ -76,9 +77,10 @@ class Lexeme {
   bool isFunction();
 
   Lexeme();
-  Lexeme(Lexeme* plexeme);
+  Lexeme(shared_ptr<Lexeme> plexeme);
   Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname);
   Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname, string pvalue);
+  ~Lexeme();
 };
 
 #endif  // LEXEME_H_INCLUDED

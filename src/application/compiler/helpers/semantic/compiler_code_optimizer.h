@@ -18,7 +18,8 @@ class CompilerCodeOptimizer {
   int getKernelCallAddr(unsigned int word);
   void addLdHLmegarom();
 
-  CompilerCodeOptimizer(CompilerContext* context) : context(context) {};
+  CompilerCodeOptimizer(CompilerContext* context);
+  ~CompilerCodeOptimizer();
 };
 
 #endif  // COMPILER_CODE_OPTIMIZER_H

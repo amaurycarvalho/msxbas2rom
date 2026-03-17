@@ -7,11 +7,12 @@
 #ifndef LEXER_LINE_H_INCLUDED
 #define LEXER_LINE_H_INCLUDED
 
+#include <memory>
 #include <stack>
 #include <string>
 #include <vector>
 
-#include "lexeme.h"
+class Lexeme;
 
 using namespace std;
 
@@ -22,7 +23,7 @@ using namespace std;
 class LexerLine {
  private:
   int lexemeIndex;
-  vector<Lexeme*> lexemes;
+  vector<shared_ptr<Lexeme>> lexemes;
   stack<int> lexemeStack;
 
  public:
@@ -32,13 +33,13 @@ class LexerLine {
   bool evaluate();
   string toString();
   void clearLexemes();
-  void addLexeme(Lexeme* lexeme);
-  Lexeme* getFirstLexeme();
-  Lexeme* getCurrentLexeme();
-  Lexeme* getNextLexeme();
-  Lexeme* getPreviousLexeme();
-  Lexeme* getLastLexeme();
-  Lexeme* getLexeme(int i);
+  void addLexeme(shared_ptr<Lexeme> lexeme);
+  shared_ptr<Lexeme> getFirstLexeme();
+  shared_ptr<Lexeme> getCurrentLexeme();
+  shared_ptr<Lexeme> getNextLexeme();
+  shared_ptr<Lexeme> getPreviousLexeme();
+  shared_ptr<Lexeme> getLastLexeme();
+  shared_ptr<Lexeme> getLexeme(int i);
   void setLexemeBOF();
   int getLexemeCount();
   void pushLexeme();
@@ -46,6 +47,7 @@ class LexerLine {
   void popLexemeDiscarding();
 
   LexerLine();
+  ~LexerLine();
 };
 
 #endif  // LEXER_LINE_H_INCLUDED

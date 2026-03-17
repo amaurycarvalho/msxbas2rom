@@ -18,7 +18,7 @@ class ForNextNode {
  public:
   int index;
   TagNode* tag;
-  Lexeme *for_var, *for_to, *for_step;
+  shared_ptr<Lexeme> for_var, for_to, for_step;
   FixNode* for_end_mark;
   SymbolNode* for_step_mark;
   ActionNode *for_to_action, *for_step_action;

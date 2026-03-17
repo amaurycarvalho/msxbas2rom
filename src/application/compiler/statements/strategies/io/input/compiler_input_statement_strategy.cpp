@@ -11,7 +11,7 @@ void CompilerInputStatementStrategy::cmd_input(CompilerContext* context,
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ActionNode *action, *subaction;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;

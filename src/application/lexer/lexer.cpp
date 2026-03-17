@@ -81,7 +81,7 @@ bool Lexer::load(BuildOptions* opts) {
     while (fgets(lineText, len, file)) {
       lines.emplace_back(new LexerLine());
       auto& lexerLine = lines.back();
-      if (lexerLine.get()) {
+      if (lexerLine) {
         lexerLine->lineText = lineText;
         lexerLine->lineNumber = ++lineNumber;
       } else {

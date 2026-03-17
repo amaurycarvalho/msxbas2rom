@@ -18,7 +18,7 @@ bool IfStatementStrategy::evalPhrase(ParserContext& context,
 
 bool IfStatementStrategy::parseStatement(ParserContext& context,
                                          LexerLine* statement, int level) {
-  Lexeme *next_lexeme, *last_lexeme = statement->getCurrentLexeme();
+  shared_ptr<Lexeme> next_lexeme, last_lexeme = statement->getCurrentLexeme();
   LexerLine parm;
   ActionNode* action;
   int state = 0;
@@ -234,7 +234,7 @@ bool IfStatementStrategy::parseStatement(ParserContext& context,
 }
 
 bool IfStatementStrategy::execute(ParserContext& context, LexerLine* statement,
-                                  Lexeme* lexeme) {
+                                  shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement, 0);
 }

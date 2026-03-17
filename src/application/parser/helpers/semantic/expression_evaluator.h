@@ -6,6 +6,7 @@
 class ExpressionEvaluator {
  public:
   ExpressionEvaluator(ParserContext& context);
+  ~ExpressionEvaluator();
 
   /***
    * @brief Expressions syntatic analysis
@@ -28,8 +29,8 @@ class ExpressionEvaluator {
    */
   void pop(int precedence);
 
-  int getOperatorPrecedence(Lexeme* lexeme);
-  int getOperatorParmCount(Lexeme* lexeme);
+  int getOperatorPrecedence(shared_ptr<Lexeme> lexeme);
+  int getOperatorParmCount(shared_ptr<Lexeme> lexeme);
 };
 
 #endif  // EXPRESSION_EVALUATOR_H_INCLUDED

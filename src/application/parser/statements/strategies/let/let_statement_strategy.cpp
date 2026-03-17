@@ -10,7 +10,8 @@ bool LetStatementStrategy::parseStatement(ParserContext& context,
   return assignEval.evaluate(statement);
 }
 
-bool LetStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+bool LetStatementStrategy::execute(ParserContext& context, LexerLine* statement,
+                                   shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);
 }

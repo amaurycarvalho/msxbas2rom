@@ -127,7 +127,7 @@ Lexeme::Lexeme() {
   clear();
 }
 
-Lexeme::Lexeme(Lexeme* plexeme) {
+Lexeme::Lexeme(shared_ptr<Lexeme> plexeme) {
   clear();
   type = plexeme->type;
   subtype = plexeme->subtype;
@@ -163,12 +163,14 @@ Lexeme::Lexeme(LexemeType ptype, LexemeSubType psubtype, string pname,
   value = pvalue;
 }
 
+Lexeme::~Lexeme() = default;
+
 //--------------------------------------------------
 // LEXEME METHODS
 //--------------------------------------------------
 
-Lexeme* Lexeme::clone() {
-  return new Lexeme(this);
+shared_ptr<Lexeme> Lexeme::clone() {
+  return make_shared<Lexeme>(*this);
 }
 
 void Lexeme::clear() {

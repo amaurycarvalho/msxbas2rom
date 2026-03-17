@@ -8,7 +8,7 @@ void CompilerCallStatementStrategy::cmd_call(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& variable = *context->variableEmitter;
   ActionNode* action;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   unsigned int i, t = context->current_action->actions.size();
 
   if (t) {

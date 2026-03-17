@@ -6,7 +6,7 @@
 
 bool FileStatementStrategy::parseOpen(ParserContext& context,
                                       LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   char* s;
   string stext;
   int state = 0;
@@ -55,8 +55,8 @@ bool FileStatementStrategy::parseOpen(ParserContext& context,
         } else if (s[0] == 'A' && s[1] == 'S' && s[2] == '#') {
           s += 3;
           stext = *s;
-          next_lexeme =
-              new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, stext);
+          next_lexeme = make_shared<Lexeme>(Lexeme::type_literal,
+                                            Lexeme::subtype_numeric, stext);
           context.pushActionFromLexeme(next_lexeme);
           state = 5;
           continue;
@@ -84,8 +84,8 @@ bool FileStatementStrategy::parseOpen(ParserContext& context,
         } else if (s[0] == 'A' && s[1] == 'S' && s[2] == '#') {
           s += 3;
           stext = *s;
-          next_lexeme =
-              new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, stext);
+          next_lexeme = make_shared<Lexeme>(Lexeme::type_literal,
+                                            Lexeme::subtype_numeric, stext);
           context.pushActionFromLexeme(next_lexeme);
           state = 5;
           continue;
@@ -104,8 +104,8 @@ bool FileStatementStrategy::parseOpen(ParserContext& context,
         } else if (s[0] == 'A' && s[1] == 'S' && s[2] == '#') {
           s += 3;
           stext = *s;
-          next_lexeme =
-              new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, stext);
+          next_lexeme = make_shared<Lexeme>(Lexeme::type_literal,
+                                            Lexeme::subtype_numeric, stext);
           context.pushActionFromLexeme(next_lexeme);
           state = 5;
           continue;
@@ -160,7 +160,7 @@ bool FileStatementStrategy::parseOpen(ParserContext& context,
 
 bool FileStatementStrategy::parseClose(ParserContext& context,
                                        LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   int state = 0;
 
   while ((next_lexeme = statement->getNextLexeme())) {
@@ -201,7 +201,7 @@ bool FileStatementStrategy::parseClose(ParserContext& context,
 
 bool FileStatementStrategy::parseMaxfiles(ParserContext& context,
                                           LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   LexerLine parm;
   int state = 0;
 
@@ -237,7 +237,8 @@ bool FileStatementStrategy::parseMaxfiles(ParserContext& context,
 }
 
 bool FileStatementStrategy::execute(ParserContext& context,
-                                    LexerLine* statement, Lexeme* lexeme) {
+                                    LexerLine* statement,
+                                    shared_ptr<Lexeme> lexeme) {
   if (lexeme->value == "OPEN") return parseOpen(context, statement);
   if (lexeme->value == "CLOSE") return parseClose(context, statement);
   return parseMaxfiles(context, statement);

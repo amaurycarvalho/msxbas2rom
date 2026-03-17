@@ -18,7 +18,8 @@ class CompilerVariableEmitter {
   void addTempStr(bool atHL);
   bool addAssignment(ActionNode* action);
 
-  CompilerVariableEmitter(CompilerContext* context) : context(context) {};
+  CompilerVariableEmitter(CompilerContext* context);
+  ~CompilerVariableEmitter();
 };
 
 #endif  // COMPILER_VARIABLE_EMITTER_H

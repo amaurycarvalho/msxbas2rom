@@ -5,7 +5,7 @@
 
 bool ColorStatementStrategy::parseColorRgb(ParserContext& context,
                                            LexerLine* statement) {
-  Lexeme *next_lexeme, *lex_rgb;
+  shared_ptr<Lexeme> next_lexeme;
   LexerLine parm;
   int state = 0, sepCount = 0;
 
@@ -13,9 +13,7 @@ bool ColorStatementStrategy::parseColorRgb(ParserContext& context,
     switch (state) {
       case 0: {
         if (next_lexeme->isSeparator("(")) {
-          lex_rgb =
-              new Lexeme(Lexeme::type_keyword, Lexeme::subtype_any, "RGB");
-          context.pushActionFromLexeme(lex_rgb);
+          context.pushActionFromLexeme(context.lex_rgb);
 
           state++;
           sepCount++;
@@ -69,7 +67,7 @@ bool ColorStatementStrategy::parseColorRgb(ParserContext& context,
 
 bool ColorStatementStrategy::parseColorSprite(ParserContext& context,
                                               LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   LexerLine parm;
   int state = 0, sepCount = 0;
 
@@ -134,7 +132,7 @@ bool ColorStatementStrategy::parseColorSprite(ParserContext& context,
 
 bool ColorStatementStrategy::parseStatement(ParserContext& context,
                                             LexerLine* statement) {
-  Lexeme* next_lexeme = statement->getNextLexeme();
+  shared_ptr<Lexeme> next_lexeme = statement->getNextLexeme();
 
   if (next_lexeme) {
     if (next_lexeme->isOperator("=")) {
@@ -156,7 +154,8 @@ bool ColorStatementStrategy::parseStatement(ParserContext& context,
 }
 
 bool ColorStatementStrategy::execute(ParserContext& context,
-                                     LexerLine* statement, Lexeme* lexeme) {
+                                     LexerLine* statement,
+                                     shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);
 }

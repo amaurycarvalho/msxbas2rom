@@ -6,7 +6,7 @@
 
 void CompilerPutStatementStrategy::cmd_put(CompilerContext* context) {
   ActionNode* action;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   unsigned int t = context->current_action->actions.size();
 
   if (t) {

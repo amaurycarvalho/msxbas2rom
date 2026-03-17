@@ -1,9 +1,9 @@
 #include "next_statement_strategy.h"
 
-
 bool NextStatementStrategy::parseStatement(ParserContext& context,
                                            LexerLine* statement) {
-  Lexeme *next_lexeme, *current_lexeme = context.actionRoot->lexeme;
+  shared_ptr<Lexeme> next_lexeme;
+  shared_ptr<Lexeme> current_lexeme = context.actionRoot->lexeme;
   ActionNode* action;
   int sepCount = 0;
 
@@ -22,7 +22,9 @@ bool NextStatementStrategy::parseStatement(ParserContext& context,
   return true;
 }
 
-bool NextStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+bool NextStatementStrategy::execute(ParserContext& context,
+                                    LexerLine* statement,
+                                    shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);
 }

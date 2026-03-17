@@ -5,7 +5,7 @@
 
 bool DataStatementStrategy::parseData(ParserContext& context,
                                       LexerLine* statement, bool isBinaryData) {
-  Lexeme *next_lexeme, *lexeme;
+  shared_ptr<Lexeme> next_lexeme, lexeme;
   Lexeme::LexemeSubType subtype;
   string stext = "", sname;
   int i, itext;
@@ -29,8 +29,9 @@ bool DataStatementStrategy::parseData(ParserContext& context,
         (next_lexeme->value == "," || next_lexeme->value == ";")) {
       if (lastWasSeparator) {
         i = context.datas.size() + 1;
-        lexeme = new Lexeme(Lexeme::type_literal, Lexeme::subtype_string,
-                            sname + to_string(i), "");
+        lexeme =
+            make_shared<Lexeme>(Lexeme::type_literal, Lexeme::subtype_string,
+                                sname + to_string(i), "");
         if (lexeme) {
           lexeme->tag = context.tag->name;
           context.pushActionFromLexeme(lexeme);
@@ -39,8 +40,8 @@ bool DataStatementStrategy::parseData(ParserContext& context,
 
       } else if (stext.size()) {
         i = context.datas.size() + 1;
-        next_lexeme = new Lexeme(Lexeme::type_literal, subtype,
-                                 sname + to_string(i), stext);
+        next_lexeme = make_shared<Lexeme>(Lexeme::type_literal, subtype,
+                                          sname + to_string(i), stext);
         next_lexeme->tag = context.tag->name;
 
         s = (char*)stext.c_str();
@@ -86,8 +87,8 @@ bool DataStatementStrategy::parseData(ParserContext& context,
 
   if (lastWasSeparator) {
     i = context.datas.size() + 1;
-    lexeme = new Lexeme(Lexeme::type_literal, Lexeme::subtype_string,
-                        sname + to_string(i), "");
+    lexeme = make_shared<Lexeme>(Lexeme::type_literal, Lexeme::subtype_string,
+                                 sname + to_string(i), "");
     if (lexeme) {
       lexeme->tag = context.tag->name;
       context.pushActionFromLexeme(lexeme);
@@ -97,8 +98,8 @@ bool DataStatementStrategy::parseData(ParserContext& context,
 
   if (stext.size()) {
     i = context.datas.size() + 1;
-    next_lexeme = new Lexeme(Lexeme::type_literal, subtype,
-                             "_DATA_" + to_string(i), stext);
+    next_lexeme = make_shared<Lexeme>(Lexeme::type_literal, subtype,
+                                      "_DATA_" + to_string(i), stext);
     next_lexeme->tag = context.tag->name;
 
     s = (char*)stext.c_str();
@@ -128,7 +129,8 @@ bool DataStatementStrategy::parseData(ParserContext& context,
 }
 
 bool DataStatementStrategy::execute(ParserContext& context,
-                                    LexerLine* statement, Lexeme* lexeme) {
+                                    LexerLine* statement,
+                                    shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseData(context, statement, false);
 }

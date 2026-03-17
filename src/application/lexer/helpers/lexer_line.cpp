@@ -17,44 +17,47 @@ LexerLine::LexerLine() {
   lexemeIndex = 0;
 }
 
+LexerLine::~LexerLine() = default;
+
 void LexerLine::clearLexemes() {
   lexemes.clear();
 }
 
-void LexerLine::addLexeme(Lexeme* lexeme) {
-  lexemes.push_back(lexeme);
+void LexerLine::addLexeme(shared_ptr<Lexeme> lexeme) {
+  lexemes.emplace_back(lexeme);
 }
 
 void LexerLine::setLexemeBOF() {
   lexemeIndex = -1;
 }
 
-Lexeme* LexerLine::getCurrentLexeme() {
+shared_ptr<Lexeme> LexerLine::getCurrentLexeme() {
   return getLexeme(lexemeIndex);
 }
 
-Lexeme* LexerLine::getFirstLexeme() {
+shared_ptr<Lexeme> LexerLine::getFirstLexeme() {
   return getLexeme(0);
 }
 
-Lexeme* LexerLine::getNextLexeme() {
+shared_ptr<Lexeme> LexerLine::getNextLexeme() {
   return getLexeme(lexemeIndex + 1);
 }
 
-Lexeme* LexerLine::getPreviousLexeme() {
+shared_ptr<Lexeme> LexerLine::getPreviousLexeme() {
   return getLexeme(lexemeIndex - 1);
 }
 
-Lexeme* LexerLine::getLastLexeme() {
+shared_ptr<Lexeme> LexerLine::getLastLexeme() {
+  if (lexemes.empty()) return nullptr;
   return getLexeme(lexemes.size() - 1);
 }
 
-Lexeme* LexerLine::getLexeme(int i) {
-  if (i >= 0 && i < (int)lexemes.size()) {
+shared_ptr<Lexeme> LexerLine::getLexeme(int i) {
+  if (i >= 0 && i < static_cast<int>(lexemes.size())) {
     lexemeIndex = i;
     return lexemes[i];
-  } else
-    return 0;
+  }
+  return nullptr;
 }
 
 int LexerLine::getLexemeCount() {
@@ -73,15 +76,15 @@ void LexerLine::popLexeme() {
 }
 
 void LexerLine::popLexemeDiscarding() {
-  lexemeStack.pop();
+  if (!lexemeStack.empty()) lexemeStack.pop();
 }
 
 string LexerLine::toString() {
   string out = lineText;
   if (!out.empty())
     if (out.back() != '\n' && out.back() != '\r') out += "\n";
-  for (unsigned int i = 0; i < lexemes.size(); i++) {
-    out += lexemes[i]->toString();
+  for (auto& lexeme : lexemes) {
+    out += lexeme->toString();
   }
   return out;
 }
@@ -102,9 +105,7 @@ bool LexerLine::evaluate() {
 
   if (context.lexeme->type != Lexeme::type_unknown) {
     context.normalizeKeyword();
-    lexemes.push_back(context.lexeme);
-  } else {
-    delete context.lexeme;
+    addLexeme(context.lexeme->clone());
   }
 
   return true;

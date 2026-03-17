@@ -5,6 +5,11 @@
 
 class CompilerSoundStatementStrategy : public ICompilerStatementStrategy {
  private:
+  /***
+   * @brief SOUND statement
+   * @note
+   * https://www.msx.org/wiki/SOUND
+   */
   void cmd_sound(CompilerContext* context);
 
  public:

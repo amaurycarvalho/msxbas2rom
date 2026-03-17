@@ -9,7 +9,7 @@
 void CompilerBloadStatementStrategy::cmd_bload(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& opts = *context->opts;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ActionNode* action;
   unsigned int t = context->current_action->actions.size();
   bool isTinySprite;

@@ -30,7 +30,7 @@ int CompilerExpressionEvaluator::evalExpression(ActionNode* action) {
   auto& variable = *context->variableEmitter;
   auto& floatConverter = *context->floatConverter;
   int result = Lexeme::subtype_unknown;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
 
   lexeme = action->lexeme;
 
@@ -157,7 +157,7 @@ int CompilerExpressionEvaluator::evalOperator(ActionNode* action) {
   auto& variable = *context->variableEmitter;
   auto& optimizer = *context->codeOptimizer;
   int result = Lexeme::subtype_unknown;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ActionNode* next_action;
   unsigned int t = action->actions.size(), i, n, k;
   unsigned char* s;
@@ -1290,7 +1290,7 @@ void CompilerExpressionEvaluator::addCast(int from, int to) {
 
 int CompilerExpressionEvaluator::evalFunction(ActionNode* action) {
   int result[4];
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ActionNode* next_action;
   unsigned int i, t = action->actions.size();
 

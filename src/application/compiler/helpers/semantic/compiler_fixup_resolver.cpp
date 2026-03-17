@@ -45,7 +45,7 @@ FixNode* CompilerFixupResolver::addFix(SymbolNode* symbol) {
   return fix;
 }
 
-FixNode* CompilerFixupResolver::addFix(Lexeme* lexeme) {
+FixNode* CompilerFixupResolver::addFix(shared_ptr<Lexeme> lexeme) {
   SymbolNode* symbol = context->symbolResolver->addSymbol(lexeme);
   return addFix(symbol);
 }
@@ -95,3 +95,8 @@ void CompilerFixupResolver::doFix() {
     cpu.context->code[fix->address + 1] = (address >> 8) & 0xFF;
   }
 }
+
+CompilerFixupResolver::CompilerFixupResolver(CompilerContext* context)
+    : context(context) {}
+
+CompilerFixupResolver::~CompilerFixupResolver() = default;

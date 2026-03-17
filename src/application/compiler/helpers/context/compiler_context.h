@@ -56,8 +56,8 @@ class CompilerContext {
   int mark_count, for_count;
 
   TagNode* current_tag;
-  unique_ptr<SymbolNode> heap_mark;
-  unique_ptr<SymbolNode> temp_str_mark;
+  shared_ptr<SymbolNode> heap_mark;
+  shared_ptr<SymbolNode> temp_str_mark;
   SymbolNode* end_mark;
   FixNode *enable_basic_mark, *disable_basic_mark;
   FixNode* draw_mark;

@@ -5,7 +5,7 @@
 bool CallStatementStrategy::parseCall(ParserContext& context,
                                       LexerLine* statement) {
   (void)context;
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
 
   while ((next_lexeme = statement->getNextLexeme())) {
     context.pushActionFromLexeme(next_lexeme);
@@ -14,7 +14,9 @@ bool CallStatementStrategy::parseCall(ParserContext& context,
   return true;
 }
 
-bool CallStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+bool CallStatementStrategy::execute(ParserContext& context,
+                                    LexerLine* statement,
+                                    shared_ptr<Lexeme> lexeme) {
   if (lexeme->value == "_") {
     lexeme->value = "CALL";
     lexeme->name = lexeme->value;

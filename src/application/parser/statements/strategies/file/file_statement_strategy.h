@@ -10,7 +10,8 @@ class FileStatementStrategy : public IParserStatementStrategy {
   bool parseMaxfiles(ParserContext& context, LexerLine* statement);
 
  public:
-  bool execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) override;
+  bool execute(ParserContext& context, LexerLine* statement,
+               shared_ptr<Lexeme> lexeme) override;
 };
 
 #endif  // FILE_STATEMENT_STRATEGY_H_INCLUDED

@@ -43,7 +43,7 @@ static std::string readFileText(const std::string& filename) {
 struct SymbolsFixture {
   SymbolManager manager;
   std::vector<CodeNode*> nodes;
-  std::vector<Lexeme*> lexemes;
+  std::vector<shared_ptr<Lexeme>> lexemes;
 
   SymbolsFixture() {
     CodeNode* code = new CodeNode();
@@ -58,7 +58,7 @@ struct SymbolsFixture {
     manager.codeList.push_back(code);
     nodes.push_back(code);
 
-    Lexeme* lex = new Lexeme();
+    shared_ptr<Lexeme> lex = make_shared<Lexeme>();
     lex->subtype = Lexeme::subtype_numeric;
     lex->isArray = false;
     lex->x_size = 0;
@@ -81,9 +81,6 @@ struct SymbolsFixture {
   ~SymbolsFixture() {
     for (size_t i = 0; i < nodes.size(); i++) {
       delete nodes[i];
-    }
-    for (size_t i = 0; i < lexemes.size(); i++) {
-      delete lexemes[i];
     }
   }
 };
@@ -260,7 +257,7 @@ TEST_SUITE("Symbols") {
 
     std::remove(fixture.manager.exportFilename.c_str());
   }
-  
+
   TEST_CASE("Symbol manager returns false when symbols mode is none") {
     SymbolsFixture fixture;
     BuildOptions opts;

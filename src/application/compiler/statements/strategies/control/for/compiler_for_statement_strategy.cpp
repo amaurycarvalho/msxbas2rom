@@ -15,7 +15,7 @@ void CompilerForStatementStrategy::cmd_for(CompilerContext* context) {
   auto& expression = *context->expressionEvaluator;
   auto& optimizer = *context->codeOptimizer;
   auto& evaluator = *context->evaluator;
-  Lexeme *lexeme, *lex_var = 0;
+  shared_ptr<Lexeme> lexeme, lex_var = nullptr;
   ActionNode *action, *var_action, *saved_action = context->current_action;
   unsigned int i, t = saved_action->actions.size();
   int result_subtype;
@@ -33,15 +33,15 @@ void CompilerForStatementStrategy::cmd_for(CompilerContext* context) {
     forNext->index = context->for_count;
     forNext->tag = context->current_tag;
     forNext->for_to =
-        new Lexeme(Lexeme::type_identifier, Lexeme::subtype_numeric,
-                   "FOR_TO_" + to_string(context->for_count));
+        make_shared<Lexeme>(Lexeme::type_identifier, Lexeme::subtype_numeric,
+                            "FOR_TO_" + to_string(context->for_count));
     forNext->for_to_action = new ActionNode();
     forNext->for_to_action->lexeme = forNext->for_to;
     context->symbolResolver->addSymbol(forNext->for_to);
 
     forNext->for_step =
-        new Lexeme(Lexeme::type_identifier, Lexeme::subtype_numeric,
-                   "FOR_STEP_" + to_string(context->for_count));
+        make_shared<Lexeme>(Lexeme::type_identifier, Lexeme::subtype_numeric,
+                            "FOR_STEP_" + to_string(context->for_count));
     forNext->for_step_action = new ActionNode();
     forNext->for_step_action->lexeme = forNext->for_step;
     context->symbolResolver->addSymbol(forNext->for_step);

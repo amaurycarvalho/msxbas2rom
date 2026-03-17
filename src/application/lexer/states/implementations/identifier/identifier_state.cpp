@@ -2,6 +2,8 @@
 
 #include <ctype.h>
 
+#include "lexeme.h"
+
 LexerLineProcessResult IdentifierState::handle(LexerLineStateContext& context) {
   char c = context.current;
 
@@ -41,7 +43,7 @@ LexerLineProcessResult IdentifierState::handle(LexerLineStateContext& context) {
       return LexerLineProcessResult::Accept;
     }
 
-    context.lexeme = new Lexeme();
+    context.lexeme->clear();
   } else {
     // VALTYP: %=2 $=3 !=4 #=8
     if (c == '%')

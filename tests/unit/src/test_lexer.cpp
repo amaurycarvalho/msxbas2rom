@@ -10,11 +10,19 @@
 #include <string>
 #include <vector>
 
+#include "comment_state.h"
 #include "doctest/doctest.h"
+#include "identifier_state.h"
+#include "keyword_state.h"
 #include "lexeme.h"
 #include "lexer.h"
 #include "lexer_line.h"
+#include "lexer_line_state_factory.h"
+#include "literal_state.h"
 #include "logger.h"
+#include "operator_state.h"
+#include "separator_state.h"
+#include "unknown_state.h"
 
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {
@@ -34,13 +42,23 @@ static std::string createTempBin(const std::string& filename,
   return path;
 }
 
-static Lexeme* findLexemeByValue(LexerLine* line, const std::string& value) {
+static shared_ptr<Lexeme> findLexemeByValue(LexerLine* line,
+                                            const std::string& value) {
   if (!line) return nullptr;
   for (int i = 0; i < line->getLexemeCount(); i++) {
-    Lexeme* lexeme = line->getLexeme(i);
+    shared_ptr<Lexeme> lexeme = line->getLexeme(i);
     if (lexeme && lexeme->value == value) return lexeme;
   }
   return nullptr;
+}
+
+static void seedLexeme(LexerLineStateContext& context, Lexeme::LexemeType type,
+                       Lexeme::LexemeSubType subtype,
+                       const std::string& value) {
+  context.lexeme->type = type;
+  context.lexeme->subtype = subtype;
+  context.lexeme->value = value;
+  context.lexeme->name = value;
 }
 
 TEST_SUITE("Lexer") {
@@ -57,12 +75,12 @@ TEST_SUITE("Lexer") {
     REQUIRE(line != nullptr);
     CHECK(line->getLexemeCount() >= 3);
 
-    Lexeme* first = line->getFirstLexeme();
+    shared_ptr<Lexeme> first = line->getFirstLexeme();
     REQUIRE(first != nullptr);
     CHECK(first->isLiteralNumeric());
     CHECK(first->value == "10");
 
-    Lexeme* second = line->getNextLexeme();
+    shared_ptr<Lexeme> second = line->getNextLexeme();
     REQUIRE(second != nullptr);
     CHECK(second->isKeyword("PRINT"));
 
@@ -142,10 +160,10 @@ TEST_SUITE("Lexer") {
     LexerLine* line = lexer.lines[0].get();
     REQUIRE(line != nullptr);
 
-    Lexeme* num32767 = findLexemeByValue(line, "32767");
-    Lexeme* num32768 = findLexemeByValue(line, "32768");
-    Lexeme* num123456 = findLexemeByValue(line, "123456");
-    Lexeme* num1234567 = findLexemeByValue(line, "1234567");
+    shared_ptr<Lexeme> num32767 = findLexemeByValue(line, "32767");
+    shared_ptr<Lexeme> num32768 = findLexemeByValue(line, "32768");
+    shared_ptr<Lexeme> num123456 = findLexemeByValue(line, "123456");
+    shared_ptr<Lexeme> num1234567 = findLexemeByValue(line, "1234567");
 
     REQUIRE(num32767 != nullptr);
     CHECK(num32767->subtype == Lexeme::subtype_numeric);
@@ -156,7 +174,7 @@ TEST_SUITE("Lexer") {
     REQUIRE(num1234567 != nullptr);
     CHECK(num1234567->subtype == Lexeme::subtype_double_decimal);
 
-    Lexeme* sep = findLexemeByValue(line, ":");
+    shared_ptr<Lexeme> sep = findLexemeByValue(line, ":");
     REQUIRE(sep != nullptr);
     CHECK(sep->type == Lexeme::type_separator);
 
@@ -175,23 +193,23 @@ TEST_SUITE("Lexer") {
     LexerLine* line = lexer.lines[0].get();
     REQUIRE(line != nullptr);
 
-    Lexeme* hex = findLexemeByValue(line, "&HFF");
+    shared_ptr<Lexeme> hex = findLexemeByValue(line, "&HFF");
     REQUIRE(hex != nullptr);
     CHECK(hex->type == Lexeme::type_literal);
 
-    Lexeme* identA = findLexemeByValue(line, "A");
+    shared_ptr<Lexeme> identA = findLexemeByValue(line, "A");
     REQUIRE(identA != nullptr);
     CHECK(identA->type == Lexeme::type_identifier);
 
-    Lexeme* opEq = findLexemeByValue(line, "=");
+    shared_ptr<Lexeme> opEq = findLexemeByValue(line, "=");
     REQUIRE(opEq != nullptr);
     CHECK(opEq->type == Lexeme::type_operator);
 
-    Lexeme* kwPrint = findLexemeByValue(line, "PRINT");
+    shared_ptr<Lexeme> kwPrint = findLexemeByValue(line, "PRINT");
     REQUIRE(kwPrint != nullptr);
     CHECK(kwPrint->type == Lexeme::type_keyword);
 
-    Lexeme* kwTime = findLexemeByValue(line, "TIME");
+    shared_ptr<Lexeme> kwTime = findLexemeByValue(line, "TIME");
     REQUIRE(kwTime != nullptr);
     CHECK(kwTime->subtype == Lexeme::subtype_function);
 
@@ -210,7 +228,7 @@ TEST_SUITE("Lexer") {
 
       LexerLine* line = lexer.lines[0].get();
       REQUIRE(line != nullptr);
-      Lexeme* rem = findLexemeByValue(line, "REM");
+      shared_ptr<Lexeme> rem = findLexemeByValue(line, "REM");
       REQUIRE(rem != nullptr);
       CHECK(rem->type == Lexeme::type_keyword);
 
@@ -229,16 +247,358 @@ TEST_SUITE("Lexer") {
       LexerLine* line = lexer.lines[0].get();
       REQUIRE(line != nullptr);
 
-      Lexeme* apostrophe = findLexemeByValue(line, "'");
+      shared_ptr<Lexeme> apostrophe = findLexemeByValue(line, "'");
       REQUIRE(apostrophe != nullptr);
       CHECK(apostrophe->type == Lexeme::type_operator);
 
-      Lexeme* comment = findLexemeByValue(line, "#COMMENT");
+      shared_ptr<Lexeme> comment = findLexemeByValue(line, "#COMMENT");
       REQUIRE(comment != nullptr);
       CHECK(comment->type == Lexeme::type_comment);
 
       std::remove(filename.c_str());
     }
+  }
+
+  TEST_CASE("Creates expected states from factory") {
+    LexerLineStateFactory factory;
+
+    ILexerLineState* unknown = factory.getState(Lexeme::type_unknown);
+    ILexerLineState* literal = factory.getState(Lexeme::type_literal);
+    ILexerLineState* identifier = factory.getState(Lexeme::type_identifier);
+    ILexerLineState* keyword = factory.getState(Lexeme::type_keyword);
+    ILexerLineState* op = factory.getState(Lexeme::type_operator);
+    ILexerLineState* sep = factory.getState(Lexeme::type_separator);
+    ILexerLineState* comment = factory.getState(Lexeme::type_comment);
+
+    CHECK(dynamic_cast<UnknownState*>(unknown) != nullptr);
+    CHECK(dynamic_cast<LiteralState*>(literal) != nullptr);
+    CHECK(dynamic_cast<IdentifierState*>(identifier) != nullptr);
+    CHECK(dynamic_cast<KeywordState*>(keyword) != nullptr);
+    CHECK(dynamic_cast<OperatorState*>(op) != nullptr);
+    CHECK(dynamic_cast<SeparatorState*>(sep) != nullptr);
+    CHECK(dynamic_cast<CommentState*>(comment) != nullptr);
+
+    ILexerLineState* fallback =
+        factory.getState(static_cast<Lexeme::LexemeType>(999));
+    CHECK(dynamic_cast<UnknownState*>(fallback) != nullptr);
+
+    CHECK(factory.getState(Lexeme::type_keyword) == keyword);
+  }
+
+  TEST_CASE("UnknownState handles lexeme transitions") {
+    UnknownState state;
+
+    SUBCASE("Whitespace is ignored") {
+      LexerLine line;
+      line.lineText = " ";
+      LexerLineStateContext context(&line);
+      context.current = ' ';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      CHECK(line.getLexemeCount() == 0);
+    }
+
+    SUBCASE("Numeric literal starts") {
+      LexerLine line;
+      line.lineText = "1";
+      LexerLineStateContext context(&line);
+      context.current = '1';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      CHECK(context.lexeme->type == Lexeme::type_literal);
+      CHECK(context.lexeme->subtype == Lexeme::subtype_numeric);
+      CHECK(context.lexeme->value == "1");
+    }
+
+    SUBCASE("Operator is pushed immediately") {
+      LexerLine line;
+      line.lineText = "+";
+      LexerLineStateContext context(&line);
+      context.current = '+';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      REQUIRE(line.getLexemeCount() == 1);
+      shared_ptr<Lexeme> lexeme = line.getLexeme(0);
+      REQUIRE(lexeme != nullptr);
+      CHECK(lexeme->type == Lexeme::type_operator);
+      CHECK(lexeme->value == "+");
+    }
+
+    SUBCASE("Apostrophe comment creates operator and comment lexemes") {
+      LexerLine line;
+      line.lineText = "'#COMMENT\n";
+      LexerLineStateContext context(&line);
+      context.current = '\'';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Accept);
+      REQUIRE(line.getLexemeCount() == 2);
+
+      shared_ptr<Lexeme> op = line.getLexeme(0);
+      shared_ptr<Lexeme> comment = line.getLexeme(1);
+      REQUIRE(op != nullptr);
+      REQUIRE(comment != nullptr);
+      CHECK(op->type == Lexeme::type_operator);
+      CHECK(op->value == "'");
+      CHECK(comment->type == Lexeme::type_comment);
+      CHECK(comment->value == "#COMMENT");
+    }
+
+    SUBCASE("Invalid character rejects") {
+      LexerLine line;
+      line.lineText = "@";
+      LexerLineStateContext context(&line);
+      context.current = '@';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Reject);
+      REQUIRE(line.getLexemeCount() == 1);
+      shared_ptr<Lexeme> lexeme = line.getLexeme(0);
+      REQUIRE(lexeme != nullptr);
+      CHECK(lexeme->type == Lexeme::type_unknown);
+      CHECK(lexeme->value == "@");
+    }
+  }
+
+  TEST_CASE("LiteralState processes numbers and strings") {
+    LiteralState state;
+
+    SUBCASE("String literal closes on quote") {
+      LexerLine line;
+      line.lineText = "\"HELLO\"";
+      LexerLineStateContext context(&line);
+      seedLexeme(context, Lexeme::type_literal, Lexeme::subtype_string,
+                 "\"HELLO");
+      context.current = '"';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      REQUIRE(line.getLexemeCount() == 1);
+      shared_ptr<Lexeme> lexeme = line.getLexeme(0);
+      REQUIRE(lexeme != nullptr);
+      CHECK(lexeme->value == "\"HELLO\"");
+    }
+
+    SUBCASE("Hex literal accepts valid digit and rejects invalid") {
+      LexerLine line;
+      line.lineText = "&HFG";
+      LexerLineStateContext context(&line);
+      seedLexeme(context, Lexeme::type_literal, Lexeme::subtype_numeric, "&H");
+      context.hexa = true;
+      context.index = 2;
+      context.current = 'F';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      CHECK(context.lexeme->value == "&HF");
+
+      context.current = 'G';
+      context.index = 3;
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      REQUIRE(line.getLexemeCount() == 1);
+      shared_ptr<Lexeme> lexeme = line.getLexeme(0);
+      REQUIRE(lexeme != nullptr);
+      CHECK(lexeme->value == "&HF");
+      CHECK(context.index == 2);
+    }
+
+    SUBCASE("Double decimal rejects second dot") {
+      LexerLine line;
+      line.lineText = "1..";
+      LexerLineStateContext context(&line);
+      seedLexeme(context, Lexeme::type_literal, Lexeme::subtype_double_decimal,
+                 "1.");
+      context.current = '.';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Reject);
+      REQUIRE(line.getLexemeCount() == 1);
+      shared_ptr<Lexeme> lexeme = line.getLexeme(0);
+      REQUIRE(lexeme != nullptr);
+      CHECK(lexeme->type == Lexeme::type_unknown);
+      CHECK(lexeme->value == "1..");
+    }
+
+    SUBCASE("Numeric range promotes subtype") {
+      LexerLine line;
+      line.lineText = "327678";
+      LexerLineStateContext context(&line);
+      seedLexeme(context, Lexeme::type_literal, Lexeme::subtype_numeric,
+                 "32767");
+      context.current = '8';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      CHECK(context.lexeme->subtype == Lexeme::subtype_single_decimal);
+    }
+
+    SUBCASE("Single decimal grows to double decimal") {
+      LexerLine line;
+      line.lineText = "1234567";
+      LexerLineStateContext context(&line);
+      seedLexeme(context, Lexeme::type_literal, Lexeme::subtype_single_decimal,
+                 "123456");
+      context.current = '7';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      CHECK(context.lexeme->subtype == Lexeme::subtype_double_decimal);
+    }
+
+    SUBCASE("Numeric suffix adjusts subtype") {
+      LexerLine line;
+      line.lineText = "10%";
+      LexerLineStateContext context(&line);
+      seedLexeme(context, Lexeme::type_literal, Lexeme::subtype_numeric, "10");
+      context.current = '%';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      CHECK(context.lexeme->subtype == Lexeme::subtype_numeric);
+    }
+  }
+
+  TEST_CASE("IdentifierState classifies keywords and suffixes") {
+    IdentifierState state;
+
+    SUBCASE("Non-identifier terminates and normalizes keyword") {
+      LexerLine line;
+      line.lineText = "PRINT ";
+      LexerLineStateContext context(&line);
+      seedLexeme(context, Lexeme::type_identifier, Lexeme::subtype_any,
+                 "PRINT");
+      context.current = ' ';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      REQUIRE(line.getLexemeCount() == 1);
+      shared_ptr<Lexeme> lexeme = line.getLexeme(0);
+      REQUIRE(lexeme != nullptr);
+      CHECK(lexeme->type == Lexeme::type_keyword);
+      CHECK(lexeme->value == "PRINT");
+    }
+
+    SUBCASE("REM accepts and stops line") {
+      LexerLine line;
+      line.lineText = "REM X";
+      LexerLineStateContext context(&line);
+      seedLexeme(context, Lexeme::type_identifier, Lexeme::subtype_any, "RE");
+      context.index = 2;
+      context.current = 'M';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Accept);
+      REQUIRE(line.getLexemeCount() == 1);
+      shared_ptr<Lexeme> lexeme = line.getLexeme(0);
+      REQUIRE(lexeme != nullptr);
+      CHECK(lexeme->value == "REM");
+      CHECK(lexeme->type == Lexeme::type_keyword);
+    }
+
+    SUBCASE("Suffix sets identifier subtype") {
+      LexerLine line;
+      line.lineText = "A%";
+      LexerLineStateContext context(&line);
+      seedLexeme(context, Lexeme::type_identifier,
+                 Lexeme::subtype_single_decimal, "A");
+      context.current = '%';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      CHECK(context.lexeme->subtype == Lexeme::subtype_numeric);
+    }
+  }
+
+  TEST_CASE("KeywordState accumulates keyword characters") {
+    KeywordState state;
+
+    SUBCASE("Identifier character continues") {
+      LexerLine line;
+      line.lineText = "PRIN";
+      LexerLineStateContext context(&line);
+      seedLexeme(context, Lexeme::type_keyword, Lexeme::subtype_any, "PRI");
+      context.current = 'N';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      CHECK(context.lexeme->value == "PRIN");
+    }
+
+    SUBCASE("Whitespace pushes lexeme") {
+      LexerLine line;
+      line.lineText = "PRINT ";
+      LexerLineStateContext context(&line);
+      seedLexeme(context, Lexeme::type_keyword, Lexeme::subtype_any, "PRINT");
+      context.current = ' ';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      REQUIRE(line.getLexemeCount() == 1);
+      shared_ptr<Lexeme> lexeme = line.getLexeme(0);
+      REQUIRE(lexeme != nullptr);
+      CHECK(lexeme->value == "PRINT");
+    }
+  }
+
+  TEST_CASE("OperatorState appends or pushes operators") {
+    OperatorState state;
+
+    SUBCASE("Operator character appends") {
+      LexerLine line;
+      line.lineText = "+=";
+      LexerLineStateContext context(&line);
+      seedLexeme(context, Lexeme::type_operator, Lexeme::subtype_any, "+");
+      context.current = '=';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      CHECK(context.lexeme->value == "+=");
+    }
+
+    SUBCASE("Non-operator pushes lexeme") {
+      LexerLine line;
+      line.lineText = "+A";
+      LexerLineStateContext context(&line);
+      seedLexeme(context, Lexeme::type_operator, Lexeme::subtype_any, "+");
+      context.current = 'A';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      REQUIRE(line.getLexemeCount() == 1);
+      shared_ptr<Lexeme> lexeme = line.getLexeme(0);
+      REQUIRE(lexeme != nullptr);
+      CHECK(lexeme->value == "+");
+    }
+  }
+
+  TEST_CASE("SeparatorState appends or pushes separators") {
+    SeparatorState state;
+
+    SUBCASE("Separator character appends") {
+      LexerLine line;
+      line.lineText = "::";
+      LexerLineStateContext context(&line);
+      seedLexeme(context, Lexeme::type_separator, Lexeme::subtype_any, ":");
+      context.current = ':';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      CHECK(context.lexeme->value == "::");
+    }
+
+    SUBCASE("Non-separator pushes lexeme") {
+      LexerLine line;
+      line.lineText = ":A";
+      LexerLineStateContext context(&line);
+      seedLexeme(context, Lexeme::type_separator, Lexeme::subtype_any, ":");
+      context.current = 'A';
+
+      CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+      REQUIRE(line.getLexemeCount() == 1);
+      shared_ptr<Lexeme> lexeme = line.getLexeme(0);
+      REQUIRE(lexeme != nullptr);
+      CHECK(lexeme->value == ":");
+    }
+  }
+
+  TEST_CASE("CommentState currently ends immediately") {
+    CommentState state;
+
+    LexerLine line;
+    line.lineText = "REM A";
+    LexerLineStateContext context(&line);
+    seedLexeme(context, Lexeme::type_comment, Lexeme::subtype_any, "REM");
+    context.current = 'A';
+
+    CHECK(state.handle(context) == LexerLineProcessResult::Continue);
+    REQUIRE(line.getLexemeCount() == 1);
+    shared_ptr<Lexeme> lexeme = line.getLexeme(0);
+    REQUIRE(lexeme != nullptr);
+    CHECK(lexeme->value == "REM");
   }
 
   TEST_CASE("Navigates lexemes in LexerLine") {
@@ -247,20 +607,20 @@ TEST_SUITE("Lexer") {
     REQUIRE(line.evaluate() == true);
     REQUIRE(line.getLexemeCount() >= 3);
 
-    Lexeme* first = line.getFirstLexeme();
+    shared_ptr<Lexeme> first = line.getFirstLexeme();
     REQUIRE(first != nullptr);
     CHECK(first->isLiteralNumeric());
 
-    Lexeme* second = line.getNextLexeme();
+    shared_ptr<Lexeme> second = line.getNextLexeme();
     REQUIRE(second != nullptr);
     CHECK(second->isKeyword("PRINT"));
 
     line.pushLexeme();
-    Lexeme* third = line.getNextLexeme();
+    shared_ptr<Lexeme> third = line.getNextLexeme();
     REQUIRE(third != nullptr);
     line.popLexeme();
 
-    Lexeme* afterPop = line.getCurrentLexeme();
+    shared_ptr<Lexeme> afterPop = line.getCurrentLexeme();
     REQUIRE(afterPop != nullptr);
     CHECK(afterPop == second);
   }

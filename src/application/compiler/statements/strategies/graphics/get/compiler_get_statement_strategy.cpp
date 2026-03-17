@@ -8,7 +8,7 @@
 
 void CompilerGetStatementStrategy::cmd_get(CompilerContext* context) {
   ActionNode* action;
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   unsigned int t = context->current_action->actions.size();
 
   if (t == 1) {
@@ -38,7 +38,7 @@ void CompilerGetStatementStrategy::cmd_get(CompilerContext* context) {
 
 void CompilerGetStatementStrategy::cmd_get_date(CompilerContext* context) {
   auto& cpu = *context->cpu;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ActionNode *action = context->current_action->actions[0], *sub_action;
   unsigned int i, t = action->actions.size();
 
@@ -100,7 +100,7 @@ void CompilerGetStatementStrategy::cmd_get_date(CompilerContext* context) {
 
 void CompilerGetStatementStrategy::cmd_get_time(CompilerContext* context) {
   auto& cpu = *context->cpu;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ActionNode *action = context->current_action->actions[0], *sub_action;
   unsigned int i, t = action->actions.size();
 
@@ -153,7 +153,7 @@ void CompilerGetStatementStrategy::cmd_get_tile(CompilerContext* context) {
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
   ActionNode *action = context->current_action->actions[0], *sub_action;
-  Lexeme *lexeme, *sub_lexeme;
+  shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int t;
   int result_subtype;
 
@@ -244,7 +244,7 @@ void CompilerGetStatementStrategy::cmd_get_sprite(CompilerContext* context) {
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
   ActionNode *action = context->current_action->actions[0], *sub_action;
-  Lexeme *lexeme, *sub_lexeme;
+  shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int t;
   int result_subtype;
 

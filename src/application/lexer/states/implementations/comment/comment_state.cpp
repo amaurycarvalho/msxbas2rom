@@ -1,5 +1,7 @@
 #include "comment_state.h"
 
+#include "lexeme.h"
+
 LexerLineProcessResult CommentState::handle(LexerLineStateContext& context) {
   char c = context.current;
 

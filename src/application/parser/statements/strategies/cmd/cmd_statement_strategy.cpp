@@ -2,9 +2,10 @@
 
 #include "generic_statement_strategy.h"
 
-bool CmdStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
+bool CmdStatementStrategy::parseStatement(ParserContext& context,
+                                          LexerLine* statement) {
   ActionNode* action;
-  Lexeme* lexeme = statement->getNextLexeme();
+  shared_ptr<Lexeme> lexeme = statement->getNextLexeme();
 
   if (!lexeme) return false;
 
@@ -15,7 +16,8 @@ bool CmdStatementStrategy::parseStatement(ParserContext& context, LexerLine* sta
       lexeme->value == "WRTCHR")
     context.has_font = true;
 
-  if (lexeme->value == "PT3LOAD" || lexeme->value == "PT3PLAY") context.has_pt3 = true;
+  if (lexeme->value == "PT3LOAD" || lexeme->value == "PT3PLAY")
+    context.has_pt3 = true;
 
   if (lexeme->value == "PLYLOAD" || lexeme->value == "PLYPLAY" ||
       lexeme->value == "PLYSONG")
@@ -35,7 +37,8 @@ bool CmdStatementStrategy::parseStatement(ParserContext& context, LexerLine* sta
   return result;
 }
 
-bool CmdStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+bool CmdStatementStrategy::execute(ParserContext& context, LexerLine* statement,
+                                   shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);
 }

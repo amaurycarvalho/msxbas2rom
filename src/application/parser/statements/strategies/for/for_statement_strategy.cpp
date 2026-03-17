@@ -6,7 +6,7 @@
 
 bool ForStatementStrategy::parseStatement(ParserContext& context,
                                           LexerLine* statement) {
-  Lexeme *next_lexeme, *last_lexeme = 0;
+  shared_ptr<Lexeme> next_lexeme, last_lexeme = nullptr;
   LexerLine parm;
   ActionNode* action;
   int state = 0;
@@ -100,7 +100,7 @@ bool ForStatementStrategy::parseStatement(ParserContext& context,
 }
 
 bool ForStatementStrategy::execute(ParserContext& context, LexerLine* statement,
-                                   Lexeme* lexeme) {
+                                   shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);
 }

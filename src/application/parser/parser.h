@@ -59,11 +59,11 @@ class Parser {
   vector<TagNode*>& getTags();
   const vector<TagNode*>& getTags() const;
 
-  vector<Lexeme*>& getSymbolList();
-  const vector<Lexeme*>& getSymbolList() const;
+  vector<shared_ptr<Lexeme>>& getSymbolList();
+  const vector<shared_ptr<Lexeme>>& getSymbolList() const;
 
-  vector<Lexeme*>& getDatas();
-  const vector<Lexeme*>& getDatas() const;
+  vector<shared_ptr<Lexeme>>& getDatas();
+  const vector<shared_ptr<Lexeme>>& getDatas() const;
 
   bool getHasTraps() const;
   bool getHasDefusr() const;

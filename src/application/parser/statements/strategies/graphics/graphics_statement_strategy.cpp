@@ -6,7 +6,7 @@
 
 bool GraphicsStatementStrategy::parsePset(ParserContext& context,
                                           LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   LexerLine parm;
   int state = 0, sepCount = 0, parmCount = 0;
@@ -61,7 +61,7 @@ bool GraphicsStatementStrategy::parsePset(ParserContext& context,
             parmCount++;
         } else {
           parmCount++;
-          next_lexeme = context.lex_null.get();
+          next_lexeme = context.lex_null;
           context.pushActionFromLexeme(next_lexeme);
         }
         continue;
@@ -91,8 +91,8 @@ bool GraphicsStatementStrategy::parsePset(ParserContext& context,
     }
 
     if (isKeyword) {
-      next_lexeme =
-          new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, parmValue);
+      next_lexeme = make_shared<Lexeme>(Lexeme::type_literal,
+                                        Lexeme::subtype_numeric, parmValue);
       context.pushActionFromLexeme(next_lexeme);
     } else {
       parm.setLexemeBOF();
@@ -109,7 +109,7 @@ bool GraphicsStatementStrategy::parsePset(ParserContext& context,
 
 bool GraphicsStatementStrategy::parseLine(ParserContext& context,
                                           LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   LexerLine parm;
   int state = 0, sepCount = 0, parmCount = 0;
@@ -262,8 +262,8 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context,
             }
 
             if (isSpecialParameter) {
-              next_lexeme = new Lexeme(Lexeme::type_literal,
-                                       Lexeme::subtype_numeric, parmValue);
+              next_lexeme = make_shared<Lexeme>(
+                  Lexeme::type_literal, Lexeme::subtype_numeric, parmValue);
               context.pushActionFromLexeme(next_lexeme);
             } else {
               parm.setLexemeBOF();
@@ -279,7 +279,7 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context,
             parm.clearLexemes();
 
           } else {
-            next_lexeme = context.lex_null.get();
+            next_lexeme = context.lex_null;
             context.pushActionFromLexeme(next_lexeme);
           }
 
@@ -332,8 +332,8 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context,
     }
 
     if (isSpecialParameter) {
-      next_lexeme =
-          new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, parmValue);
+      next_lexeme = make_shared<Lexeme>(Lexeme::type_literal,
+                                        Lexeme::subtype_numeric, parmValue);
       context.pushActionFromLexeme(next_lexeme);
     } else {
       parm.setLexemeBOF();
@@ -350,7 +350,7 @@ bool GraphicsStatementStrategy::parseLine(ParserContext& context,
 
 bool GraphicsStatementStrategy::parseCircle(ParserContext& context,
                                             LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   LexerLine parm;
   int state = 0, sepCount = 0, parmCount = 0;
@@ -404,7 +404,7 @@ bool GraphicsStatementStrategy::parseCircle(ParserContext& context,
             parmCount++;
         } else {
           parmCount++;
-          next_lexeme = context.lex_null.get();
+          next_lexeme = context.lex_null;
           context.pushActionFromLexeme(next_lexeme);
         }
         continue;
@@ -427,7 +427,7 @@ bool GraphicsStatementStrategy::parseCircle(ParserContext& context,
 
 bool GraphicsStatementStrategy::parsePaint(ParserContext& context,
                                            LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   LexerLine parm;
   int state = 0, sepCount = 0, parmCount = 0;
@@ -480,7 +480,7 @@ bool GraphicsStatementStrategy::parsePaint(ParserContext& context,
           } else
             parmCount++;
         } else {
-          next_lexeme = context.lex_null.get();
+          next_lexeme = context.lex_null;
           context.pushActionFromLexeme(next_lexeme);
         }
         continue;
@@ -503,7 +503,7 @@ bool GraphicsStatementStrategy::parsePaint(ParserContext& context,
 
 bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
                                           LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   LexerLine parm;
   int state = 0, sepCount = 0, parmCount = 0;
@@ -550,7 +550,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
               }
               parm.clearLexemes();
             } else {
-              next_lexeme = context.lex_null.get();
+              next_lexeme = context.lex_null;
               context.pushActionFromLexeme(next_lexeme);
             }
             context.popActionRoot();
@@ -565,7 +565,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            next_lexeme = context.lex_null.get();
+            next_lexeme = context.lex_null;
             context.pushActionFromLexeme(next_lexeme);
           }
           continue;
@@ -604,7 +604,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
               }
               parm.clearLexemes();
             } else {
-              next_lexeme = context.lex_null.get();
+              next_lexeme = context.lex_null;
               context.pushActionFromLexeme(next_lexeme);
             }
 
@@ -623,7 +623,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            next_lexeme = context.lex_null.get();
+            next_lexeme = context.lex_null;
             context.pushActionFromLexeme(next_lexeme);
           }
 
@@ -641,7 +641,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            next_lexeme = context.lex_null.get();
+            next_lexeme = context.lex_null;
             context.pushActionFromLexeme(next_lexeme);
           }
 
@@ -685,7 +685,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
               }
               parm.clearLexemes();
             } else {
-              next_lexeme = context.lex_null.get();
+              next_lexeme = context.lex_null;
               context.pushActionFromLexeme(next_lexeme);
             }
 
@@ -703,7 +703,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            next_lexeme = context.lex_null.get();
+            next_lexeme = context.lex_null;
             context.pushActionFromLexeme(next_lexeme);
           }
 
@@ -730,7 +730,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            next_lexeme = context.lex_null.get();
+            next_lexeme = context.lex_null;
             context.pushActionFromLexeme(next_lexeme);
           }
 
@@ -750,12 +750,12 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            next_lexeme = context.lex_null.get();
+            next_lexeme = context.lex_null;
             context.pushActionFromLexeme(next_lexeme);
           }
 
           if (parmCount == 0) {
-            context.pushActionFromLexeme(context.lex_null.get());
+            context.pushActionFromLexeme(context.lex_null);
           }
 
           parmCount++;
@@ -771,7 +771,7 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            next_lexeme = context.lex_null.get();
+            next_lexeme = context.lex_null;
             context.pushActionFromLexeme(next_lexeme);
           }
 
@@ -816,8 +816,8 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
     }
 
     if (isKeyword) {
-      next_lexeme =
-          new Lexeme(Lexeme::type_literal, Lexeme::subtype_numeric, parmValue);
+      next_lexeme = make_shared<Lexeme>(Lexeme::type_literal,
+                                        Lexeme::subtype_numeric, parmValue);
       context.pushActionFromLexeme(next_lexeme);
     } else {
       parm.setLexemeBOF();
@@ -833,7 +833,8 @@ bool GraphicsStatementStrategy::parseCopy(ParserContext& context,
 }
 
 bool GraphicsStatementStrategy::execute(ParserContext& context,
-                                        LexerLine* statement, Lexeme* lexeme) {
+                                        LexerLine* statement,
+                                        shared_ptr<Lexeme> lexeme) {
   if (lexeme->value == "PSET" || lexeme->value == "PRESET")
     return parsePset(context, statement);
   if (lexeme->value == "LINE") return parseLine(context, statement);

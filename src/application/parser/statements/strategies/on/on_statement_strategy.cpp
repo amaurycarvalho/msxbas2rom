@@ -2,7 +2,7 @@
 
 bool OnStatementStrategy::parseOn(ParserContext& context,
                                   LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
 
   if ((next_lexeme = statement->getNextLexeme())) {
     next_lexeme = context.coalesceSymbols(next_lexeme);
@@ -34,7 +34,7 @@ bool OnStatementStrategy::parseOn(ParserContext& context,
 
 bool OnStatementStrategy::parseOnGotoGosub(ParserContext& context,
                                            LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode *action, *action_index;
   LexerLine parm;
   int state = 0;
@@ -43,7 +43,7 @@ bool OnStatementStrategy::parseOnGotoGosub(ParserContext& context,
   next_lexeme = statement->getPreviousLexeme();
   if (!next_lexeme) return false;
 
-  action_index = new ActionNode(context.lex_index.get());
+  action_index = new ActionNode(context.lex_index);
 
   while ((next_lexeme = statement->getNextLexeme())) {
     switch (state) {
@@ -80,7 +80,7 @@ bool OnStatementStrategy::parseOnGotoGosub(ParserContext& context,
           continue;
         } else if (next_lexeme->isSeparator(",")) {
           if (!next_is_sep) {
-            context.pushActionFromLexeme(context.lex_null.get());
+            context.pushActionFromLexeme(context.lex_null);
           }
 
           next_is_sep = false;
@@ -110,7 +110,7 @@ bool OnStatementStrategy::parseOnError(ParserContext& context,
 
 bool OnStatementStrategy::parseOnInterval(ParserContext& context,
                                           LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode *action, *action_index;
   LexerLine parm;
   int state = 0;
@@ -122,7 +122,7 @@ bool OnStatementStrategy::parseOnInterval(ParserContext& context,
   action = new ActionNode(next_lexeme);
   context.pushActionRoot(action);
 
-  action_index = new ActionNode(context.lex_index.get());
+  action_index = new ActionNode(context.lex_index);
 
   while ((next_lexeme = statement->getNextLexeme())) {
     switch (state) {
@@ -186,7 +186,7 @@ bool OnStatementStrategy::parseOnInterval(ParserContext& context,
 
 bool OnStatementStrategy::parseOnKey(ParserContext& context,
                                      LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   int state = 0;
   bool next_is_sep = false;
@@ -220,7 +220,7 @@ bool OnStatementStrategy::parseOnKey(ParserContext& context,
           continue;
         } else if (next_lexeme->isSeparator(",")) {
           if (!next_is_sep) {
-            context.pushActionFromLexeme(context.lex_null.get());
+            context.pushActionFromLexeme(context.lex_null);
           }
 
           next_is_sep = false;
@@ -257,7 +257,7 @@ bool OnStatementStrategy::parseOnStrig(ParserContext& context,
 
 bool OnStatementStrategy::parseInterval(ParserContext& context,
                                         LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
 
   if ((next_lexeme = statement->getNextLexeme())) {
     if (next_lexeme->type == Lexeme::type_keyword) {
@@ -274,7 +274,7 @@ bool OnStatementStrategy::parseInterval(ParserContext& context,
 
 bool OnStatementStrategy::parseStop(ParserContext& context,
                                     LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
 
   if ((next_lexeme = statement->getNextLexeme())) {
     if (next_lexeme->type == Lexeme::type_keyword) {
@@ -294,7 +294,7 @@ bool OnStatementStrategy::parseStop(ParserContext& context,
 
 bool OnStatementStrategy::parseKey(ParserContext& context,
                                    LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   LexerLine parm;
   int sepCount = 0;
 
@@ -352,7 +352,7 @@ bool OnStatementStrategy::parseStrig(ParserContext& context,
 }
 
 bool OnStatementStrategy::execute(ParserContext& context, LexerLine* statement,
-                                  Lexeme* lexeme) {
+                                  shared_ptr<Lexeme> lexeme) {
   if (!lexeme || lexeme->type != Lexeme::type_keyword) return false;
 
   if (lexeme->value == "ON") return parseOn(context, statement);

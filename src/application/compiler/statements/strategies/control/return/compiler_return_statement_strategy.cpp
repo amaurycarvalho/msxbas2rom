@@ -10,7 +10,7 @@ void CompilerReturnStatementStrategy::cmd_return(CompilerContext* context) {
   auto& fixup = *context->fixupResolver;
   auto& optimizer = *context->codeOptimizer;
   auto& opts = *context->opts;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   int t = context->current_action->actions.size();
 
   if (t == 0) {

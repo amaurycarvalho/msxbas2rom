@@ -10,7 +10,7 @@ void CompilerReadStatementStrategy::cmd_read(CompilerContext* context) {
   auto& expression = *context->expressionEvaluator;
   auto& variable = *context->variableEmitter;
   ActionNode* action;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   unsigned int i, t = context->current_action->actions.size();
 
   if (t) {

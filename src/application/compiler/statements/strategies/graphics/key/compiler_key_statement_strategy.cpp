@@ -8,7 +8,7 @@ void CompilerKeyStatementStrategy::cmd_key(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   ActionNode *action1, *action2;
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   unsigned int t = context->current_action->actions.size();
   int result_subtype;
 

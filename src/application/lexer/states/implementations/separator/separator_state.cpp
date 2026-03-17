@@ -1,5 +1,7 @@
 #include "separator_state.h"
 
+#include "lexeme.h"
+
 LexerLineProcessResult SeparatorState::handle(LexerLineStateContext& context) {
   char c = context.current;
 

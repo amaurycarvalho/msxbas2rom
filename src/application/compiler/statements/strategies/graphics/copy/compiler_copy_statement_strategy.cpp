@@ -10,7 +10,7 @@ void CompilerCopyStatementStrategy::cmd_copy(CompilerContext* context) {
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
   ActionNode *action, *sub_action;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype, state;
   bool has_x0_coord = false, has_x1_coord = false, has_x2_coord = false;

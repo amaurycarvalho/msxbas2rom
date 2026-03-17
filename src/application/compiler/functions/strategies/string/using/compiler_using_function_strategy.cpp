@@ -4,13 +4,12 @@
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_float_converter.h"
-#include "compiler_variable_emitter.h"
 #include "compiler_hooks.h"
+#include "compiler_variable_emitter.h"
 #include "lexeme.h"
 
 int UsingCompilerFunctionStrategy::execute(CompilerContext* context,
-                                           ActionNode* action,
-                                           int* result,
+                                           ActionNode* action, int* result,
                                            unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (parmCount != 2) return Lexeme::subtype_unknown;
@@ -24,7 +23,7 @@ int UsingCompilerFunctionStrategy::execute(CompilerContext* context,
   // Preprocess format string before parameter evaluation.
   if (parmCount >= 2) {
     ActionNode* next_action = action->actions[1];
-    Lexeme* lexeme2 = next_action ? next_action->lexeme : 0;
+    shared_ptr<Lexeme> lexeme2 = next_action ? next_action->lexeme : 0;
     if (lexeme2 && lexeme2->type == Lexeme::type_literal &&
         lexeme2->subtype == Lexeme::subtype_string) {
       int r = floatConverter.getUsingFormat(lexeme2->value);
@@ -59,7 +58,8 @@ int UsingCompilerFunctionStrategy::execute(CompilerContext* context,
     // pop hl
     cpu.addPopHL();
 
-    // call XBASIC_USING    ; hl = item format string, c:de = float, out hl=string
+    // call XBASIC_USING    ; hl = item format string, c:de = float, out
+    // hl=string
     cpu.addCall(def_XBASIC_USING);
     // ld de, temporary string
     variable.addTempStr(false);

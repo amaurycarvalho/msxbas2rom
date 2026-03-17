@@ -18,7 +18,30 @@
 #include "logger.h"
 #include "parser.h"
 #include "parser_context.h"
+#include "call_statement_strategy.h"
+#include "cmd_statement_strategy.h"
+#include "color_statement_strategy.h"
+#include "data_statement_strategy.h"
+#include "def_statement_strategy.h"
+#include "dim_statement_strategy.h"
+#include "file_statement_strategy.h"
+#include "for_statement_strategy.h"
+#include "generic_statement_strategy.h"
+#include "get_statement_strategy.h"
+#include "graphics_statement_strategy.h"
+#include "idata_statement_strategy.h"
+#include "if_statement_strategy.h"
+#include "input_statement_strategy.h"
+#include "let_statement_strategy.h"
+#include "next_statement_strategy.h"
+#include "noop_statement_strategy.h"
+#include "on_statement_strategy.h"
 #include "print_statement_strategy.h"
+#include "put_statement_strategy.h"
+#include "screen_statement_strategy.h"
+#include "set_statement_strategy.h"
+#include "sprite_statement_strategy.h"
+#include "time_statement_strategy.h"
 
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {
@@ -30,8 +53,8 @@ static std::string createTempBas(const std::string& filename,
 }
 
 static Lexeme* findSymbolByValue(Parser& parser, const std::string& value) {
-  for (auto* lexeme : parser.getSymbolList()) {
-    if (lexeme && lexeme->value == value) return lexeme;
+  for (auto& lexeme : parser.getSymbolList()) {
+    if (lexeme && lexeme->value == value) return lexeme.get();
   }
   return nullptr;
 }
@@ -257,7 +280,7 @@ TEST_SUITE("Parser") {
     CHECK(parser.getHasIData() == true);
     CHECK(parser.getDatas().size() >= 2);
 
-    Lexeme* last = parser.getDatas().back();
+    Lexeme* last = parser.getDatas().back().get();
     REQUIRE(last != nullptr);
     CHECK(last->subtype == Lexeme::subtype_integer_data);
 
@@ -480,16 +503,29 @@ TEST_SUITE("ParserStatementStrategyFactory") {
   }
 }
 
-static Lexeme* kw(const std::string& v) {
-  return new Lexeme(Lexeme::type_keyword, Lexeme::subtype_any, v);
+static shared_ptr<Lexeme> kw(const std::string& v) {
+  return make_shared<Lexeme>(Lexeme::type_keyword, Lexeme::subtype_any, v);
 }
 
-static Lexeme* sep(const std::string& v) {
-  return new Lexeme(Lexeme::type_separator, Lexeme::subtype_any, v);
+static shared_ptr<Lexeme> sep(const std::string& v) {
+  return make_shared<Lexeme>(Lexeme::type_separator, Lexeme::subtype_any, v);
 }
 
-static Lexeme* lit(const std::string& v) {
-  return new Lexeme(Lexeme::type_literal, Lexeme::subtype_basic_string, v);
+static shared_ptr<Lexeme> lit(const std::string& v) {
+  return make_shared<Lexeme>(Lexeme::type_literal, Lexeme::subtype_basic_string,
+                             v);
+}
+
+static shared_ptr<Lexeme> num(const std::string& v) {
+  return make_shared<Lexeme>(Lexeme::type_literal, Lexeme::subtype_numeric, v);
+}
+
+static shared_ptr<Lexeme> id(const std::string& v) {
+  return make_shared<Lexeme>(Lexeme::type_identifier, Lexeme::subtype_any, v);
+}
+
+static shared_ptr<Lexeme> op(const std::string& v) {
+  return make_shared<Lexeme>(Lexeme::type_operator, Lexeme::subtype_any, v);
 }
 
 static unique_ptr<ParserContext> createContext() {
@@ -498,6 +534,11 @@ static unique_ptr<ParserContext> createContext() {
   ctx->tag = new TagNode();
   ctx->actionRoot = new ActionNode();
   return ctx;
+}
+
+static void setActionRoot(ParserContext& ctx, const std::string& keyword) {
+  ctx.actionRoot->lexeme =
+      make_shared<Lexeme>(Lexeme::type_keyword, Lexeme::subtype_any, keyword);
 }
 
 TEST_SUITE("PrintStatementStrategy") {
@@ -605,12 +646,529 @@ TEST_SUITE("PrintStatementStrategy") {
     LexerLine line;
     line.addLexeme(lit("\"HELLO\""));
 
-    Lexeme lex(Lexeme::type_keyword, Lexeme::subtype_any, "?");
+    shared_ptr<Lexeme> lex =
+        make_shared<Lexeme>(Lexeme::type_keyword, Lexeme::subtype_any, "?");
 
-    bool result = strategy.execute(*ctx, &line, &lex);
+    bool result = strategy.execute(*ctx, &line, lex);
 
     CHECK(result == true);
-    CHECK(lex.value == "PRINT");
+    CHECK(lex->value == "PRINT");
+  }
+}
+
+TEST_SUITE("GenericStatementStrategy") {
+  TEST_CASE("Parses a simple expression list") {
+    unique_ptr<ParserContext> ctx = createContext();
+    GenericStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(num("1"));
+    line.addLexeme(sep(","));
+    line.addLexeme(num("2"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.parseStatement(*ctx, &line);
+
+    CHECK(result == true);
+  }
+}
+
+TEST_SUITE("LetStatementStrategy") {
+  TEST_CASE("Parses a basic assignment") {
+    unique_ptr<ParserContext> ctx = createContext();
+    LetStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(id("A"));
+    line.addLexeme(op("="));
+    line.addLexeme(num("1"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.parseStatement(*ctx, &line);
+
+    CHECK(result == true);
+  }
+}
+
+TEST_SUITE("InputStatementStrategy") {
+  TEST_CASE("Parses INPUT prompt") {
+    unique_ptr<ParserContext> ctx = createContext();
+    InputStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(lit("\"A?\""));
+    line.addLexeme(sep(";"));
+    line.addLexeme(id("A"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.parseStatement(*ctx, &line);
+
+    CHECK(result == true);
+  }
+}
+
+TEST_SUITE("TimeStatementStrategy") {
+  TEST_CASE("Parses TIME assignment and sets input flag") {
+    unique_ptr<ParserContext> ctx = createContext();
+    TimeStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(id("T"));
+    line.addLexeme(op("="));
+    line.addLexeme(num("1"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("TIME"));
+
+    CHECK(result == true);
+    CHECK(ctx->has_input == true);
+  }
+}
+
+TEST_SUITE("NoopStatementStrategy") {
+  TEST_CASE("Converts apostrophe to REM") {
+    unique_ptr<ParserContext> ctx = createContext();
+    NoopStatementStrategy strategy;
+
+    LexerLine line;
+    line.setLexemeBOF();
+
+    shared_ptr<Lexeme> lex =
+        make_shared<Lexeme>(Lexeme::type_operator, Lexeme::subtype_any, "'");
+
+    bool result = strategy.execute(*ctx, &line, lex);
+
+    CHECK(result == true);
+    CHECK(lex->type == Lexeme::type_keyword);
+    CHECK(lex->value == "REM");
+  }
+}
+
+TEST_SUITE("NextStatementStrategy") {
+  TEST_CASE("Parses NEXT with multiple variables") {
+    unique_ptr<ParserContext> ctx = createContext();
+    NextStatementStrategy strategy;
+
+    setActionRoot(*ctx, "NEXT");
+
+    LexerLine line;
+    line.addLexeme(id("I"));
+    line.addLexeme(sep(","));
+    line.addLexeme(id("J"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("NEXT"));
+
+    CHECK(result == true);
+  }
+}
+
+TEST_SUITE("ForStatementStrategy") {
+  TEST_CASE("Parses FOR with TO") {
+    unique_ptr<ParserContext> ctx = createContext();
+    ForStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(id("I"));
+    line.addLexeme(op("="));
+    line.addLexeme(num("1"));
+    line.addLexeme(kw("TO"));
+    line.addLexeme(num("10"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("FOR"));
+
+    CHECK(result == true);
+  }
+}
+
+TEST_SUITE("IfStatementStrategy") {
+  TEST_CASE("Parses IF with THEN statement") {
+    unique_ptr<ParserContext> ctx = createContext();
+    IfStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(id("A"));
+    line.addLexeme(op("="));
+    line.addLexeme(num("1"));
+    line.addLexeme(kw("THEN"));
+    line.addLexeme(kw("PRINT"));
+    line.addLexeme(lit("\"A\""));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("IF"));
+
+    CHECK(result == true);
+  }
+}
+
+TEST_SUITE("DefStatementStrategy") {
+  TEST_CASE("Parses DEFINT and updates default type") {
+    unique_ptr<ParserContext> ctx = createContext();
+    DefStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(id("A"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("DEFINT"));
+
+    CHECK(result == true);
+    CHECK(ctx->deftbl[0] == 2);
+  }
+
+  TEST_CASE("Parses DEF USR assignment") {
+    unique_ptr<ParserContext> ctx = createContext();
+    DefStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(kw("USR"));
+    line.addLexeme(op("="));
+    line.addLexeme(num("1"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("DEF"));
+
+    CHECK(result == true);
+    CHECK(ctx->has_defusr == true);
+  }
+}
+
+TEST_SUITE("DimStatementStrategy") {
+  TEST_CASE("Parses DIM with size parameter") {
+    unique_ptr<ParserContext> ctx = createContext();
+    DimStatementStrategy strategy;
+
+    setActionRoot(*ctx, "DIM");
+
+    LexerLine line;
+    line.addLexeme(id("A"));
+    line.addLexeme(sep("("));
+    line.addLexeme(num("1"));
+    line.addLexeme(sep(")"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("DIM"));
+
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Rejects DIM without size parameter") {
+    unique_ptr<ParserContext> ctx = createContext();
+    DimStatementStrategy strategy;
+
+    setActionRoot(*ctx, "DIM");
+
+    LexerLine line;
+    line.addLexeme(id("A"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("DIM"));
+
+    CHECK(result == false);
+  }
+}
+
+TEST_SUITE("DataStatementStrategy") {
+  TEST_CASE("Parses DATA items") {
+    unique_ptr<ParserContext> ctx = createContext();
+    DataStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(num("1"));
+    line.addLexeme(sep(","));
+    line.addLexeme(num("2"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("DATA"));
+
+    CHECK(result == true);
+    CHECK(ctx->has_data == true);
+    CHECK(ctx->datas.size() == 2);
+  }
+}
+
+TEST_SUITE("IDataStatementStrategy") {
+  TEST_CASE("Parses IDATA items") {
+    unique_ptr<ParserContext> ctx = createContext();
+    IDataStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(num("1"));
+    line.addLexeme(sep(","));
+    line.addLexeme(num("2"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("IDATA"));
+
+    CHECK(result == true);
+    CHECK(ctx->has_idata == true);
+    CHECK(ctx->datas.size() == 2);
+  }
+}
+
+TEST_SUITE("FileStatementStrategy") {
+  TEST_CASE("Parses OPEN with FOR/AS/LEN") {
+    unique_ptr<ParserContext> ctx = createContext();
+    FileStatementStrategy strategy;
+
+    setActionRoot(*ctx, "OPEN");
+
+    LexerLine line;
+    line.addLexeme(lit("\"A\""));
+    line.addLexeme(kw("FOR"));
+    line.addLexeme(kw("INPUT"));
+    line.addLexeme(kw("AS"));
+    line.addLexeme(sep("#"));
+    line.addLexeme(num("1"));
+    line.addLexeme(kw("LEN"));
+    line.addLexeme(num("1"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("OPEN"));
+
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses CLOSE with channel") {
+    unique_ptr<ParserContext> ctx = createContext();
+    FileStatementStrategy strategy;
+
+    setActionRoot(*ctx, "CLOSE");
+
+    LexerLine line;
+    line.addLexeme(sep("#"));
+    line.addLexeme(num("1"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("CLOSE"));
+
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses MAXFILES assignment") {
+    unique_ptr<ParserContext> ctx = createContext();
+    FileStatementStrategy strategy;
+
+    setActionRoot(*ctx, "MAXFILES");
+
+    LexerLine line;
+    line.addLexeme(kw("MAXFILES"));
+    line.addLexeme(op("="));
+    line.addLexeme(num("5"));
+
+    line.getFirstLexeme();
+
+    bool result = strategy.execute(*ctx, &line, kw("MAXFILES"));
+
+    CHECK(result == true);
+  }
+}
+
+TEST_SUITE("CmdStatementStrategy") {
+  TEST_CASE("Sets flags for CMD WRTFNT") {
+    unique_ptr<ParserContext> ctx = createContext();
+    CmdStatementStrategy strategy;
+
+    setActionRoot(*ctx, "CMD");
+
+    LexerLine line;
+    line.addLexeme(kw("WRTFNT"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("CMD"));
+
+    CHECK(result == true);
+    CHECK(ctx->has_font == true);
+  }
+}
+
+TEST_SUITE("CallStatementStrategy") {
+  TEST_CASE("Alias '_' converts to CALL") {
+    unique_ptr<ParserContext> ctx = createContext();
+    CallStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(id("USR"));
+
+    line.setLexemeBOF();
+
+    shared_ptr<Lexeme> lex =
+        make_shared<Lexeme>(Lexeme::type_keyword, Lexeme::subtype_any, "_");
+
+    bool result = strategy.execute(*ctx, &line, lex);
+
+    CHECK(result == true);
+    CHECK(lex->value == "CALL");
+  }
+}
+
+TEST_SUITE("ColorStatementStrategy") {
+  TEST_CASE("Parses COLOR=RGB statement") {
+    unique_ptr<ParserContext> ctx = createContext();
+    ColorStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(op("="));
+    line.addLexeme(sep("("));
+    line.addLexeme(num("1"));
+    line.addLexeme(sep(","));
+    line.addLexeme(num("2"));
+    line.addLexeme(sep(","));
+    line.addLexeme(num("3"));
+    line.addLexeme(sep(")"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("COLOR"));
+
+    CHECK(result == true);
+  }
+}
+
+TEST_SUITE("GetStatementStrategy") {
+  TEST_CASE("Parses GET DATE with expression") {
+    unique_ptr<ParserContext> ctx = createContext();
+    GetStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(kw("DATE"));
+    line.addLexeme(num("1"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("GET"));
+
+    CHECK(result == true);
+  }
+}
+
+TEST_SUITE("SetStatementStrategy") {
+  TEST_CASE("Parses SET SCREEN with value") {
+    unique_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(kw("SCREEN"));
+    line.addLexeme(num("0"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("SET"));
+
+    CHECK(result == true);
+  }
+}
+
+TEST_SUITE("ScreenStatementStrategy") {
+  TEST_CASE("Parses SCREEN COPY") {
+    unique_ptr<ParserContext> ctx = createContext();
+    ScreenStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(kw("COPY"));
+    line.addLexeme(kw("TO"));
+    line.addLexeme(num("1"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("SCREEN"));
+
+    CHECK(result == true);
+  }
+}
+
+TEST_SUITE("SpriteStatementStrategy") {
+  TEST_CASE("Parses SPRITE ON") {
+    unique_ptr<ParserContext> ctx = createContext();
+    SpriteStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(kw("ON"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("SPRITE"));
+
+    CHECK(result == true);
+  }
+}
+
+TEST_SUITE("PutStatementStrategy") {
+  TEST_CASE("Parses PUT SPRITE with minimal args") {
+    unique_ptr<ParserContext> ctx = createContext();
+    PutStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(kw("SPRITE"));
+    line.addLexeme(num("1"));
+    line.addLexeme(sep(","));
+    line.addLexeme(sep(","));
+    line.addLexeme(num("2"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("PUT"));
+
+    CHECK(result == true);
+  }
+}
+
+TEST_SUITE("GraphicsStatementStrategy") {
+  TEST_CASE("Parses PSET coordinates") {
+    unique_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(*ctx, "PSET");
+
+    LexerLine line;
+    line.addLexeme(sep("("));
+    line.addLexeme(num("1"));
+    line.addLexeme(sep(","));
+    line.addLexeme(num("2"));
+    line.addLexeme(sep(")"));
+
+    line.setLexemeBOF();
+
+    bool result = strategy.execute(*ctx, &line, kw("PSET"));
+
+    CHECK(result == true);
+  }
+}
+
+TEST_SUITE("OnStatementStrategy") {
+  TEST_CASE("Parses ON ... GOTO list") {
+    unique_ptr<ParserContext> ctx = createContext();
+    OnStatementStrategy strategy;
+
+    LexerLine line;
+    line.addLexeme(kw("ON"));
+    line.addLexeme(num("1"));
+    line.addLexeme(kw("GOTO"));
+    line.addLexeme(num("10"));
+
+    line.getFirstLexeme();
+
+    bool result = strategy.execute(*ctx, &line, kw("ON"));
+
+    CHECK(result == true);
+    CHECK(ctx->has_traps == false);
   }
 }
 

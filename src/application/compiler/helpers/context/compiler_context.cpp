@@ -23,8 +23,6 @@ CompilerContext::CompilerContext() {
   parser = nullptr;
   opts = nullptr;
   cpu = nullptr;
-  temp_str_mark = nullptr;
-  heap_mark = nullptr;
 
   logger.reset(new Logger());
   evaluator.reset(new CompilerEvaluator(this));
@@ -37,6 +35,21 @@ CompilerContext::CompilerContext() {
   variableEmitter.reset(new CompilerVariableEmitter(this));
   symbolManager.reset(new SymbolManager());
   resourceManager.reset(new ResourceManager());
+
+  temp_str_mark.reset(new SymbolNode());
+  if (temp_str_mark) {
+    temp_str_mark->lexeme =
+        make_shared<Lexeme>(Lexeme::type_identifier, Lexeme::subtype_numeric,
+                            "_TEMPSTR_START_", "0");
+    temp_str_mark->lexeme->isAbstract = true;
+  }
+
+  heap_mark.reset(new SymbolNode());
+  if (heap_mark) {
+    heap_mark->lexeme = make_shared<Lexeme>(
+        Lexeme::type_identifier, Lexeme::subtype_numeric, "_HEAP_", "0");
+    heap_mark->lexeme->isAbstract = true;
+  }
 
   clear();
 }
@@ -71,21 +84,6 @@ void CompilerContext::clear() {
   resourceManager->clear();
 
   while (!forNextStack.empty()) forNextStack.pop();
-
-  if (!temp_str_mark) {
-    temp_str_mark.reset(new SymbolNode());
-    temp_str_mark->lexeme =
-        new Lexeme(Lexeme::type_identifier, Lexeme::subtype_numeric,
-                   "_TEMPSTR_START_", "0");
-    temp_str_mark->lexeme->isAbstract = true;
-  }
-
-  if (!heap_mark) {
-    heap_mark.reset(new SymbolNode());
-    heap_mark->lexeme = new Lexeme(Lexeme::type_identifier,
-                                   Lexeme::subtype_numeric, "_HEAP_", "0");
-    heap_mark->lexeme->isAbstract = true;
-  }
 }
 
 bool CompilerContext::containErrors() {

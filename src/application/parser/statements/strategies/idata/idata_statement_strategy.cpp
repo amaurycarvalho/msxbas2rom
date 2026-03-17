@@ -2,7 +2,9 @@
 
 #include "lexer.h"
 
-bool IDataStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+bool IDataStatementStrategy::execute(ParserContext& context,
+                                     LexerLine* statement,
+                                     shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseData(context, statement, true);
 }

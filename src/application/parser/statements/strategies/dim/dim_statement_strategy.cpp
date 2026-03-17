@@ -6,7 +6,7 @@
 bool DimStatementStrategy::parseStatement(ParserContext& context,
                                           LexerLine* statement) {
   ActionNode *action = context.actionRoot, *subaction;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   unsigned int i, t;
 
   GenericStatementStrategy genericStrategy;
@@ -31,7 +31,7 @@ bool DimStatementStrategy::parseStatement(ParserContext& context,
 }
 
 bool DimStatementStrategy::execute(ParserContext& context, LexerLine* statement,
-                                   Lexeme* lexeme) {
+                                   shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);
 }

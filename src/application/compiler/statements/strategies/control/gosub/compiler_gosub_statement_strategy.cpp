@@ -7,7 +7,7 @@
 void CompilerGosubStatementStrategy::cmd_gosub(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
 
   if (context->current_action->actions.size() == 1) {
     lexeme = context->current_action->actions[0]->lexeme;

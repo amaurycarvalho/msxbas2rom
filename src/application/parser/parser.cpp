@@ -39,7 +39,7 @@ bool Parser::evaluate(Lexer* lexer) {
 
   for (auto& lexerLine : lexer->lines) {
     ctx.logger->setLineNumber(++ctx.lineNumber);
-    if (lexerLine.get()) {
+    if (lexerLine) {
       if (lexerLine->getLexemeCount() > 0) {
         ctx.line_comment = false;
         if (!lineEval.evaluateLine(lexerLine.get())) {
@@ -76,17 +76,17 @@ const vector<TagNode*>& Parser::getTags() const {
   return ctx.tags;
 }
 
-vector<Lexeme*>& Parser::getSymbolList() {
+vector<shared_ptr<Lexeme>>& Parser::getSymbolList() {
   return ctx.symbolList;
 }
-const vector<Lexeme*>& Parser::getSymbolList() const {
+const vector<shared_ptr<Lexeme>>& Parser::getSymbolList() const {
   return ctx.symbolList;
 }
 
-vector<Lexeme*>& Parser::getDatas() {
+vector<shared_ptr<Lexeme>>& Parser::getDatas() {
   return ctx.datas;
 }
-const vector<Lexeme*>& Parser::getDatas() const {
+const vector<shared_ptr<Lexeme>>& Parser::getDatas() const {
   return ctx.datas;
 }
 

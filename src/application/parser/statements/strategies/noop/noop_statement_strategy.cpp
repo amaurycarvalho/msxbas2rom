@@ -2,7 +2,9 @@
 
 #include "lexer.h"
 
-bool NoopStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+bool NoopStatementStrategy::execute(ParserContext& context,
+                                    LexerLine* statement,
+                                    shared_ptr<Lexeme> lexeme) {
   (void)context;
   (void)statement;
 

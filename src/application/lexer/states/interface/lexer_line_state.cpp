@@ -2,13 +2,18 @@
 
 #include <ctype.h>
 
+#include "lexeme.h"
+
 LexerLineStateContext::LexerLineStateContext(LexerLine* lexerLine)
     : lexerLine(lexerLine),
       index(0),
       length(lexerLine->lineText.length()),
       hexa(false),
-      current(0),
-      lexeme(new Lexeme()) {}
+      current(0) {
+  lexeme = make_shared<Lexeme>();
+}
+
+LexerLineStateContext::~LexerLineStateContext() = default;
 
 bool LexerLineStateContext::hasNextChar() const {
   return index + 1 < length;
@@ -59,12 +64,12 @@ bool LexerLineStateContext::isComment(char c) const {
 }
 
 void LexerLineStateContext::pushCurrentLexeme() {
-  lexerLine->addLexeme(lexeme);
+  lexerLine->addLexeme(lexeme->clone());
 }
 
 void LexerLineStateContext::pushCurrentLexemeAndReset() {
   pushCurrentLexeme();
-  lexeme = new Lexeme();
+  lexeme->clear();
 }
 
 void LexerLineStateContext::rewindCurrentChar() {

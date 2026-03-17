@@ -4,7 +4,7 @@
 
 bool PutStatementStrategy::parsePutSprite(ParserContext& context,
                                           LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode *action, *act_coord;
   LexerLine parm;
   int state = 0, sepCount = 0;
@@ -26,7 +26,7 @@ bool PutStatementStrategy::parsePutSprite(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            context.pushActionFromLexeme(context.lex_null.get());
+            context.pushActionFromLexeme(context.lex_null);
           }
           state = 1;
           continue;
@@ -51,8 +51,8 @@ bool PutStatementStrategy::parsePutSprite(ParserContext& context,
         } else if (next_lexeme->isSeparator(",")) {
           state = 3;
           context.pushActionRoot(act_coord);
-          context.pushActionFromLexeme(context.lex_null.get());
-          context.pushActionFromLexeme(context.lex_null.get());
+          context.pushActionFromLexeme(context.lex_null);
+          context.pushActionFromLexeme(context.lex_null);
           context.popActionRoot();
           continue;
         } else {
@@ -78,9 +78,9 @@ bool PutStatementStrategy::parsePutSprite(ParserContext& context,
               parm.clearLexemes();
             } else {
               if (context.actionRoot) {
-                context.pushActionFromLexeme(context.lex_null.get());
+                context.pushActionFromLexeme(context.lex_null);
                 if (context.actionRoot->actions.size() == 1) {
-                  context.pushActionFromLexeme(context.lex_null.get());
+                  context.pushActionFromLexeme(context.lex_null);
                 }
               }
             }
@@ -102,7 +102,7 @@ bool PutStatementStrategy::parsePutSprite(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            context.pushActionFromLexeme(context.lex_null.get());
+            context.pushActionFromLexeme(context.lex_null);
           }
           continue;
         }
@@ -122,7 +122,7 @@ bool PutStatementStrategy::parsePutSprite(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            context.pushActionFromLexeme(context.lex_null.get());
+            context.pushActionFromLexeme(context.lex_null);
           }
           continue;
         }
@@ -147,7 +147,7 @@ bool PutStatementStrategy::parsePutSprite(ParserContext& context,
 
 bool PutStatementStrategy::parsePutTile(ParserContext& context,
                                         LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode *action, *act_coord;
   LexerLine parm;
   int state = 0, sepCount = 0;
@@ -169,7 +169,7 @@ bool PutStatementStrategy::parsePutTile(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            context.pushActionFromLexeme(context.lex_null.get());
+            context.pushActionFromLexeme(context.lex_null);
           }
           state = 1;
           continue;
@@ -194,8 +194,8 @@ bool PutStatementStrategy::parsePutTile(ParserContext& context,
         } else if (next_lexeme->isSeparator(",")) {
           state = 3;
           context.pushActionRoot(act_coord);
-          context.pushActionFromLexeme(context.lex_null.get());
-          context.pushActionFromLexeme(context.lex_null.get());
+          context.pushActionFromLexeme(context.lex_null);
+          context.pushActionFromLexeme(context.lex_null);
           context.popActionRoot();
           continue;
         } else {
@@ -221,9 +221,9 @@ bool PutStatementStrategy::parsePutTile(ParserContext& context,
               parm.clearLexemes();
             } else {
               if (context.actionRoot) {
-                context.pushActionFromLexeme(context.lex_null.get());
+                context.pushActionFromLexeme(context.lex_null);
                 if (context.actionRoot->actions.size() == 1) {
-                  context.pushActionFromLexeme(context.lex_null.get());
+                  context.pushActionFromLexeme(context.lex_null);
                 }
               }
             }
@@ -245,7 +245,7 @@ bool PutStatementStrategy::parsePutTile(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            context.pushActionFromLexeme(context.lex_null.get());
+            context.pushActionFromLexeme(context.lex_null);
           }
           continue;
         }
@@ -265,7 +265,7 @@ bool PutStatementStrategy::parsePutTile(ParserContext& context,
             }
             parm.clearLexemes();
           } else {
-            context.pushActionFromLexeme(context.lex_null.get());
+            context.pushActionFromLexeme(context.lex_null);
           }
           continue;
         }
@@ -290,7 +290,7 @@ bool PutStatementStrategy::parsePutTile(ParserContext& context,
 
 bool PutStatementStrategy::parseStatement(ParserContext& context,
                                           LexerLine* statement) {
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   ActionNode* action;
   bool result = false;
 
@@ -315,7 +315,7 @@ bool PutStatementStrategy::parseStatement(ParserContext& context,
 }
 
 bool PutStatementStrategy::execute(ParserContext& context, LexerLine* statement,
-                                   Lexeme* lexeme) {
+                                   shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);
 }

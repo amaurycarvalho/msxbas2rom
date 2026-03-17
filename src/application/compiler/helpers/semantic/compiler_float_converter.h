@@ -57,7 +57,8 @@ class CompilerFloatConverter {
    */
   int getUsingFormat(string text);
 
-  CompilerFloatConverter(CompilerContext* context) : context(context) {};
+  CompilerFloatConverter(CompilerContext* context);
+  ~CompilerFloatConverter();
 };
 
 #endif  // COMPILER_FLOAT_CONVERTER_H

@@ -1,5 +1,7 @@
 #include "parser_line_evaluator.h"
 
+#include <memory>
+
 #include "logger.h"
 
 ParserLineEvaluator::ParserLineEvaluator(
@@ -12,8 +14,10 @@ ParserLineEvaluator::ParserLineEvaluator(
       assignEval(assignmentEvaluator),
       includeLoader(*this) {}
 
+ParserLineEvaluator::~ParserLineEvaluator() = default;
+
 bool ParserLineEvaluator::evaluateLine(LexerLine* lexerLine) {
-  Lexeme* lexeme = lexerLine->getFirstLexeme();
+  shared_ptr<Lexeme> lexeme = lexerLine->getFirstLexeme();
   ActionNode* action;
   LexerLine phrase;
   int if_count = 0;
@@ -99,7 +103,7 @@ bool ParserLineEvaluator::evaluateLine(LexerLine* lexerLine) {
 }
 
 bool ParserLineEvaluator::evaluatePhrase(LexerLine* phrase) {
-  Lexeme* lexeme = phrase->getFirstLexeme();
+  shared_ptr<Lexeme> lexeme = phrase->getFirstLexeme();
 
   if (lexeme) {
     lexeme = ctx.coalesceSymbols(lexeme);
@@ -124,7 +128,7 @@ bool ParserLineEvaluator::evaluatePhrase(LexerLine* phrase) {
 }
 
 bool ParserLineEvaluator::evaluateStatement(LexerLine* statement) {
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ActionNode* action;
   IParserStatementStrategy* strategy;
   ActionNode* actionSaved = ctx.actionRoot;

@@ -2,6 +2,8 @@
 
 #include <ctype.h>
 
+#include "lexeme.h"
+
 LexerLineProcessResult KeywordState::handle(LexerLineStateContext& context) {
   char c = context.current;
 

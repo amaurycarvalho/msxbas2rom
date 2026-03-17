@@ -65,7 +65,7 @@ bool CompilerEvaluator::evalActions(ActionNode* action) {
 }
 
 bool CompilerEvaluator::evalAction(ActionNode* action) {
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ICompilerStatementStrategy* statement;
 
   if (!action) {

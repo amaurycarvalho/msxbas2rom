@@ -8,6 +8,7 @@
 #ifndef CODE_NODE_H_INCLUDED
 #define CODE_NODE_H_INCLUDED
 
+#include <memory>
 #include <string>
 
 class Lexeme;
@@ -28,7 +29,7 @@ class CodeNode {
   bool is_code;
   bool debug;
   int lineNumber = 0;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
 };
 
 #endif  // CODE_NODE_H_INCLUDED

@@ -2,13 +2,14 @@
 
 #include "lexer.h"
 
-bool PrintStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
-  Lexeme* next_lexeme;
+bool PrintStatementStrategy::parseStatement(ParserContext& context,
+                                            LexerLine* statement) {
+  shared_ptr<Lexeme> next_lexeme;
   LexerLine parm;
   ActionNode* action;
   int sepcount = 0, state = 0, i;
   bool print_using = false;
-  Lexeme* lex_using[5] = {0, 0, 0, 0, 0};
+  shared_ptr<Lexeme> lex_using[5] = {0, 0, 0, 0, 0};
 
   while ((next_lexeme = statement->getNextLexeme())) {
     next_lexeme = context.coalesceSymbols(next_lexeme);
@@ -67,15 +68,15 @@ bool PrintStatementStrategy::parseStatement(ParserContext& context, LexerLine* s
       case 3: {
         if (next_lexeme->type == Lexeme::type_identifier ||
             next_lexeme->type == Lexeme::type_literal) {
-          lex_using[0] = new Lexeme(Lexeme::type_keyword,
-                                    Lexeme::subtype_function, "USING$");
-          lex_using[1] =
-              new Lexeme(Lexeme::type_separator, Lexeme::subtype_string, "(");
+          lex_using[0] = make_shared<Lexeme>(
+              Lexeme::type_keyword, Lexeme::subtype_function, "USING$");
+          lex_using[1] = make_shared<Lexeme>(Lexeme::type_separator,
+                                             Lexeme::subtype_string, "(");
           lex_using[2] = next_lexeme;
-          lex_using[3] =
-              new Lexeme(Lexeme::type_separator, Lexeme::subtype_string, ",");
-          lex_using[4] =
-              new Lexeme(Lexeme::type_separator, Lexeme::subtype_string, ")");
+          lex_using[3] = make_shared<Lexeme>(Lexeme::type_separator,
+                                             Lexeme::subtype_string, ",");
+          lex_using[4] = make_shared<Lexeme>(Lexeme::type_separator,
+                                             Lexeme::subtype_string, ")");
 
           for (i = 0; i <= 3; i++) parm.addLexeme(lex_using[i]);
 
@@ -118,7 +119,9 @@ bool PrintStatementStrategy::parseStatement(ParserContext& context, LexerLine* s
   return true;
 }
 
-bool PrintStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+bool PrintStatementStrategy::execute(ParserContext& context,
+                                     LexerLine* statement,
+                                     shared_ptr<Lexeme> lexeme) {
   if (lexeme->value == "?") {
     lexeme->value = "PRINT";
     lexeme->name = lexeme->value;

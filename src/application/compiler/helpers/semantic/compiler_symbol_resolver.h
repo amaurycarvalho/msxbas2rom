@@ -6,6 +6,7 @@
 #ifndef COMPILER_SYMBOL_RESOLVER_H
 #define COMPILER_SYMBOL_RESOLVER_H
 
+#include <memory>
 #include <string>
 
 class CompilerContext;
@@ -20,8 +21,8 @@ class CompilerSymbolResolver {
   CompilerContext* context;
 
  public:
-  SymbolNode* getSymbol(Lexeme* lexeme);
-  SymbolNode* addSymbol(Lexeme* lexeme);
+  SymbolNode* getSymbol(shared_ptr<Lexeme> lexeme);
+  SymbolNode* addSymbol(shared_ptr<Lexeme> lexeme);
   SymbolNode* getSymbol(TagNode* tag);
   SymbolNode* addSymbol(TagNode* tag);
   SymbolNode* addSymbol(string line);
@@ -30,7 +31,8 @@ class CompilerSymbolResolver {
   void clearSymbols();
   int saveSymbols();
 
-  CompilerSymbolResolver(CompilerContext* context) : context(context) {};
+  CompilerSymbolResolver(CompilerContext* context);
+  ~CompilerSymbolResolver();
 };
 
 #endif  // COMPILER_SYMBOL_RESOLVER_H

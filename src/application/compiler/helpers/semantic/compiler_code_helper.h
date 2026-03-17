@@ -25,7 +25,8 @@ class CompilerCodeHelper {
   void endBasicSetStmt();
   void addBasicChar(char c);
 
-  CompilerCodeHelper(CompilerContext* context) : context(context) {};
+  CompilerCodeHelper(CompilerContext* context);
+  ~CompilerCodeHelper();
 };
 
 #endif  // COMPILER_CODE_HELPER_H

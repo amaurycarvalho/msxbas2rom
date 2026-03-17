@@ -16,7 +16,7 @@
  */
 class SymbolNode {
  public:
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   TagNode* tag;
   int address;
 };

@@ -11,7 +11,7 @@ void CompilerSetStatementStrategy::cmd_set(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   ActionNode* action;
-  Lexeme* next_lexeme;
+  shared_ptr<Lexeme> next_lexeme;
   unsigned int t = context->current_action->actions.size();
   FixNode* mark;
 
@@ -411,7 +411,7 @@ void CompilerSetStatementStrategy::cmd_set_page(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   ActionNode *action = context->current_action->actions[0], *sub_action;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   unsigned int t = action->actions.size();
   int result_subtype;
 
@@ -452,7 +452,7 @@ void CompilerSetStatementStrategy::cmd_set_scroll(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   ActionNode *action = context->current_action->actions[0], *sub_action;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   unsigned int i, t = action->actions.size();
   int result_subtype;
 
@@ -521,7 +521,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(CompilerContext* context) {
   auto& expression = *context->expressionEvaluator;
   ActionNode *action = context->current_action->actions[0], *sub_action,
              *sub_sub_action;
-  Lexeme *lexeme, *sub_lexeme;
+  shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int i, t, tt;
   int result_subtype;
 
@@ -966,7 +966,7 @@ void CompilerSetStatementStrategy::cmd_set_sprite(CompilerContext* context) {
   auto& expression = *context->expressionEvaluator;
   auto& fixup = *context->fixupResolver;
   ActionNode *action = context->current_action->actions[0], *sub_action;
-  Lexeme *lexeme, *sub_lexeme;
+  shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int t;
   int result_subtype;
 
@@ -1106,7 +1106,7 @@ void CompilerSetStatementStrategy::cmd_set_sprite(CompilerContext* context) {
 void CompilerSetStatementStrategy::cmd_set_date(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ActionNode *action = context->current_action->actions[0], *sub_action;
   unsigned int i, t = action->actions.size();
   int result_subtype;
@@ -1148,7 +1148,7 @@ void CompilerSetStatementStrategy::cmd_set_date(CompilerContext* context) {
 void CompilerSetStatementStrategy::cmd_set_time(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ActionNode *action = context->current_action->actions[0], *sub_action;
   unsigned int i, t = action->actions.size();
   int result_subtype;

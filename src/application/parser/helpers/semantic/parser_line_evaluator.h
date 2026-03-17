@@ -13,6 +13,7 @@ class ParserLineEvaluator {
                       ParserStatementStrategyFactory& strategyFactory,
                       ExpressionEvaluator& expressionEvaluator,
                       AssignmentEvaluator& assignmentEvaluator);
+  ~ParserLineEvaluator();
 
   bool evaluateLine(LexerLine* lexerLine);
   bool evaluatePhrase(LexerLine* phrase);

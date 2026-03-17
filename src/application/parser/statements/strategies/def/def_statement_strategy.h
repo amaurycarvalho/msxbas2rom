@@ -9,7 +9,8 @@ class DefStatementStrategy : public IParserStatementStrategy {
 
  public:
   bool parseWithType(ParserContext& context, LexerLine* statement, int vartype);
-  bool execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) override;
+  bool execute(ParserContext& context, LexerLine* statement,
+               shared_ptr<Lexeme> lexeme) override;
 };
 
 #endif  // DEF_STATEMENT_STRATEGY_H_INCLUDED

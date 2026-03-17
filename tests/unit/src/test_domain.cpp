@@ -34,13 +34,13 @@ TEST_SUITE("Domain") {
     Lexeme num(Lexeme::type_literal, Lexeme::subtype_numeric, "10", "10");
     CHECK(num.isLiteralNumeric() == true);
 
-    Lexeme* cloned = num.clone();
+    Lexeme* cloned = num.clone().get();
+
     REQUIRE(cloned != nullptr);
     CHECK(cloned->type == num.type);
     CHECK(cloned->subtype == num.subtype);
     CHECK(cloned->name == num.name);
     CHECK(cloned->value == num.value);
-    delete cloned;
   }
 
   TEST_CASE("Lexeme toString and type names") {

@@ -8,7 +8,7 @@
 void CompilerLetStatementStrategy::cmd_let(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ActionNode *action, *lex_action;
   unsigned int t = context->current_action->actions.size();
   int result_subtype, result[3];

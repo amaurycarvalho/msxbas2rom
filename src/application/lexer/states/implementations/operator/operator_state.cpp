@@ -1,5 +1,7 @@
 #include "operator_state.h"
 
+#include "lexeme.h"
+
 LexerLineProcessResult OperatorState::handle(LexerLineStateContext& context) {
   char c = context.current;
 

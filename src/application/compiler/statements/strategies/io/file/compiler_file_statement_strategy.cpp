@@ -6,7 +6,7 @@
 
 void CompilerFileStatementStrategy::cmd_file(CompilerContext* context) {
   auto& opts = *context->opts;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ActionNode* action;
   unsigned int t = context->current_action->actions.size();
   string filename;

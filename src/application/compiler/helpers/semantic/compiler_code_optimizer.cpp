@@ -243,3 +243,8 @@ void CompilerCodeOptimizer::addLdHLmegarom() {
   auto& cpu = *context->cpu;
   cpu.addCmd(0xFF, 0x0000);
 }
+
+CompilerCodeOptimizer::CompilerCodeOptimizer(CompilerContext* context)
+    : context(context) {}
+
+CompilerCodeOptimizer::~CompilerCodeOptimizer() = default;

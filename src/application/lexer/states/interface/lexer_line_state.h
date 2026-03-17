@@ -19,9 +19,10 @@ class LexerLineStateContext {
   int length;
   bool hexa;
   char current;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
 
   explicit LexerLineStateContext(LexerLine* lexerLine);
+  ~LexerLineStateContext();
 
   bool hasNextChar() const;
   char peekNextChar() const;

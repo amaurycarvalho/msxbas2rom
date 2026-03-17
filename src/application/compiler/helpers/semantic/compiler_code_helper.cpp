@@ -124,3 +124,8 @@ void CompilerCodeHelper::addBasicChar(char c) {
   // inc hl
   cpu.addIncHL();
 }
+
+CompilerCodeHelper::CompilerCodeHelper(CompilerContext* context)
+    : context(context) {}
+
+CompilerCodeHelper::~CompilerCodeHelper() = default;

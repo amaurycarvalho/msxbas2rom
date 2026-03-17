@@ -11,7 +11,8 @@ class SetStatementStrategy : public IParserStatementStrategy {
   bool parseSetSprite(ParserContext& context, LexerLine* statement);
   bool parseSetSpriteColpattra(ParserContext& context, LexerLine* statement);
   bool parseStatement(ParserContext& context, LexerLine* statement);
-  bool execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) override;
+  bool execute(ParserContext& context, LexerLine* statement,
+               shared_ptr<Lexeme> lexeme) override;
 };
 
 #endif  // SET_STATEMENT_STRATEGY_H_INCLUDED

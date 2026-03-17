@@ -6,6 +6,8 @@
 
 #include "assignment_evaluator.h"
 
+#include <memory>
+
 #include "logger.h"
 
 AssignmentEvaluator::AssignmentEvaluator(ParserContext& context,
@@ -13,10 +15,10 @@ AssignmentEvaluator::AssignmentEvaluator(ParserContext& context,
     : ctx(context), exprEval(exprEval) {}
 
 bool AssignmentEvaluator::evaluate(LexerLine* assignment) {
-  Lexeme *lexeme = assignment->getNextLexeme(), *next_lexeme;
+  shared_ptr<Lexeme> lexeme = assignment->getNextLexeme(), next_lexeme;
   LexerLine parm;
   ActionNode* action;
-  Lexeme* lexLet;
+  shared_ptr<Lexeme> lexLet;
   bool result, add_let_action = true;
 
   if (lexeme) {

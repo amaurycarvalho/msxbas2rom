@@ -2,6 +2,8 @@
 
 #include <ctype.h>
 
+#include "lexeme.h"
+
 LexerLineProcessResult UnknownState::handle(LexerLineStateContext& context) {
   char c = context.current;
 
@@ -66,7 +68,8 @@ LexerLineProcessResult UnknownState::handle(LexerLineStateContext& context) {
       if (!s.empty()) {
         s.pop_back();
       }
-      context.lexeme = new Lexeme(Lexeme::type_comment, Lexeme::subtype_any, s);
+      context.lexeme =
+          make_shared<Lexeme>(Lexeme::type_comment, Lexeme::subtype_any, s);
       context.pushCurrentLexeme();
     }
 

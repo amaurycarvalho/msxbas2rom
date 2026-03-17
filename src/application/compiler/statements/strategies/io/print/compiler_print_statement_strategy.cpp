@@ -9,7 +9,7 @@ void CompilerPrintStatementStrategy::cmd_print(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
-  Lexeme *lexeme, *last_lexeme = 0;
+  shared_ptr<Lexeme> lexeme, last_lexeme = 0;
   ActionNode *action, *subaction;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;

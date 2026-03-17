@@ -1,5 +1,7 @@
 #include "literal_state.h"
 
+#include "lexeme.h"
+
 LexerLineProcessResult LiteralState::handle(LexerLineStateContext& context) {
   char c = context.current;
 

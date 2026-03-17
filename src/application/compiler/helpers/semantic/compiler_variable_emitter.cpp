@@ -15,7 +15,7 @@
 
 bool CompilerVariableEmitter::addVarAddress(ActionNode* action) {
   auto& cpu = *context->cpu;
-  Lexeme *lexeme, *lexeme1, *lexeme2;
+  shared_ptr<Lexeme> lexeme, lexeme1, lexeme2;
   ActionNode *action1, *action2;
   unsigned int i, t;
   int factor, diff;
@@ -404,3 +404,8 @@ bool CompilerVariableEmitter::addAssignment(ActionNode* action) {
 
   return true;
 }
+
+CompilerVariableEmitter::CompilerVariableEmitter(CompilerContext* context)
+    : context(context) {}
+
+CompilerVariableEmitter::~CompilerVariableEmitter() = default;

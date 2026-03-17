@@ -2,8 +2,9 @@
 
 #include "generic_statement_strategy.h"
 
-bool SpriteStatementStrategy::parseSpriteLoad(ParserContext& context, LexerLine* statement) {
-  Lexeme* next_lexeme = statement->getCurrentLexeme();
+bool SpriteStatementStrategy::parseSpriteLoad(ParserContext& context,
+                                              LexerLine* statement) {
+  shared_ptr<Lexeme> next_lexeme = statement->getCurrentLexeme();
   bool result;
 
   context.pushActionFromLexeme(next_lexeme);
@@ -14,8 +15,9 @@ bool SpriteStatementStrategy::parseSpriteLoad(ParserContext& context, LexerLine*
   return result;
 }
 
-bool SpriteStatementStrategy::parseStatement(ParserContext& context, LexerLine* statement) {
-  Lexeme* next_lexeme;
+bool SpriteStatementStrategy::parseStatement(ParserContext& context,
+                                             LexerLine* statement) {
+  shared_ptr<Lexeme> next_lexeme;
 
   if ((next_lexeme = statement->getNextLexeme())) {
     if (next_lexeme->type == Lexeme::type_keyword) {
@@ -33,7 +35,9 @@ bool SpriteStatementStrategy::parseStatement(ParserContext& context, LexerLine* 
   return false;
 }
 
-bool SpriteStatementStrategy::execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) {
+bool SpriteStatementStrategy::execute(ParserContext& context,
+                                      LexerLine* statement,
+                                      shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);
 }

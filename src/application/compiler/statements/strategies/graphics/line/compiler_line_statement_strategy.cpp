@@ -9,7 +9,7 @@
 void CompilerLineStatementStrategy::cmd_line(CompilerContext* context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   ActionNode *action, *sub_action;
   unsigned int i, t = context->current_action->actions.size();
   int line_type = 0, result_subtype, state;

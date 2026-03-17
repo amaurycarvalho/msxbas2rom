@@ -8,9 +8,11 @@ class CompilerContext;
 
 class EofCompilerFunctionStrategy : public ICompilerFunctionStrategy {
  public:
-  int execute(CompilerContext* context,
-              ActionNode* action,
-              int* result,
+  /***
+   * @brief EOF function
+   * @note https://www.msx.org/wiki/EOF()
+   */
+  int execute(CompilerContext* context, ActionNode* action, int* result,
               unsigned int parmCount) override;
 };
 

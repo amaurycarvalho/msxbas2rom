@@ -8,6 +8,7 @@
 #ifndef ACTION_NODE_H_INCLUDED
 #define ACTION_NODE_H_INCLUDED
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -21,11 +22,11 @@ using namespace std;
  */
 class ActionNode {
  private:
-  void create(Lexeme* plexeme);
+  void create(shared_ptr<Lexeme> plexeme);
 
  public:
   int subtype;
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   vector<ActionNode*> actions;
   string toString(int indent = 0) const;
 
@@ -34,13 +35,14 @@ class ActionNode {
    * It represents a simple action item (statement, function etc)
    */
   ActionNode();
+  ~ActionNode();
 
   /***
    * @brief ActionNode class constructor.
    * It represents a simple action item (statement, function etc)
    * @param plexeme Action node lexeme item
    */
-  ActionNode(Lexeme* plexeme);
+  ActionNode(shared_ptr<Lexeme> plexeme);
 
   /***
    * @brief ActionNode class constructor.

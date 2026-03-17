@@ -7,7 +7,8 @@ class SpriteStatementStrategy : public IParserStatementStrategy {
  public:
   bool parseSpriteLoad(ParserContext& context, LexerLine* statement);
   bool parseStatement(ParserContext& context, LexerLine* statement);
-  bool execute(ParserContext& context, LexerLine* statement, Lexeme* lexeme) override;
+  bool execute(ParserContext& context, LexerLine* statement,
+               shared_ptr<Lexeme> lexeme) override;
 };
 
 #endif  // SPRITE_STATEMENT_STRATEGY_H_INCLUDED

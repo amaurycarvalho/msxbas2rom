@@ -27,40 +27,47 @@ using namespace std;
  */
 class ParserContext {
  public:
-  TagNode* tag;
-  ActionNode* actionRoot;
-  LexerLine* error_line;
-  unique_ptr<Lexeme> lex_null, lex_index, lex_empty_string;
+  //! templates
+  shared_ptr<Lexeme> lex_null, lex_index, lex_empty_string;
+  shared_ptr<Lexeme> lex_rgb, lex_zero;
 
+  //! collections
   stack<ActionNode*> actionStack;
-  stack<Lexeme*> expressionList;
-
-  int deftbl[26];
-
-  bool eval_expr_error, line_comment;
-  unique_ptr<Logger> logger;
-
-  int lineNumber;
+  stack<shared_ptr<Lexeme>> expressionList;
   vector<TagNode*> tags;
-  vector<Lexeme*> symbolList;
-  vector<Lexeme*> datas;
+  vector<shared_ptr<Lexeme>> symbolList;
+  vector<shared_ptr<Lexeme>> datas;
 
+  //! flags
+  bool eval_expr_error, line_comment;
   bool has_traps, has_defusr, has_data, has_idata;
   bool has_play, has_input, has_font, has_mtf;
   bool has_pt3, has_akm, has_resource_restore;
+
+  //! counters
+  int deftbl[26];
+  int lineNumber;
   int resourceCount;
+
+  //! helper objects
+  unique_ptr<Logger> logger;
+
+  TagNode* tag;
+  ActionNode* actionRoot;
+  LexerLine* error_line;
+
+  //! helper methods
+  void reset();
+
+  int gfxOperatorCode(shared_ptr<Lexeme> lexeme);
+  ActionNode* pushActionFromLexeme(shared_ptr<Lexeme> lexeme);
+  void pushStackFromLexeme(shared_ptr<Lexeme> lexeme);
+  void pushActionRoot(ActionNode* action);
+  void popActionRoot();
+  shared_ptr<Lexeme> coalesceSymbols(shared_ptr<Lexeme> lexeme);
 
   ParserContext();
   ~ParserContext();
-
-  void reset();
-
-  int gfxOperatorCode(Lexeme* lexeme);
-  ActionNode* pushActionFromLexeme(Lexeme* lexeme);
-  void pushStackFromLexeme(Lexeme* lexeme);
-  void pushActionRoot(ActionNode* action);
-  void popActionRoot();
-  Lexeme* coalesceSymbols(Lexeme* lexeme);
 };
 
 #endif  // PARSER_CONTEXT_H_INCLUDED

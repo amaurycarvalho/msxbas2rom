@@ -10,18 +10,20 @@
 #include "lexeme.h"
 
 ActionNode::ActionNode() {
-  create((Lexeme*)0);
+  create(make_shared<Lexeme>());
 }
 
 ActionNode::ActionNode(string name) {
-  create(new Lexeme(Lexeme::type_keyword, Lexeme::subtype_any, name));
+  create(make_shared<Lexeme>(Lexeme::type_keyword, Lexeme::subtype_any, name));
 }
 
-ActionNode::ActionNode(Lexeme* plexeme) {
+ActionNode::ActionNode(shared_ptr<Lexeme> plexeme) {
   create(plexeme);
 }
 
-void ActionNode::create(Lexeme* plexeme) {
+ActionNode::~ActionNode() = default;
+
+void ActionNode::create(shared_ptr<Lexeme> plexeme) {
   lexeme = plexeme;
   subtype = Lexeme::subtype_unknown;
   actions.clear();
@@ -36,8 +38,8 @@ string ActionNode::toString(int indent) const {
     out.append(indent + 2, ' ');
     out += "(\n";
 
-    for (unsigned int i = 0; i < actions.size(); i++) {
-      out += actions[i]->toString(indent + 2);
+    for (auto& action : actions) {
+      out += action->toString(indent + 2);
     }
 
     out.append(indent + 2, ' ');

@@ -6,10 +6,14 @@
 
 #include "expression_evaluator.h"
 
+#include <memory>
+
 #include "logger.h"
 
 ExpressionEvaluator::ExpressionEvaluator(ParserContext& context)
     : ctx(context) {}
+
+ExpressionEvaluator::~ExpressionEvaluator() = default;
 
 bool ExpressionEvaluator::evaluate(LexerLine* expression) {
   ActionNode* actionSaved = ctx.actionRoot;
@@ -31,8 +35,8 @@ bool ExpressionEvaluator::evaluate(LexerLine* expression) {
 }
 
 bool ExpressionEvaluator::push(LexerLine* expression) {
-  stack<Lexeme*> operatorStack;
-  Lexeme *lexeme, *next_lexeme, *check_lexeme;
+  stack<shared_ptr<Lexeme>> operatorStack;
+  shared_ptr<Lexeme> lexeme, next_lexeme, check_lexeme;
   LexerLine functionLexemes;
   int thisPreced, stackPreced;
   int outputCount = 0, sepcount = 0, parmcount = 0;
@@ -263,7 +267,7 @@ bool ExpressionEvaluator::push(LexerLine* expression) {
 }
 
 void ExpressionEvaluator::pop(int precedence) {
-  Lexeme* lexeme;
+  shared_ptr<Lexeme> lexeme;
   int k;
 
   while (precedence && !ctx.expressionList.empty()) {
@@ -282,7 +286,7 @@ void ExpressionEvaluator::pop(int precedence) {
   }
 }
 
-int ExpressionEvaluator::getOperatorPrecedence(Lexeme* lexeme) {
+int ExpressionEvaluator::getOperatorPrecedence(shared_ptr<Lexeme> lexeme) {
   int result;
 
   if (lexeme->value == "IMP")
@@ -315,7 +319,7 @@ int ExpressionEvaluator::getOperatorPrecedence(Lexeme* lexeme) {
   return result;
 }
 
-int ExpressionEvaluator::getOperatorParmCount(Lexeme* lexeme) {
+int ExpressionEvaluator::getOperatorParmCount(shared_ptr<Lexeme> lexeme) {
   int result = 0;
 
   if (lexeme) {
