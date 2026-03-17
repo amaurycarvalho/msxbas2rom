@@ -53,7 +53,7 @@ TEST_SUITE("Lexer") {
     REQUIRE(lexer.evaluate() == true);
     REQUIRE(lexer.lines.size() == 1);
 
-    LexerLine* line = lexer.lines[0];
+    LexerLine* line = lexer.lines[0].get();
     REQUIRE(line != nullptr);
     CHECK(line->getLexemeCount() >= 3);
 
@@ -139,7 +139,7 @@ TEST_SUITE("Lexer") {
     REQUIRE(lexer.evaluate() == true);
     REQUIRE(lexer.lines.size() == 1);
 
-    LexerLine* line = lexer.lines[0];
+    LexerLine* line = lexer.lines[0].get();
     REQUIRE(line != nullptr);
 
     Lexeme* num32767 = findLexemeByValue(line, "32767");
@@ -172,7 +172,7 @@ TEST_SUITE("Lexer") {
     REQUIRE(lexer.evaluate() == true);
     REQUIRE(lexer.lines.size() == 1);
 
-    LexerLine* line = lexer.lines[0];
+    LexerLine* line = lexer.lines[0].get();
     REQUIRE(line != nullptr);
 
     Lexeme* hex = findLexemeByValue(line, "&HFF");
@@ -208,7 +208,7 @@ TEST_SUITE("Lexer") {
       REQUIRE(lexer.evaluate() == true);
       REQUIRE(lexer.lines.size() == 1);
 
-      LexerLine* line = lexer.lines[0];
+      LexerLine* line = lexer.lines[0].get();
       REQUIRE(line != nullptr);
       Lexeme* rem = findLexemeByValue(line, "REM");
       REQUIRE(rem != nullptr);
@@ -226,7 +226,7 @@ TEST_SUITE("Lexer") {
       REQUIRE(lexer.evaluate() == true);
       REQUIRE(lexer.lines.size() == 1);
 
-      LexerLine* line = lexer.lines[0];
+      LexerLine* line = lexer.lines[0].get();
       REQUIRE(line != nullptr);
 
       Lexeme* apostrophe = findLexemeByValue(line, "'");

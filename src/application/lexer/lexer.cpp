@@ -40,7 +40,6 @@ bool Lexer::load(BuildOptions* opts) {
   char lineText[255];
   unsigned char header[3];
   int len = 255, bytes;
-  LexerLine* lexerLine;
 
   this->opts = opts;
 
@@ -80,10 +79,15 @@ bool Lexer::load(BuildOptions* opts) {
   if ((file = fopen(opts->inputFilename.c_str(), "r"))) {
     int lineNumber = 0;
     while (fgets(lineText, len, file)) {
-      lexerLine = new LexerLine();
-      lexerLine->lineText = lineText;
-      lexerLine->lineNumber = ++lineNumber;
-      lines.push_back(lexerLine);
+      lines.emplace_back(new LexerLine());
+      auto& lexerLine = lines.back();
+      if (lexerLine.get()) {
+        lexerLine->lineText = lineText;
+        lexerLine->lineNumber = ++lineNumber;
+      } else {
+        logger->warning("Cannot allocate memory for source code line " +
+                        to_string(++lineNumber));
+      }
     }
 
     fclose(file);
@@ -96,12 +100,10 @@ bool Lexer::load(BuildOptions* opts) {
 }
 
 bool Lexer::evaluate() {
-  LexerLine* lexerLine;
+  int lineNumber = 0;
   logger->debug("Displaying lexical analysis:");
-  for (unsigned int i = 0; i < lines.size(); i++) {
-    int lineNumber = i + 1;
-    logger->setLineNumber(lineNumber);
-    lexerLine = lines[i];
+  for (auto& lexerLine : lines) {
+    logger->setLineNumber(++lineNumber);
     if (lexerLine) {
       if (!lexerLine->evaluate()) {
         logger->error("Lexical error");
@@ -119,9 +121,7 @@ bool Lexer::evaluate() {
 
 string Lexer::toString() {
   string out;
-  LexerLine* lexerLine;
-  for (unsigned int i = 0; i < lines.size(); i++) {
-    lexerLine = lines[i];
+  for (auto& lexerLine : lines) {
     if (lexerLine) out += lexerLine->toString();
   }
   return out;

@@ -28,7 +28,7 @@ class Lexer {
   unique_ptr<Logger> logger;
 
  public:
-  vector<LexerLine*> lines;
+  vector<unique_ptr<LexerLine>> lines;
   BuildOptions* opts;
 
   void clear();

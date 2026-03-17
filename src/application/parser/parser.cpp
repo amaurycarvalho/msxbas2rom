@@ -27,9 +27,6 @@ Parser::Parser()
 Parser::~Parser() = default;
 
 bool Parser::evaluate(Lexer* lexer) {
-  int i, t = lexer->lines.size();
-  LexerLine* lexerLine;
-
   this->lexer = lexer;
   this->opts = lexer->opts;
 
@@ -38,23 +35,27 @@ bool Parser::evaluate(Lexer* lexer) {
   ctx.logger->debug("Displaying syntactic analysis:");
 
   ctx.reset();
+  ctx.lineNumber = 0;
 
-  for (i = 0, ctx.lineNumber = 1; i < t; i++, ctx.lineNumber++) {
-    ctx.logger->setLineNumber(ctx.lineNumber);
-    lexerLine = lexer->lines[i];
-    if (lexerLine->getLexemeCount() > 0) {
-      ctx.line_comment = false;
-      if (!lineEval.evaluateLine(lexerLine)) {
-        if (ctx.logger->empty()) {
-          ctx.logger->error("Syntactic error");
+  for (auto& lexerLine : lexer->lines) {
+    ctx.logger->setLineNumber(++ctx.lineNumber);
+    if (lexerLine.get()) {
+      if (lexerLine->getLexemeCount() > 0) {
+        ctx.line_comment = false;
+        if (!lineEval.evaluateLine(lexerLine.get())) {
+          if (ctx.logger->empty()) {
+            ctx.logger->error("Syntactic error");
+          }
+          ctx.logger->info(lexerLine->toString());
+          return false;
         }
-        ctx.logger->info(lexerLine->toString());
-        return false;
+        if (!ctx.tags.empty()) {
+          ctx.logger->debug(ctx.tags.back()->toString());
+        }
       }
-      if (!ctx.tags.empty()) {
-        ctx.logger->debug(ctx.tags.back()->toString());
-      }
-    }
+    } else
+      ctx.logger->warning("Cannot evaluate a null line (line number " +
+                          to_string(ctx.lineNumber) + ")");
   }
 
   return true;
