@@ -1,7 +1,5 @@
 #include "vscode_helper.h"
 
-#include <regex>
-
 #include "fswrapper.h"
 
 VSCodeHelper::VSCodeHelper(string compilerAppFilename) {
@@ -20,21 +18,12 @@ VSCodeHelper::VSCodeHelper(string compilerAppFilename) {
   }
 #endif
 
-  launchContent =
-      regex_replace(launchContent, regex(R"(^\$\{emulator App Filename\}$)"),
-                    emulatorAppFilename);
-  launchContent = regex_replace(
-      launchContent, regex(R"(^\$\{emulator App Args\}$)"), emulatorAppArgs);
+  replaceAll(launchContent, "${emulatorAppFilename}", emulatorAppFilename);
+  replaceAll(launchContent, "${emulatorAppArgs}", emulatorAppArgs);
 
-  tasksContent =
-      regex_replace(tasksContent, regex(R"(^\$\{compiler App Filename\}$)"),
-                    compilerAppFilename);
-  tasksContent =
-      regex_replace(tasksContent, regex(R"(^\$\{emulator App Filename\}$)"),
-                    emulatorAppFilename);
-  tasksContent =
-      regex_replace(tasksContent, regex(R"(^\$\{emulator App Args Parsed\}$)"),
-                    emulatorAppArgsParsed);
+  replaceAll(tasksContent, "${compilerAppFilename}", compilerAppFilename);
+  replaceAll(tasksContent, "${emulatorAppFilename}", emulatorAppFilename);
+  replaceAll(tasksContent, "${emulatorAppArgsParsed}", emulatorAppArgsParsed);
 }
 
 VSCodeHelper::~VSCodeHelper() = default;
@@ -47,6 +36,16 @@ bool VSCodeHelper::write(string fileName, string fileContent) {
     return true;
   }
   return false;
+}
+
+void VSCodeHelper::replaceAll(string& str, const string& from,
+                              const string& to) {
+  if (from.empty()) return;
+  size_t start_pos = 0;
+  while ((start_pos = str.find(from, start_pos)) != string::npos) {
+    str.replace(start_pos, from.length(), to);
+    start_pos += to.length();
+  }
 }
 
 string VSCodeHelper::getCompilerAppFilename() {
@@ -64,6 +63,9 @@ bool VSCodeHelper::initialize() {
   string debugName = pathJoin(pathName, "debug.tcl");
 
   if (createPath(pathName)) {
+    write(launchName, launchContent);
+    write(tasksName, tasksContent);
+    write(debugName, debugContent);
     return true;
   }
 
@@ -71,8 +73,7 @@ bool VSCodeHelper::initialize() {
 }
 
 string VSCodeHelper::launchContent =
-    R"(
-{
+    R"({
   "version": "0.2.0",
   "configurations": [
     {
@@ -87,8 +88,7 @@ string VSCodeHelper::launchContent =
     )";
 
 string VSCodeHelper::tasksContent =
-    R"(
-{
+    R"({
   "version": "2.0.0",
   "tasks": [
     {
@@ -135,8 +135,7 @@ string VSCodeHelper::tasksContent =
     )";
 
 string VSCodeHelper::debugContent =
-    R"(
-#debug.tcl
+    R"(#debug.tcl
 
 puts "==== MSXBAS2ROM Debug Session ===="
 #find first.noi file in current directory

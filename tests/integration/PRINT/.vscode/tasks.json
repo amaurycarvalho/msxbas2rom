@@ -1,0 +1,45 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "shell",
+
+      "command": "../../../bin/Debug/msxbas2rom",
+
+      "args": ["${file}", "-a", "-q", "--noi"],
+
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": {
+        "owner": "msxbas2rom",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.+\\.bas):(\\d+): ERROR: (.+)$",
+          "file": 1,
+          "line": 2,
+          "message": 3
+        }
+      }
+    },
+
+    {
+      "label": "Run on openMSX",
+      "dependsOn": ["build"],
+      "type": "shell",
+      "command": "flatpak",
+      "args": [
+        "run","org.openmsx.openMSX",
+        "-cart",
+        "${workspaceFolder}/${fileBasenameNoExtension}*.rom"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    }
+  ]
+}
+    

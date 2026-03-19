@@ -22,6 +22,8 @@ class VSCodeHelper {
 
   bool write(string fileName, string fileContent);
 
+  void replaceAll(string& str, const string& from, const string& to);
+
  public:
   string getCompilerAppFilename();
   string getEmulatorAppFilename();
