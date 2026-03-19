@@ -5,10 +5,10 @@
 
 class CompilerColorStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_color(CompilerContext* context);
+  void cmd_color(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_COLOR_STATEMENT_STRATEGY_H_INCLUDED

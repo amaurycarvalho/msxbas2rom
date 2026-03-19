@@ -18,7 +18,7 @@
  */
 class ResourceFactory {
  public:
-  static std::unique_ptr<ResourceReader> create(string filename);
+  static std::shared_ptr<ResourceReader> create(string filename);
   ResourceFactory();
   ~ResourceFactory();
 };

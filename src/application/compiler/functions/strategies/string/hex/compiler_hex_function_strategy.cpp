@@ -7,7 +7,7 @@
 #include "compiler_variable_emitter.h"
 #include "lexeme.h"
 
-int HexCompilerFunctionStrategy::execute(CompilerContext* context,
+int HexCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                          shared_ptr<ActionNode> action,
                                          int* result, unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;

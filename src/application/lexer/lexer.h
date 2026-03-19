@@ -25,10 +25,10 @@ using namespace std;
  */
 class Lexer {
  private:
-  unique_ptr<Logger> logger;
+  shared_ptr<Logger> logger;
 
  public:
-  vector<unique_ptr<LexerLineEvaluator>> lines;
+  vector<shared_ptr<LexerLineEvaluator>> lines;
   shared_ptr<BuildOptions> opts;
 
   void clear();
@@ -37,7 +37,7 @@ class Lexer {
   bool evaluate();
   string toString();
 
-  Logger* getLogger();
+  shared_ptr<Logger> getLogger();
 
   Lexer();
   ~Lexer();

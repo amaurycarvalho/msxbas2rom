@@ -1,13 +1,20 @@
 #ifndef LEXER_LINE_STATE_H_INCLUDED
 #define LEXER_LINE_STATE_H_INCLUDED
 
-#include "lexer_line_context.h"
+#include <memory>
+#include <string>
+
+class Lexeme;
+class LexerLineContext;
+class LexerLineEvaluator;
 
 enum class LexerLineProcessResult {
   Continue,
   Accept,
   Reject,
 };
+
+using namespace std;
 
 class LexerLineStateContext {
  private:

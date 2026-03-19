@@ -5,11 +5,12 @@
 
 class DataStatementStrategy : public IParserStatementStrategy {
  protected:
-  bool parseData(ParserContext& context, LexerLineContext* statement,
-                 bool isBinaryData);
+  bool parseData(shared_ptr<ParserContext> context,
+                 shared_ptr<LexerLineContext> statement, bool isBinaryData);
 
  public:
-  bool execute(ParserContext& context, LexerLineContext* statement,
+  bool execute(shared_ptr<ParserContext> context,
+               shared_ptr<LexerLineContext> statement,
                shared_ptr<Lexeme> lexeme) override;
 };
 

@@ -5,7 +5,7 @@
 #include "compiler_variable_emitter.h"
 #include "lexeme.h"
 
-int VarptrCompilerFunctionStrategy::execute(CompilerContext* context,
+int VarptrCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                             shared_ptr<ActionNode> action,
                                             int* result,
                                             unsigned int parmCount) {

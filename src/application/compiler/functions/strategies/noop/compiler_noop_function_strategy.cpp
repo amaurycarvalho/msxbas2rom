@@ -3,7 +3,7 @@
 #include "compiler_context.h"
 #include "lexeme.h"
 
-int NoopCompilerFunctionStrategy::execute(CompilerContext* context,
+int NoopCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                           shared_ptr<ActionNode> action,
                                           int* result, unsigned int parmCount) {
   (void)context;

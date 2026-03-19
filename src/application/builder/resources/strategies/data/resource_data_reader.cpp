@@ -7,10 +7,11 @@
 
 #include "resource_data_reader.h"
 
+#include "lexeme.h"
 #include "logger.h"
 #include "parser.h"
 
-ResourceDataReader::ResourceDataReader(Parser* parser)
+ResourceDataReader::ResourceDataReader(shared_ptr<Parser> parser)
     : ResourceCsvReader(string("_DATA_")) {
   this->parser = parser;
   resourceType = 0;  //! DATA resource type

@@ -18,8 +18,8 @@ using namespace std;
 
 class CompilerEvaluator {
  private:
-  CompilerContext* context;
-  unique_ptr<CompilerStatementStrategyFactory> statementFactory;
+  shared_ptr<CompilerContext> context;
+  shared_ptr<CompilerStatementStrategyFactory> statementFactory;
 
  public:
   /***
@@ -32,7 +32,7 @@ class CompilerEvaluator {
   bool evalAction(shared_ptr<ActionNode> action);
   bool evalActions(shared_ptr<ActionNode> action);
 
-  CompilerEvaluator(CompilerContext* context);
+  CompilerEvaluator(shared_ptr<CompilerContext> context);
   ~CompilerEvaluator();
 };
 

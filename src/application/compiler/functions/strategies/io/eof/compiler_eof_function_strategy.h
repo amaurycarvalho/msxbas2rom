@@ -12,8 +12,9 @@ class EofCompilerFunctionStrategy : public ICompilerFunctionStrategy {
    * @brief EOF function
    * @note https://www.msx.org/wiki/EOF()
    */
-  int execute(CompilerContext* context, shared_ptr<ActionNode> action,
-              int* result, unsigned int parmCount) override;
+  int execute(shared_ptr<CompilerContext> context,
+              shared_ptr<ActionNode> action, int* result,
+              unsigned int parmCount) override;
 };
 
 #endif  // EOF_COMPILER_FUNCTION_STRATEGY_H_INCLUDED

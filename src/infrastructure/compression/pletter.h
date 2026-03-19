@@ -10,7 +10,6 @@
 #define PLETTER_H
 
 #include <array>
-#include <cstring>
 #include <vector>
 
 /***
@@ -37,7 +36,7 @@ class Pletter {
 
   std::vector<unsigned> last;
   std::vector<unsigned> prev;
-  unsigned char* d = NULL;
+  unsigned char* d = nullptr;
 
   struct metadata {
     unsigned reeks;

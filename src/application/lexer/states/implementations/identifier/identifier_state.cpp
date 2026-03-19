@@ -3,6 +3,7 @@
 #include <ctype.h>
 
 #include "lexeme.h"
+#include "lexer_line_context.h"
 
 LexerLineProcessResult IdentifierState::handle(LexerLineStateContext& context) {
   char c = context.current;

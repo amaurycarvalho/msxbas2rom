@@ -1,10 +1,14 @@
 #include "compiler_draw_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
+#include "fix_node.h"
+#include "lexeme.h"
 
-void CompilerDrawStatementStrategy::cmd_draw(CompilerContext* context) {
+void CompilerDrawStatementStrategy::cmd_draw(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
@@ -39,7 +43,8 @@ void CompilerDrawStatementStrategy::cmd_draw(CompilerContext* context) {
   }
 }
 
-bool CompilerDrawStatementStrategy::execute(CompilerContext* context) {
+bool CompilerDrawStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_draw(context);
   return context->compiled;
 }

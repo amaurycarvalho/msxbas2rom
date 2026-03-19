@@ -5,10 +5,10 @@
 
 class CompilerCircleStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_circle(CompilerContext* context);
+  void cmd_circle(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_CIRCLE_STATEMENT_STRATEGY_H_INCLUDED

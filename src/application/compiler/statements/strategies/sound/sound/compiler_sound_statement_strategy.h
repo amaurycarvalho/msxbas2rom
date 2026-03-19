@@ -10,10 +10,10 @@ class CompilerSoundStatementStrategy : public ICompilerStatementStrategy {
    * @note
    * https://www.msx.org/wiki/SOUND
    */
-  void cmd_sound(CompilerContext* context);
+  void cmd_sound(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_SOUND_STATEMENT_STRATEGY_H_INCLUDED

@@ -1,13 +1,16 @@
 #include "compiler_input_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
 #include "compiler_variable_emitter.h"
+#include "fix_node.h"
+#include "lexeme.h"
 
-void CompilerInputStatementStrategy::cmd_input(CompilerContext* context,
-                                               bool questionMark) {
+void CompilerInputStatementStrategy::cmd_input(
+    shared_ptr<CompilerContext> context, bool questionMark) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
@@ -97,13 +100,14 @@ void CompilerInputStatementStrategy::cmd_input(CompilerContext* context,
   }
 }
 
-bool CompilerInputStatementStrategy::execute(CompilerContext* context) {
+bool CompilerInputStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_input(context, true);
   return context->compiled;
 }
 
 bool CompilerInputStatementStrategy::executeLineInput(
-    CompilerContext* context) {
+    shared_ptr<CompilerContext> context) {
   cmd_input(context, false);
   return context->compiled;
 }

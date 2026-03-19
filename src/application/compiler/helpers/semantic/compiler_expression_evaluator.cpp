@@ -6,6 +6,7 @@
 
 #include "compiler_expression_evaluator.h"
 
+#include "action_node.h"
 #include "build_options.h"
 #include "compiler_code_helper.h"
 #include "compiler_code_optimizer.h"
@@ -15,12 +16,14 @@
 #include "compiler_function_strategy_factory.h"
 #include "compiler_hooks.h"
 #include "compiler_variable_emitter.h"
+#include "fix_node.h"
+#include "lexeme.h"
 #include "logger.h"
 
 CompilerExpressionEvaluator::CompilerExpressionEvaluator(
-    CompilerContext* context)
+    shared_ptr<CompilerContext> context)
     : context(context) {
-  functionFactory.reset(new CompilerFunctionStrategyFactory());
+  functionFactory = make_shared<CompilerFunctionStrategyFactory>();
 }
 
 CompilerExpressionEvaluator::~CompilerExpressionEvaluator() = default;

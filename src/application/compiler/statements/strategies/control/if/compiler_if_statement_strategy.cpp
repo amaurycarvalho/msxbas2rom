@@ -1,13 +1,16 @@
 #include "compiler_if_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_code_helper.h"
 #include "compiler_context.h"
 #include "compiler_evaluator.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_symbol_resolver.h"
+#include "fix_node.h"
+#include "lexeme.h"
 
-void CompilerIfStatementStrategy::cmd_if(CompilerContext* context) {
+void CompilerIfStatementStrategy::cmd_if(shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
@@ -17,7 +20,7 @@ void CompilerIfStatementStrategy::cmd_if(CompilerContext* context) {
   shared_ptr<ActionNode> saved_action = context->current_action;
   unsigned int i, t = saved_action->actions.size(), tt;
   int result_subtype;
-  FixNode *mark_else = 0, *mark_endif = 0;
+  shared_ptr<FixNode> mark_else = nullptr, mark_endif = nullptr;
   bool isLastActionGoto = false, isElseLikeEndif = true;
 
   if (!t) {
@@ -130,7 +133,7 @@ void CompilerIfStatementStrategy::cmd_if(CompilerContext* context) {
   }
 }
 
-bool CompilerIfStatementStrategy::execute(CompilerContext* context) {
+bool CompilerIfStatementStrategy::execute(shared_ptr<CompilerContext> context) {
   context->traps_checked = context->codeHelper->addCheckTraps();
   cmd_if(context);
   return context->compiled;

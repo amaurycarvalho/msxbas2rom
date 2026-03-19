@@ -5,10 +5,10 @@
 
 class CompilerPrintStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_print(CompilerContext* context);
+  void cmd_print(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_PRINT_STATEMENT_STRATEGY_H_INCLUDED

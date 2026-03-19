@@ -1,19 +1,22 @@
 #include "screen_statement_strategy.h"
 
+#include "action_node.h"
 #include "generic_statement_strategy.h"
+#include "lexeme.h"
+#include "lexer_line_context.h"
 
-bool ScreenStatementStrategy::parseScreenCopy(ParserContext& context,
-                                              LexerLineContext* statement) {
+bool ScreenStatementStrategy::parseScreenCopy(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme = statement->getCurrentLexeme();
-  LexerLineContext parm;
+  shared_ptr<LexerLineContext> parm = make_shared<LexerLineContext>();
   int state = 0;
   bool result = false;
 
-  context.pushActionFromLexeme(next_lexeme);
-  parm.clearLexemes();
+  context->pushActionFromLexeme(next_lexeme);
+  parm->clearLexemes();
 
   while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = context.coalesceSymbols(next_lexeme);
+    next_lexeme = context->coalesceSymbols(next_lexeme);
 
     switch (state) {
       case 0: {
@@ -27,12 +30,12 @@ bool ScreenStatementStrategy::parseScreenCopy(ParserContext& context,
 
       case 1: {
         if (next_lexeme->isKeyword("SCROLL")) {
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!evaluateExpression(context, &parm)) {
+          if (parm->getLexemeCount()) {
+            parm->setLexemeBOF();
+            if (!evaluateExpression(context, parm)) {
               return false;
             }
-            parm.clearLexemes();
+            parm->clearLexemes();
           } else {
             return false;
           }
@@ -42,28 +45,28 @@ bool ScreenStatementStrategy::parseScreenCopy(ParserContext& context,
       } break;
     }
 
-    parm.addLexeme(next_lexeme);
+    parm->addLexeme(next_lexeme);
   }
 
-  if (parm.getLexemeCount()) {
-    parm.setLexemeBOF();
-    if (!evaluateExpression(context, &parm)) {
+  if (parm->getLexemeCount()) {
+    parm->setLexemeBOF();
+    if (!evaluateExpression(context, parm)) {
       return false;
     }
 
     result = true;
   }
 
-  context.popActionRoot();
+  context->popActionRoot();
   return result;
 }
 
-bool ScreenStatementStrategy::parseScreenPaste(ParserContext& context,
-                                               LexerLineContext* statement) {
+bool ScreenStatementStrategy::parseScreenPaste(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme = statement->getCurrentLexeme();
   bool result = false;
 
-  context.pushActionFromLexeme(next_lexeme);
+  context->pushActionFromLexeme(next_lexeme);
 
   if ((next_lexeme = statement->getNextLexeme())) {
     if (next_lexeme->isKeyword("FROM")) {
@@ -72,51 +75,51 @@ bool ScreenStatementStrategy::parseScreenPaste(ParserContext& context,
     }
   }
 
-  context.popActionRoot();
+  context->popActionRoot();
   return result;
 }
 
-bool ScreenStatementStrategy::parseScreenScroll(ParserContext& context,
-                                                LexerLineContext* statement) {
+bool ScreenStatementStrategy::parseScreenScroll(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme = statement->getCurrentLexeme();
   bool result;
 
-  context.pushActionFromLexeme(next_lexeme);
+  context->pushActionFromLexeme(next_lexeme);
   GenericStatementStrategy genericStrategy;
   result = genericStrategy.parseStatement(context, statement);
-  context.popActionRoot();
+  context->popActionRoot();
 
   return result;
 }
 
-bool ScreenStatementStrategy::parseScreenLoad(ParserContext& context,
-                                              LexerLineContext* statement) {
+bool ScreenStatementStrategy::parseScreenLoad(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme = statement->getCurrentLexeme();
   bool result;
 
-  context.pushActionFromLexeme(next_lexeme);
+  context->pushActionFromLexeme(next_lexeme);
   GenericStatementStrategy genericStrategy;
   result = genericStrategy.parseStatement(context, statement);
-  context.popActionRoot();
+  context->popActionRoot();
 
   return result;
 }
 
-bool ScreenStatementStrategy::parseScreenOn(ParserContext& context,
-                                            LexerLineContext* statement) {
+bool ScreenStatementStrategy::parseScreenOn(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme = statement->getCurrentLexeme();
-  context.pushActionFromLexeme(next_lexeme);
-  context.popActionRoot();
+  context->pushActionFromLexeme(next_lexeme);
+  context->popActionRoot();
   return true;
 }
 
-bool ScreenStatementStrategy::parseScreenOff(ParserContext& context,
-                                             LexerLineContext* statement) {
+bool ScreenStatementStrategy::parseScreenOff(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   return parseScreenOn(context, statement);
 }
 
-bool ScreenStatementStrategy::parseStatement(ParserContext& context,
-                                             LexerLineContext* statement) {
+bool ScreenStatementStrategy::parseStatement(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
 
   if ((next_lexeme = statement->getNextLexeme())) {
@@ -144,8 +147,8 @@ bool ScreenStatementStrategy::parseStatement(ParserContext& context,
   return false;
 }
 
-bool ScreenStatementStrategy::execute(ParserContext& context,
-                                      LexerLineContext* statement,
+bool ScreenStatementStrategy::execute(shared_ptr<ParserContext> context,
+                                      shared_ptr<LexerLineContext> statement,
                                       shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);

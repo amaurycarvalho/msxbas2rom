@@ -6,15 +6,17 @@
 #ifndef CPU_OPCODE_WRITER_H
 #define CPU_OPCODE_WRITER_H
 
+#include <memory>
+
 #include "cpu_workspace_context.h"
 
 class ICpuOpcodeWriter {
  public:
   ICpuOpcodeWriter();
-  ICpuOpcodeWriter(CpuWorkspaceContext* context);
+  ICpuOpcodeWriter(shared_ptr<CpuWorkspaceContext> context);
   virtual ~ICpuOpcodeWriter() = default;
 
-  CpuWorkspaceContext* context;
+  shared_ptr<CpuWorkspaceContext> context;
 
   void addByte(unsigned char byte);
   void addWord(unsigned int word);

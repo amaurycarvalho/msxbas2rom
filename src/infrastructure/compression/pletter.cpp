@@ -8,6 +8,8 @@
 
 #include "pletter.h"
 
+#include <cstring>
+
 Pletter::Pletter() {}
 
 Pletter::~Pletter() = default;
@@ -245,7 +247,7 @@ int Pletter::pack(const unsigned char* pData, int dataSize,
                   unsigned char* pDest) {
   int packed;
 
-  if (pData == NULL) {
+  if (pData == nullptr) {
     return false;
   }
 
@@ -253,7 +255,7 @@ int Pletter::pack(const unsigned char* pData, int dataSize,
     return false;
   }
 
-  if (pDest == NULL) {
+  if (pDest == nullptr) {
     return false;
   }
 

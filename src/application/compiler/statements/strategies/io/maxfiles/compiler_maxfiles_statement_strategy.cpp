@@ -1,12 +1,16 @@
 #include "compiler_maxfiles_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_code_helper.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "fix_node.h"
+#include "lexeme.h"
 
-void CompilerMaxfilesStatementStrategy::cmd_maxfiles(CompilerContext* context) {
+void CompilerMaxfilesStatementStrategy::cmd_maxfiles(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
@@ -14,7 +18,7 @@ void CompilerMaxfilesStatementStrategy::cmd_maxfiles(CompilerContext* context) {
   shared_ptr<ActionNode> action;
   unsigned int t = context->current_action->actions.size();
   int result_subtype;
-  FixNode* mark;
+  shared_ptr<FixNode> mark;
 
   if (t) {
     // xor a
@@ -97,7 +101,8 @@ void CompilerMaxfilesStatementStrategy::cmd_maxfiles(CompilerContext* context) {
   }
 }
 
-bool CompilerMaxfilesStatementStrategy::execute(CompilerContext* context) {
+bool CompilerMaxfilesStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_maxfiles(context);
   return context->compiled;
 }

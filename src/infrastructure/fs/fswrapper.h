@@ -20,6 +20,8 @@
 using namespace std;
 
 #ifdef Win
+#include <direct.h>  // For _mkdir on Windows
+#define MKDIR(path) _mkdir(path)
 #define strlcpy(dst, src, size) strcpy_s((dst), (size), (src))
 #define strlcat(dst, src, size) strcat_s((dst), (size), (src))
 #define strncpy(dst, src, size) strcpy_s((dst), (size), (src))
@@ -27,6 +29,9 @@ using namespace std;
 #define strcasecmp _stricmp
 #define fsFolderSeparator '\\'
 #else
+#include <sys/stat.h>  // For mkdir on Unix/Linux
+#include <sys/types.h>
+#define MKDIR(path) mkdir(path, 0755)
 #define fsFolderSeparator '/'
 #endif
 
@@ -77,5 +82,18 @@ string pathJoin(const string& base, const string& relative);
  * @brief Remove quotes character in the begin and end of a string
  */
 string removeQuotes(const string& text);
+
+/***
+ * @brief Create a new path
+ */
+bool createPath(const string& pathName);
+
+/***
+ * @brief Check if a path exists
+ * @return true or false
+ * @note WARNING: Windows support is missing
+ * @todo to implement Windows support
+ */
+bool pathExists(const string& pathName);
 
 #endif  // FSWRAPPER_H_INCLUDED

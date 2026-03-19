@@ -1,9 +1,12 @@
 #include "compiler_wait_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
+#include "lexeme.h"
 
-void CompilerWaitStatementStrategy::cmd_wait(CompilerContext* context) {
+void CompilerWaitStatementStrategy::cmd_wait(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme;
@@ -74,7 +77,8 @@ void CompilerWaitStatementStrategy::cmd_wait(CompilerContext* context) {
   }
 }
 
-bool CompilerWaitStatementStrategy::execute(CompilerContext* context) {
+bool CompilerWaitStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_wait(context);
   return context->compiled;
 }

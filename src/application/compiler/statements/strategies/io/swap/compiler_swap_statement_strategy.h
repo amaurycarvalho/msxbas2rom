@@ -5,10 +5,10 @@
 
 class CompilerSwapStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_swap(CompilerContext* context);
+  void cmd_swap(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_SWAP_STATEMENT_STRATEGY_H_INCLUDED

@@ -7,7 +7,7 @@
 #include "compiler_variable_emitter.h"
 #include "lexeme.h"
 
-int RightCompilerFunctionStrategy::execute(CompilerContext* context,
+int RightCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                            shared_ptr<ActionNode> action,
                                            int* result,
                                            unsigned int parmCount) {

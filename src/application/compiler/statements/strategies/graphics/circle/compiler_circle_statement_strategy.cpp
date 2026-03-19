@@ -1,12 +1,15 @@
 #include "compiler_circle_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_evaluator.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerCircleStatementStrategy::cmd_circle(CompilerContext* context) {
+void CompilerCircleStatementStrategy::cmd_circle(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   auto& optimizer = *context->codeOptimizer;
@@ -321,7 +324,8 @@ void CompilerCircleStatementStrategy::cmd_circle(CompilerContext* context) {
   }
 }
 
-bool CompilerCircleStatementStrategy::execute(CompilerContext* context) {
+bool CompilerCircleStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_circle(context);
   return context->compiled;
 }

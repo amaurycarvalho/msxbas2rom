@@ -1,10 +1,13 @@
 #include "compiler_color_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerColorStatementStrategy::cmd_color(CompilerContext* context) {
+void CompilerColorStatementStrategy::cmd_color(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action, subaction;
@@ -205,7 +208,8 @@ void CompilerColorStatementStrategy::cmd_color(CompilerContext* context) {
   }
 }
 
-bool CompilerColorStatementStrategy::execute(CompilerContext* context) {
+bool CompilerColorStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_color(context);
   return context->compiled;
 }

@@ -1,9 +1,12 @@
 #include "compiler_cmd_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_cmd_handler_factory.h"
 #include "compiler_context.h"
+#include "lexeme.h"
 
-void CompilerCmdStatementStrategy::cmd_cmd(CompilerContext* context) {
+void CompilerCmdStatementStrategy::cmd_cmd(
+    shared_ptr<CompilerContext> context) {
   auto& actions = context->current_action->actions;
   ICompilerCmdHandler* handler;
 
@@ -27,12 +30,13 @@ void CompilerCmdStatementStrategy::cmd_cmd(CompilerContext* context) {
 }
 
 CompilerCmdStatementStrategy::CompilerCmdStatementStrategy() {
-  factory.reset(new CompilerCmdHandlerFactory());
+  factory = make_shared<CompilerCmdHandlerFactory>();
 }
 
 CompilerCmdStatementStrategy::~CompilerCmdStatementStrategy() = default;
 
-bool CompilerCmdStatementStrategy::execute(CompilerContext* context) {
+bool CompilerCmdStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_cmd(context);
   return context->compiled;
 }

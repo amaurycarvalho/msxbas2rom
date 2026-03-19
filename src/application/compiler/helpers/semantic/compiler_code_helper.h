@@ -6,6 +6,7 @@
 #ifndef COMPILER_CODE_HELPER_H
 #define COMPILER_CODE_HELPER_H
 
+#include <memory>
 #include <string>
 
 class CompilerContext;
@@ -14,7 +15,7 @@ using namespace std;
 
 class CompilerCodeHelper {
  private:
-  CompilerContext* context;
+  shared_ptr<CompilerContext> context;
 
  public:
   bool addCheckTraps();
@@ -25,7 +26,7 @@ class CompilerCodeHelper {
   void endBasicSetStmt();
   void addBasicChar(char c);
 
-  CompilerCodeHelper(CompilerContext* context);
+  CompilerCodeHelper(shared_ptr<CompilerContext> context);
   ~CompilerCodeHelper();
 };
 

@@ -5,10 +5,10 @@
 
 class CompilerDefUsrStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_defusr(CompilerContext* context);
+  void cmd_defusr(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_DEFUSR_STATEMENT_STRATEGY_H_INCLUDED

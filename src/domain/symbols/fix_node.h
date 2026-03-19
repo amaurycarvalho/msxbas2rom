@@ -8,7 +8,9 @@
 #ifndef FIX_NODE_H_INCLUDED
 #define FIX_NODE_H_INCLUDED
 
-#include "symbol_node.h"
+#include <memory>
+
+class SymbolNode;
 
 /***
  * @class FixNode
@@ -16,7 +18,7 @@
  */
 class FixNode {
  public:
-  SymbolNode* symbol;
+  shared_ptr<SymbolNode> symbol;
   int address;
   int step;
 };

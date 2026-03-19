@@ -7,10 +7,9 @@
 #include "compiler_hooks.h"
 #include "lexeme.h"
 
-int CollisionCompilerFunctionStrategy::execute(CompilerContext* context,
-                                               shared_ptr<ActionNode> action,
-                                               int* result,
-                                               unsigned int parmCount) {
+int CollisionCompilerFunctionStrategy::execute(
+    shared_ptr<CompilerContext> context, shared_ptr<ActionNode> action,
+    int* result, unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "COLLISION") return Lexeme::subtype_unknown;
 

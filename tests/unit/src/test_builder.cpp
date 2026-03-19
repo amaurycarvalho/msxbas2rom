@@ -38,14 +38,15 @@ static std::string createTempBin(const std::string& filename, int size) {
   return path;
 }
 
-static bool compileProgram(const std::string& filename, Compiler& compiler) {
-  Lexer lexer;
-  Parser parser;
+static bool compileProgram(const std::string& filename,
+                           shared_ptr<Compiler> compiler) {
+  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Parser> parser = make_shared<Parser>();
 
-  if (!lexer.load(filename)) return false;
-  if (!lexer.evaluate()) return false;
-  if (!parser.evaluate(&lexer)) return false;
-  return compiler.build(&parser);
+  if (!lexer->load(filename)) return false;
+  if (!lexer->evaluate()) return false;
+  if (!parser->evaluate(lexer)) return false;
+  return compiler->build(parser);
 }
 
 TEST_SUITE("Builder") {
@@ -53,25 +54,28 @@ TEST_SUITE("Builder") {
     const std::string filename =
         createTempBas("builder_valid.bas", "10 PRINT \"ROM\"\n20 END\n");
 
-    Z80OpcodeWriter cpuOpcodeWriter;
-    Compiler compiler(&cpuOpcodeWriter);
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
     REQUIRE(compileProgram(filename, compiler) == true);
 
     Rom rom;
-    CHECK(rom.build(&compiler) == true);
+    CHECK(rom.build(compiler) == true);
     CHECK(rom.romSize > 0);
-    CHECK(fileExists(compiler.getOpts()->outputFilename) == true);
+    CHECK(fileExists(compiler->getOpts()->outputFilename) == true);
 
     std::remove(filename.c_str());
-    std::remove(compiler.getOpts()->outputFilename.c_str());
+    std::remove(compiler->getOpts()->outputFilename.c_str());
   }
 
   TEST_CASE("Fails ROM build with non-compiled input") {
-    Z80OpcodeWriter cpuOpcodeWriter;
-    Compiler compiler(&cpuOpcodeWriter);
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
     Rom rom;
 
-    CHECK(rom.build(&compiler) == false);
+    CHECK(rom.build(compiler) == false);
   }
 
   TEST_CASE("Rejects resource block larger than 16K") {

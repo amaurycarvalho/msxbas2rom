@@ -7,7 +7,7 @@
 #include "compiler_variable_emitter.h"
 #include "lexeme.h"
 
-int LeftCompilerFunctionStrategy::execute(CompilerContext* context,
+int LeftCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                           shared_ptr<ActionNode> action,
                                           int* result, unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;

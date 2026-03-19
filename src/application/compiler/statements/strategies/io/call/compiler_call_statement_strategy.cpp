@@ -1,10 +1,13 @@
 #include "compiler_call_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_hooks.h"
 #include "compiler_variable_emitter.h"
+#include "lexeme.h"
 
-void CompilerCallStatementStrategy::cmd_call(CompilerContext* context) {
+void CompilerCallStatementStrategy::cmd_call(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& variable = *context->variableEmitter;
   shared_ptr<ActionNode> action;
@@ -44,7 +47,8 @@ void CompilerCallStatementStrategy::cmd_call(CompilerContext* context) {
   }
 }
 
-bool CompilerCallStatementStrategy::execute(CompilerContext* context) {
+bool CompilerCallStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_call(context);
   return context->compiled;
 }

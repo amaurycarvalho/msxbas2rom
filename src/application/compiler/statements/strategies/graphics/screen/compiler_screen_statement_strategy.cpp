@@ -1,11 +1,14 @@
 #include "compiler_screen_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerScreenStatementStrategy::cmd_screen(CompilerContext* context) {
+void CompilerScreenStatementStrategy::cmd_screen(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action;
@@ -158,7 +161,7 @@ void CompilerScreenStatementStrategy::cmd_screen(CompilerContext* context) {
 }
 
 void CompilerScreenStatementStrategy::cmd_screen_copy(
-    CompilerContext* context) {
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
@@ -215,7 +218,7 @@ void CompilerScreenStatementStrategy::cmd_screen_copy(
 }
 
 void CompilerScreenStatementStrategy::cmd_screen_paste(
-    CompilerContext* context) {
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
@@ -254,7 +257,7 @@ void CompilerScreenStatementStrategy::cmd_screen_paste(
 }
 
 void CompilerScreenStatementStrategy::cmd_screen_scroll(
-    CompilerContext* context) {
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action;
@@ -297,7 +300,7 @@ void CompilerScreenStatementStrategy::cmd_screen_scroll(
 }
 
 void CompilerScreenStatementStrategy::cmd_screen_load(
-    CompilerContext* context) {
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action;
@@ -322,19 +325,22 @@ void CompilerScreenStatementStrategy::cmd_screen_load(
   }
 }
 
-void CompilerScreenStatementStrategy::cmd_screen_on(CompilerContext* context) {
+void CompilerScreenStatementStrategy::cmd_screen_on(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   // call cmd_enascr
   cpu.addCall(def_cmd_enascr);
 }
 
-void CompilerScreenStatementStrategy::cmd_screen_off(CompilerContext* context) {
+void CompilerScreenStatementStrategy::cmd_screen_off(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   // call cmd_disscr
   cpu.addCall(def_cmd_disscr);
 }
 
-bool CompilerScreenStatementStrategy::execute(CompilerContext* context) {
+bool CompilerScreenStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_screen(context);
   return context->compiled;
 }

@@ -5,10 +5,10 @@
 
 class CompilerBeepStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_beep(CompilerContext* context);
+  void cmd_beep(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_BEEP_STATEMENT_STRATEGY_H_INCLUDED

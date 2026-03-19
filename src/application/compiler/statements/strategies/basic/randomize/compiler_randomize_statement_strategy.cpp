@@ -3,7 +3,7 @@
 #include "compiler_context.h"
 
 void CompilerRandomizeStatementStrategy::cmd_randomize(
-    CompilerContext* context) {
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   // ld hl, 0x3579      ; RANDOMIZE 1 - FIX
   cpu.addLdHL(0x3579);
@@ -16,7 +16,8 @@ void CompilerRandomizeStatementStrategy::cmd_randomize(
   cpu.addLdiiHL(0xF7BE);
 }
 
-bool CompilerRandomizeStatementStrategy::execute(CompilerContext* context) {
+bool CompilerRandomizeStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_randomize(context);
   return context->compiled;
 }

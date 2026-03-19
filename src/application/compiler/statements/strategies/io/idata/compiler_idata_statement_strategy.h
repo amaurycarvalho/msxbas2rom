@@ -5,10 +5,10 @@
 
 class CompilerIdataStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_idata(CompilerContext* context);
+  void cmd_idata(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_IDATA_STATEMENT_STRATEGY_H_INCLUDED

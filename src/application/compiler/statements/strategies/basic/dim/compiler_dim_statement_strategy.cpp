@@ -1,10 +1,12 @@
 #include "compiler_dim_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "lexeme.h"
 #include "logger.h"
 
-void CompilerDimStatementStrategy::cmd_dim(CompilerContext* context) {
+void CompilerDimStatementStrategy::cmd_dim(
+    shared_ptr<CompilerContext> context) {
   shared_ptr<Lexeme> lexeme, parm_lexeme;
   shared_ptr<ActionNode> action;
   unsigned int i, k, w, tt, t = context->current_action->actions.size();
@@ -104,7 +106,8 @@ void CompilerDimStatementStrategy::cmd_dim(CompilerContext* context) {
   }
 }
 
-bool CompilerDimStatementStrategy::execute(CompilerContext* context) {
+bool CompilerDimStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_dim(context);
   return context->compiled;
 }

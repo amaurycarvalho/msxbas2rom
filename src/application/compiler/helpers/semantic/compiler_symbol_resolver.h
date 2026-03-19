@@ -18,20 +18,20 @@ using namespace std;
 
 class CompilerSymbolResolver {
  private:
-  CompilerContext* context;
+  shared_ptr<CompilerContext> context;
 
  public:
-  SymbolNode* getSymbol(shared_ptr<Lexeme> lexeme);
-  SymbolNode* addSymbol(shared_ptr<Lexeme> lexeme);
-  SymbolNode* getSymbol(shared_ptr<TagNode> tag);
-  SymbolNode* addSymbol(shared_ptr<TagNode> tag);
-  SymbolNode* addSymbol(string line);
+  shared_ptr<SymbolNode> getSymbol(shared_ptr<Lexeme> lexeme);
+  shared_ptr<SymbolNode> addSymbol(shared_ptr<Lexeme> lexeme);
+  shared_ptr<SymbolNode> getSymbol(shared_ptr<TagNode> tag);
+  shared_ptr<SymbolNode> addSymbol(shared_ptr<TagNode> tag);
+  shared_ptr<SymbolNode> addSymbol(string line);
 
   void addSupportSymbols();
   void clearSymbols();
   int saveSymbols();
 
-  CompilerSymbolResolver(CompilerContext* context);
+  CompilerSymbolResolver(shared_ptr<CompilerContext> context);
   ~CompilerSymbolResolver();
 };
 

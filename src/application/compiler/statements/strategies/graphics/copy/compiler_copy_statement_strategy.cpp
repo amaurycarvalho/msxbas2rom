@@ -1,11 +1,14 @@
 #include "compiler_copy_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerCopyStatementStrategy::cmd_copy(CompilerContext* context) {
+void CompilerCopyStatementStrategy::cmd_copy(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
@@ -548,7 +551,8 @@ void CompilerCopyStatementStrategy::cmd_copy(CompilerContext* context) {
   }
 }
 
-void CompilerCopyStatementStrategy::cmd_copy_screen(CompilerContext* context) {
+void CompilerCopyStatementStrategy::cmd_copy_screen(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   int t = context->current_action->actions.size();
@@ -623,7 +627,8 @@ void CompilerCopyStatementStrategy::cmd_copy_screen(CompilerContext* context) {
   return;
 }
 
-bool CompilerCopyStatementStrategy::execute(CompilerContext* context) {
+bool CompilerCopyStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_copy(context);
   return context->compiled;
 }

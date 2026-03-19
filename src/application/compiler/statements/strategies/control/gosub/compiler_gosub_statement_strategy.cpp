@@ -1,10 +1,13 @@
 #include "compiler_gosub_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_code_helper.h"
 #include "compiler_context.h"
 #include "compiler_fixup_resolver.h"
+#include "lexeme.h"
 
-void CompilerGosubStatementStrategy::cmd_gosub(CompilerContext* context) {
+void CompilerGosubStatementStrategy::cmd_gosub(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   shared_ptr<Lexeme> lexeme;
@@ -30,7 +33,8 @@ void CompilerGosubStatementStrategy::cmd_gosub(CompilerContext* context) {
   context->syntaxError("Invalid GOSUB parameters");
 }
 
-bool CompilerGosubStatementStrategy::execute(CompilerContext* context) {
+bool CompilerGosubStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   context->traps_checked = context->codeHelper->addCheckTraps();
   cmd_gosub(context);
   return context->compiled;

@@ -5,10 +5,10 @@
 
 class CompilerWidthStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_width(CompilerContext* context);
+  void cmd_width(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_WIDTH_STATEMENT_STRATEGY_H_INCLUDED

@@ -66,8 +66,8 @@ class Lexeme {
   void clear();
   shared_ptr<Lexeme> clone();
   string toString(int indentOverride = -1);
-  const char* getTypeName();
-  const char* getSubTypeName();
+  string getTypeName();
+  string getSubTypeName();
   bool isKeyword();
   bool isKeyword(string pvalue);
   bool isSeparator(string pvalue);

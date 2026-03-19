@@ -1,10 +1,13 @@
 #include "compiler_width_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerWidthStatementStrategy::cmd_width(CompilerContext* context) {
+void CompilerWidthStatementStrategy::cmd_width(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action;
@@ -25,7 +28,8 @@ void CompilerWidthStatementStrategy::cmd_width(CompilerContext* context) {
   }
 }
 
-bool CompilerWidthStatementStrategy::execute(CompilerContext* context) {
+bool CompilerWidthStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_width(context);
   return context->compiled;
 }

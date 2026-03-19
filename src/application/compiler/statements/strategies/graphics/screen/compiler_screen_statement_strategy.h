@@ -5,16 +5,16 @@
 
 class CompilerScreenStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_screen(CompilerContext* context);
-  void cmd_screen_copy(CompilerContext* context);
-  void cmd_screen_paste(CompilerContext* context);
-  void cmd_screen_scroll(CompilerContext* context);
-  void cmd_screen_load(CompilerContext* context);
-  void cmd_screen_on(CompilerContext* context);
-  void cmd_screen_off(CompilerContext* context);
+  void cmd_screen(shared_ptr<CompilerContext> context);
+  void cmd_screen_copy(shared_ptr<CompilerContext> context);
+  void cmd_screen_paste(shared_ptr<CompilerContext> context);
+  void cmd_screen_scroll(shared_ptr<CompilerContext> context);
+  void cmd_screen_load(shared_ptr<CompilerContext> context);
+  void cmd_screen_on(shared_ptr<CompilerContext> context);
+  void cmd_screen_off(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_SCREEN_STATEMENT_STRATEGY_H_INCLUDED

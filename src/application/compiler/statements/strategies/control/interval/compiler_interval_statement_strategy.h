@@ -5,10 +5,10 @@
 
 class CompilerIntervalStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_interval(CompilerContext* context);
+  void cmd_interval(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_INTERVAL_STATEMENT_STRATEGY_H_INCLUDED

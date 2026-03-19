@@ -13,9 +13,10 @@
 #include <string>
 #include <vector>
 
-class CodeNode;
+#include "symbol_export_strategy_factory.h"
+
 class BuildOptions;
-class SymbolExportStrategyFactory;
+class SymbolExportContext;
 
 using namespace std;
 
@@ -25,19 +26,10 @@ using namespace std;
  */
 class SymbolManager {
  private:
-  unique_ptr<SymbolExportStrategyFactory> symbolExportFactory;
-  vector<vector<string>> kernelSymbolAddresses;
+  SymbolExportStrategyFactory symbolExportFactory;
 
  public:
-  vector<vector<string>> getKernelSymbolAddresses() const;
-  vector<CodeNode*> codeList;
-  vector<CodeNode*> dataList;
-  string exportFilename;
-
-  /***
-   * @brief clear all symbol lists
-   */
-  void clear();
+  shared_ptr<SymbolExportContext> context;
 
   bool saveSymbol(shared_ptr<BuildOptions> opts);
 

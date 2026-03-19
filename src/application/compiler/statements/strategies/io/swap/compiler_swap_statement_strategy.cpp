@@ -1,11 +1,14 @@
 #include "compiler_swap_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_hooks.h"
 #include "compiler_variable_emitter.h"
+#include "lexeme.h"
 
-void CompilerSwapStatementStrategy::cmd_swap(CompilerContext* context) {
+void CompilerSwapStatementStrategy::cmd_swap(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& optimizer = *context->codeOptimizer;
   auto& variable = *context->variableEmitter;
@@ -58,7 +61,8 @@ void CompilerSwapStatementStrategy::cmd_swap(CompilerContext* context) {
   }
 }
 
-bool CompilerSwapStatementStrategy::execute(CompilerContext* context) {
+bool CompilerSwapStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_swap(context);
   return context->compiled;
 }

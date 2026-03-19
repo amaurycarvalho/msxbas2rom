@@ -6,11 +6,14 @@
 
 #include "compiler_variable_emitter.h"
 
+#include "action_node.h"
 #include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "fix_node.h"
+#include "lexeme.h"
 #include "logger.h"
 
 bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
@@ -405,7 +408,8 @@ bool CompilerVariableEmitter::addAssignment(shared_ptr<ActionNode> action) {
   return true;
 }
 
-CompilerVariableEmitter::CompilerVariableEmitter(CompilerContext* context)
+CompilerVariableEmitter::CompilerVariableEmitter(
+    shared_ptr<CompilerContext> context)
     : context(context) {}
 
 CompilerVariableEmitter::~CompilerVariableEmitter() = default;

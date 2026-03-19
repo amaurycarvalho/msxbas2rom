@@ -9,12 +9,12 @@
 
 #include "build_options.h"
 #include "code_node.h"
-#include "symbol_manager.h"
+#include "symbol_export_context.h"
 
-bool OmdsExportStrategy::save(SymbolManager* symbolManager,
+bool OmdsExportStrategy::save(shared_ptr<SymbolExportContext> context,
                               shared_ptr<BuildOptions> opts) {
   FILE* file;
-  CodeNode* codeItem;
+  shared_ptr<CodeNode> codeItem;
   int i, t, size;
   char s[255];
   string segmString;
@@ -29,13 +29,13 @@ bool OmdsExportStrategy::save(SymbolManager* symbolManager,
       "<Symbol><type>%s</type><name>%s</name><value>%i</"
       "value><validSlots>65535</validSlots><validRegisters>3968</"
       "validRegisters><source>0</source><segments>%s</segments></Symbol>\n";
-  auto kernelSymbols = symbolManager->getKernelSymbolAddresses();
-  auto& codeList = symbolManager->codeList;
-  auto& dataList = symbolManager->dataList;
+  auto kernelSymbols = context->kernelSymbolAddresses;
+  auto& codeList = context->codeList;
+  auto& dataList = context->dataList;
 
-  symbolManager->exportFilename = opts->baseFilename + ".omds";
+  context->exportFilename = opts->baseFilename + ".omds";
 
-  if ((file = fopen(symbolManager->exportFilename.c_str(), "w"))) {
+  if ((file = fopen(context->exportFilename.c_str(), "w"))) {
     fwrite(omds_header, 1, sizeof(omds_header) - 1, file);
 
     t = kernelSymbols.size();

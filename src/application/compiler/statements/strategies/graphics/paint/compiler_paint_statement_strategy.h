@@ -5,10 +5,10 @@
 
 class CompilerPaintStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_paint(CompilerContext* context);
+  void cmd_paint(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_PAINT_STATEMENT_STRATEGY_H_INCLUDED

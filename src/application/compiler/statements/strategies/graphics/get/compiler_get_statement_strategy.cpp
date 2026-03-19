@@ -1,12 +1,15 @@
 #include "compiler_get_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
 #include "compiler_variable_emitter.h"
+#include "lexeme.h"
 
-void CompilerGetStatementStrategy::cmd_get(CompilerContext* context) {
+void CompilerGetStatementStrategy::cmd_get(
+    shared_ptr<CompilerContext> context) {
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> next_lexeme;
   unsigned int t = context->current_action->actions.size();
@@ -36,7 +39,8 @@ void CompilerGetStatementStrategy::cmd_get(CompilerContext* context) {
   }
 }
 
-void CompilerGetStatementStrategy::cmd_get_date(CompilerContext* context) {
+void CompilerGetStatementStrategy::cmd_get_date(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> action = context->current_action->actions[0];
@@ -99,7 +103,8 @@ void CompilerGetStatementStrategy::cmd_get_date(CompilerContext* context) {
   }
 }
 
-void CompilerGetStatementStrategy::cmd_get_time(CompilerContext* context) {
+void CompilerGetStatementStrategy::cmd_get_time(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> action = context->current_action->actions[0];
@@ -150,7 +155,8 @@ void CompilerGetStatementStrategy::cmd_get_time(CompilerContext* context) {
   }
 }
 
-void CompilerGetStatementStrategy::cmd_get_tile(CompilerContext* context) {
+void CompilerGetStatementStrategy::cmd_get_tile(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
@@ -242,7 +248,8 @@ void CompilerGetStatementStrategy::cmd_get_tile(CompilerContext* context) {
   }
 }
 
-void CompilerGetStatementStrategy::cmd_get_sprite(CompilerContext* context) {
+void CompilerGetStatementStrategy::cmd_get_sprite(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
@@ -334,7 +341,8 @@ void CompilerGetStatementStrategy::cmd_get_sprite(CompilerContext* context) {
   }
 }
 
-bool CompilerGetStatementStrategy::execute(CompilerContext* context) {
+bool CompilerGetStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_get(context);
   return context->compiled;
 }

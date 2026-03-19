@@ -2,28 +2,31 @@
 
 #include <memory>
 
+#include "action_node.h"
 #include "generic_statement_strategy.h"
+#include "lexeme.h"
+#include "lexer_line_context.h"
 #include "logger.h"
 
-bool SetStatementStrategy::parseSetAdjust(ParserContext& context,
-                                          LexerLineContext* statement) {
+bool SetStatementStrategy::parseSetAdjust(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
-  LexerLineContext parm;
+  shared_ptr<LexerLineContext> parm = make_shared<LexerLineContext>();
   int state = 0, sepCount = 0;
   bool mustPopAction = false;
 
-  parm.clearLexemes();
+  parm->clearLexemes();
 
   while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = context.coalesceSymbols(next_lexeme);
+    next_lexeme = context->coalesceSymbols(next_lexeme);
 
     if (state == 0) {
       if (next_lexeme->isSeparator("(")) {
         state++;
         continue;
       } else {
-        context.logger->error("SET ADJUST without a valid complement");
-        context.eval_expr_error = true;
+        context->logger->error("SET ADJUST without a valid complement");
+        context->eval_expr_error = true;
         return false;
       }
     } else if (state == 1) {
@@ -37,49 +40,49 @@ bool SetStatementStrategy::parseSetAdjust(ParserContext& context,
           continue;
         }
       } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
-        if (parm.getLexemeCount()) {
-          parm.setLexemeBOF();
-          if (!evaluateExpression(context, &parm)) {
+        if (parm->getLexemeCount()) {
+          parm->setLexemeBOF();
+          if (!evaluateExpression(context, parm)) {
             return false;
           }
-          parm.clearLexemes();
+          parm->clearLexemes();
           if (mustPopAction) {
-            context.popActionRoot();
+            context->popActionRoot();
             mustPopAction = false;
           }
         } else {
-          context.pushActionFromLexeme(context.lex_null);
+          context->pushActionFromLexeme(context->lex_null);
         }
         continue;
       }
-      parm.addLexeme(next_lexeme);
+      parm->addLexeme(next_lexeme);
     }
   }
 
-  if (parm.getLexemeCount()) {
-    parm.getFirstLexeme();
-    parm.setLexemeBOF();
-    if (!evaluateExpression(context, &parm)) {
+  if (parm->getLexemeCount()) {
+    parm->getFirstLexeme();
+    parm->setLexemeBOF();
+    if (!evaluateExpression(context, parm)) {
       return false;
     }
-    parm.clearLexemes();
+    parm->clearLexemes();
   }
 
   return true;
 }
 
-bool SetStatementStrategy::parseSetTile(ParserContext& context,
-                                        LexerLineContext* statement) {
+bool SetStatementStrategy::parseSetTile(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
   shared_ptr<ActionNode> action;
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
-    context.coalesceSymbols(next_lexeme);
+    context->coalesceSymbols(next_lexeme);
 
     next_lexeme = statement->getCurrentLexeme();
     action = make_shared<ActionNode>(next_lexeme);
-    context.pushActionRoot(action);
+    context->pushActionRoot(action);
 
     if (next_lexeme->type == Lexeme::type_keyword) {
       if (next_lexeme->value == "COLOR" || next_lexeme->value == "PATTERN" ||
@@ -90,24 +93,24 @@ bool SetStatementStrategy::parseSetTile(ParserContext& context,
       }
     }
 
-    context.popActionRoot();
+    context->popActionRoot();
   }
 
   return result;
 }
 
-bool SetStatementStrategy::parseSetTileColpat(ParserContext& context,
-                                              LexerLineContext* statement) {
+bool SetStatementStrategy::parseSetTileColpat(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
   shared_ptr<ActionNode> act_coord;
-  LexerLineContext parm;
+  shared_ptr<LexerLineContext> parm = make_shared<LexerLineContext>();
   int state = 1, sepCount = 0;
   bool hasArrayParm = false;
 
-  parm.clearLexemes();
+  parm->clearLexemes();
 
   while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = context.coalesceSymbols(next_lexeme);
+    next_lexeme = context->coalesceSymbols(next_lexeme);
 
     switch (state) {
       case 0: {
@@ -115,7 +118,7 @@ bool SetStatementStrategy::parseSetTileColpat(ParserContext& context,
           state = 2;
           sepCount = 0;
           act_coord = make_shared<ActionNode>("ARRAY");
-          context.pushActionRoot(act_coord);
+          context->pushActionRoot(act_coord);
           hasArrayParm = true;
           continue;
         } else {
@@ -126,17 +129,17 @@ bool SetStatementStrategy::parseSetTileColpat(ParserContext& context,
       case 1: {
         if (next_lexeme->isSeparator(",")) {
           state = 0;
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!evaluateExpression(context, &parm)) {
+          if (parm->getLexemeCount()) {
+            parm->setLexemeBOF();
+            if (!evaluateExpression(context, parm)) {
               return false;
             }
-            parm.clearLexemes();
+            parm->clearLexemes();
           } else {
-            context.pushActionFromLexeme(context.lex_null);
+            context->pushActionFromLexeme(context->lex_null);
           }
           if (hasArrayParm) {
-            context.popActionRoot();
+            context->popActionRoot();
             hasArrayParm = false;
           }
           continue;
@@ -154,14 +157,14 @@ bool SetStatementStrategy::parseSetTileColpat(ParserContext& context,
             continue;
           }
         } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!evaluateExpression(context, &parm)) {
+          if (parm->getLexemeCount()) {
+            parm->setLexemeBOF();
+            if (!evaluateExpression(context, parm)) {
               return false;
             }
-            parm.clearLexemes();
+            parm->clearLexemes();
           } else {
-            context.pushActionFromLexeme(context.lex_null);
+            context->pushActionFromLexeme(context->lex_null);
           }
           continue;
         }
@@ -169,37 +172,37 @@ bool SetStatementStrategy::parseSetTileColpat(ParserContext& context,
       } break;
     }
 
-    parm.addLexeme(next_lexeme);
+    parm->addLexeme(next_lexeme);
   }
 
-  if (parm.getLexemeCount()) {
-    parm.setLexemeBOF();
-    if (!evaluateExpression(context, &parm)) {
+  if (parm->getLexemeCount()) {
+    parm->setLexemeBOF();
+    if (!evaluateExpression(context, parm)) {
       return false;
     }
 
-    parm.clearLexemes();
+    parm->clearLexemes();
 
     if (hasArrayParm) {
-      context.popActionRoot();
+      context->popActionRoot();
     }
   }
 
   return true;
 }
 
-bool SetStatementStrategy::parseSetSprite(ParserContext& context,
-                                          LexerLineContext* statement) {
+bool SetStatementStrategy::parseSetSprite(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
   shared_ptr<ActionNode> action;
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
-    context.coalesceSymbols(next_lexeme);
+    context->coalesceSymbols(next_lexeme);
 
     next_lexeme = statement->getCurrentLexeme();
     action = make_shared<ActionNode>(next_lexeme);
-    context.pushActionRoot(action);
+    context->pushActionRoot(action);
 
     if (next_lexeme->type == Lexeme::type_keyword) {
       if (next_lexeme->value == "COLOR" || next_lexeme->value == "PATTERN" ||
@@ -208,24 +211,24 @@ bool SetStatementStrategy::parseSetSprite(ParserContext& context,
       }
     }
 
-    context.popActionRoot();
+    context->popActionRoot();
   }
 
   return result;
 }
 
 bool SetStatementStrategy::parseSetSpriteColpattra(
-    ParserContext& context, LexerLineContext* statement) {
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
   shared_ptr<ActionNode> act_coord;
-  LexerLineContext parm;
+  shared_ptr<LexerLineContext> parm = make_shared<LexerLineContext>();
   int state = 1, sepCount = 0;
   bool hasArrayParm = false;
 
-  parm.clearLexemes();
+  parm->clearLexemes();
 
   while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = context.coalesceSymbols(next_lexeme);
+    next_lexeme = context->coalesceSymbols(next_lexeme);
 
     switch (state) {
       case 0: {
@@ -233,7 +236,7 @@ bool SetStatementStrategy::parseSetSpriteColpattra(
           state = 2;
           sepCount = 0;
           act_coord = make_shared<ActionNode>("ARRAY");
-          context.pushActionRoot(act_coord);
+          context->pushActionRoot(act_coord);
           hasArrayParm = true;
           continue;
         } else {
@@ -244,17 +247,17 @@ bool SetStatementStrategy::parseSetSpriteColpattra(
       case 1: {
         if (next_lexeme->isSeparator(",")) {
           state = 0;
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!evaluateExpression(context, &parm)) {
+          if (parm->getLexemeCount()) {
+            parm->setLexemeBOF();
+            if (!evaluateExpression(context, parm)) {
               return false;
             }
-            parm.clearLexemes();
+            parm->clearLexemes();
           } else {
-            context.pushActionFromLexeme(context.lex_null);
+            context->pushActionFromLexeme(context->lex_null);
           }
           if (hasArrayParm) {
-            context.popActionRoot();
+            context->popActionRoot();
             hasArrayParm = false;
           }
           continue;
@@ -272,14 +275,14 @@ bool SetStatementStrategy::parseSetSpriteColpattra(
             continue;
           }
         } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
-          if (parm.getLexemeCount()) {
-            parm.setLexemeBOF();
-            if (!evaluateExpression(context, &parm)) {
+          if (parm->getLexemeCount()) {
+            parm->setLexemeBOF();
+            if (!evaluateExpression(context, parm)) {
               return false;
             }
-            parm.clearLexemes();
+            parm->clearLexemes();
           } else {
-            context.pushActionFromLexeme(context.lex_null);
+            context->pushActionFromLexeme(context->lex_null);
           }
           continue;
         }
@@ -287,37 +290,37 @@ bool SetStatementStrategy::parseSetSpriteColpattra(
       } break;
     }
 
-    parm.addLexeme(next_lexeme);
+    parm->addLexeme(next_lexeme);
   }
 
-  if (parm.getLexemeCount()) {
-    parm.setLexemeBOF();
-    if (!evaluateExpression(context, &parm)) {
+  if (parm->getLexemeCount()) {
+    parm->setLexemeBOF();
+    if (!evaluateExpression(context, parm)) {
       return false;
     }
 
-    parm.clearLexemes();
+    parm->clearLexemes();
 
     if (hasArrayParm) {
-      context.popActionRoot();
+      context->popActionRoot();
     }
   }
 
   return true;
 }
 
-bool SetStatementStrategy::parseStatement(ParserContext& context,
-                                          LexerLineContext* statement) {
+bool SetStatementStrategy::parseStatement(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
   shared_ptr<ActionNode> action;
   bool result = false;
 
   if ((next_lexeme = statement->getNextLexeme())) {
-    context.coalesceSymbols(next_lexeme);
+    context->coalesceSymbols(next_lexeme);
 
     next_lexeme = statement->getCurrentLexeme();
     action = make_shared<ActionNode>(next_lexeme);
-    context.pushActionRoot(action);
+    context->pushActionRoot(action);
 
     if (next_lexeme->type == Lexeme::type_keyword) {
       if (next_lexeme->value == "BEEP" || next_lexeme->value == "DATE" ||
@@ -337,14 +340,14 @@ bool SetStatementStrategy::parseStatement(ParserContext& context,
       }
     }
 
-    context.popActionRoot();
+    context->popActionRoot();
   }
 
   return result;
 }
 
-bool SetStatementStrategy::execute(ParserContext& context,
-                                   LexerLineContext* statement,
+bool SetStatementStrategy::execute(shared_ptr<ParserContext> context,
+                                   shared_ptr<LexerLineContext> statement,
                                    shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);

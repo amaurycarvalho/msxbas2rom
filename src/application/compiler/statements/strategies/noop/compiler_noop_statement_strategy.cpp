@@ -2,7 +2,8 @@
 
 #include "compiler_context.h"
 
-bool NoopCompilerStatementStrategy::execute(CompilerContext* context) {
+bool NoopCompilerStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   // Keep legacy behavior: comments return early and do not run trap checks.
   context->skip_post_trap_check = true;
   return context->compiled;

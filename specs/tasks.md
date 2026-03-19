@@ -34,7 +34,7 @@
 - [x] Inspect application/compiler/functions/strategies to implement unit testing for each one at tests/unit/src/test_compiler.cpp. Next, propose a plan to implement them step by step and ask for approval;
 - [x] Inspect application/lexer/states/factory to implement unit testing for it at tests/unit/src/test_lexer.cpp. Next, propose a plan to implement it and ask for approval;
 - [x] Inspect application/lexer/states/implementations to implement unit testing for each one at tests/unit/src/test_lexer.cpp. Next, propose a plan to implement them step by step and ask for approval;
-- [ ] Inspect application/ and domain/ searching for memory allocation hardenings oportunities like `unique_ptr` and `shared_ptr` (C++11) on object allocations to avoid memory leaks and paying attention to vector pointers lists. Next, propose a plan to refactor them step by step and ask for approval;
+- [ ] Inspect application/ and domain/ searching for memory allocation hardenings oportunities like `shared_ptr` and `shared_ptr` (C++11) on object allocations to avoid memory leaks and paying attention to vector pointers lists. Next, propose a plan to refactor them step by step and ask for approval;
 - [ ] Inspect src/application/lexer searching for opportunities to apply or implement the Iterator pattern. If found, propose a plan to refactor it step by step and ask for approval;
 - [ ] Inspect src/application/parser searching for opportunities to apply or implement the Iterator pattern. If found, propose a plan to refactor it step by step and ask for approval;
 - [ ] Inspect src/application/compiler searching for opportunities to apply or implement the Iterator pattern. If found, propose a plan to refactor it step by step and ask for approval;

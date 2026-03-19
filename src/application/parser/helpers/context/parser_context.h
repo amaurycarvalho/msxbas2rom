@@ -12,12 +12,18 @@
 #include <string>
 #include <vector>
 
-#include "action_node.h"
-#include "lexeme.h"
-#include "lexer_line_context.h"
-#include "tag_node.h"
-
 class Logger;
+class Lexer;
+class BuildOptions;
+class ParserStatementStrategyFactory;
+class ExpressionEvaluator;
+class AssignmentEvaluator;
+class ParserLineEvaluator;
+
+class ActionNode;
+class TagNode;
+class Lexeme;
+class LexerLineContext;
 
 using namespace std;
 
@@ -27,6 +33,16 @@ using namespace std;
  */
 class ParserContext {
  public:
+  //! support objects
+  shared_ptr<Lexer> lexer;
+  shared_ptr<BuildOptions> opts;
+
+  //! support helpers
+  ParserStatementStrategyFactory* statementStrategyFactory;
+  shared_ptr<ExpressionEvaluator> exprEval;
+  shared_ptr<AssignmentEvaluator> assignEval;
+  shared_ptr<ParserLineEvaluator> lineEval;
+
   //! templates
   shared_ptr<Lexeme> lex_null, lex_index, lex_empty_string;
   shared_ptr<Lexeme> lex_rgb, lex_zero;
@@ -50,13 +66,15 @@ class ParserContext {
   int resourceCount;
 
   //! helper objects
-  unique_ptr<Logger> logger;
+  shared_ptr<Logger> logger;
 
   shared_ptr<TagNode> tag;
   shared_ptr<ActionNode> actionRoot;
-  LexerLineContext* error_line;
+  shared_ptr<LexerLineContext> error_line;
 
   //! helper methods
+  void setHelpers(shared_ptr<ParserContext> context,
+                  ParserStatementStrategyFactory* statementStrategyFactory);
   void reset();
 
   int gfxOperatorCode(shared_ptr<Lexeme> lexeme);

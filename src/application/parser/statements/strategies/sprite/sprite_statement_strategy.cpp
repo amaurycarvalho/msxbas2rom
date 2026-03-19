@@ -1,29 +1,32 @@
 #include "sprite_statement_strategy.h"
 
+#include "action_node.h"
 #include "generic_statement_strategy.h"
+#include "lexeme.h"
+#include "lexer_line_context.h"
 
-bool SpriteStatementStrategy::parseSpriteLoad(ParserContext& context,
-                                              LexerLineContext* statement) {
+bool SpriteStatementStrategy::parseSpriteLoad(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme = statement->getCurrentLexeme();
   bool result;
 
-  context.pushActionFromLexeme(next_lexeme);
+  context->pushActionFromLexeme(next_lexeme);
   GenericStatementStrategy genericStrategy;
   result = genericStrategy.parseStatement(context, statement);
-  context.popActionRoot();
+  context->popActionRoot();
 
   return result;
 }
 
-bool SpriteStatementStrategy::parseStatement(ParserContext& context,
-                                             LexerLineContext* statement) {
+bool SpriteStatementStrategy::parseStatement(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
 
   if ((next_lexeme = statement->getNextLexeme())) {
     if (next_lexeme->type == Lexeme::type_keyword) {
       if (next_lexeme->value == "ON" || next_lexeme->value == "OFF" ||
           next_lexeme->value == "STOP") {
-        context.pushActionFromLexeme(next_lexeme);
+        context->pushActionFromLexeme(next_lexeme);
         return true;
 
       } else if (next_lexeme->value == "LOAD") {
@@ -35,8 +38,8 @@ bool SpriteStatementStrategy::parseStatement(ParserContext& context,
   return false;
 }
 
-bool SpriteStatementStrategy::execute(ParserContext& context,
-                                      LexerLineContext* statement,
+bool SpriteStatementStrategy::execute(shared_ptr<ParserContext> context,
+                                      shared_ptr<LexerLineContext> statement,
                                       shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);

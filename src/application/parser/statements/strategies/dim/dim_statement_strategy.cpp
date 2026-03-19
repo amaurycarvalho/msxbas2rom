@@ -1,11 +1,13 @@
 #include "dim_statement_strategy.h"
 
+#include "action_node.h"
 #include "generic_statement_strategy.h"
+#include "lexeme.h"
 #include "logger.h"
 
-bool DimStatementStrategy::parseStatement(ParserContext& context,
-                                          LexerLineContext* statement) {
-  shared_ptr<ActionNode> action = context.actionRoot;
+bool DimStatementStrategy::parseStatement(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
+  shared_ptr<ActionNode> action = context->actionRoot;
   shared_ptr<ActionNode> subaction;
   shared_ptr<Lexeme> lexeme;
   unsigned int i, t;
@@ -22,7 +24,7 @@ bool DimStatementStrategy::parseStatement(ParserContext& context,
     lexeme->isArray = true;
     lexeme->parm_count = subaction->actions.size();
     if (!lexeme->parm_count) {
-      context.logger->error(
+      context->logger->error(
           "Invalid array declaration: DIM size parameter is missing");
       return false;
     }
@@ -31,8 +33,8 @@ bool DimStatementStrategy::parseStatement(ParserContext& context,
   return true;
 }
 
-bool DimStatementStrategy::execute(ParserContext& context,
-                                   LexerLineContext* statement,
+bool DimStatementStrategy::execute(shared_ptr<ParserContext> context,
+                                   shared_ptr<LexerLineContext> statement,
                                    shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseStatement(context, statement);

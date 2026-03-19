@@ -5,11 +5,11 @@
 
 class CompilerCopyStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_copy(CompilerContext* context);
-  void cmd_copy_screen(CompilerContext* context);
+  void cmd_copy(shared_ptr<CompilerContext> context);
+  void cmd_copy_screen(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_COPY_STATEMENT_STRATEGY_H_INCLUDED

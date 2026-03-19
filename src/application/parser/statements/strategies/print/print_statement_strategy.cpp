@@ -1,24 +1,26 @@
 #include "print_statement_strategy.h"
 
-#include "lexer.h"
+#include "action_node.h"
+#include "lexeme.h"
+#include "lexer_line_context.h"
 
-bool PrintStatementStrategy::parseStatement(ParserContext& context,
-                                            LexerLineContext* statement) {
+bool PrintStatementStrategy::parseStatement(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
-  LexerLineContext parm;
+  shared_ptr<LexerLineContext> parm = make_shared<LexerLineContext>();
   shared_ptr<ActionNode> action;
   int sepcount = 0, state = 0, i;
   bool print_using = false;
   shared_ptr<Lexeme> lex_using[5] = {0, 0, 0, 0, 0};
 
   while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = context.coalesceSymbols(next_lexeme);
+    next_lexeme = context->coalesceSymbols(next_lexeme);
 
     switch (state) {
       case 0: {
         if (next_lexeme->isSeparator("#") && sepcount == 0) {
           state = 1;
-          context.pushActionFromLexeme(next_lexeme);
+          context->pushActionFromLexeme(next_lexeme);
           continue;
         } else if (next_lexeme->isKeyword("USING")) {
           print_using = true;
@@ -31,21 +33,21 @@ bool PrintStatementStrategy::parseStatement(ParserContext& context,
         } else if (next_lexeme->type == Lexeme::type_separator &&
                    (next_lexeme->value == "," || next_lexeme->value == ";") &&
                    sepcount == 0) {
-          if (parm.getLexemeCount()) {
+          if (parm->getLexemeCount()) {
             if (print_using) {
-              parm.addLexeme(lex_using[4]);
+              parm->addLexeme(lex_using[4]);
             }
 
-            parm.setLexemeBOF();
-            if (!evaluateExpression(context, &parm)) {
+            parm->setLexemeBOF();
+            if (!evaluateExpression(context, parm)) {
               return false;
             }
 
-            parm.clearLexemes();
+            parm->clearLexemes();
           }
 
           action = make_shared<ActionNode>(next_lexeme);
-          context.actionRoot->actions.push_back(action);
+          context->actionRoot->actions.push_back(action);
 
           continue;
         }
@@ -53,8 +55,8 @@ bool PrintStatementStrategy::parseStatement(ParserContext& context,
 
       case 1: {
         state = 2;
-        context.pushActionFromLexeme(next_lexeme);
-        context.popActionRoot();
+        context->pushActionFromLexeme(next_lexeme);
+        context->popActionRoot();
         continue;
       } break;
 
@@ -78,7 +80,7 @@ bool PrintStatementStrategy::parseStatement(ParserContext& context,
           lex_using[4] = make_shared<Lexeme>(Lexeme::type_separator,
                                              Lexeme::subtype_string, ")");
 
-          for (i = 0; i <= 3; i++) parm.addLexeme(lex_using[i]);
+          for (i = 0; i <= 3; i++) parm->addLexeme(lex_using[i]);
 
           state = 4;
 
@@ -99,19 +101,19 @@ bool PrintStatementStrategy::parseStatement(ParserContext& context,
       } break;
     }
 
-    if (parm.getLexemeCount() == 0 && print_using) {
-      for (i = 0; i <= 3; i++) parm.addLexeme(lex_using[i]);
+    if (parm->getLexemeCount() == 0 && print_using) {
+      for (i = 0; i <= 3; i++) parm->addLexeme(lex_using[i]);
     }
 
-    parm.addLexeme(next_lexeme);
+    parm->addLexeme(next_lexeme);
   }
 
-  if (parm.getLexemeCount()) {
+  if (parm->getLexemeCount()) {
     if (print_using) {
-      parm.addLexeme(lex_using[4]);
+      parm->addLexeme(lex_using[4]);
     }
-    parm.setLexemeBOF();
-    if (!evaluateExpression(context, &parm)) {
+    parm->setLexemeBOF();
+    if (!evaluateExpression(context, parm)) {
       return false;
     }
   }
@@ -119,8 +121,8 @@ bool PrintStatementStrategy::parseStatement(ParserContext& context,
   return true;
 }
 
-bool PrintStatementStrategy::execute(ParserContext& context,
-                                     LexerLineContext* statement,
+bool PrintStatementStrategy::execute(shared_ptr<ParserContext> context,
+                                     shared_ptr<LexerLineContext> statement,
                                      shared_ptr<Lexeme> lexeme) {
   if (lexeme->value == "?") {
     lexeme->value = "PRINT";

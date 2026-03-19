@@ -8,10 +8,10 @@ class CompilerPsetStatementStrategy : public ICompilerStatementStrategy {
   //! @brief PSET and PRESET statement
   //! @param context Compiler context
   //! @param forecolor True for PSET, False for PRESET
-  void cmd_pset(CompilerContext* context, bool forecolor);
+  void cmd_pset(shared_ptr<CompilerContext> context, bool forecolor);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_PSET_STATEMENT_STRATEGY_H_INCLUDED

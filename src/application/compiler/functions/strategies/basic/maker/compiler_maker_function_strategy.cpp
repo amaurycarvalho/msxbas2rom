@@ -6,7 +6,7 @@
 #include "compiler_hooks.h"
 #include "lexeme.h"
 
-int MakerCompilerFunctionStrategy::execute(CompilerContext* context,
+int MakerCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                            shared_ptr<ActionNode> action,
                                            int* result,
                                            unsigned int parmCount) {

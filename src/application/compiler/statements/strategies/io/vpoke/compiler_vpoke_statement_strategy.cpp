@@ -1,10 +1,13 @@
 #include "compiler_vpoke_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerVpokeStatementStrategy::cmd_vpoke(CompilerContext* context) {
+void CompilerVpokeStatementStrategy::cmd_vpoke(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme;
@@ -41,7 +44,8 @@ void CompilerVpokeStatementStrategy::cmd_vpoke(CompilerContext* context) {
   }
 }
 
-bool CompilerVpokeStatementStrategy::execute(CompilerContext* context) {
+bool CompilerVpokeStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_vpoke(context);
   return context->compiled;
 }

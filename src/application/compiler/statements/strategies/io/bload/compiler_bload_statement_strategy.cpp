@@ -1,13 +1,16 @@
 #include "compiler_bload_statement_strategy.h"
 
+#include "action_node.h"
 #include "build_options.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
 #include "fswrapper.h"
+#include "lexeme.h"
 #include "resources.h"
 
-void CompilerBloadStatementStrategy::cmd_bload(CompilerContext* context) {
+void CompilerBloadStatementStrategy::cmd_bload(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& opts = *context->opts;
   shared_ptr<Lexeme> lexeme;
@@ -77,7 +80,8 @@ void CompilerBloadStatementStrategy::cmd_bload(CompilerContext* context) {
   }
 }
 
-bool CompilerBloadStatementStrategy::execute(CompilerContext* context) {
+bool CompilerBloadStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_bload(context);
   return context->compiled;
 }

@@ -8,7 +8,7 @@
 #include "compiler_variable_emitter.h"
 #include "lexeme.h"
 
-int UsingCompilerFunctionStrategy::execute(CompilerContext* context,
+int UsingCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                            shared_ptr<ActionNode> action,
                                            int* result,
                                            unsigned int parmCount) {

@@ -48,8 +48,8 @@ TEST_SUITE("Domain") {
     std::string text = lex.toString();
     CHECK(text.find("Identifier") != std::string::npos);
     CHECK(text.find("String") != std::string::npos);
-    CHECK(lex.getTypeName() != nullptr);
-    CHECK(lex.getSubTypeName() != nullptr);
+    CHECK(!lex.getTypeName().empty());
+    CHECK(!lex.getSubTypeName().empty());
   }
 
   TEST_CASE("BuildOptions filename and compile mode naming") {

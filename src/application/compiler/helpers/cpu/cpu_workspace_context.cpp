@@ -5,9 +5,6 @@
 
 #include "cpu_workspace_context.h"
 
-#include <cstdlib>
-#include <cstring>
-
 CpuWorkspaceContext::CpuWorkspaceContext(int codeSizeLimit, int ramSizeLimit,
                                          int ramStartAddress)
     : code_size_limit(codeSizeLimit),

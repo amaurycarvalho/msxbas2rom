@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "action_node.h"
 #include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_evaluator.h"
@@ -10,10 +11,13 @@
 #include "compiler_hooks.h"
 #include "compiler_symbol_resolver.h"
 #include "compiler_variable_emitter.h"
+#include "fix_node.h"
+#include "lexeme.h"
 
 using namespace std;
 
-void CompilerForStatementStrategy::cmd_for(CompilerContext* context) {
+void CompilerForStatementStrategy::cmd_for(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
@@ -24,7 +28,7 @@ void CompilerForStatementStrategy::cmd_for(CompilerContext* context) {
   shared_ptr<ActionNode> saved_action = context->current_action;
   unsigned int i, t = saved_action->actions.size();
   int result_subtype;
-  ForNextNode* forNext;
+  shared_ptr<ForNextNode> forNext;
   bool has_let = false, has_to = false, has_step = false;
 
   if (!t) {
@@ -32,7 +36,7 @@ void CompilerForStatementStrategy::cmd_for(CompilerContext* context) {
   } else {
     context->for_count++;
 
-    forNext = new ForNextNode();
+    forNext = make_shared<ForNextNode>();
     context->forNextStack.push(forNext);
 
     forNext->index = context->for_count;
@@ -314,7 +318,8 @@ void CompilerForStatementStrategy::cmd_for(CompilerContext* context) {
   }
 }
 
-bool CompilerForStatementStrategy::execute(CompilerContext* context) {
+bool CompilerForStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_for(context);
   return context->compiled;
 }

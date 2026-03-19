@@ -4,7 +4,7 @@
 #include "compiler_context.h"
 #include "compiler_hooks.h"
 
-bool CompilerCmdEnaScrHandler::execute(CompilerContext* context,
+bool CompilerCmdEnaScrHandler::execute(shared_ptr<CompilerContext> context,
                                        shared_ptr<ActionNode> action) {
   auto& cpu = *context->cpu;
 

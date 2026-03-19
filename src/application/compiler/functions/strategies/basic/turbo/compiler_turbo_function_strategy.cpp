@@ -6,7 +6,7 @@
 #include "compiler_hooks.h"
 #include "lexeme.h"
 
-int TurboCompilerFunctionStrategy::execute(CompilerContext* context,
+int TurboCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                            shared_ptr<ActionNode> action,
                                            int* result,
                                            unsigned int parmCount) {

@@ -3,6 +3,7 @@
 #include <ctype.h>
 
 #include "lexeme.h"
+#include "lexer_line_context.h"
 
 LexerLineStateContext::LexerLineStateContext(LexerLineContext* lexerLine)
     : lexerLine(lexerLine),

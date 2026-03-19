@@ -44,11 +44,11 @@ using namespace std;
  */
 class Compiler {
  private:
-  unique_ptr<CompilerContext> context;
-  unique_ptr<CpuWorkspaceContext> workspace;
+  shared_ptr<CompilerContext> context;
+  shared_ptr<CpuWorkspaceContext> workspace;
 
  public:
-  explicit Compiler(ICpuOpcodeWriter* cpu);
+  explicit Compiler(shared_ptr<ICpuOpcodeWriter> cpu);
   ~Compiler();
 
   /***
@@ -56,7 +56,7 @@ class Compiler {
    * @param parser Parser object
    * @return True, if semanthic analysis success
    */
-  bool build(Parser* parser);
+  bool build(shared_ptr<Parser> parser);
   int write(unsigned char* dest, int start_address);
 
   int getCodeSize() const;
@@ -65,19 +65,19 @@ class Compiler {
   bool getAkm() const;
   bool getFont() const;
   bool getHasTinySprite() const;
-  Logger* getLogger();
+  shared_ptr<Logger> getLogger();
 
-  SymbolManager* getSymbolManager();
-  const SymbolManager* getSymbolManager() const;
+  shared_ptr<SymbolManager> getSymbolManager();
+  const shared_ptr<SymbolManager> getSymbolManager() const;
 
-  ResourceManager* getResourceManager();
-  const ResourceManager* getResourceManager() const;
+  shared_ptr<ResourceManager> getResourceManager();
+  const shared_ptr<ResourceManager> getResourceManager() const;
 
   int getRamSize() const;
 
   shared_ptr<TagNode> getCurrentTag() const;
 
-  Parser* getParser() const;
+  shared_ptr<Parser> getParser() const;
   shared_ptr<BuildOptions> getOpts() const;
 
   bool isCompiled() const;

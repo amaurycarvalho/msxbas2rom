@@ -1,10 +1,13 @@
 #include "compiler_key_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerKeyStatementStrategy::cmd_key(CompilerContext* context) {
+void CompilerKeyStatementStrategy::cmd_key(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action1, action2;
@@ -141,7 +144,8 @@ void CompilerKeyStatementStrategy::cmd_key(CompilerContext* context) {
   }
 }
 
-bool CompilerKeyStatementStrategy::execute(CompilerContext* context) {
+bool CompilerKeyStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_key(context);
   return context->compiled;
 }

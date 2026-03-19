@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <stack>
+#include <string>
 
 #include "cpu_opcode_writer.h"
 #include "for_next_node.h"
@@ -30,21 +31,21 @@ using namespace std;
 
 class CompilerContext {
  public:
-  Parser* parser;
+  shared_ptr<Parser> parser;
   shared_ptr<BuildOptions> opts;
-  ICpuOpcodeWriter* cpu;
+  shared_ptr<ICpuOpcodeWriter> cpu;
 
-  unique_ptr<CompilerEvaluator> evaluator;
-  unique_ptr<CompilerCodeHelper> codeHelper;
-  unique_ptr<CompilerFixupResolver> fixupResolver;
-  unique_ptr<CompilerSymbolResolver> symbolResolver;
-  unique_ptr<CompilerCodeOptimizer> codeOptimizer;
-  unique_ptr<CompilerExpressionEvaluator> expressionEvaluator;
-  unique_ptr<CompilerFloatConverter> floatConverter;
-  unique_ptr<CompilerVariableEmitter> variableEmitter;
+  shared_ptr<CompilerEvaluator> evaluator;
+  shared_ptr<CompilerCodeHelper> codeHelper;
+  shared_ptr<CompilerFixupResolver> fixupResolver;
+  shared_ptr<CompilerSymbolResolver> symbolResolver;
+  shared_ptr<CompilerCodeOptimizer> codeOptimizer;
+  shared_ptr<CompilerExpressionEvaluator> expressionEvaluator;
+  shared_ptr<CompilerFloatConverter> floatConverter;
+  shared_ptr<CompilerVariableEmitter> variableEmitter;
 
-  unique_ptr<SymbolManager> symbolManager;
-  unique_ptr<ResourceManager> resourceManager;
+  shared_ptr<SymbolManager> symbolManager;
+  shared_ptr<ResourceManager> resourceManager;
 
   bool pt3, akm, font, file_support, has_defusr;
   bool has_open_grp;
@@ -58,17 +59,19 @@ class CompilerContext {
   shared_ptr<TagNode> current_tag;
   shared_ptr<SymbolNode> heap_mark;
   shared_ptr<SymbolNode> temp_str_mark;
-  SymbolNode* end_mark;
-  FixNode *enable_basic_mark, *disable_basic_mark;
-  FixNode* draw_mark;
-  FixNode *io_redirect_mark, *io_screen_mark;
+  shared_ptr<SymbolNode> end_mark;
+  shared_ptr<FixNode> enable_basic_mark, disable_basic_mark;
+  shared_ptr<FixNode> draw_mark;
+  shared_ptr<FixNode> io_redirect_mark, io_screen_mark;
   shared_ptr<ActionNode> current_action;
 
-  vector<SymbolNode*> symbols;
-  vector<FixNode*> fixes;
-  stack<ForNextNode*> forNextStack;
+  vector<shared_ptr<SymbolNode>> symbols;
+  vector<shared_ptr<FixNode>> fixes;
+  stack<shared_ptr<ForNextNode>> forNextStack;
 
-  unique_ptr<Logger> logger;
+  shared_ptr<Logger> logger;
+
+  void setHelpers(shared_ptr<CompilerContext> context);
 
   void clear();
 

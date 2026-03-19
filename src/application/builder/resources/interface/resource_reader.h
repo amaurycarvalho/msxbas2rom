@@ -23,7 +23,7 @@ using namespace std;
 class ResourceReader {
  protected:
   string filename;
-  unique_ptr<Logger> logger;
+  shared_ptr<Logger> logger;
 
  public:
   vector<vector<unsigned char>> data;
@@ -33,7 +33,7 @@ class ResourceReader {
   bool isPacked;
   bool has1stBlockAnd2ndBlockSegmentDisalignmentBug;
 
-  Logger* getLogger();
+  shared_ptr<Logger> getLogger();
   const string getFilename();
 
   virtual bool remapTo(int index, int mappedSegm, int mappedAddress);

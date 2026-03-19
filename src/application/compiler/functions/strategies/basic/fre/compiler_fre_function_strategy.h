@@ -8,8 +8,9 @@ class CompilerContext;
 
 class FreCompilerFunctionStrategy : public ICompilerFunctionStrategy {
  public:
-  int execute(CompilerContext* context, shared_ptr<ActionNode> action,
-              int* result, unsigned int parmCount) override;
+  int execute(shared_ptr<CompilerContext> context,
+              shared_ptr<ActionNode> action, int* result,
+              unsigned int parmCount) override;
 };
 
 #endif  // FRE_COMPILER_FUNCTION_STRATEGY_H_INCLUDED

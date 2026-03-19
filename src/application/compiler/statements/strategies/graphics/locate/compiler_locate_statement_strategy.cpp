@@ -1,11 +1,14 @@
 #include "compiler_locate_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerLocateStatementStrategy::cmd_locate(CompilerContext* context) {
+void CompilerLocateStatementStrategy::cmd_locate(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   auto& optimizer = *context->codeOptimizer;
@@ -36,7 +39,8 @@ void CompilerLocateStatementStrategy::cmd_locate(CompilerContext* context) {
   }
 }
 
-bool CompilerLocateStatementStrategy::execute(CompilerContext* context) {
+bool CompilerLocateStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_locate(context);
   return context->compiled;
 }

@@ -1,15 +1,16 @@
 #include "def_statement_strategy.h"
 
+#include "lexeme.h"
 #include "lexer_line_context.h"
 #include "logger.h"
 
-bool DefStatementStrategy::parseDefUsr(ParserContext& context,
-                                       LexerLineContext* statement) {
+bool DefStatementStrategy::parseDefUsr(shared_ptr<ParserContext> context,
+                                       shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
-  LexerLineContext parm;
+  shared_ptr<LexerLineContext> parm = make_shared<LexerLineContext>();
   int state = 0;
 
-  context.has_defusr = true;
+  context->has_defusr = true;
 
   next_lexeme = statement->getCurrentLexeme();
   if (!next_lexeme) {
@@ -19,24 +20,24 @@ bool DefStatementStrategy::parseDefUsr(ParserContext& context,
   if (next_lexeme->value == "USR0") {
     next_lexeme->name = "USR";
     next_lexeme->value = next_lexeme->name;
-    context.pushActionFromLexeme(context.lex_zero);
+    context->pushActionFromLexeme(context->lex_zero);
     state = 1;
   }
 
-  context.pushActionFromLexeme(next_lexeme);
+  context->pushActionFromLexeme(next_lexeme);
 
   while ((next_lexeme = statement->getNextLexeme())) {
     switch (state) {
       case 0: {
         if (next_lexeme->isLiteralNumeric()) {
           state = 1;
-          context.pushActionFromLexeme(next_lexeme);
+          context->pushActionFromLexeme(next_lexeme);
           continue;
         } else if (next_lexeme->isOperator("=")) {
           state = 2;
-          context.pushActionFromLexeme(context.lex_zero);
+          context->pushActionFromLexeme(context->lex_zero);
         } else {
-          context.logger->error("Invalid DEF USR assignment");
+          context->logger->error("Invalid DEF USR assignment");
           return false;
         }
       } break;
@@ -45,39 +46,39 @@ bool DefStatementStrategy::parseDefUsr(ParserContext& context,
         if (next_lexeme->isOperator("=")) {
           state = 2;
         } else {
-          context.logger->error("DEF USR assignment is missing");
+          context->logger->error("DEF USR assignment is missing");
           return false;
         }
       } break;
 
       case 2: {
-        parm.addLexeme(next_lexeme);
+        parm->addLexeme(next_lexeme);
       }
     }
   }
 
-  if (parm.getLexemeCount()) {
-    parm.setLexemeBOF();
-    if (!evaluateExpression(context, &parm)) {
+  if (parm->getLexemeCount()) {
+    parm->setLexemeBOF();
+    if (!evaluateExpression(context, parm)) {
       return false;
     }
-    parm.clearLexemes();
+    parm->clearLexemes();
   }
 
-  context.popActionRoot();
+  context->popActionRoot();
 
   return true;
 }
 
-bool DefStatementStrategy::parseWithType(ParserContext& context,
-                                         LexerLineContext* statement,
+bool DefStatementStrategy::parseWithType(shared_ptr<ParserContext> context,
+                                         shared_ptr<LexerLineContext> statement,
                                          int vartype) {
   shared_ptr<Lexeme> next_lexeme;
   int state = 0, c[2], i;
 
   if (vartype == 0) {
     if ((next_lexeme = statement->getNextLexeme())) {
-      next_lexeme = context.coalesceSymbols(next_lexeme);
+      next_lexeme = context->coalesceSymbols(next_lexeme);
       if (next_lexeme->name == "INT")
         return parseWithType(context, statement, 2);
       else if (next_lexeme->name == "STR")
@@ -100,14 +101,14 @@ bool DefStatementStrategy::parseWithType(ParserContext& context,
   c[1] = -1;
 
   while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = context.coalesceSymbols(next_lexeme);
+    next_lexeme = context->coalesceSymbols(next_lexeme);
 
     if (next_lexeme->isSeparator(",")) {
       if (state) {
         if (c[0] >= 0 && c[1] >= 0)
-          for (i = c[0]; i <= c[1]; i++) context.deftbl[i] = vartype;
+          for (i = c[0]; i <= c[1]; i++) context->deftbl[i] = vartype;
       } else {
-        if (c[0] >= 0) context.deftbl[c[0]] = vartype;
+        if (c[0] >= 0) context->deftbl[c[0]] = vartype;
       }
 
       state = 0;
@@ -125,16 +126,16 @@ bool DefStatementStrategy::parseWithType(ParserContext& context,
 
   if (state) {
     if (c[0] >= 0 && c[1] >= 0)
-      for (i = c[0]; i <= c[1]; i++) context.deftbl[i] = vartype;
+      for (i = c[0]; i <= c[1]; i++) context->deftbl[i] = vartype;
   } else {
-    if (c[0] >= 0) context.deftbl[c[0]] = vartype;
+    if (c[0] >= 0) context->deftbl[c[0]] = vartype;
   }
 
   return true;
 }
 
-bool DefStatementStrategy::execute(ParserContext& context,
-                                   LexerLineContext* statement,
+bool DefStatementStrategy::execute(shared_ptr<ParserContext> context,
+                                   shared_ptr<LexerLineContext> statement,
                                    shared_ptr<Lexeme> lexeme) {
   int vartype = 0;
 

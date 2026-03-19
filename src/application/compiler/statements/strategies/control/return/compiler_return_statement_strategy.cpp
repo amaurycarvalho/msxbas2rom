@@ -1,12 +1,15 @@
 #include "compiler_return_statement_strategy.h"
 
+#include "action_node.h"
 #include "build_options.h"
 #include "compiler_code_helper.h"
 #include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_fixup_resolver.h"
+#include "lexeme.h"
 
-void CompilerReturnStatementStrategy::cmd_return(CompilerContext* context) {
+void CompilerReturnStatementStrategy::cmd_return(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& optimizer = *context->codeOptimizer;
@@ -100,7 +103,8 @@ void CompilerReturnStatementStrategy::cmd_return(CompilerContext* context) {
   context->syntaxError("Invalid RETURN parameters");
 }
 
-bool CompilerReturnStatementStrategy::execute(CompilerContext* context) {
+bool CompilerReturnStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   context->traps_checked = context->codeHelper->addCheckTraps();
   cmd_return(context);
   return context->compiled;

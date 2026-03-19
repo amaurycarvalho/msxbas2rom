@@ -5,7 +5,7 @@
 #include "compiler_expression_evaluator.h"
 #include "lexeme.h"
 
-int StrigCompilerFunctionStrategy::execute(CompilerContext* context,
+int StrigCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                            shared_ptr<ActionNode> action,
                                            int* result,
                                            unsigned int parmCount) {

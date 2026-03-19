@@ -16,7 +16,7 @@ namespace {
 // TYPE NAME MAP
 //--------------------------------------------------
 
-static const map<Lexeme::LexemeType, const char*> typeNames = {
+static const map<Lexeme::LexemeType, string> typeNames = {
     {Lexeme::type_unknown, "Unknown"},
     {Lexeme::type_identifier, "Identifier"},
     {Lexeme::type_keyword, "Keyword"},
@@ -29,7 +29,7 @@ static const map<Lexeme::LexemeType, const char*> typeNames = {
 // SUBTYPE NAME MAP
 //--------------------------------------------------
 
-static const map<Lexeme::LexemeSubType, const char*> subTypeNames = {
+static const map<Lexeme::LexemeSubType, string> subTypeNames = {
     {Lexeme::subtype_any, ""},
     {Lexeme::subtype_string, "String"},
     {Lexeme::subtype_numeric, "Numeric"},
@@ -208,11 +208,11 @@ string Lexeme::toString(int indentOverride) {
   return out;
 }
 
-const char* Lexeme::getTypeName() {
+string Lexeme::getTypeName() {
   return typeNames.at(type);
 }
 
-const char* Lexeme::getSubTypeName() {
+string Lexeme::getSubTypeName() {
   return subTypeNames.at(subtype);
 }
 

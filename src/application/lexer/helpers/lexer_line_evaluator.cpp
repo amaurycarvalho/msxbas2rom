@@ -7,6 +7,7 @@
 #include "lexer_line_evaluator.h"
 
 #include "lexeme.h"
+#include "lexer_line_state.h"
 #include "lexer_line_state_factory.h"
 
 bool LexerLineEvaluator::evaluate() {

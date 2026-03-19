@@ -9,7 +9,7 @@ ICpuOpcodeWriter::ICpuOpcodeWriter() {
   context = nullptr;
 }
 
-ICpuOpcodeWriter::ICpuOpcodeWriter(CpuWorkspaceContext* context) {
+ICpuOpcodeWriter::ICpuOpcodeWriter(shared_ptr<CpuWorkspaceContext> context) {
   this->context = context;
 }
 

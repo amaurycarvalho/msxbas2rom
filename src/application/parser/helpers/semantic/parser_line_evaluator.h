@@ -1,33 +1,39 @@
 #ifndef PARSER_LINE_EVALUATOR_H_INCLUDED
 #define PARSER_LINE_EVALUATOR_H_INCLUDED
 
-#include "assignment_evaluator.h"
-#include "expression_evaluator.h"
-#include "include_loader.h"
-#include "parser_context.h"
-#include "parser_statement_strategy_factory.h"
+#include <memory>
 
+class ParserContext;
 class LexerLineEvaluator;
 class LexerLineContext;
+class ParserStatementStrategyFactory;
+class ExpressionEvaluator;
+class AssignmentEvaluator;
+class IncludeLoader;
+
+using namespace std;
 
 class ParserLineEvaluator {
  public:
-  ParserLineEvaluator(ParserContext& context,
-                      ParserStatementStrategyFactory& strategyFactory,
-                      ExpressionEvaluator& expressionEvaluator,
-                      AssignmentEvaluator& assignmentEvaluator);
+  ParserLineEvaluator(shared_ptr<ParserContext> context,
+                      shared_ptr<ExpressionEvaluator> expressionEvaluator,
+                      shared_ptr<AssignmentEvaluator> assignmentEvaluator,
+                      ParserStatementStrategyFactory* strategyFactory);
   ~ParserLineEvaluator();
 
-  bool evaluateLine(LexerLineEvaluator* lexerLine);
-  bool evaluatePhrase(LexerLineContext* phrase);
-  bool evaluateStatement(LexerLineContext* statement);
+  bool evaluateLine(shared_ptr<LexerLineEvaluator> lexerLine);
+  bool evaluatePhrase(shared_ptr<LexerLineContext> phrase);
+  bool evaluateStatement(shared_ptr<LexerLineContext> statement);
+
+  shared_ptr<ParserContext> getContext();
+  void setContext(shared_ptr<ParserContext> context);
 
  private:
-  ParserContext& ctx;
-  ParserStatementStrategyFactory& statementStrategyFactory;
-  ExpressionEvaluator& exprEval;
-  AssignmentEvaluator& assignEval;
-  IncludeLoader includeLoader;
+  shared_ptr<ParserContext> ctx;
+  shared_ptr<ExpressionEvaluator> exprEval;
+  shared_ptr<AssignmentEvaluator> assignEval;
+  ParserStatementStrategyFactory* statementStrategyFactory;
+  unique_ptr<IncludeLoader> includeLoader;
 };
 
 #endif  // PARSER_LINE_EVALUATOR_H_INCLUDED

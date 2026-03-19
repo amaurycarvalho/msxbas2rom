@@ -1,10 +1,13 @@
 #include "compiler_sprite_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerSpriteStatementStrategy::cmd_sprite(CompilerContext* context) {
+void CompilerSpriteStatementStrategy::cmd_sprite(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> next_lexeme;
@@ -45,7 +48,7 @@ void CompilerSpriteStatementStrategy::cmd_sprite(CompilerContext* context) {
 }
 
 void CompilerSpriteStatementStrategy::cmd_sprite_load(
-    CompilerContext* context) {
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action;
@@ -74,7 +77,8 @@ void CompilerSpriteStatementStrategy::cmd_sprite_load(
   }
 }
 
-bool CompilerSpriteStatementStrategy::execute(CompilerContext* context) {
+bool CompilerSpriteStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_sprite(context);
   return context->compiled;
 }

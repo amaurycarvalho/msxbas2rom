@@ -14,9 +14,10 @@
 #include "lexeme.h"
 #include "symbol_node.h"
 
-FixNode* CompilerFixupResolver::addFix(SymbolNode* symbol) {
+shared_ptr<FixNode> CompilerFixupResolver::addFix(
+    shared_ptr<SymbolNode> symbol) {
   auto& cpu = *context->cpu;
-  FixNode* fix = new FixNode();
+  shared_ptr<FixNode> fix = make_shared<FixNode>();
   bool is_id = false;
 
   if (symbol->lexeme) {
@@ -46,30 +47,30 @@ FixNode* CompilerFixupResolver::addFix(SymbolNode* symbol) {
   return fix;
 }
 
-FixNode* CompilerFixupResolver::addFix(shared_ptr<Lexeme> lexeme) {
-  SymbolNode* symbol = context->symbolResolver->addSymbol(lexeme);
+shared_ptr<FixNode> CompilerFixupResolver::addFix(shared_ptr<Lexeme> lexeme) {
+  shared_ptr<SymbolNode> symbol = context->symbolResolver->addSymbol(lexeme);
   return addFix(symbol);
 }
 
-FixNode* CompilerFixupResolver::addFix(string line) {
+shared_ptr<FixNode> CompilerFixupResolver::addFix(string line) {
   return addFix(context->symbolResolver->addSymbol(line));
 }
 
-SymbolNode* CompilerFixupResolver::addPreMark() {
+shared_ptr<SymbolNode> CompilerFixupResolver::addPreMark() {
   string mark_name = "MARK_" + to_string(context->mark_count);
   context->mark_count++;
   return context->symbolResolver->addSymbol(mark_name);
 }
 
-FixNode* CompilerFixupResolver::addMark() {
+shared_ptr<FixNode> CompilerFixupResolver::addMark() {
   return addFix(addPreMark());
 }
 
 void CompilerFixupResolver::doFix() {
   auto& cpu = *context->cpu;
   unsigned int i, t = context->fixes.size(), address;
-  FixNode* fix;
-  SymbolNode* symbol;
+  shared_ptr<FixNode> fix;
+  shared_ptr<SymbolNode> symbol;
 
   for (i = 0; i < t; i++) {
     fix = context->fixes[i];
@@ -97,7 +98,8 @@ void CompilerFixupResolver::doFix() {
   }
 }
 
-CompilerFixupResolver::CompilerFixupResolver(CompilerContext* context)
+CompilerFixupResolver::CompilerFixupResolver(
+    shared_ptr<CompilerContext> context)
     : context(context) {}
 
 CompilerFixupResolver::~CompilerFixupResolver() = default;

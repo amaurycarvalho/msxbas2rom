@@ -9,11 +9,13 @@
 #include "lexer_line_evaluator.h"
 #include "parser_line_evaluator.h"
 
-IncludeLoader::IncludeLoader(ParserLineEvaluator& lineEvaluator)
+IncludeLoader::IncludeLoader(ParserLineEvaluator* lineEvaluator)
     : lineEvaluator(lineEvaluator) {}
 
+IncludeLoader::~IncludeLoader() = default;
+
 bool IncludeLoader::load(shared_ptr<Lexeme> lexeme,
-                         LexerLineEvaluator* lexerLine) {
+                         shared_ptr<LexerLineEvaluator> lexerLine) {
   if (lexeme) {
     string s = lexeme->value;
 
@@ -32,7 +34,7 @@ bool IncludeLoader::load(shared_ptr<Lexeme> lexeme,
 }
 
 bool IncludeLoader::load(const string& filename,
-                         LexerLineEvaluator* lexerLine) {
+                         shared_ptr<LexerLineEvaluator> lexerLine) {
   FILE* file;
 
   /***
@@ -49,7 +51,7 @@ bool IncludeLoader::load(const string& filename,
     while (fgets(newLineText, sizeof(newLineText), file)) {
       lexerLine->lineText = newLineText;
       if (lexerLine->evaluate()) {
-        if (!lineEvaluator.evaluateLine(lexerLine)) {
+        if (!lineEvaluator->evaluateLine(lexerLine)) {
           result = false;
           break;
         }

@@ -28,9 +28,11 @@
 #include "compiler.h"
 #include "fswrapper.h"
 #include "lexer.h"
+#include "parser.h"
 #include "resources.h"
 #include "rom.h"
 #include "symbols.h"
+#include "vscode_helper.h"
 
 /***
  * @brief msxbas2rom [options] <filename.bas>

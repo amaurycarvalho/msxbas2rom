@@ -8,13 +8,13 @@ class CompilerInputStatementStrategy : public ICompilerStatementStrategy {
   //! @brief INPUT statement
   //! @param context Compiler context
   //! @param question Show question mark?
-  void cmd_input(CompilerContext* context, bool questionMark);
+  void cmd_input(shared_ptr<CompilerContext> context, bool questionMark);
 
  public:
   //! @brief INPUT statement
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
   //! @brief LINE INPUT statement
-  bool executeLineInput(CompilerContext* context);
+  bool executeLineInput(shared_ptr<CompilerContext> context);
 };
 
 #endif  // COMPILER_INPUT_STATEMENT_STRATEGY_H_INCLUDED

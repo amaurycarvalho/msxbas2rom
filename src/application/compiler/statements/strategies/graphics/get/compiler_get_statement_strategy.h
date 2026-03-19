@@ -5,14 +5,14 @@
 
 class CompilerGetStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_get(CompilerContext* context);
-  void cmd_get_date(CompilerContext* context);
-  void cmd_get_time(CompilerContext* context);
-  void cmd_get_tile(CompilerContext* context);
-  void cmd_get_sprite(CompilerContext* context);
+  void cmd_get(shared_ptr<CompilerContext> context);
+  void cmd_get_date(shared_ptr<CompilerContext> context);
+  void cmd_get_time(shared_ptr<CompilerContext> context);
+  void cmd_get_tile(shared_ptr<CompilerContext> context);
+  void cmd_get_sprite(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_GET_STATEMENT_STRATEGY_H_INCLUDED

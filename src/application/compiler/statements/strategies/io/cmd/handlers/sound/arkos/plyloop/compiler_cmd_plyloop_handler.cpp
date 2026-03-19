@@ -10,8 +10,9 @@
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-bool CompilerCmdPlyLoopHandler::execute(CompilerContext* context,
+bool CompilerCmdPlyLoopHandler::execute(shared_ptr<CompilerContext> context,
                                         shared_ptr<ActionNode> action) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;

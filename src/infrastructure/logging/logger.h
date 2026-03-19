@@ -10,6 +10,9 @@ using namespace std;
 
 class Logger {
  public:
+  Logger();
+  ~Logger();
+
   enum class LogLevel { INFO, WARNING, DEBUG, ERROR };
 
   class LogEntry {
@@ -48,7 +51,7 @@ class Logger {
   LogEntry& error(const string& msg);
 
   LogEntry& add(LogEntry entry);
-  Logger* add(Logger* logger);
+  void add(shared_ptr<Logger> logger);
 
   bool contain(const set<LogLevel>& levels) const;
   bool containWarnings() const;

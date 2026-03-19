@@ -7,7 +7,7 @@
 #include "compiler_variable_emitter.h"
 #include "lexeme.h"
 
-int SpaceCompilerFunctionStrategy::execute(CompilerContext* context,
+int SpaceCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                            shared_ptr<ActionNode> action,
                                            int* result,
                                            unsigned int parmCount) {

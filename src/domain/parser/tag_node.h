@@ -26,7 +26,7 @@ class TagNode {
   string name;
   string value;
   vector<shared_ptr<ActionNode>> actions;
-  LexerLineContext* lexerLine;
+  shared_ptr<LexerLineContext> lexerLine;
 
   string toString() const;
 

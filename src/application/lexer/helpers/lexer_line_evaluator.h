@@ -9,8 +9,6 @@
 
 #include "lexer_line_context.h"
 
-using namespace std;
-
 /***
  * @class LexerLine
  * @brief It represents a set of MSX BASIC lexemes forming a line.

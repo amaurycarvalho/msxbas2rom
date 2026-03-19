@@ -4,7 +4,7 @@
 #include "compiler_context.h"
 #include "lexeme.h"
 
-int CsrlinCompilerFunctionStrategy::execute(CompilerContext* context,
+int CsrlinCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                             shared_ptr<ActionNode> action,
                                             int* result,
                                             unsigned int parmCount) {

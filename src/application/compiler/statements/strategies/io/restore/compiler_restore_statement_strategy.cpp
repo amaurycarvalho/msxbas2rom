@@ -1,10 +1,13 @@
 #include "compiler_restore_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerRestoreStatementStrategy::cmd_restore(CompilerContext* context) {
+void CompilerRestoreStatementStrategy::cmd_restore(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action;
@@ -37,7 +40,8 @@ void CompilerRestoreStatementStrategy::cmd_restore(CompilerContext* context) {
   }
 }
 
-bool CompilerRestoreStatementStrategy::execute(CompilerContext* context) {
+bool CompilerRestoreStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_restore(context);
   return context->compiled;
 }

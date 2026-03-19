@@ -7,7 +7,7 @@
 #include "compiler_hooks.h"
 #include "lexeme.h"
 
-int EofCompilerFunctionStrategy::execute(CompilerContext* context,
+int EofCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                          shared_ptr<ActionNode> action,
                                          int* result, unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;

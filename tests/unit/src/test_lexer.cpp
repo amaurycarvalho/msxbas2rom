@@ -42,7 +42,7 @@ static std::string createTempBin(const std::string& filename,
   return path;
 }
 
-static shared_ptr<Lexeme> findLexemeByValue(LexerLineContext* line,
+static shared_ptr<Lexeme> findLexemeByValue(shared_ptr<LexerLineContext> line,
                                             const std::string& value) {
   if (!line) return nullptr;
   for (int i = 0; i < line->getLexemeCount(); i++) {
@@ -71,7 +71,7 @@ TEST_SUITE("Lexer") {
     REQUIRE(lexer.evaluate() == true);
     REQUIRE(lexer.lines.size() == 1);
 
-    LexerLineContext* line = lexer.lines[0].get();
+    shared_ptr<LexerLineEvaluator> line = lexer.lines[0];
     REQUIRE(line != nullptr);
     CHECK(line->getLexemeCount() >= 3);
 
@@ -157,7 +157,7 @@ TEST_SUITE("Lexer") {
     REQUIRE(lexer.evaluate() == true);
     REQUIRE(lexer.lines.size() == 1);
 
-    LexerLineContext* line = lexer.lines[0].get();
+    shared_ptr<LexerLineEvaluator> line = lexer.lines[0];
     REQUIRE(line != nullptr);
 
     shared_ptr<Lexeme> num32767 = findLexemeByValue(line, "32767");
@@ -190,7 +190,7 @@ TEST_SUITE("Lexer") {
     REQUIRE(lexer.evaluate() == true);
     REQUIRE(lexer.lines.size() == 1);
 
-    LexerLineContext* line = lexer.lines[0].get();
+    shared_ptr<LexerLineContext> line = lexer.lines[0];
     REQUIRE(line != nullptr);
 
     shared_ptr<Lexeme> hex = findLexemeByValue(line, "&HFF");
@@ -226,7 +226,7 @@ TEST_SUITE("Lexer") {
       REQUIRE(lexer.evaluate() == true);
       REQUIRE(lexer.lines.size() == 1);
 
-      LexerLineContext* line = lexer.lines[0].get();
+      shared_ptr<LexerLineContext> line = lexer.lines[0];
       REQUIRE(line != nullptr);
       shared_ptr<Lexeme> rem = findLexemeByValue(line, "REM");
       REQUIRE(rem != nullptr);
@@ -244,7 +244,7 @@ TEST_SUITE("Lexer") {
       REQUIRE(lexer.evaluate() == true);
       REQUIRE(lexer.lines.size() == 1);
 
-      LexerLineContext* line = lexer.lines[0].get();
+      shared_ptr<LexerLineContext> line = lexer.lines[0];
       REQUIRE(line != nullptr);
 
       shared_ptr<Lexeme> apostrophe = findLexemeByValue(line, "'");

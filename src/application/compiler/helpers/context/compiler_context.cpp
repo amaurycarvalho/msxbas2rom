@@ -17,26 +17,15 @@
 #include "logger.h"
 #include "parser.h"
 #include "resources.h"
+#include "symbol_export_context.h"
 #include "symbol_manager.h"
 
 CompilerContext::CompilerContext() {
-  parser = nullptr;
-  opts = nullptr;
-  cpu = nullptr;
+  logger = make_shared<Logger>();
+  symbolManager = make_shared<SymbolManager>();
+  resourceManager = make_shared<ResourceManager>();
 
-  logger.reset(new Logger());
-  evaluator.reset(new CompilerEvaluator(this));
-  codeHelper.reset(new CompilerCodeHelper(this));
-  fixupResolver.reset(new CompilerFixupResolver(this));
-  symbolResolver.reset(new CompilerSymbolResolver(this));
-  codeOptimizer.reset(new CompilerCodeOptimizer(this));
-  expressionEvaluator.reset(new CompilerExpressionEvaluator(this));
-  floatConverter.reset(new CompilerFloatConverter(this));
-  variableEmitter.reset(new CompilerVariableEmitter(this));
-  symbolManager.reset(new SymbolManager());
-  resourceManager.reset(new ResourceManager());
-
-  temp_str_mark.reset(new SymbolNode());
+  temp_str_mark = make_shared<SymbolNode>();
   if (temp_str_mark) {
     temp_str_mark->lexeme =
         make_shared<Lexeme>(Lexeme::type_identifier, Lexeme::subtype_numeric,
@@ -44,7 +33,7 @@ CompilerContext::CompilerContext() {
     temp_str_mark->lexeme->isAbstract = true;
   }
 
-  heap_mark.reset(new SymbolNode());
+  heap_mark = make_shared<SymbolNode>();
   if (heap_mark) {
     heap_mark->lexeme = make_shared<Lexeme>(
         Lexeme::type_identifier, Lexeme::subtype_numeric, "_HEAP_", "0");
@@ -55,6 +44,19 @@ CompilerContext::CompilerContext() {
 }
 
 CompilerContext::~CompilerContext() = default;
+
+void CompilerContext::setHelpers(shared_ptr<CompilerContext> context) {
+  if (context) {
+    evaluator = make_shared<CompilerEvaluator>(context);
+    codeHelper = make_shared<CompilerCodeHelper>(context);
+    fixupResolver = make_shared<CompilerFixupResolver>(context);
+    symbolResolver = make_shared<CompilerSymbolResolver>(context);
+    codeOptimizer = make_shared<CompilerCodeOptimizer>(context);
+    expressionEvaluator = make_shared<CompilerExpressionEvaluator>(context);
+    floatConverter = make_shared<CompilerFloatConverter>(context);
+    variableEmitter = make_shared<CompilerVariableEmitter>(context);
+  }
+}
 
 void CompilerContext::clear() {
   current_tag = 0;
@@ -80,7 +82,7 @@ void CompilerContext::clear() {
   symbols.clear();
   fixes.clear();
 
-  symbolManager->clear();
+  symbolManager->context->clear();
   resourceManager->clear();
 
   while (!forNextStack.empty()) forNextStack.pop();

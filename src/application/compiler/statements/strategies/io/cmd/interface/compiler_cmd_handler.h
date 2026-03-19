@@ -11,7 +11,7 @@ using namespace std;
 class ICompilerCmdHandler {
  public:
   virtual ~ICompilerCmdHandler() {}
-  virtual bool execute(CompilerContext* context,
+  virtual bool execute(shared_ptr<CompilerContext> context,
                        shared_ptr<ActionNode> action) = 0;
 };
 

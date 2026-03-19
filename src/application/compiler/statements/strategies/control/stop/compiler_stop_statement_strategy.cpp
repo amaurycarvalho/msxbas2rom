@@ -1,11 +1,14 @@
 #include "compiler_stop_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_code_helper.h"
 #include "compiler_context.h"
 #include "compiler_end_statement_strategy.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerStopStatementStrategy::cmd_stop(CompilerContext* context) {
+void CompilerStopStatementStrategy::cmd_stop(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> next_lexeme;
@@ -43,7 +46,8 @@ void CompilerStopStatementStrategy::cmd_stop(CompilerContext* context) {
   }
 }
 
-bool CompilerStopStatementStrategy::execute(CompilerContext* context) {
+bool CompilerStopStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   context->traps_checked = context->codeHelper->addCheckTraps();
   cmd_stop(context);
   return context->compiled;

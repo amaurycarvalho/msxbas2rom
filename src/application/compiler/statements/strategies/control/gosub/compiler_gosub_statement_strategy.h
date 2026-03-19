@@ -5,10 +5,10 @@
 
 class CompilerGosubStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_gosub(CompilerContext* context);
+  void cmd_gosub(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_GOSUB_STATEMENT_STRATEGY_H_INCLUDED

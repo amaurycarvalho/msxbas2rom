@@ -5,10 +5,10 @@
 
 class CompilerNextStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_next(CompilerContext* context);
+  void cmd_next(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_NEXT_STATEMENT_STRATEGY_H_INCLUDED

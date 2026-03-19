@@ -17,8 +17,8 @@ using namespace std;
 
 class CompilerExpressionEvaluator {
  private:
-  CompilerContext* context;
-  unique_ptr<CompilerFunctionStrategyFactory> functionFactory;
+  shared_ptr<CompilerContext> context;
+  shared_ptr<CompilerFunctionStrategyFactory> functionFactory;
 
  public:
   int evalExpression(shared_ptr<ActionNode> action);
@@ -28,7 +28,7 @@ class CompilerExpressionEvaluator {
   int evalOperatorCast(shared_ptr<ActionNode> action);
   void addCast(int from, int to);
 
-  CompilerExpressionEvaluator(CompilerContext* context);
+  CompilerExpressionEvaluator(shared_ptr<CompilerContext> context);
   ~CompilerExpressionEvaluator();
 };
 

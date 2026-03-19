@@ -2,6 +2,10 @@
 
 #include <algorithm>
 
+Logger::Logger() {}
+
+Logger::~Logger() = default;
+
 void Logger::clear() {
   logs.clear();
 }
@@ -25,11 +29,10 @@ Logger::LogEntry& Logger::add(LogEntry entry) {
   return logs.back();
 }
 
-Logger* Logger::add(Logger* logger) {
+void Logger::add(shared_ptr<Logger> logger) {
   for (const auto& log : logger->getAll()) {
     add(log);
   }
-  return this;
 }
 
 string Logger::trim(const string& str) const {

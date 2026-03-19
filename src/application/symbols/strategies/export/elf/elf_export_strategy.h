@@ -38,7 +38,8 @@ class ElfExportStrategy : public SymbolExportStrategy {
    * @return true if the file was successfully generated.
    * @return false if an error occurred.
    */
-  bool save(SymbolManager* symbolManager, shared_ptr<BuildOptions> opts);
+  bool save(shared_ptr<SymbolExportContext> context,
+            shared_ptr<BuildOptions> opts);
 };
 
 #endif  // ELF_EXPORT_STRATEGY_H

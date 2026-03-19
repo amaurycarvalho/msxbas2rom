@@ -2,6 +2,7 @@
 #define PARSER_STATEMENT_STRATEGY_FACTORY_H_INCLUDED
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "call_statement_strategy.h"
@@ -61,10 +62,13 @@ class ParserStatementStrategyFactory {
   IfStatementStrategy ifStrategy;
   ForStatementStrategy forStrategy;
   NextStatementStrategy nextStrategy;
+
   map<string, IParserStatementStrategy*> strategies;
 
  public:
   ParserStatementStrategyFactory();
+  ~ParserStatementStrategyFactory();
+
   IParserStatementStrategy* getStrategyByKeyword(const string& keyword);
   size_t size() const;
 };

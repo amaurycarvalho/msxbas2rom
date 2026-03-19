@@ -5,14 +5,20 @@
 
 class GraphicsStatementStrategy : public IParserStatementStrategy {
  private:
-  bool parsePset(ParserContext& context, LexerLineContext* statement);
-  bool parseLine(ParserContext& context, LexerLineContext* statement);
-  bool parseCircle(ParserContext& context, LexerLineContext* statement);
-  bool parsePaint(ParserContext& context, LexerLineContext* statement);
-  bool parseCopy(ParserContext& context, LexerLineContext* statement);
+  bool parsePset(shared_ptr<ParserContext> context,
+                 shared_ptr<LexerLineContext> statement);
+  bool parseLine(shared_ptr<ParserContext> context,
+                 shared_ptr<LexerLineContext> statement);
+  bool parseCircle(shared_ptr<ParserContext> context,
+                   shared_ptr<LexerLineContext> statement);
+  bool parsePaint(shared_ptr<ParserContext> context,
+                  shared_ptr<LexerLineContext> statement);
+  bool parseCopy(shared_ptr<ParserContext> context,
+                 shared_ptr<LexerLineContext> statement);
 
  public:
-  bool execute(ParserContext& context, LexerLineContext* statement,
+  bool execute(shared_ptr<ParserContext> context,
+               shared_ptr<LexerLineContext> statement,
                shared_ptr<Lexeme> lexeme) override;
 };
 

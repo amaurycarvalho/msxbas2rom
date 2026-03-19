@@ -5,7 +5,7 @@
 
 class NoopCompilerStatementStrategy : public ICompilerStatementStrategy {
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // NOOP_COMPILER_STATEMENT_STRATEGY_H_INCLUDED

@@ -18,16 +18,23 @@
 #include "build_options.h"
 #include "code_node.h"
 #include "compiler_code_helper.h"
+#include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_end_statement_strategy.h"
 #include "compiler_evaluator.h"
+#include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
+#include "compiler_float_converter.h"
 #include "compiler_hooks.h"
 #include "compiler_start_statement_strategy.h"
 #include "compiler_symbol_resolver.h"
+#include "compiler_variable_emitter.h"
+#include "lexeme.h"
 #include "lexer_line_context.h"
 #include "logger.h"
+#include "parser.h"
 #include "resources.h"
+#include "symbol_export_context.h"
 #include "symbol_manager.h"
 #include "symbol_node.h"
 #include "tag_node.h"
@@ -36,12 +43,13 @@
  * @name Compiler class code
  */
 
-Compiler::Compiler(ICpuOpcodeWriter* cpu) {
-  context.reset(new CompilerContext());
+Compiler::Compiler(shared_ptr<ICpuOpcodeWriter> cpu) {
+  context = make_shared<CompilerContext>();
+  context->setHelpers(context);
   if (cpu) {
-    workspace.reset(new CpuWorkspaceContext(COMPILE_CODE_SIZE, COMPILE_RAM_SIZE,
-                                            def_RAM_BOTTOM));
-    cpu->context = workspace.get();
+    workspace = make_shared<CpuWorkspaceContext>(
+        COMPILE_CODE_SIZE, COMPILE_RAM_SIZE, def_RAM_BOTTOM);
+    cpu->context = workspace;
     context->cpu = cpu;
   }
   context->current_tag = 0;
@@ -74,23 +82,23 @@ bool Compiler::getHasTinySprite() const {
   return context->has_tiny_sprite;
 }
 
-Logger* Compiler::getLogger() {
-  return context->logger.get();
+shared_ptr<Logger> Compiler::getLogger() {
+  return context->logger;
 }
 
-SymbolManager* Compiler::getSymbolManager() {
-  return context->symbolManager.get();
+shared_ptr<SymbolManager> Compiler::getSymbolManager() {
+  return context->symbolManager;
 }
 
-const SymbolManager* Compiler::getSymbolManager() const {
-  return context->symbolManager.get();
+const shared_ptr<SymbolManager> Compiler::getSymbolManager() const {
+  return context->symbolManager;
 }
 
-ResourceManager* Compiler::getResourceManager() {
-  return context->resourceManager.get();
+shared_ptr<ResourceManager> Compiler::getResourceManager() {
+  return context->resourceManager;
 }
-const ResourceManager* Compiler::getResourceManager() const {
-  return context->resourceManager.get();
+const shared_ptr<ResourceManager> Compiler::getResourceManager() const {
+  return context->resourceManager;
 }
 
 int Compiler::getRamSize() const {
@@ -101,7 +109,7 @@ shared_ptr<TagNode> Compiler::getCurrentTag() const {
   return context->current_tag;
 }
 
-Parser* Compiler::getParser() const {
+shared_ptr<Parser> Compiler::getParser() const {
   return context->parser;
 }
 
@@ -113,12 +121,12 @@ bool Compiler::isCompiled() const {
   return context->compiled;
 }
 
-bool Compiler::build(Parser* parser) {
+bool Compiler::build(shared_ptr<Parser> parser) {
   CompilerStartStatementStrategy startStmt;
   CompilerEndStatementStrategy endStmt;
   shared_ptr<TagNode> tag;
-  SymbolNode* symbol;
-  CodeNode* codeItem;
+  shared_ptr<SymbolNode> symbol;
+  shared_ptr<CodeNode> codeItem;
   unsigned int i, t;
   string compiledCodeInfo;
 
@@ -138,28 +146,28 @@ bool Compiler::build(Parser* parser) {
   /// support
   context->logger->debug("Registering END statement...");
 
-  codeItem = new CodeNode();
+  codeItem = make_shared<CodeNode>();
   codeItem->name = "END_STMT";
   codeItem->start = context->cpu->context->code_pointer;
   //! register END statement code
-  endStmt.registerEndRoutine(context.get());
+  endStmt.registerEndRoutine(context);
   codeItem->length = context->cpu->context->code_pointer - codeItem->start;
   codeItem->is_code = true;
   codeItem->debug = true;
-  context->symbolManager->codeList.push_back(codeItem);
+  context->symbolManager->context->codeList.push_back(codeItem);
   context->logger->debug("+--> size: " + to_string(codeItem->length) +
                          " byte(s)");
 
   context->logger->debug("Registering start of program...");
 
-  codeItem = new CodeNode();
+  codeItem = make_shared<CodeNode>();
   codeItem->name = "START_PGM";
   codeItem->start = context->cpu->context->code_pointer;
-  startStmt.execute(context.get());
+  startStmt.execute(context);
   codeItem->length = context->cpu->context->code_pointer - codeItem->start;
   codeItem->is_code = true;
   codeItem->debug = true;
-  context->symbolManager->codeList.push_back(codeItem);
+  context->symbolManager->context->codeList.push_back(codeItem);
   context->logger->debug("+--> size: " + to_string(codeItem->length) +
                          " byte(s)");
   if (codeItem->length >= 0x4000) {
@@ -203,7 +211,7 @@ bool Compiler::build(Parser* parser) {
         symbol->address = context->cpu->context->code_pointer;
       }
 
-      codeItem = new CodeNode();
+      codeItem = make_shared<CodeNode>();
       codeItem->start = context->cpu->context->code_pointer;
       codeItem->name = "LIN_" + tag->name;
       if (tag->lexerLine) codeItem->lineNumber = tag->lexerLine->lineNumber;
@@ -218,7 +226,7 @@ bool Compiler::build(Parser* parser) {
       codeItem->length = context->cpu->context->code_pointer - codeItem->start;
       codeItem->is_code = true;
       codeItem->debug = true;
-      context->symbolManager->codeList.push_back(codeItem);
+      context->symbolManager->context->codeList.push_back(codeItem);
 
       compiledCodeInfo += "/" + to_string(codeItem->length);  /// code bytes
 
@@ -251,15 +259,15 @@ bool Compiler::build(Parser* parser) {
     /// @remark END is always the last statement of the program
     context->logger->debug("Registering end of program...");
 
-    codeItem = new CodeNode();
+    codeItem = make_shared<CodeNode>();
     codeItem->name = "END_PGM";
     codeItem->start = context->cpu->context->code_pointer;
     //! jump to the real END statement
-    endStmt.execute(context.get());
+    endStmt.execute(context);
     codeItem->length = context->cpu->context->code_pointer - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = true;
-    context->symbolManager->codeList.push_back(codeItem);
+    context->symbolManager->context->codeList.push_back(codeItem);
     context->logger->debug("+--> " + to_string(codeItem->length) + " byte(s)");
     if (codeItem->length >= 0x4000) {
       context->syntaxError(
@@ -269,13 +277,13 @@ bool Compiler::build(Parser* parser) {
 
     context->logger->debug("Registering support code...");
 
-    codeItem = new CodeNode();
+    codeItem = make_shared<CodeNode>();
     codeItem->start = context->cpu->context->code_pointer;
     context->symbolResolver->addSupportSymbols();
     codeItem->length = context->cpu->context->code_pointer - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = false;
-    context->symbolManager->codeList.push_back(codeItem);
+    context->symbolManager->context->codeList.push_back(codeItem);
     context->logger->debug("+--> " + to_string(codeItem->length) + " byte(s)");
     if (codeItem->length >= 0x4000) {
       context->syntaxError("Maximum of support code per ROM reached (16k)");
@@ -315,14 +323,14 @@ int Compiler::write(unsigned char* dest, int start_address) {
   unsigned char *d, *s;
   int address, new_address, addr_within_segm;
   int segm_from, segm_to, length;
-  FixNode *fix, *skip;
-  CodeNode* codeItem;
-  vector<FixNode*> skips;
+  shared_ptr<FixNode> fix, skip;
+  shared_ptr<CodeNode> codeItem;
+  vector<shared_ptr<FixNode>> skips;
   bool is_id, is_jump, is_load;
 
   // copy compiled code to final destination
 
-  t = context->symbolManager->codeList.size();
+  t = context->symbolManager->context->codeList.size();
   addr_within_segm = start_address;
 
   if (context->opts->megaROM) {
@@ -336,7 +344,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
     d = dest;
 
     for (i = 0; i < t; i++) {
-      codeItem = context->symbolManager->codeList[i];
+      codeItem = context->symbolManager->context->codeList[i];
 
       if (codeItem->length) {
         s = &context->cpu->context->code[codeItem->start];
@@ -386,7 +394,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
             step++;
           }
 
-          skip = new FixNode();
+          skip = make_shared<FixNode>();
           skip->address = codeItem->start;
           skip->step = step;
           skips.push_back(skip);
@@ -421,7 +429,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
   } else {
     for (i = 0; i < t; i++) {
-      codeItem = context->symbolManager->codeList[i];
+      codeItem = context->symbolManager->context->codeList[i];
       codeItem->segm = 0;
       codeItem->addr_within_segm = addr_within_segm;
       addr_within_segm += codeItem->length;

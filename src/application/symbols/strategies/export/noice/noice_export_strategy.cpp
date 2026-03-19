@@ -10,23 +10,23 @@
 #include "build_options.h"
 #include "code_node.h"
 #include "lexeme.h"
-#include "symbol_manager.h"
+#include "symbol_export_context.h"
 
-bool NoIceExportStrategy::save(SymbolManager* symbolManager,
+bool NoIceExportStrategy::save(shared_ptr<SymbolExportContext> context,
                                shared_ptr<BuildOptions> opts) {
   FILE* file;
-  CodeNode* codeItem;
+  shared_ptr<CodeNode> codeItem;
   int i, t, size;
   char s[255];
   const char* noice_format = "def %s %XH  ; %s\n";
   string comment;
-  auto kernelSymbols = symbolManager->getKernelSymbolAddresses();
-  auto& codeList = symbolManager->codeList;
-  auto& dataList = symbolManager->dataList;
+  auto kernelSymbols = context->kernelSymbolAddresses;
+  auto& codeList = context->codeList;
+  auto& dataList = context->dataList;
 
-  symbolManager->exportFilename = opts->baseFilename + ".noi";
+  context->exportFilename = opts->baseFilename + ".noi";
 
-  if ((file = fopen(symbolManager->exportFilename.c_str(), "w"))) {
+  if ((file = fopen(context->exportFilename.c_str(), "w"))) {
     t = kernelSymbols.size();
     for (i = 0; i < t; i++) {
       size = snprintf(s, sizeof(s), noice_format, kernelSymbols[i][0].c_str(),

@@ -1,11 +1,14 @@
 #include "compiler_read_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
 #include "compiler_variable_emitter.h"
+#include "lexeme.h"
 
-void CompilerReadStatementStrategy::cmd_read(CompilerContext* context) {
+void CompilerReadStatementStrategy::cmd_read(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   auto& variable = *context->variableEmitter;
@@ -38,7 +41,8 @@ void CompilerReadStatementStrategy::cmd_read(CompilerContext* context) {
   }
 }
 
-bool CompilerReadStatementStrategy::execute(CompilerContext* context) {
+bool CompilerReadStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_read(context);
   return context->compiled;
 }

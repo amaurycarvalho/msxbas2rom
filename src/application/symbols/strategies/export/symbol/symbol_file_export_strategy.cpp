@@ -9,22 +9,22 @@
 
 #include "build_options.h"
 #include "code_node.h"
-#include "symbol_manager.h"
+#include "symbol_export_context.h"
 
-bool SymbolFileExportStrategy::save(SymbolManager* symbolManager,
+bool SymbolFileExportStrategy::save(shared_ptr<SymbolExportContext> context,
                                     shared_ptr<BuildOptions> opts) {
   FILE* file;
-  CodeNode* codeItem;
+  shared_ptr<CodeNode> codeItem;
   int i, t, size;
   char s[255];
   const char* symbol_format[] = {"S%i_%s EQU 0%XH\n", "%s EQU 0%XH\n"};
-  auto kernelSymbols = symbolManager->getKernelSymbolAddresses();
-  auto& codeList = symbolManager->codeList;
-  auto& dataList = symbolManager->dataList;
+  auto kernelSymbols = context->kernelSymbolAddresses;
+  auto& codeList = context->codeList;
+  auto& dataList = context->dataList;
 
-  symbolManager->exportFilename = opts->baseFilename + ".symbol";
+  context->exportFilename = opts->baseFilename + ".symbol";
 
-  if ((file = fopen(symbolManager->exportFilename.c_str(), "w"))) {
+  if ((file = fopen(context->exportFilename.c_str(), "w"))) {
     t = kernelSymbols.size();
     for (i = 0; i < t; i++) {
       size =

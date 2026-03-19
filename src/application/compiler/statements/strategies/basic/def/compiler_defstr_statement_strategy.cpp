@@ -2,6 +2,7 @@
 
 #include "compiler_context.h"
 
-bool CompilerDefstrStatementStrategy::execute(CompilerContext* context) {
+bool CompilerDefstrStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   return true;  // resolved by parser
 }

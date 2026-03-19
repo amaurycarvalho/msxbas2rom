@@ -1,9 +1,12 @@
 #include "compiler_out_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
+#include "lexeme.h"
 
-void CompilerOutStatementStrategy::cmd_out(CompilerContext* context) {
+void CompilerOutStatementStrategy::cmd_out(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme;
@@ -38,7 +41,8 @@ void CompilerOutStatementStrategy::cmd_out(CompilerContext* context) {
   }
 }
 
-bool CompilerOutStatementStrategy::execute(CompilerContext* context) {
+bool CompilerOutStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_out(context);
   return context->compiled;
 }

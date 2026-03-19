@@ -7,13 +7,17 @@
 #include "parser_context.h"
 
 #include "action_node.h"
+#include "assignment_evaluator.h"
+#include "expression_evaluator.h"
 #include "lexeme.h"
 #include "lexer_line_context.h"
 #include "logger.h"
+#include "parser_line_evaluator.h"
+#include "parser_statement_strategy_factory.h"
 #include "tag_node.h"
 
 ParserContext::ParserContext() {
-  logger.reset(new Logger());
+  logger = make_shared<Logger>();
   lex_null =
       make_shared<Lexeme>(Lexeme::type_literal, Lexeme::subtype_null, "NULL");
   lex_empty_string =
@@ -29,6 +33,15 @@ ParserContext::ParserContext() {
 }
 
 ParserContext::~ParserContext() = default;
+
+void ParserContext::setHelpers(
+    shared_ptr<ParserContext> context,
+    ParserStatementStrategyFactory* statementStrategyFactory) {
+  exprEval = make_shared<ExpressionEvaluator>(context);
+  assignEval = make_shared<AssignmentEvaluator>(context, exprEval);
+  lineEval = make_shared<ParserLineEvaluator>(context, exprEval, assignEval,
+                                              statementStrategyFactory);
+}
 
 void ParserContext::reset() {
   int i;

@@ -11,14 +11,16 @@ class ParserLineEvaluator;
 class LexerLineEvaluator;
 
 class IncludeLoader {
- public:
-  IncludeLoader(ParserLineEvaluator& lineEvaluator);
-
-  bool load(shared_ptr<Lexeme> lexeme, LexerLineEvaluator* lexerLine);
-  bool load(const string& filename, LexerLineEvaluator* lexerLine);
-
  private:
-  ParserLineEvaluator& lineEvaluator;
+  ParserLineEvaluator* lineEvaluator;
+
+ public:
+  explicit IncludeLoader(ParserLineEvaluator* lineEvaluator);
+  ~IncludeLoader();
+
+  bool load(shared_ptr<Lexeme> lexeme,
+            shared_ptr<LexerLineEvaluator> lexerLine);
+  bool load(const string& filename, shared_ptr<LexerLineEvaluator> lexerLine);
 };
 
 #endif  // INCLUDE_LOADER_H_INCLUDED

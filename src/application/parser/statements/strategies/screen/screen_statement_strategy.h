@@ -5,14 +5,22 @@
 
 class ScreenStatementStrategy : public IParserStatementStrategy {
  public:
-  bool parseScreenCopy(ParserContext& context, LexerLineContext* statement);
-  bool parseScreenPaste(ParserContext& context, LexerLineContext* statement);
-  bool parseScreenScroll(ParserContext& context, LexerLineContext* statement);
-  bool parseScreenLoad(ParserContext& context, LexerLineContext* statement);
-  bool parseScreenOn(ParserContext& context, LexerLineContext* statement);
-  bool parseScreenOff(ParserContext& context, LexerLineContext* statement);
-  bool parseStatement(ParserContext& context, LexerLineContext* statement);
-  bool execute(ParserContext& context, LexerLineContext* statement,
+  bool parseScreenCopy(shared_ptr<ParserContext> context,
+                       shared_ptr<LexerLineContext> statement);
+  bool parseScreenPaste(shared_ptr<ParserContext> context,
+                        shared_ptr<LexerLineContext> statement);
+  bool parseScreenScroll(shared_ptr<ParserContext> context,
+                         shared_ptr<LexerLineContext> statement);
+  bool parseScreenLoad(shared_ptr<ParserContext> context,
+                       shared_ptr<LexerLineContext> statement);
+  bool parseScreenOn(shared_ptr<ParserContext> context,
+                     shared_ptr<LexerLineContext> statement);
+  bool parseScreenOff(shared_ptr<ParserContext> context,
+                      shared_ptr<LexerLineContext> statement);
+  bool parseStatement(shared_ptr<ParserContext> context,
+                      shared_ptr<LexerLineContext> statement);
+  bool execute(shared_ptr<ParserContext> context,
+               shared_ptr<LexerLineContext> statement,
                shared_ptr<Lexeme> lexeme) override;
 };
 

@@ -11,7 +11,6 @@
 
 #include <algorithm>
 #include <iomanip>
-#include <memory>
 #include <sstream>
 #include <utility>
 
@@ -23,7 +22,7 @@
 #include "resource_string_reader.h"
 
 ResourceManager::ResourceManager() {
-  logger.reset(new Logger());
+  logger = make_shared<Logger>();
 }
 
 ResourceManager::~ResourceManager() = default;
@@ -66,11 +65,11 @@ void ResourceManager::addText(string text) {
   resources.emplace_back(new ResourceStringReader(text));
 }
 
-void ResourceManager::addDataResource(Parser* parser) {
+void ResourceManager::addDataResource(shared_ptr<Parser> parser) {
   resources.emplace_back(new ResourceDataReader(parser));
 }
 
-void ResourceManager::addIDataResource(Parser* parser) {
+void ResourceManager::addIDataResource(shared_ptr<Parser> parser) {
   resources.emplace_back(new ResourceIDataReader(parser));
 }
 
@@ -120,7 +119,7 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
       logger->debug("Building resource: " + resourceReader->getFilename());
 
       if (!resourceReader->load()) {
-        Logger* resourceLogger = resourceReader->getLogger();
+        shared_ptr<Logger> resourceLogger = resourceReader->getLogger();
         if (!resourceLogger->containErrors())
           logger->error("Error loading resource " +
                         resourceReader->getFilename());
@@ -164,7 +163,7 @@ bool ResourceManager::buildMap(int baseSegment, int baseAddress) {
         resourceBlockOffset = (resourceBlockAddress + baseAddress);
         if (!resourceReader->remapTo(resourceBlockIndex, resourceBlockSegment,
                                      resourceBlockOffset)) {
-          Logger* resourceLogger = resourceReader->getLogger();
+          shared_ptr<Logger> resourceLogger = resourceReader->getLogger();
           if (!resourceLogger->containErrors())
             logger->error("Error building resource map for " +
                           resourceReader->getFilename());

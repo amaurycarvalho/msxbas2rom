@@ -6,11 +6,15 @@
 #ifndef COMPILER_CODE_OPTIMIZER_H
 #define COMPILER_CODE_OPTIMIZER_H
 
+#include <memory>
+
 class CompilerContext;
+
+using namespace std;
 
 class CompilerCodeOptimizer {
  private:
-  CompilerContext* context;
+  shared_ptr<CompilerContext> context;
 
  public:
   void addByteOptimized(unsigned char byte);
@@ -18,7 +22,7 @@ class CompilerCodeOptimizer {
   int getKernelCallAddr(unsigned int word);
   void addLdHLmegarom();
 
-  CompilerCodeOptimizer(CompilerContext* context);
+  CompilerCodeOptimizer(shared_ptr<CompilerContext> context);
   ~CompilerCodeOptimizer();
 };
 

@@ -4,8 +4,9 @@
 #include "compiler_context.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "parser.h"
 
-void CompilerEndStatementStrategy::cmd_end(CompilerContext* context,
+void CompilerEndStatementStrategy::cmd_end(shared_ptr<CompilerContext> context,
                                            bool doCodeRegistering) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
@@ -49,7 +50,8 @@ void CompilerEndStatementStrategy::cmd_end(CompilerContext* context,
   }
 }
 
-bool CompilerEndStatementStrategy::execute(CompilerContext* context) {
+bool CompilerEndStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   context->traps_checked = context->codeHelper->addCheckTraps();
   //! jump to the real END statement
   cmd_end(context, false);
@@ -57,7 +59,7 @@ bool CompilerEndStatementStrategy::execute(CompilerContext* context) {
 }
 
 bool CompilerEndStatementStrategy::registerEndRoutine(
-    CompilerContext* context) {
+    shared_ptr<CompilerContext> context) {
   context->traps_checked = context->codeHelper->addCheckTraps();
   //! register END statement code
   cmd_end(context, true);

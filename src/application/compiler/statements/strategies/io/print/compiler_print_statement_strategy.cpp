@@ -1,11 +1,15 @@
 #include "compiler_print_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "fix_node.h"
+#include "lexeme.h"
 
-void CompilerPrintStatementStrategy::cmd_print(CompilerContext* context) {
+void CompilerPrintStatementStrategy::cmd_print(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
@@ -89,7 +93,8 @@ void CompilerPrintStatementStrategy::cmd_print(CompilerContext* context) {
   }
 }
 
-bool CompilerPrintStatementStrategy::execute(CompilerContext* context) {
+bool CompilerPrintStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_print(context);
   return context->compiled;
 }

@@ -1,10 +1,13 @@
 #include "compiler_strig_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerStrigStatementStrategy::cmd_strig(CompilerContext* context) {
+void CompilerStrigStatementStrategy::cmd_strig(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action1, action2;
@@ -60,7 +63,8 @@ void CompilerStrigStatementStrategy::cmd_strig(CompilerContext* context) {
   }
 }
 
-bool CompilerStrigStatementStrategy::execute(CompilerContext* context) {
+bool CompilerStrigStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_strig(context);
   return context->compiled;
 }

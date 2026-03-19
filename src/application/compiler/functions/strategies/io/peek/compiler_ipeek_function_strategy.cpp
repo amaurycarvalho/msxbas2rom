@@ -5,7 +5,7 @@
 #include "compiler_expression_evaluator.h"
 #include "lexeme.h"
 
-int IpeekCompilerFunctionStrategy::execute(CompilerContext* context,
+int IpeekCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                            shared_ptr<ActionNode> action,
                                            int* result,
                                            unsigned int parmCount) {

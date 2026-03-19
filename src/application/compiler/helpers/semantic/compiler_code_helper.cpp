@@ -10,6 +10,8 @@
 #include "compiler_context.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "fix_node.h"
+#include "parser.h"
 
 bool CompilerCodeHelper::addCheckTraps() {
   auto& cpu = *context->cpu;
@@ -126,7 +128,7 @@ void CompilerCodeHelper::addBasicChar(char c) {
   cpu.addIncHL();
 }
 
-CompilerCodeHelper::CompilerCodeHelper(CompilerContext* context)
+CompilerCodeHelper::CompilerCodeHelper(shared_ptr<CompilerContext> context)
     : context(context) {}
 
 CompilerCodeHelper::~CompilerCodeHelper() = default;

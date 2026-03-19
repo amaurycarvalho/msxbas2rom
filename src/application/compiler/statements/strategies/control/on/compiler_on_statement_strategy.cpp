@@ -1,5 +1,6 @@
 #include "compiler_on_statement_strategy.h"
 
+#include "action_node.h"
 #include "build_options.h"
 #include "compiler_code_helper.h"
 #include "compiler_code_optimizer.h"
@@ -7,8 +8,10 @@
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "fix_node.h"
+#include "lexeme.h"
 
-void CompilerOnStatementStrategy::cmd_on(CompilerContext* context) {
+void CompilerOnStatementStrategy::cmd_on(shared_ptr<CompilerContext> context) {
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> next_lexeme;
   unsigned int t = context->current_action->actions.size();
@@ -47,11 +50,13 @@ void CompilerOnStatementStrategy::cmd_on(CompilerContext* context) {
   }
 }
 
-void CompilerOnStatementStrategy::cmd_on_error(CompilerContext* context) {
+void CompilerOnStatementStrategy::cmd_on_error(
+    shared_ptr<CompilerContext> context) {
   context->syntaxError("Not implemented yet");
 }
 
-void CompilerOnStatementStrategy::cmd_on_interval(CompilerContext* context) {
+void CompilerOnStatementStrategy::cmd_on_interval(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& opts = *context->opts;
@@ -146,7 +151,8 @@ void CompilerOnStatementStrategy::cmd_on_interval(CompilerContext* context) {
   }
 }
 
-void CompilerOnStatementStrategy::cmd_on_key(CompilerContext* context) {
+void CompilerOnStatementStrategy::cmd_on_key(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& opts = *context->opts;
@@ -222,7 +228,8 @@ void CompilerOnStatementStrategy::cmd_on_key(CompilerContext* context) {
   }
 }
 
-void CompilerOnStatementStrategy::cmd_on_sprite(CompilerContext* context) {
+void CompilerOnStatementStrategy::cmd_on_sprite(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& opts = *context->opts;
@@ -285,7 +292,8 @@ void CompilerOnStatementStrategy::cmd_on_sprite(CompilerContext* context) {
   }
 }
 
-void CompilerOnStatementStrategy::cmd_on_stop(CompilerContext* context) {
+void CompilerOnStatementStrategy::cmd_on_stop(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& opts = *context->opts;
@@ -348,7 +356,8 @@ void CompilerOnStatementStrategy::cmd_on_stop(CompilerContext* context) {
   }
 }
 
-void CompilerOnStatementStrategy::cmd_on_strig(CompilerContext* context) {
+void CompilerOnStatementStrategy::cmd_on_strig(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& opts = *context->opts;
@@ -424,14 +433,15 @@ void CompilerOnStatementStrategy::cmd_on_strig(CompilerContext* context) {
   }
 }
 
-void CompilerOnStatementStrategy::cmd_on_goto_gosub(CompilerContext* context) {
+void CompilerOnStatementStrategy::cmd_on_goto_gosub(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& opts = *context->opts;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action, sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
-  FixNode* mark;
+  shared_ptr<FixNode> mark;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
 
@@ -553,7 +563,7 @@ void CompilerOnStatementStrategy::cmd_on_goto_gosub(CompilerContext* context) {
   }
 }
 
-bool CompilerOnStatementStrategy::execute(CompilerContext* context) {
+bool CompilerOnStatementStrategy::execute(shared_ptr<CompilerContext> context) {
   context->traps_checked = context->codeHelper->addCheckTraps();
   cmd_on(context);
   return context->compiled;

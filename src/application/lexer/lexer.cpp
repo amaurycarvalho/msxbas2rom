@@ -21,7 +21,7 @@
  */
 
 Lexer::Lexer() {
-  logger.reset(new Logger());
+  logger = make_shared<Logger>();
   clear();
 }
 
@@ -127,6 +127,6 @@ string Lexer::toString() {
   return out;
 }
 
-Logger* Lexer::getLogger() {
-  return logger.get();
+shared_ptr<Logger> Lexer::getLogger() {
+  return logger;
 }

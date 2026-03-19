@@ -1,12 +1,15 @@
 #include "compiler_line_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
 #include "compiler_input_statement_strategy.h"
+#include "lexeme.h"
 #include "logger.h"
 
-void CompilerLineStatementStrategy::cmd_line(CompilerContext* context) {
+void CompilerLineStatementStrategy::cmd_line(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme;
@@ -363,7 +366,8 @@ void CompilerLineStatementStrategy::cmd_line(CompilerContext* context) {
   }
 }
 
-bool CompilerLineStatementStrategy::execute(CompilerContext* context) {
+bool CompilerLineStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_line(context);
   return context->compiled;
 }

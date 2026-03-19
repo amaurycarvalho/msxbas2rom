@@ -15,10 +15,12 @@
 
 #include <cstdio>
 #include <fstream>
+#include <memory>
 #include <vector>
 
 #include "doctest/doctest.h"
 #include "logger.h"
+#include "parser.h"
 #include "resources.h"
 
 // Utilities
@@ -331,13 +333,13 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceDataReader (generic binary blob)
   TEST_CASE("ResourceDataReader loads binary data") {
-    Parser parser;
+    shared_ptr<Parser> parser = make_shared<Parser>();
 
     std::string fname = "tmp/temp.dat";
     std::string blob(128, '\x10');
     createTempFile(fname, blob);
 
-    ResourceDataReader reader(&parser);
+    ResourceDataReader reader(parser);
     CHECK_VALID_READER(reader);
     CHECK(reader.unpackedSize == 3);
 
@@ -347,14 +349,14 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceIDataReader (indexed data reader, e.g. header + entries)
   TEST_CASE("ResourceIDataReader loads indexed data") {
-    Parser parser;
+    shared_ptr<Parser> parser = make_shared<Parser>();
 
     std::string fname = "tmp/temp.idat";
     // Fake: 4-byte header + 2 entries of 8 bytes
     std::string idata = "IDAT" + std::string(16, '\x07');
     createTempFile(fname, idata);
 
-    ResourceIDataReader reader(&parser);
+    ResourceIDataReader reader(parser);
     CHECK_VALID_READER(reader);
 
     deleteTempFile(fname);

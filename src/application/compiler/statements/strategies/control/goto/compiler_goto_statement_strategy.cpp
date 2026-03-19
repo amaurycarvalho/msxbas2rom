@@ -1,10 +1,13 @@
 #include "compiler_goto_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_code_helper.h"
 #include "compiler_context.h"
 #include "compiler_fixup_resolver.h"
+#include "lexeme.h"
 
-void CompilerGotoStatementStrategy::cmd_goto(CompilerContext* context) {
+void CompilerGotoStatementStrategy::cmd_goto(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   shared_ptr<Lexeme> lexeme;
@@ -30,7 +33,8 @@ void CompilerGotoStatementStrategy::cmd_goto(CompilerContext* context) {
   context->syntaxError("Invalid GOTO parameters");
 }
 
-bool CompilerGotoStatementStrategy::execute(CompilerContext* context) {
+bool CompilerGotoStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   context->traps_checked = context->codeHelper->addCheckTraps();
   cmd_goto(context);
   return context->compiled;

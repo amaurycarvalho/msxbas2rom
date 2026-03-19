@@ -13,12 +13,13 @@
 #include "compiler_hooks.h"
 #include "compiler_statement_strategy.h"
 #include "compiler_statement_strategy_factory.h"
+#include "lexeme.h"
 #include "logger.h"
 #include "tag_node.h"
 
-CompilerEvaluator::CompilerEvaluator(CompilerContext* context) {
+CompilerEvaluator::CompilerEvaluator(shared_ptr<CompilerContext> context) {
   this->context = context;
-  statementFactory.reset(new CompilerStatementStrategyFactory());
+  statementFactory = make_shared<CompilerStatementStrategyFactory>();
 }
 
 CompilerEvaluator::~CompilerEvaluator() = default;

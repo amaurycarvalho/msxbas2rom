@@ -1,9 +1,12 @@
 #include "compiler_text_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
+#include "lexeme.h"
 #include "resources.h"
 
-void CompilerTextStatementStrategy::cmd_text(CompilerContext* context) {
+void CompilerTextStatementStrategy::cmd_text(
+    shared_ptr<CompilerContext> context) {
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> action;
   unsigned int t = context->current_action->actions.size();
@@ -25,7 +28,8 @@ void CompilerTextStatementStrategy::cmd_text(CompilerContext* context) {
   }
 }
 
-bool CompilerTextStatementStrategy::execute(CompilerContext* context) {
+bool CompilerTextStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_text(context);
   return context->compiled;
 }

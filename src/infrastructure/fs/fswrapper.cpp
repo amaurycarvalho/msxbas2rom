@@ -65,6 +65,27 @@ string pathJoin(const string& base, const string& relative) {
   return b + fsFolderSeparator + r;
 }
 
+bool createPath(const string& pathName) {
+  const char* path = pathName.c_str();
+
+  return MKDIR(path) == 0;
+}
+
+bool pathExists(const string& pathName) {
+#ifdef Win
+  return false;
+#else
+  struct stat info;
+  if (stat(pathName.c_str(), &info) != 0) {
+    return false;
+  } else if (info.st_mode & S_IFDIR) {
+    return true;
+  } else {
+    return false;
+  }
+#endif
+}
+
 string removeQuotes(const string& text) {
   string s = text;
 

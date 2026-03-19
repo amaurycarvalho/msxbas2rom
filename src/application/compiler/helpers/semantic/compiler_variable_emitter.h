@@ -15,14 +15,14 @@ using namespace std;
 
 class CompilerVariableEmitter {
  private:
-  CompilerContext* context;
+  shared_ptr<CompilerContext> context;
 
  public:
   bool addVarAddress(shared_ptr<ActionNode> action);
   void addTempStr(bool atHL);
   bool addAssignment(shared_ptr<ActionNode> action);
 
-  CompilerVariableEmitter(CompilerContext* context);
+  CompilerVariableEmitter(shared_ptr<CompilerContext> context);
   ~CompilerVariableEmitter();
 };
 

@@ -45,7 +45,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: msxbas2rom-mac-x86_64-bin
-          path: bin/Release/msxbas2rom*
+          path: bin/Release/msxbas2shared_ptr<Rom>
 
   build-windows-x32:
     runs-on: windows-latest

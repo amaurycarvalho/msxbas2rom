@@ -5,7 +5,7 @@
 
 class CompilerCmdDisScrHandler : public ICompilerCmdHandler {
  public:
-  bool execute(CompilerContext* context,
+  bool execute(shared_ptr<CompilerContext> context,
                shared_ptr<ActionNode> action) override;
 };
 

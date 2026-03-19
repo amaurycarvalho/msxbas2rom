@@ -146,7 +146,8 @@ int CompilerFloatConverter::getUsingFormat(string text) {
   return ((e & 0xF) | ((d & 0xF) << 4) | (c << 8));
 }
 
-CompilerFloatConverter::CompilerFloatConverter(CompilerContext* context)
+CompilerFloatConverter::CompilerFloatConverter(
+    shared_ptr<CompilerContext> context)
     : context(context) {}
 
 CompilerFloatConverter::~CompilerFloatConverter() = default;

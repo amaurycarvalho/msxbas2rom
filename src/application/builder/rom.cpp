@@ -11,7 +11,6 @@
 
 #include "rom.h"
 
-#include <cstdio>
 #include <cstring>
 #include <fstream>
 
@@ -25,16 +24,16 @@
 //----------------------------------------------------------------------------------------------
 
 Rom::Rom() {
-  logger.reset(new Logger());
+  logger = make_shared<Logger>();
 }
 
 Rom::~Rom() = default;
 
-Logger* Rom::getLogger() {
-  return logger.get();
+shared_ptr<Logger> Rom::getLogger() {
+  return logger;
 }
 
-bool Rom::build(Compiler* compiler) {
+bool Rom::build(shared_ptr<Compiler> compiler) {
   float romSizeFloat;
 
   if (!compiler) return false;
@@ -138,13 +137,12 @@ bool Rom::addResources() {
   logger->debug("--> Building resource map...");
 
   if (!resourceManager->buildMap(resourceSegment, baseAddress)) {
-    logger->add(resourceManager->logger.get());
+    logger->add(resourceManager->logger);
     errorFound = true;
     return false;
   }
 
-  if (resourceManager->logger->size())
-    logger->add(resourceManager->logger.get());
+  if (resourceManager->logger->size()) logger->add(resourceManager->logger);
 
   resourcesSize = resourceManager->resourcesPackedSize;
 

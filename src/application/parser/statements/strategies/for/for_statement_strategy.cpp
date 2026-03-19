@@ -1,36 +1,36 @@
 #include "for_statement_strategy.h"
 
+#include "action_node.h"
 #include "assignment_evaluator.h"
 #include "expression_evaluator.h"
+#include "lexeme.h"
 #include "lexer_line_context.h"
 #include "logger.h"
 
-bool ForStatementStrategy::parseStatement(ParserContext& context,
-                                          LexerLineContext* statement) {
+bool ForStatementStrategy::parseStatement(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme, last_lexeme = nullptr;
-  LexerLineContext parm;
+  shared_ptr<LexerLineContext> parm = make_shared<LexerLineContext>();
   shared_ptr<ActionNode> action;
   int state = 0;
-  ExpressionEvaluator exprEval(context);
-  AssignmentEvaluator assignEval(context, exprEval);
 
-  parm.clearLexemes();
+  parm->clearLexemes();
 
   while ((next_lexeme = statement->getNextLexeme())) {
     switch (state) {
       case 0: {
         if (next_lexeme->isKeyword("TO")) {
-          parm.setLexemeBOF();
-          if (!assignEval.evaluate(&parm)) {
-            context.logger->error("FOR command without a valid assignment");
-            context.eval_expr_error = true;
+          parm->setLexemeBOF();
+          if (!context->assignEval->evaluate(parm)) {
+            context->logger->error("FOR command without a valid assignment");
+            context->eval_expr_error = true;
             return false;
           }
 
-          parm.clearLexemes();
+          parm->clearLexemes();
 
           action = make_shared<ActionNode>(next_lexeme);
-          context.pushActionRoot(action);
+          context->pushActionRoot(action);
 
           last_lexeme = next_lexeme;
 
@@ -44,23 +44,23 @@ bool ForStatementStrategy::parseStatement(ParserContext& context,
       case 1: {
         if (next_lexeme->isKeyword("STEP")) {
           if (last_lexeme->value != "TO") {
-            context.logger->error("STEP without a TO clausule");
-            context.eval_expr_error = true;
+            context->logger->error("STEP without a TO clausule");
+            context->eval_expr_error = true;
             return false;
           }
 
-          parm.setLexemeBOF();
-          if (!evaluateExpression(context, &parm)) {
-            context.logger->error("FOR with an invalid TO/STEP");
-            context.eval_expr_error = true;
+          parm->setLexemeBOF();
+          if (!evaluateExpression(context, parm)) {
+            context->logger->error("FOR with an invalid TO/STEP");
+            context->eval_expr_error = true;
             return false;
           }
 
-          parm.clearLexemes();
-          context.popActionRoot();
+          parm->clearLexemes();
+          context->popActionRoot();
 
           action = make_shared<ActionNode>(next_lexeme);
-          context.pushActionRoot(action);
+          context->pushActionRoot(action);
 
           last_lexeme = next_lexeme;
 
@@ -72,37 +72,42 @@ bool ForStatementStrategy::parseStatement(ParserContext& context,
       } break;
     }
 
-    parm.addLexeme(next_lexeme);
+    parm->addLexeme(next_lexeme);
   }
 
-  if (parm.getLexemeCount() && last_lexeme) {
+  if (parm->getLexemeCount() && last_lexeme) {
     if (last_lexeme->value != "TO" && last_lexeme->value != "STEP") {
-      context.logger->error("FOR command without a TO/STEP complement.");
-      context.eval_expr_error = true;
+      context->logger->error("FOR command without a TO/STEP complement.");
+      context->eval_expr_error = true;
       return false;
     }
 
-    parm.setLexemeBOF();
-    if (!evaluateExpression(context, &parm)) {
-      context.logger->error("FOR with an invalid TO/STEP");
-      context.eval_expr_error = true;
+    parm->setLexemeBOF();
+    if (!evaluateExpression(context, parm)) {
+      context->logger->error("FOR with an invalid TO/STEP");
+      context->eval_expr_error = true;
       return false;
     }
 
-    context.popActionRoot();
-    parm.clearLexemes();
+    context->popActionRoot();
+    parm->clearLexemes();
 
   } else {
-    context.logger->error("Invalid FOR statement (empty)");
+    context->logger->error("Invalid FOR statement (empty)");
     return false;
   }
 
   return true;
 }
 
-bool ForStatementStrategy::execute(ParserContext& context,
-                                   LexerLineContext* statement,
+bool ForStatementStrategy::execute(shared_ptr<ParserContext> context,
+                                   shared_ptr<LexerLineContext> statement,
                                    shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
+  if (!context->assignEval) {
+    context->logger->error(
+        "FOR statement internal error (parser context not initialized)");
+    return false;
+  }
   return parseStatement(context, statement);
 }

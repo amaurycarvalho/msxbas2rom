@@ -28,7 +28,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <iostream>
 #include <memory>
 #ifndef MacOS
 #include <malloc.h>
@@ -46,12 +45,12 @@ using namespace std;
 int main(int argc, char* argv[]) {
   shared_ptr<BuildOptionsSetup> opts = make_shared<BuildOptionsSetup>();
   set<Logger::LogLevel> logLevels = {Logger::LogLevel::ERROR};
-  unique_ptr<Lexer> lexer;
-  unique_ptr<Rom> rom;
-  unique_ptr<Parser> parser;
-  unique_ptr<Compiler> compiler;
-  unique_ptr<ICpuOpcodeWriter> cpu;
-  Logger* logger;
+  shared_ptr<Lexer> lexer;
+  shared_ptr<Rom> rom;
+  shared_ptr<Parser> parser;
+  shared_ptr<Compiler> compiler;
+  shared_ptr<ICpuOpcodeWriter> cpu;
+  shared_ptr<Logger> logger;
   bool retriedWithAscii8 = false;
 
   /// parsing parameters
@@ -109,6 +108,19 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  if (opts->vscode) {
+    VSCodeHelper vscodeHelper(argv[0]);
+
+    if (!vscodeHelper.initialize()) {
+      printf("ERROR: VSCode MSX-BASIC project already initialized.\n");
+      return 1;
+    }
+
+    printf("VSCode MSX-BASIC project initialized successfully.\n");
+
+    if (argc == 2) return 0;
+  }
+
   if (opts->inputFilename.empty()) {
     printf("ERROR: Input file name parameter is missing!\n");
     return 1;
@@ -129,11 +141,11 @@ int main(int argc, char* argv[]) {
   }
 
   while (true) {
-    lexer.reset(new Lexer());
-    parser.reset(new Parser());
-    cpu.reset(new Z80OpcodeWriter());
-    compiler.reset(new Compiler(cpu.get()));
-    rom.reset(new Rom());
+    lexer = make_shared<Lexer>();
+    parser = make_shared<Parser>();
+    cpu = make_shared<Z80OpcodeWriter>();
+    compiler = make_shared<Compiler>(cpu);
+    rom = make_shared<Rom>();
 
     if (fileExists(opts->outputFilename)) {
       remove(opts->outputFilename.c_str());
@@ -173,7 +185,7 @@ int main(int argc, char* argv[]) {
 
     logger->info("(2) Doing syntactic analysis...");
 
-    if (!parser->evaluate(lexer.get())) {
+    if (!parser->evaluate(lexer)) {
       if (!parser->getLineNumber()) {
         logger->error("Is the file empty?");
       } else if (!logger->containErrors()) {
@@ -201,7 +213,7 @@ int main(int argc, char* argv[]) {
 
     logger->info("(3) Doing semantic analysis (compiling)...");
 
-    if (!compiler->build(parser.get())) {
+    if (!compiler->build(parser)) {
       if (!logger->containErrors()) {
         logger->error("Unknown error");
       }
@@ -229,7 +241,7 @@ int main(int argc, char* argv[]) {
 
     logger->info("(4) Building ROM...");
 
-    if (!rom->build(compiler.get())) {
+    if (!rom->build(compiler)) {
       bool shouldRetryWithAscii8 =
           opts->autoROM && !retriedWithAscii8 &&
           opts->compileMode == BuildOptions::CompileMode::Plain &&

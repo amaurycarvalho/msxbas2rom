@@ -6,10 +6,9 @@
 #include "compiler_hooks.h"
 #include "lexeme.h"
 
-int ResourceCompilerFunctionStrategy::execute(CompilerContext* context,
-                                              shared_ptr<ActionNode> action,
-                                              int* result,
-                                              unsigned int parmCount) {
+int ResourceCompilerFunctionStrategy::execute(
+    shared_ptr<CompilerContext> context, shared_ptr<ActionNode> action,
+    int* result, unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "RESOURCE") return Lexeme::subtype_unknown;

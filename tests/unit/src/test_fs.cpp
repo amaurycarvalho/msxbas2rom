@@ -22,10 +22,10 @@
 #include "z80.h"
 
 static int COMPILE(string filename, bool megarom = false) {
-  Lexer lexer;
-  Parser parser;
-  Z80OpcodeWriter cpuOpcodeWriter;
-  Compiler compiler(&cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Parser> parser = make_shared<Parser>();
+  shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
+  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
   shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
 
   // build options
@@ -33,14 +33,14 @@ static int COMPILE(string filename, bool megarom = false) {
   opts->megaROM = megarom;
 
   // lexing
-  CHECK(lexer.load(opts) == true);
-  CHECK(lexer.evaluate() == true);
+  CHECK(lexer->load(opts) == true);
+  CHECK(lexer->evaluate() == true);
 
   // parsing
-  CHECK(parser.evaluate(&lexer) == true);
+  CHECK(parser->evaluate(lexer) == true);
 
   // compiling
-  CHECK(compiler.build(&parser) == true);
+  CHECK(compiler->build(parser) == true);
 
   return 0;
 }

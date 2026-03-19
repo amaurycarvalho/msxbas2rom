@@ -6,7 +6,7 @@
 #include "compiler_hooks.h"
 #include "lexeme.h"
 
-int LogCompilerFunctionStrategy::execute(CompilerContext* context,
+int LogCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                          shared_ptr<ActionNode> action,
                                          int* result, unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;

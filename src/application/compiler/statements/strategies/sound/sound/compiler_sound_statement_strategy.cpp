@@ -1,10 +1,13 @@
 #include "compiler_sound_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerSoundStatementStrategy::cmd_sound(CompilerContext* context) {
+void CompilerSoundStatementStrategy::cmd_sound(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme;
@@ -44,7 +47,8 @@ void CompilerSoundStatementStrategy::cmd_sound(CompilerContext* context) {
   }
 }
 
-bool CompilerSoundStatementStrategy::execute(CompilerContext* context) {
+bool CompilerSoundStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_sound(context);
   return context->compiled;
 }

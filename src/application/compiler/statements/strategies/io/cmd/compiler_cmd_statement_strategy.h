@@ -12,15 +12,15 @@ using namespace std;
 
 class CompilerCmdStatementStrategy : public ICompilerStatementStrategy {
  private:
-  unique_ptr<CompilerCmdHandlerFactory> factory;
+  shared_ptr<CompilerCmdHandlerFactory> factory;
 
-  void cmd_cmd(CompilerContext* context);
+  void cmd_cmd(shared_ptr<CompilerContext> context);
 
  public:
   CompilerCmdStatementStrategy();
   ~CompilerCmdStatementStrategy();
 
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_CMD_STATEMENT_STRATEGY_H_INCLUDED

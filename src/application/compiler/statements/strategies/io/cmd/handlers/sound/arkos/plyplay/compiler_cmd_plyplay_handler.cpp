@@ -10,7 +10,7 @@
 #include "compiler_context.h"
 #include "compiler_hooks.h"
 
-bool CompilerCmdPlyPlayHandler::execute(CompilerContext* context,
+bool CompilerCmdPlyPlayHandler::execute(shared_ptr<CompilerContext> context,
                                         shared_ptr<ActionNode> action) {
   auto& cpu = *context->cpu;
 

@@ -1,9 +1,12 @@
 #include "compiler_ipoke_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
+#include "lexeme.h"
 
-void CompilerIpokeStatementStrategy::cmd_ipoke(CompilerContext* context) {
+void CompilerIpokeStatementStrategy::cmd_ipoke(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme;
@@ -44,7 +47,8 @@ void CompilerIpokeStatementStrategy::cmd_ipoke(CompilerContext* context) {
   }
 }
 
-bool CompilerIpokeStatementStrategy::execute(CompilerContext* context) {
+bool CompilerIpokeStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_ipoke(context);
   return context->compiled;
 }

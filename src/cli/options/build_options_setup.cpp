@@ -33,6 +33,8 @@ void BuildOptionsSetup::setupParser() {
                    [&](const std::string&) { version = true; });
   parser.addOption("-H", "--history", "Display version history", false, false,
                    [&](const std::string&) { history = true; });
+  parser.addOption("", "--vscode", "Initialize a VSCode MSX-BASIC project",
+                   false, false, [&](const std::string&) { vscode = true; });
 
   /// path options setup
   parser.addOption("-i", "--inputPath", "Input path (default=source file path)",

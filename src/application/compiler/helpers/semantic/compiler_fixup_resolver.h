@@ -19,17 +19,17 @@ using namespace std;
 
 class CompilerFixupResolver {
  private:
-  CompilerContext* context;
+  shared_ptr<CompilerContext> context;
 
  public:
-  FixNode* addFix(shared_ptr<Lexeme> lexeme);
-  FixNode* addFix(SymbolNode* symbol);
-  FixNode* addFix(string line);
-  SymbolNode* addPreMark();
-  FixNode* addMark();
+  shared_ptr<FixNode> addFix(shared_ptr<Lexeme> lexeme);
+  shared_ptr<FixNode> addFix(shared_ptr<SymbolNode> symbol);
+  shared_ptr<FixNode> addFix(string line);
+  shared_ptr<SymbolNode> addPreMark();
+  shared_ptr<FixNode> addMark();
   void doFix();
 
-  CompilerFixupResolver(CompilerContext* context);
+  CompilerFixupResolver(shared_ptr<CompilerContext> context);
   ~CompilerFixupResolver();
 };
 

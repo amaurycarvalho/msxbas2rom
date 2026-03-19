@@ -31,11 +31,13 @@ class BuildOptions {
   string inputFilename, outputFilename, appFilename, baseFilename;
 
   //! @brief Options flags
-  bool help, debug, quiet, error, version, history, doc, autoROM;
+  bool help, debug, quiet, error;
+  bool version, history, doc;
+  bool vscode;
 
   //! @brief Options flags
   //! @note for compiled mode only
-  bool lineNumber, megaROM;
+  bool lineNumber, megaROM, autoROM;
 
   //! @brief Options flags
   //! @deprecated for pcoded mode only

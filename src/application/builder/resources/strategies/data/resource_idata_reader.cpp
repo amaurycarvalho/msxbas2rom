@@ -7,7 +7,9 @@
 
 #include "resource_idata_reader.h"
 
-ResourceIDataReader::ResourceIDataReader(Parser *parser)
+#include "parser.h"
+
+ResourceIDataReader::ResourceIDataReader(shared_ptr<Parser> parser)
     : ResourceDataReader(parser) {
   filename = "_IDATA_";
   resourceType = 3;  //! IDATA resource type

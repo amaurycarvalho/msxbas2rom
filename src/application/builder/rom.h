@@ -29,10 +29,10 @@ using namespace std;
  */
 class Rom {
  private:
-  Compiler* compiler;
+  shared_ptr<Compiler> compiler;
   shared_ptr<BuildOptions> opts;
-  ResourceManager* resourceManager;
-  unique_ptr<Logger> logger;
+  shared_ptr<ResourceManager> resourceManager;
+  shared_ptr<Logger> logger;
 
   int resourceAddress, resourceSegment;
 
@@ -71,14 +71,14 @@ class Rom {
   Rom();
   ~Rom();
 
-  Logger* getLogger();
+  shared_ptr<Logger> getLogger();
 
   /***
    * @brief Creates a MSX BASIC ROM based on a compiled source code
    * @param compiler Compiled source code
    * @return True, if success
    */
-  bool build(Compiler* compiler);
+  bool build(shared_ptr<Compiler> compiler);
 };
 
 #endif  // ROM_H_INCLUDED

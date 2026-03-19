@@ -5,10 +5,10 @@
 
 class CompilerStopStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_stop(CompilerContext* context);
+  void cmd_stop(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_STOP_STATEMENT_STRATEGY_H_INCLUDED

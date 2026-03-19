@@ -4,8 +4,12 @@
 #include "compiler_context.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "fix_node.h"
+#include "parser.h"
+#include "symbol_node.h"
 
-void CompilerStartStatementStrategy::cmd_start(CompilerContext* context) {
+void CompilerStartStatementStrategy::cmd_start(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& parser = *context->parser;
@@ -24,17 +28,17 @@ void CompilerStartStatementStrategy::cmd_start(CompilerContext* context) {
   cpu.addCall(def_ENASLT);
 
   // ld hl, HEAP START ADDRESS
-  fixup.addFix(context->heap_mark.get());
+  fixup.addFix(context->heap_mark);
   cpu.addLdHL(0x0000);
 
   // ld de, TEMPORARY STRING START ADDRESS
-  fixup.addFix(context->temp_str_mark.get());
+  fixup.addFix(context->temp_str_mark);
   cpu.addLdDE(0x0000);
 
   if (parser.getHasFont()) {
     // ld ix, FONT BUFFER START ADDRESS
     cpu.addByte(0xDD);
-    fixup.addFix(context->heap_mark.get())->step = -def_RAM_BUFSIZ;
+    fixup.addFix(context->heap_mark)->step = -def_RAM_BUFSIZ;
     cpu.addLdHL(0x0000);
   } else {
     // push hl
@@ -85,7 +89,8 @@ void CompilerStartStatementStrategy::cmd_start(CompilerContext* context) {
   cpu.addEI();
 }
 
-bool CompilerStartStatementStrategy::execute(CompilerContext* context) {
+bool CompilerStartStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_start(context);
   return context->compiled;
 }

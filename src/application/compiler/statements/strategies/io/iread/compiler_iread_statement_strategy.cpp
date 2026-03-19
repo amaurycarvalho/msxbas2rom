@@ -1,11 +1,14 @@
 #include "compiler_iread_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
 #include "compiler_variable_emitter.h"
+#include "lexeme.h"
 
-void CompilerIreadStatementStrategy::cmd_iread(CompilerContext* context) {
+void CompilerIreadStatementStrategy::cmd_iread(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   auto& variable = *context->variableEmitter;
@@ -38,7 +41,8 @@ void CompilerIreadStatementStrategy::cmd_iread(CompilerContext* context) {
   }
 }
 
-bool CompilerIreadStatementStrategy::execute(CompilerContext* context) {
+bool CompilerIreadStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_iread(context);
   return context->compiled;
 }

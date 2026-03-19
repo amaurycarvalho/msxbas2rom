@@ -16,10 +16,6 @@
 #include <string>
 #include <vector>
 
-#include "assignment_evaluator.h"
-#include "expression_evaluator.h"
-#include "parser_context.h"
-#include "parser_line_evaluator.h"
 #include "parser_statement_strategy_factory.h"
 
 class Logger;
@@ -27,6 +23,8 @@ class Lexer;
 class BuildOptions;
 class TagNode;
 class Lexeme;
+
+class ParserContext;
 
 using namespace std;
 
@@ -36,23 +34,18 @@ using namespace std;
  */
 class Parser {
  private:
-  ParserContext ctx;
   ParserStatementStrategyFactory statementStrategyFactory;
-  ExpressionEvaluator exprEval;
-  AssignmentEvaluator assignEval;
-  ParserLineEvaluator lineEval;
 
-  Lexer* lexer;
-  shared_ptr<BuildOptions> opts;
+  shared_ptr<ParserContext> ctx;
 
  public:
   /***
    * @brief Perform a full syntatic analysis on the tags list
    * @return True, if syntatic analysis success
    */
-  bool evaluate(Lexer* lexer);
+  bool evaluate(shared_ptr<Lexer> lexer);
 
-  Logger* getLogger();
+  shared_ptr<Logger> getLogger();
 
   int getLineNumber() const;
 
@@ -79,7 +72,7 @@ class Parser {
 
   int getResourceCount() const;
 
-  Lexer* getLexer() const;
+  shared_ptr<Lexer> getLexer() const;
   shared_ptr<BuildOptions> getOpts() const;
 
   /***

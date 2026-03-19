@@ -5,12 +5,14 @@
 
 class DefStatementStrategy : public IParserStatementStrategy {
  private:
-  bool parseDefUsr(ParserContext& context, LexerLineContext* statement);
+  bool parseDefUsr(shared_ptr<ParserContext> context,
+                   shared_ptr<LexerLineContext> statement);
 
  public:
-  bool parseWithType(ParserContext& context, LexerLineContext* statement,
-                     int vartype);
-  bool execute(ParserContext& context, LexerLineContext* statement,
+  bool parseWithType(shared_ptr<ParserContext> context,
+                     shared_ptr<LexerLineContext> statement, int vartype);
+  bool execute(shared_ptr<ParserContext> context,
+               shared_ptr<LexerLineContext> statement,
                shared_ptr<Lexeme> lexeme) override;
 };
 

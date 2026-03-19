@@ -6,50 +6,64 @@
 
 #include "expression_evaluator.h"
 
-#include <memory>
+#include <stack>
 
+#include "action_node.h"
+#include "expression_evaluator.h"
+#include "lexeme.h"
+#include "lexer_line_evaluator.h"
 #include "logger.h"
+#include "parser_context.h"
 
-ExpressionEvaluator::ExpressionEvaluator(ParserContext& context)
+ExpressionEvaluator::ExpressionEvaluator(shared_ptr<ParserContext> context)
     : ctx(context) {}
 
 ExpressionEvaluator::~ExpressionEvaluator() = default;
 
-bool ExpressionEvaluator::evaluate(LexerLineContext* expression) {
-  shared_ptr<ActionNode> actionSaved = ctx.actionRoot;
-  unsigned int actionCount = ctx.actionStack.size();
+bool ExpressionEvaluator::evaluate(shared_ptr<LexerLineContext> expression) {
+  shared_ptr<ActionNode> actionSaved = ctx->actionRoot;
+  unsigned int actionCount = ctx->actionStack.size();
 
-  while (!ctx.expressionList.empty()) ctx.expressionList.pop();
+  while (!ctx->expressionList.empty()) ctx->expressionList.pop();
 
   if (!push(expression)) return false;
 
-  while (!ctx.expressionList.empty()) {
+  while (!ctx->expressionList.empty()) {
     pop(1);
   }
 
-  while (ctx.actionStack.size() > actionCount) ctx.actionStack.pop();
+  while (ctx->actionStack.size() > actionCount) ctx->actionStack.pop();
 
-  ctx.actionRoot = actionSaved;
+  ctx->actionRoot = actionSaved;
 
   return true;
 }
 
-bool ExpressionEvaluator::push(LexerLineContext* expression) {
+shared_ptr<ParserContext> ExpressionEvaluator::getContext() {
+  return ctx;
+}
+
+void ExpressionEvaluator::setContext(shared_ptr<ParserContext> context) {
+  this->ctx = context;
+}
+
+bool ExpressionEvaluator::push(shared_ptr<LexerLineContext> expression) {
   stack<shared_ptr<Lexeme>> operatorStack;
   shared_ptr<Lexeme> lexeme, next_lexeme, check_lexeme;
-  LexerLineContext functionLexemes;
+  shared_ptr<LexerLineContext> functionLexemes =
+      make_shared<LexerLineContext>();
   int thisPreced, stackPreced;
   int outputCount = 0, sepcount = 0, parmcount = 0;
   bool ok, unary = false, lastWasFunction = false, lastWasIdentifier = false;
 
   lexeme = expression->getNextLexeme();
   if (lexeme) {
-    lexeme = ctx.coalesceSymbols(lexeme);
+    lexeme = ctx->coalesceSymbols(lexeme);
     lastWasIdentifier = (lexeme->type == Lexeme::type_identifier);
   }
 
   while (lexeme) {
-    lexeme = ctx.coalesceSymbols(lexeme);
+    lexeme = ctx->coalesceSymbols(lexeme);
 
     if (lexeme->type == Lexeme::type_keyword &&
         lexeme->subtype == Lexeme::subtype_function && lexeme->value == "USR") {
@@ -72,24 +86,24 @@ bool ExpressionEvaluator::push(LexerLineContext* expression) {
 
       if (outputCount == 0 || unary) {
         if (outputCount == 0 && lexeme->value == ")") {
-          ctx.eval_expr_error = true;
-          ctx.logger->error("Mismatched parentheses error");
+          ctx->eval_expr_error = true;
+          ctx->logger->error("Mismatched parentheses error");
           return false;
         } else if (lexeme->value == "=") {
           next_lexeme = operatorStack.top();
           if (next_lexeme->value == "<") {
             next_lexeme->value = "<=";
             lexeme = expression->getNextLexeme();
-            lexeme = ctx.coalesceSymbols(lexeme);
+            lexeme = ctx->coalesceSymbols(lexeme);
             continue;
           } else if (next_lexeme->value == ">") {
             next_lexeme->value = ">=";
             lexeme = expression->getNextLexeme();
-            lexeme = ctx.coalesceSymbols(lexeme);
+            lexeme = ctx->coalesceSymbols(lexeme);
             continue;
           } else {
-            ctx.eval_expr_error = true;
-            ctx.logger->error("Invalid = symbol in expression");
+            ctx->eval_expr_error = true;
+            ctx->logger->error("Invalid = symbol in expression");
             return false;
           }
         } else if (lexeme->value == ">") {
@@ -97,18 +111,18 @@ bool ExpressionEvaluator::push(LexerLineContext* expression) {
           if (next_lexeme->value == "<") {
             next_lexeme->value = "<>";
             lexeme = expression->getNextLexeme();
-            lexeme = ctx.coalesceSymbols(lexeme);
+            lexeme = ctx->coalesceSymbols(lexeme);
             continue;
           } else {
-            ctx.eval_expr_error = true;
-            ctx.logger->error("Invalid > symbol in expression");
+            ctx->eval_expr_error = true;
+            ctx->logger->error("Invalid > symbol in expression");
             return false;
           }
         } else if (lexeme->value != "+" && lexeme->value != "-" &&
                    lexeme->value != "(" && lexeme->value != ")" &&
                    lexeme->value != "NOT") {
-          ctx.eval_expr_error = true;
-          ctx.logger->error("Invalid expression unary symbol");
+          ctx->eval_expr_error = true;
+          ctx->logger->error("Invalid expression unary symbol");
           return false;
         } else {
           if (lexeme->value == "+" ||
@@ -116,7 +130,7 @@ bool ExpressionEvaluator::push(LexerLineContext* expression) {
             lexeme->isUnary = true;
             operatorStack.push(lexeme);
             lexeme = expression->getNextLexeme();
-            lexeme = ctx.coalesceSymbols(lexeme);
+            lexeme = ctx->coalesceSymbols(lexeme);
             unary = false;
             continue;
           }
@@ -125,23 +139,23 @@ bool ExpressionEvaluator::push(LexerLineContext* expression) {
 
       if (lexeme->value == "(") {
         if (lastWasFunction || lastWasIdentifier) {
-          if (ctx.expressionList.empty()) {
-            ctx.eval_expr_error = true;
-            ctx.logger->error(
+          if (ctx->expressionList.empty()) {
+            ctx->eval_expr_error = true;
+            ctx->logger->error(
                 "Invalid FUNCTION or ARRAY declaration in expression");
             return false;
           }
 
-          next_lexeme = ctx.expressionList.top();
-          ctx.expressionList.pop();
+          next_lexeme = ctx->expressionList.top();
+          ctx->expressionList.pop();
 
           // parse function/array parameters
-          functionLexemes.clearLexemes();
+          functionLexemes->clearLexemes();
           ok = false;
           sepcount = 0;
           parmcount = 0;
           while ((lexeme = expression->getNextLexeme())) {
-            lexeme = ctx.coalesceSymbols(lexeme);
+            lexeme = ctx->coalesceSymbols(lexeme);
             if (lexeme->value == "(") {
               sepcount++;
             } else if (lexeme->value == ")") {
@@ -149,31 +163,31 @@ bool ExpressionEvaluator::push(LexerLineContext* expression) {
                 sepcount--;
               else {
                 ok = true;
-                functionLexemes.setLexemeBOF();
-                if (!push(&functionLexemes)) return false;
-                functionLexemes.clearLexemes();
+                functionLexemes->setLexemeBOF();
+                if (!push(functionLexemes)) return false;
+                functionLexemes->clearLexemes();
                 parmcount++;
                 break;
               }
             } else if (lexeme->value == "," && sepcount == 0) {
-              functionLexemes.setLexemeBOF();
-              if (!push(&functionLexemes)) return false;
-              functionLexemes.clearLexemes();
+              functionLexemes->setLexemeBOF();
+              if (!push(functionLexemes)) return false;
+              functionLexemes->clearLexemes();
               parmcount++;
               continue;
             }
-            functionLexemes.addLexeme(lexeme);
+            functionLexemes->addLexeme(lexeme);
           }
           if (!ok) {
-            ctx.eval_expr_error = true;
-            ctx.logger->error(
+            ctx->eval_expr_error = true;
+            ctx->logger->error(
                 "Mismatched parentheses error in function or array");
             return false;
           }
 
           if (!parmcount) {
-            ctx.eval_expr_error = true;
-            ctx.logger->error(
+            ctx->eval_expr_error = true;
+            ctx->logger->error(
                 "Invalid FUNCTION or ARRAY declaration in expression (missing "
                 "parameters?)");
             return false;
@@ -181,7 +195,7 @@ bool ExpressionEvaluator::push(LexerLineContext* expression) {
 
           next_lexeme->parm_count = parmcount;
 
-          ctx.pushStackFromLexeme(next_lexeme);
+          ctx->pushStackFromLexeme(next_lexeme);
 
           lastWasFunction = false;
           lastWasIdentifier = false;
@@ -193,7 +207,7 @@ bool ExpressionEvaluator::push(LexerLineContext* expression) {
         }
 
         lexeme = expression->getNextLexeme();
-        lexeme = ctx.coalesceSymbols(lexeme);
+        lexeme = ctx->coalesceSymbols(lexeme);
         continue;
       }
 
@@ -210,7 +224,7 @@ bool ExpressionEvaluator::push(LexerLineContext* expression) {
         if ((thisPreced <= stackPreced ||
              next_lexeme->type == Lexeme::type_keyword) &&
             next_lexeme->value != "(") {
-          ctx.pushStackFromLexeme(next_lexeme);
+          ctx->pushStackFromLexeme(next_lexeme);
           operatorStack.pop();
         } else
           break;
@@ -228,13 +242,13 @@ bool ExpressionEvaluator::push(LexerLineContext* expression) {
             ok = true;
             break;
           } else {
-            ctx.pushStackFromLexeme(next_lexeme);
+            ctx->pushStackFromLexeme(next_lexeme);
             operatorStack.pop();
           }
         }
         if (!ok) {
-          ctx.eval_expr_error = true;
-          ctx.logger->error("Mismatched parentheses error");
+          ctx->eval_expr_error = true;
+          ctx->logger->error("Mismatched parentheses error");
           return false;  // parentheses is missing
         }
       } else
@@ -246,20 +260,20 @@ bool ExpressionEvaluator::push(LexerLineContext* expression) {
       lastWasIdentifier = (lexeme->type == Lexeme::type_identifier);
       lastWasFunction = (lexeme->type == Lexeme::type_keyword);
 
-      ctx.pushStackFromLexeme(lexeme);
+      ctx->pushStackFromLexeme(lexeme);
 
       outputCount++;
       unary = false;
     }
 
     lexeme = expression->getNextLexeme();
-    lexeme = ctx.coalesceSymbols(lexeme);
+    lexeme = ctx->coalesceSymbols(lexeme);
   }
 
   // if operators stack is not empty, copy to output stack
   while (!operatorStack.empty()) {
     next_lexeme = operatorStack.top();
-    ctx.pushStackFromLexeme(next_lexeme);
+    ctx->pushStackFromLexeme(next_lexeme);
     operatorStack.pop();
   }
 
@@ -270,16 +284,16 @@ void ExpressionEvaluator::pop(int precedence) {
   shared_ptr<Lexeme> lexeme;
   int k;
 
-  while (precedence && !ctx.expressionList.empty()) {
-    lexeme = ctx.expressionList.top();
-    ctx.expressionList.pop();
+  while (precedence && !ctx->expressionList.empty()) {
+    lexeme = ctx->expressionList.top();
+    ctx->expressionList.pop();
 
-    ctx.pushActionFromLexeme(lexeme);
+    ctx->pushActionFromLexeme(lexeme);
 
     k = getOperatorParmCount(lexeme);
     if (k) {
       pop(k);
-      ctx.popActionRoot();
+      ctx->popActionRoot();
     }
 
     precedence--;

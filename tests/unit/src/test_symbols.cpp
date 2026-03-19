@@ -22,6 +22,7 @@
 #include "doctest/doctest.h"
 #include "fswrapper.h"
 #include "lexeme.h"
+#include "symbol_export_context.h"
 #include "symbol_export_strategy_factory.h"
 #include "symbol_manager.h"
 
@@ -42,11 +43,11 @@ static std::string readFileText(const std::string& filename) {
 
 struct SymbolsFixture {
   SymbolManager manager;
-  std::vector<CodeNode*> nodes;
+  std::vector<shared_ptr<CodeNode>> nodes;
   std::vector<shared_ptr<Lexeme>> lexemes;
 
   SymbolsFixture() {
-    CodeNode* code = new CodeNode();
+    shared_ptr<CodeNode> code = make_shared<CodeNode>();
     code->name = "TESTCODE";
     code->start = 0;
     code->length = 2;
@@ -55,7 +56,7 @@ struct SymbolsFixture {
     code->is_code = true;
     code->debug = true;
     code->lexeme = NULL;
-    manager.codeList.push_back(code);
+    manager.context->codeList.push_back(code);
     nodes.push_back(code);
 
     shared_ptr<Lexeme> lex = make_shared<Lexeme>();
@@ -65,7 +66,7 @@ struct SymbolsFixture {
     lex->y_size = 0;
     lexemes.push_back(lex);
 
-    CodeNode* data = new CodeNode();
+    shared_ptr<CodeNode> data = make_shared<CodeNode>();
     data->name = "TESTVAR";
     data->start = 0;
     data->length = 4;
@@ -74,37 +75,30 @@ struct SymbolsFixture {
     data->is_code = false;
     data->debug = true;
     data->lexeme = lex;
-    manager.dataList.push_back(data);
+    manager.context->dataList.push_back(data);
     nodes.push_back(data);
   }
 
-  ~SymbolsFixture() {
-    for (size_t i = 0; i < nodes.size(); i++) {
-      delete nodes[i];
-    }
-  }
+  ~SymbolsFixture() = default;
 };
 
 TEST_SUITE("Symbols") {
   TEST_CASE("SymbolManager clears lists") {
     SymbolManager manager;
-    CodeNode* code = new CodeNode();
-    CodeNode* data = new CodeNode();
-    manager.codeList.push_back(code);
-    manager.dataList.push_back(data);
+    shared_ptr<CodeNode> code = make_shared<CodeNode>();
+    shared_ptr<CodeNode> data = make_shared<CodeNode>();
+    manager.context->codeList.push_back(code);
+    manager.context->dataList.push_back(data);
 
-    manager.clear();
-    CHECK(manager.codeList.empty() == true);
-    CHECK(manager.dataList.empty() == true);
-
-    delete code;
-    delete data;
+    manager.context->clear();
+    CHECK(manager.context->codeList.empty() == true);
+    CHECK(manager.context->dataList.empty() == true);
   }
 
   TEST_CASE("Kernel symbols include LOADER") {
     SymbolManager manager;
     std::vector<std::vector<std::string>> kernel =
-        manager.getKernelSymbolAddresses();
+        manager.context->kernelSymbolAddresses;
     CHECK(kernel.size() > 0);
 
     bool found = false;
@@ -136,14 +130,14 @@ TEST_SUITE("Symbols") {
     opts->symbols = BuildOptions::SymbolsMode::Symbol;
 
     REQUIRE(fixture.manager.saveSymbol(opts) == true);
-    CHECK(fileExists(fixture.manager.exportFilename) == true);
+    CHECK(fileExists(fixture.manager.context->exportFilename) == true);
 
-    std::string content = readFileText(fixture.manager.exportFilename);
+    std::string content = readFileText(fixture.manager.context->exportFilename);
     CHECK(content.find("LOADER") != std::string::npos);
     CHECK(content.find("TESTCODE") != std::string::npos);
     CHECK(content.find("TESTVAR") != std::string::npos);
 
-    std::remove(fixture.manager.exportFilename.c_str());
+    std::remove(fixture.manager.context->exportFilename.c_str());
   }
 
   TEST_CASE("Symbol manager saves .omds file") {
@@ -154,14 +148,14 @@ TEST_SUITE("Symbols") {
     opts->symbols = BuildOptions::SymbolsMode::Omds;
 
     REQUIRE(fixture.manager.saveSymbol(opts) == true);
-    CHECK(fileExists(fixture.manager.exportFilename) == true);
+    CHECK(fileExists(fixture.manager.context->exportFilename) == true);
 
-    std::string content = readFileText(fixture.manager.exportFilename);
+    std::string content = readFileText(fixture.manager.context->exportFilename);
     CHECK(content.find("<DebugSession") != std::string::npos);
     CHECK(content.find("<Symbols>") != std::string::npos);
     CHECK(content.find("TESTCODE") != std::string::npos);
 
-    std::remove(fixture.manager.exportFilename.c_str());
+    std::remove(fixture.manager.context->exportFilename.c_str());
   }
 
   TEST_CASE("Symbol manager saves .noi file") {
@@ -172,14 +166,14 @@ TEST_SUITE("Symbols") {
     opts->symbols = BuildOptions::SymbolsMode::NoICE;
 
     REQUIRE(fixture.manager.saveSymbol(opts) == true);
-    CHECK(fileExists(fixture.manager.exportFilename) == true);
+    CHECK(fileExists(fixture.manager.context->exportFilename) == true);
 
-    std::string content = readFileText(fixture.manager.exportFilename);
+    std::string content = readFileText(fixture.manager.context->exportFilename);
     CHECK(content.find("def LOADER") != std::string::npos);
     CHECK(content.find("def TESTCODE") != std::string::npos);
     CHECK(content.find("def TESTVAR") != std::string::npos);
 
-    std::remove(fixture.manager.exportFilename.c_str());
+    std::remove(fixture.manager.context->exportFilename.c_str());
   }
 
   TEST_CASE("Symbol manager saves .cdb file") {
@@ -190,13 +184,13 @@ TEST_SUITE("Symbols") {
     opts->symbols = BuildOptions::SymbolsMode::Cdb;
 
     REQUIRE(fixture.manager.saveSymbol(opts) == true);
-    CHECK(fileExists(fixture.manager.exportFilename) == true);
+    CHECK(fileExists(fixture.manager.context->exportFilename) == true);
 
-    std::string content = readFileText(fixture.manager.exportFilename);
+    std::string content = readFileText(fixture.manager.context->exportFilename);
     CHECK(content.find("S:G$TESTVAR") != std::string::npos);
     CHECK(content.find("L:G$TESTVAR") != std::string::npos);
 
-    std::remove(fixture.manager.exportFilename.c_str());
+    std::remove(fixture.manager.context->exportFilename.c_str());
   }
 
   TEST_CASE("Symbol manager saves .elf file") {
@@ -210,9 +204,10 @@ TEST_SUITE("Symbols") {
 
     REQUIRE(fixture.manager.saveSymbol(opts) == true);
 
-    CHECK(fileExists(fixture.manager.exportFilename) == true);
+    CHECK(fileExists(fixture.manager.context->exportFilename) == true);
 
-    std::ifstream ifs(fixture.manager.exportFilename.c_str(), std::ios::binary);
+    std::ifstream ifs(fixture.manager.context->exportFilename.c_str(),
+                      std::ios::binary);
 
     REQUIRE(ifs.good());
 
@@ -255,7 +250,7 @@ TEST_SUITE("Symbols") {
      * cleanup
      * --------------------------------------------------------- */
 
-    std::remove(fixture.manager.exportFilename.c_str());
+    std::remove(fixture.manager.context->exportFilename.c_str());
   }
 
   TEST_CASE("Symbol manager returns false when symbols mode is none") {

@@ -5,10 +5,10 @@
 
 class CompilerBloadStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_bload(CompilerContext* context);
+  void cmd_bload(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_BLOAD_STATEMENT_STRATEGY_H_INCLUDED

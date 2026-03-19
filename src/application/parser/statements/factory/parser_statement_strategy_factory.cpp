@@ -76,11 +76,13 @@ ParserStatementStrategyFactory::ParserStatementStrategyFactory() {
   strategies["COPY"] = &graphicsStrategy;
 }
 
+ParserStatementStrategyFactory::~ParserStatementStrategyFactory() = default;
+
 IParserStatementStrategy* ParserStatementStrategyFactory::getStrategyByKeyword(
     const string& keyword) {
   map<string, IParserStatementStrategy*>::iterator it =
       strategies.find(keyword);
-  if (it == strategies.end()) return 0;
+  if (it == strategies.end()) return nullptr;
 
   return it->second;
 }

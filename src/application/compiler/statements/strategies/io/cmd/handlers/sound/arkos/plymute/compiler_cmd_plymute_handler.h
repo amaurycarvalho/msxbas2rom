@@ -10,7 +10,7 @@ class CompilerCmdPlyMuteHandler : public ICompilerCmdHandler {
    * @param context Compiler context
    * @param action Current action node
    */
-  bool execute(CompilerContext* context,
+  bool execute(shared_ptr<CompilerContext> context,
                shared_ptr<ActionNode> action) override;
 };
 

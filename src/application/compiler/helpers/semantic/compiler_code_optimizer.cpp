@@ -8,6 +8,7 @@
 
 #include "build_options.h"
 #include "compiler_context.h"
+#include "fix_node.h"
 
 extern unsigned char bin_header_bin[];
 
@@ -199,7 +200,7 @@ void CompilerCodeOptimizer::addByteOptimized(unsigned char byte) {
   if (optimized) {
     if (code_reduced) {
       unsigned int i, t = context->fixes.size();
-      FixNode* fix;
+      shared_ptr<FixNode> fix;
 
       for (i = 0; i < t; i++) {
         fix = context->fixes[i];
@@ -245,7 +246,8 @@ void CompilerCodeOptimizer::addLdHLmegarom() {
   cpu.addCmd(0xFF, 0x0000);
 }
 
-CompilerCodeOptimizer::CompilerCodeOptimizer(CompilerContext* context)
+CompilerCodeOptimizer::CompilerCodeOptimizer(
+    shared_ptr<CompilerContext> context)
     : context(context) {}
 
 CompilerCodeOptimizer::~CompilerCodeOptimizer() = default;

@@ -9,8 +9,8 @@
 
 #include "logger.h"
 
-Logger* ResourceReader::getLogger() {
-  return logger.get();
+shared_ptr<Logger> ResourceReader::getLogger() {
+  return logger;
 }
 
 const string ResourceReader::getFilename() {
@@ -22,7 +22,7 @@ bool ResourceReader::remapTo(int index, int mappedSegm, int mappedAddress) {
 };
 
 ResourceReader::ResourceReader(string filename) {
-  logger.reset(new Logger());
+  logger = make_shared<Logger>();
   this->filename = filename;
   this->packedSize = 0;
   this->unpackedSize = 0;

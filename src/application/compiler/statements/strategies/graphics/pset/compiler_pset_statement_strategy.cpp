@@ -1,11 +1,13 @@
 #include "compiler_pset_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerPsetStatementStrategy::cmd_pset(CompilerContext* context,
-                                             bool forecolor) {
+void CompilerPsetStatementStrategy::cmd_pset(
+    shared_ptr<CompilerContext> context, bool forecolor) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action, sub_action;
@@ -202,7 +204,8 @@ void CompilerPsetStatementStrategy::cmd_pset(CompilerContext* context,
   }
 }
 
-bool CompilerPsetStatementStrategy::execute(CompilerContext* context) {
+bool CompilerPsetStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_pset(context, true);
   return context->compiled;
 }

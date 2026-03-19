@@ -8,7 +8,13 @@
 #ifndef FOR_NEXT_NODE_H_INCLUDED
 #define FOR_NEXT_NODE_H_INCLUDED
 
-#include "fix_node.h"
+#include <memory>
+
+class TagNode;
+class Lexeme;
+class FixNode;
+class SymbolNode;
+class ActionNode;
 
 /***
  * @class ForNextNode
@@ -19,8 +25,8 @@ class ForNextNode {
   int index;
   shared_ptr<TagNode> tag;
   shared_ptr<Lexeme> for_var, for_to, for_step;
-  FixNode* for_end_mark;
-  SymbolNode* for_step_mark;
+  shared_ptr<FixNode> for_end_mark;
+  shared_ptr<SymbolNode> for_step_mark;
   shared_ptr<ActionNode> for_to_action, for_step_action;
 };
 

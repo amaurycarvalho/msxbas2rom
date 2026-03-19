@@ -1,11 +1,14 @@
 #include "compiler_file_statement_strategy.h"
 
+#include "action_node.h"
 #include "build_options.h"
 #include "compiler_context.h"
 #include "fswrapper.h"
+#include "lexeme.h"
 #include "resources.h"
 
-void CompilerFileStatementStrategy::cmd_file(CompilerContext* context) {
+void CompilerFileStatementStrategy::cmd_file(
+    shared_ptr<CompilerContext> context) {
   auto& opts = *context->opts;
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> action;
@@ -30,7 +33,8 @@ void CompilerFileStatementStrategy::cmd_file(CompilerContext* context) {
   }
 }
 
-bool CompilerFileStatementStrategy::execute(CompilerContext* context) {
+bool CompilerFileStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_file(context);
   return context->compiled;
 }

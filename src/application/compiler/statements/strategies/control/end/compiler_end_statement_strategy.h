@@ -5,13 +5,13 @@
 
 class CompilerEndStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_end(CompilerContext* context, bool doCodeRegistering);
+  void cmd_end(shared_ptr<CompilerContext> context, bool doCodeRegistering);
 
  public:
   //! @brief execute statement code
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
   //! @brief register statement code
-  bool registerEndRoutine(CompilerContext* context);
+  bool registerEndRoutine(shared_ptr<CompilerContext> context);
 };
 
 #endif  // COMPILER_END_STATEMENT_STRATEGY_H_INCLUDED

@@ -1,10 +1,13 @@
 #include "compiler_defusr_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerDefUsrStatementStrategy::cmd_defusr(CompilerContext* context) {
+void CompilerDefUsrStatementStrategy::cmd_defusr(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action, subaction;
@@ -51,7 +54,8 @@ void CompilerDefUsrStatementStrategy::cmd_defusr(CompilerContext* context) {
   }
 }
 
-bool CompilerDefUsrStatementStrategy::execute(CompilerContext* context) {
+bool CompilerDefUsrStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_defusr(context);
   return context->compiled;
 }

@@ -11,16 +11,20 @@
 #include "compiler_context.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "fix_node.h"
 #include "lexeme.h"
 #include "lexer_line_context.h"
+#include "parser.h"
+#include "symbol_export_context.h"
 #include "symbol_manager.h"
 #include "symbol_node.h"
 #include "tag_node.h"
 
-SymbolNode* CompilerSymbolResolver::getSymbol(shared_ptr<Lexeme> lexeme) {
+shared_ptr<SymbolNode> CompilerSymbolResolver::getSymbol(
+    shared_ptr<Lexeme> lexeme) {
   unsigned int i, t = context->symbols.size();
   bool found = false;
-  SymbolNode* symbol;
+  shared_ptr<SymbolNode> symbol;
 
   for (i = 0; i < t; i++) {
     symbol = context->symbols[i];
@@ -40,11 +44,12 @@ SymbolNode* CompilerSymbolResolver::getSymbol(shared_ptr<Lexeme> lexeme) {
   return symbol;
 }
 
-SymbolNode* CompilerSymbolResolver::addSymbol(shared_ptr<Lexeme> lexeme) {
-  SymbolNode* symbol = getSymbol(lexeme);
+shared_ptr<SymbolNode> CompilerSymbolResolver::addSymbol(
+    shared_ptr<Lexeme> lexeme) {
+  shared_ptr<SymbolNode> symbol = getSymbol(lexeme);
 
   if (!symbol) {
-    symbol = new SymbolNode();
+    symbol = make_shared<SymbolNode>();
     symbol->lexeme = lexeme;
     symbol->tag = 0;
     symbol->address = 0;
@@ -54,10 +59,11 @@ SymbolNode* CompilerSymbolResolver::addSymbol(shared_ptr<Lexeme> lexeme) {
   return symbol;
 }
 
-SymbolNode* CompilerSymbolResolver::getSymbol(shared_ptr<TagNode> tag) {
+shared_ptr<SymbolNode> CompilerSymbolResolver::getSymbol(
+    shared_ptr<TagNode> tag) {
   unsigned int i, t = context->symbols.size();
   bool found = false;
-  SymbolNode* symbol;
+  shared_ptr<SymbolNode> symbol;
 
   for (i = 0; i < t; i++) {
     symbol = context->symbols[i];
@@ -74,11 +80,12 @@ SymbolNode* CompilerSymbolResolver::getSymbol(shared_ptr<TagNode> tag) {
   return symbol;
 }
 
-SymbolNode* CompilerSymbolResolver::addSymbol(shared_ptr<TagNode> tag) {
-  SymbolNode* symbol = getSymbol(tag);
+shared_ptr<SymbolNode> CompilerSymbolResolver::addSymbol(
+    shared_ptr<TagNode> tag) {
+  shared_ptr<SymbolNode> symbol = getSymbol(tag);
 
   if (!symbol) {
-    symbol = new SymbolNode();
+    symbol = make_shared<SymbolNode>();
     symbol->lexeme = 0;
     symbol->tag = tag;
     symbol->address = 0;
@@ -88,10 +95,10 @@ SymbolNode* CompilerSymbolResolver::addSymbol(shared_ptr<TagNode> tag) {
   return symbol;
 }
 
-SymbolNode* CompilerSymbolResolver::addSymbol(string line) {
+shared_ptr<SymbolNode> CompilerSymbolResolver::addSymbol(string line) {
   unsigned int i, t = context->symbols.size();
   bool found = false;
-  SymbolNode* symbol;
+  shared_ptr<SymbolNode> symbol;
   shared_ptr<TagNode> tag;
 
   for (i = 0; i < t; i++) {
@@ -241,8 +248,8 @@ void CompilerSymbolResolver::clearSymbols() {
 int CompilerSymbolResolver::saveSymbols() {
   auto& cpu = *context->cpu;
   unsigned int i, t = context->symbols.size();
-  SymbolNode* symbol;
-  CodeNode* codeItem;
+  shared_ptr<SymbolNode> symbol;
+  shared_ptr<CodeNode> codeItem;
   shared_ptr<Lexeme> lexeme;
   char* s;
   int length = 0, var_size = 0, literal_count = 0;
@@ -261,7 +268,7 @@ int CompilerSymbolResolver::saveSymbols() {
               lexeme->subtype == Lexeme::subtype_integer_data) {
             int k, tt = lexeme->value.size();
 
-            codeItem = new CodeNode();
+            codeItem = make_shared<CodeNode>();
             codeItem->name = "LIT_" + to_string(literal_count);
             codeItem->start = cpu.context->code_pointer;
 
@@ -297,13 +304,13 @@ int CompilerSymbolResolver::saveSymbols() {
             codeItem->length = cpu.context->code_pointer - codeItem->start;
             codeItem->is_code = false;
             codeItem->debug = true;
-            context->symbolManager->codeList.push_back(codeItem);
+            context->symbolManager->context->codeList.push_back(codeItem);
 
             length += codeItem->length;
           }
 
         } else if (lexeme->type == Lexeme::type_identifier) {
-          codeItem = new CodeNode();
+          codeItem = make_shared<CodeNode>();
           codeItem->name = "VAR_" + lexeme->value;
           codeItem->start = cpu.context->ram_pointer;
           codeItem->addr_within_segm =
@@ -311,7 +318,7 @@ int CompilerSymbolResolver::saveSymbols() {
           codeItem->is_code = false;
           codeItem->debug = true;
           codeItem->lexeme = lexeme;
-          context->symbolManager->dataList.push_back(codeItem);
+          context->symbolManager->context->dataList.push_back(codeItem);
 
           var_size = 0;
 
@@ -373,7 +380,8 @@ int CompilerSymbolResolver::saveSymbols() {
   return length;
 }
 
-CompilerSymbolResolver::CompilerSymbolResolver(CompilerContext* context)
+CompilerSymbolResolver::CompilerSymbolResolver(
+    shared_ptr<CompilerContext> context)
     : context(context) {}
 
 CompilerSymbolResolver::~CompilerSymbolResolver() = default;

@@ -6,6 +6,7 @@
 #ifndef COMPILER_FLOAT_CONVERTER_H
 #define COMPILER_FLOAT_CONVERTER_H
 
+#include <memory>
 #include <string>
 
 class CompilerContext;
@@ -14,7 +15,7 @@ using namespace std;
 
 class CompilerFloatConverter {
  private:
-  CompilerContext* context;
+  shared_ptr<CompilerContext> context;
 
  public:
   /***
@@ -57,7 +58,7 @@ class CompilerFloatConverter {
    */
   int getUsingFormat(string text);
 
-  CompilerFloatConverter(CompilerContext* context);
+  CompilerFloatConverter(shared_ptr<CompilerContext> context);
   ~CompilerFloatConverter();
 };
 

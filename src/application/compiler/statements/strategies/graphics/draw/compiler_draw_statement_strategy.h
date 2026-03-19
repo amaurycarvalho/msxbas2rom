@@ -5,10 +5,10 @@
 
 class CompilerDrawStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_draw(CompilerContext* context);
+  void cmd_draw(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_DRAW_STATEMENT_STRATEGY_H_INCLUDED

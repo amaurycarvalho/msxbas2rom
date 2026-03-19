@@ -5,10 +5,10 @@
 
 class CompilerDimStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_dim(CompilerContext* context);
+  void cmd_dim(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_DIM_STATEMENT_STRATEGY_H_INCLUDED

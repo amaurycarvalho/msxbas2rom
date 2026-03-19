@@ -1,5 +1,6 @@
 #include "compiler_open_statement_strategy.h"
 
+#include "action_node.h"
 #include "build_options.h"
 #include "compiler_code_helper.h"
 #include "compiler_code_optimizer.h"
@@ -7,8 +8,11 @@
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "fix_node.h"
+#include "lexeme.h"
 
-void CompilerOpenStatementStrategy::cmd_open(CompilerContext* context) {
+void CompilerOpenStatementStrategy::cmd_open(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& opts = *context->opts;
   auto& expression = *context->expressionEvaluator;
@@ -19,7 +23,7 @@ void CompilerOpenStatementStrategy::cmd_open(CompilerContext* context) {
   shared_ptr<Lexeme> lexeme;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype, state = 0;
-  FixNode* mark;
+  shared_ptr<FixNode> mark;
   bool has[4];
 
   for (i = 0; i < 4; i++) has[i] = false;
@@ -183,7 +187,8 @@ void CompilerOpenStatementStrategy::cmd_open(CompilerContext* context) {
   }
 }
 
-bool CompilerOpenStatementStrategy::execute(CompilerContext* context) {
+bool CompilerOpenStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_open(context);
   return context->compiled;
 }

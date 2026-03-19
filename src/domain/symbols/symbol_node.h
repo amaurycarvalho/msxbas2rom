@@ -8,7 +8,10 @@
 #ifndef SYMBOL_NODE_H_INCLUDED
 #define SYMBOL_NODE_H_INCLUDED
 
-#include "parser.h"
+#include <memory>
+
+class Lexeme;
+class TagNode;
 
 /***
  * @class SymbolNode

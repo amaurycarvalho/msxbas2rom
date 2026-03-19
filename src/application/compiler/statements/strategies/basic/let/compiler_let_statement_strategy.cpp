@@ -1,11 +1,14 @@
 #include "compiler_let_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
 #include "compiler_variable_emitter.h"
+#include "lexeme.h"
 
-void CompilerLetStatementStrategy::cmd_let(CompilerContext* context) {
+void CompilerLetStatementStrategy::cmd_let(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme;
@@ -207,7 +210,8 @@ void CompilerLetStatementStrategy::cmd_let(CompilerContext* context) {
   }
 }
 
-bool CompilerLetStatementStrategy::execute(CompilerContext* context) {
+bool CompilerLetStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_let(context);
   return context->compiled;
 }

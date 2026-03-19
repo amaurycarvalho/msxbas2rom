@@ -7,7 +7,7 @@
 #include "compiler_hooks.h"
 #include "lexeme.h"
 
-int PointCompilerFunctionStrategy::execute(CompilerContext* context,
+int PointCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                            shared_ptr<ActionNode> action,
                                            int* result,
                                            unsigned int parmCount) {

@@ -5,10 +5,10 @@
 
 class CompilerStrigStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_strig(CompilerContext* context);
+  void cmd_strig(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_STRIG_STATEMENT_STRATEGY_H_INCLUDED

@@ -5,10 +5,10 @@
 
 class CompilerIrestoreStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_irestore(CompilerContext* context);
+  void cmd_irestore(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_IRESTORE_STATEMENT_STRATEGY_H_INCLUDED

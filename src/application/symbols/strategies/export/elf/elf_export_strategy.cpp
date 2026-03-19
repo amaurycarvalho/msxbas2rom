@@ -12,7 +12,7 @@
 
 #include "build_options.h"
 #include "code_node.h"
-#include "symbol_manager.h"
+#include "symbol_export_context.h"
 
 using namespace std;
 
@@ -176,7 +176,7 @@ class DwarfBuilder {
     debug_info.push_back(0);
   }
 
-  void buildLineTable(const vector<CodeNode*>& code) {
+  void buildLineTable(const vector<shared_ptr<CodeNode>>& code) {
     for (auto c : code) {
       if (!c || !c->debug) continue;
 
@@ -305,7 +305,7 @@ class ElfWriter {
 /* STRATEGY ENTRY                                               */
 /* ============================================================ */
 
-bool ElfExportStrategy::save(SymbolManager* symbolManager,
+bool ElfExportStrategy::save(shared_ptr<SymbolExportContext> context,
                              shared_ptr<BuildOptions> opts) {
   StringTableBuilder strtab;
   StringTableBuilder shstrtab;
@@ -326,7 +326,7 @@ bool ElfExportStrategy::save(SymbolManager* symbolManager,
 
   /* functions */
 
-  for (auto c : symbolManager->codeList) {
+  for (auto c : context->codeList) {
     if (!c || !c->debug) continue;
 
     uint32_t addr = (c->segm << 16) | c->addr_within_segm;
@@ -337,7 +337,7 @@ bool ElfExportStrategy::save(SymbolManager* symbolManager,
 
   /* variables */
 
-  for (auto v : symbolManager->dataList) {
+  for (auto v : context->dataList) {
     if (!v || !v->debug) continue;
 
     uint32_t addr = (v->segm << 16) | v->addr_within_segm;
@@ -354,12 +354,12 @@ bool ElfExportStrategy::save(SymbolManager* symbolManager,
 
   dwarf.buildCompileUnit(fname);
 
-  dwarf.buildLineTable(symbolManager->codeList);
+  dwarf.buildLineTable(context->codeList);
 
   /* write ELF */
 
-  symbolManager->exportFilename = opts->baseFilename + ".elf";
+  context->exportFilename = opts->baseFilename + ".elf";
 
-  return ElfWriter::write(symbolManager->exportFilename, symtab, strtab,
-                          shstrtab, dwarf);
+  return ElfWriter::write(context->exportFilename, symtab, strtab, shstrtab,
+                          dwarf);
 }

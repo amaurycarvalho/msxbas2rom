@@ -5,11 +5,11 @@
 
 class CompilerSpriteStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_sprite(CompilerContext* context);
-  void cmd_sprite_load(CompilerContext* context);
+  void cmd_sprite(shared_ptr<CompilerContext> context);
+  void cmd_sprite_load(shared_ptr<CompilerContext> context);
 
  public:
-  bool execute(CompilerContext* context) override;
+  bool execute(shared_ptr<CompilerContext> context) override;
 };
 
 #endif  // COMPILER_SPRITE_STATEMENT_STRATEGY_H_INCLUDED

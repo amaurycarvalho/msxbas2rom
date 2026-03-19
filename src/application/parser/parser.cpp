@@ -12,138 +12,140 @@
 #include "parser.h"
 
 #include "action_node.h"
+#include "assignment_evaluator.h"
 #include "build_options.h"
+#include "expression_evaluator.h"
 #include "lexer.h"
 #include "lexer_line_evaluator.h"
 #include "logger.h"
+#include "parser_context.h"
+#include "parser_line_evaluator.h"
 #include "tag_node.h"
 
 /***
  * @name Parser class code
  */
 
-Parser::Parser()
-    : exprEval(ctx),
-      assignEval(ctx, exprEval),
-      lineEval(ctx, statementStrategyFactory, exprEval, assignEval),
-      lexer(nullptr),
-      opts(nullptr) {}
+Parser::Parser() {
+  ctx = make_shared<ParserContext>();
+  ctx->setHelpers(ctx, &statementStrategyFactory);
+}
 
 Parser::~Parser() = default;
 
-bool Parser::evaluate(Lexer* lexer) {
-  this->lexer = lexer;
-  this->opts = lexer->opts;
+bool Parser::evaluate(shared_ptr<Lexer> lexer) {
+  this->ctx->lexer = lexer;
+  this->ctx->opts = lexer->opts;
 
-  ctx.logger->setFile(opts->inputFilename);
+  ctx->logger->setFile(ctx->opts->inputFilename);
 
-  ctx.logger->debug("Displaying syntactic analysis:");
+  ctx->logger->debug("Displaying syntactic analysis:");
 
-  ctx.reset();
-  ctx.lineNumber = 0;
+  ctx->reset();
+  ctx->lineNumber = 0;
 
   for (auto& lexerLine : lexer->lines) {
-    ctx.logger->setLineNumber(++ctx.lineNumber);
+    ctx->logger->setLineNumber(++ctx->lineNumber);
     if (lexerLine) {
       if (lexerLine->getLexemeCount() > 0) {
-        ctx.line_comment = false;
-        if (!lineEval.evaluateLine(lexerLine.get())) {
-          if (ctx.logger->empty()) {
-            ctx.logger->error("Syntactic error");
+        ctx->line_comment = false;
+        if (!ctx->lineEval->evaluateLine(lexerLine)) {
+          if (ctx->logger->empty()) {
+            ctx->logger->error("Syntactic error");
           }
-          ctx.logger->info(lexerLine->toString());
+          ctx->logger->info(lexerLine->toString());
           return false;
         }
-        if (!ctx.tags.empty()) {
-          ctx.logger->debug(ctx.tags.back()->toString());
+        if (!ctx->tags.empty()) {
+          ctx->logger->debug(ctx->tags.back()->toString());
         }
       }
     } else
-      ctx.logger->warning("Cannot evaluate a null line (line number " +
-                          to_string(ctx.lineNumber) + ")");
+      ctx->logger->warning("Cannot evaluate a null line (line number " +
+                           to_string(ctx->lineNumber) + ")");
   }
 
   return true;
 }
 
-Logger* Parser::getLogger() {
-  return ctx.logger.get();
+shared_ptr<Logger> Parser::getLogger() {
+  return ctx->logger;
 }
 
 int Parser::getLineNumber() const {
-  return ctx.lineNumber;
+  return ctx->lineNumber;
 }
 
 vector<shared_ptr<TagNode>>& Parser::getTags() {
-  return ctx.tags;
+  return ctx->tags;
 }
 const vector<shared_ptr<TagNode>>& Parser::getTags() const {
-  return ctx.tags;
+  return ctx->tags;
 }
 
 vector<shared_ptr<Lexeme>>& Parser::getSymbolList() {
-  return ctx.symbolList;
+  return ctx->symbolList;
 }
 const vector<shared_ptr<Lexeme>>& Parser::getSymbolList() const {
-  return ctx.symbolList;
+  return ctx->symbolList;
 }
 
 vector<shared_ptr<Lexeme>>& Parser::getDatas() {
-  return ctx.datas;
+  return ctx->datas;
 }
 const vector<shared_ptr<Lexeme>>& Parser::getDatas() const {
-  return ctx.datas;
+  return ctx->datas;
 }
 
 bool Parser::getHasTraps() const {
-  return ctx.has_traps;
+  return ctx->has_traps;
 }
 bool Parser::getHasDefusr() const {
-  return ctx.has_defusr;
+  return ctx->has_defusr;
 }
 bool Parser::getHasData() const {
-  return ctx.has_data;
+  return ctx->has_data;
 }
 bool Parser::getHasIData() const {
-  return ctx.has_idata;
+  return ctx->has_idata;
 }
 bool Parser::getHasPlay() const {
-  return ctx.has_play;
+  return ctx->has_play;
 }
 bool Parser::getHasInput() const {
-  return ctx.has_input;
+  return ctx->has_input;
 }
 bool Parser::getHasFont() const {
-  return ctx.has_font;
+  return ctx->has_font;
 }
 bool Parser::getHasMtf() const {
-  return ctx.has_mtf;
+  return ctx->has_mtf;
 }
 bool Parser::getHasPt3() const {
-  return ctx.has_pt3;
+  return ctx->has_pt3;
 }
 bool Parser::getHasAkm() const {
-  return ctx.has_akm;
+  return ctx->has_akm;
 }
 bool Parser::getHasResourceRestore() const {
-  return ctx.has_resource_restore;
+  return ctx->has_resource_restore;
 }
 
 int Parser::getResourceCount() const {
-  return ctx.resourceCount;
+  return ctx->resourceCount;
 }
 
-Lexer* Parser::getLexer() const {
-  return lexer;
+shared_ptr<Lexer> Parser::getLexer() const {
+  return ctx->lexer;
 }
 shared_ptr<BuildOptions> Parser::getOpts() const {
-  return opts;
+  return ctx->opts;
 }
 
 string Parser::toString() {
   string out;
-  for (unsigned int i = 0; i < ctx.tags.size(); i++) {
-    if (ctx.tags[i]) out += ctx.tags[i]->toString();
+  for (unsigned int i = 0; i < ctx->tags.size(); i++) {
+    if (ctx->tags[i]) out += ctx->tags[i]->toString();
   }
   return out;
 }

@@ -4,7 +4,7 @@
 #include "compiler_context.h"
 #include "compiler_hooks.h"
 
-bool CompilerCmdMuteHandler::execute(CompilerContext* context,
+bool CompilerCmdMuteHandler::execute(shared_ptr<CompilerContext> context,
                                      shared_ptr<ActionNode> action) {
   auto& cpu = *context->cpu;
 

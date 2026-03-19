@@ -1,10 +1,13 @@
 #include "compiler_put_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerPutStatementStrategy::cmd_put(CompilerContext* context) {
+void CompilerPutStatementStrategy::cmd_put(
+    shared_ptr<CompilerContext> context) {
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> lexeme;
   unsigned int t = context->current_action->actions.size();
@@ -29,7 +32,8 @@ void CompilerPutStatementStrategy::cmd_put(CompilerContext* context) {
   }
 }
 
-void CompilerPutStatementStrategy::cmd_put_sprite(CompilerContext* context) {
+void CompilerPutStatementStrategy::cmd_put_sprite(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action, sub_action;
@@ -241,7 +245,8 @@ void CompilerPutStatementStrategy::cmd_put_sprite(CompilerContext* context) {
   }
 }
 
-void CompilerPutStatementStrategy::cmd_put_tile(CompilerContext* context) {
+void CompilerPutStatementStrategy::cmd_put_tile(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action, sub_action;
@@ -409,7 +414,8 @@ void CompilerPutStatementStrategy::cmd_put_tile(CompilerContext* context) {
   }
 }
 
-bool CompilerPutStatementStrategy::execute(CompilerContext* context) {
+bool CompilerPutStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_put(context);
   return context->compiled;
 }

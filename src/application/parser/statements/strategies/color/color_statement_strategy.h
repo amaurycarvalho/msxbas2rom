@@ -5,12 +5,16 @@
 
 class ColorStatementStrategy : public IParserStatementStrategy {
  private:
-  bool parseColorRgb(ParserContext& context, LexerLineContext* statement);
-  bool parseColorSprite(ParserContext& context, LexerLineContext* statement);
+  bool parseColorRgb(shared_ptr<ParserContext> context,
+                     shared_ptr<LexerLineContext> statement);
+  bool parseColorSprite(shared_ptr<ParserContext> context,
+                        shared_ptr<LexerLineContext> statement);
 
  public:
-  bool parseStatement(ParserContext& context, LexerLineContext* statement);
-  bool execute(ParserContext& context, LexerLineContext* statement,
+  bool parseStatement(shared_ptr<ParserContext> context,
+                      shared_ptr<LexerLineContext> statement);
+  bool execute(shared_ptr<ParserContext> context,
+               shared_ptr<LexerLineContext> statement,
                shared_ptr<Lexeme> lexeme) override;
 };
 

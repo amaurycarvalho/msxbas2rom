@@ -1,11 +1,14 @@
 #include "compiler_close_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_code_helper.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
+#include "lexeme.h"
 
-void CompilerCloseStatementStrategy::cmd_close(CompilerContext* context) {
+void CompilerCloseStatementStrategy::cmd_close(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   auto& codeHelper = *context->codeHelper;
@@ -50,7 +53,8 @@ void CompilerCloseStatementStrategy::cmd_close(CompilerContext* context) {
   }
 }
 
-bool CompilerCloseStatementStrategy::execute(CompilerContext* context) {
+bool CompilerCloseStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_close(context);
   return context->compiled;
 }

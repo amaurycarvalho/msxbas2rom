@@ -26,7 +26,7 @@
  */
 class ResourceIDataReader : public ResourceDataReader {
  public:
-  ResourceIDataReader(Parser *parser);
+  ResourceIDataReader(shared_ptr<Parser> parser);
 };
 
 #endif  // RESOURCE_IDATA_READER_H_INCLUDED

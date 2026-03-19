@@ -1,28 +1,32 @@
 #include "on_statement_strategy.h"
 
-bool OnStatementStrategy::parseOn(ParserContext& context,
-                                  LexerLineContext* statement) {
+#include "action_node.h"
+#include "lexeme.h"
+#include "lexer_line_context.h"
+
+bool OnStatementStrategy::parseOn(shared_ptr<ParserContext> context,
+                                  shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
 
   if ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = context.coalesceSymbols(next_lexeme);
+    next_lexeme = context->coalesceSymbols(next_lexeme);
 
     if (next_lexeme->isKeyword("ERROR")) {
       return parseOnError(context, statement);
     } else if (next_lexeme->isKeyword("INTERVAL")) {
-      context.has_traps = true;
+      context->has_traps = true;
       return parseOnInterval(context, statement);
     } else if (next_lexeme->isKeyword("KEY")) {
-      context.has_traps = true;
+      context->has_traps = true;
       return parseOnKey(context, statement);
     } else if (next_lexeme->isKeyword("SPRITE")) {
-      context.has_traps = true;
+      context->has_traps = true;
       return parseOnSprite(context, statement);
     } else if (next_lexeme->isKeyword("STOP")) {
-      context.has_traps = true;
+      context->has_traps = true;
       return parseOnStop(context, statement);
     } else if (next_lexeme->isKeyword("STRIG")) {
-      context.has_traps = true;
+      context->has_traps = true;
       return parseOnStrig(context, statement);
     } else {
       return parseOnGotoGosub(context, statement);
@@ -32,39 +36,39 @@ bool OnStatementStrategy::parseOn(ParserContext& context,
   return false;
 }
 
-bool OnStatementStrategy::parseOnGotoGosub(ParserContext& context,
-                                           LexerLineContext* statement) {
+bool OnStatementStrategy::parseOnGotoGosub(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
   shared_ptr<ActionNode> action, action_index;
-  LexerLineContext parm;
+  shared_ptr<LexerLineContext> parm = make_shared<LexerLineContext>();
   int state = 0;
   bool next_is_sep = false;
 
   next_lexeme = statement->getPreviousLexeme();
   if (!next_lexeme) return false;
 
-  action_index = make_shared<ActionNode>(context.lex_index);
+  action_index = make_shared<ActionNode>(context->lex_index);
 
   while ((next_lexeme = statement->getNextLexeme())) {
     switch (state) {
       case 0: {
         if (next_lexeme->isKeyword("GOSUB") || next_lexeme->isKeyword("GOTO")) {
-          if (!parm.getLexemeCount()) {
+          if (!parm->getLexemeCount()) {
             return false;
           }
 
-          context.pushActionRoot(action_index);
+          context->pushActionRoot(action_index);
 
-          parm.setLexemeBOF();
-          if (!evaluateExpression(context, &parm)) {
+          parm->setLexemeBOF();
+          if (!evaluateExpression(context, parm)) {
             return false;
           }
-          parm.clearLexemes();
+          parm->clearLexemes();
 
-          context.popActionRoot();
+          context->popActionRoot();
 
           action = make_shared<ActionNode>(next_lexeme);
-          context.pushActionRoot(action);
+          context->pushActionRoot(action);
 
           state++;
           continue;
@@ -75,12 +79,12 @@ bool OnStatementStrategy::parseOnGotoGosub(ParserContext& context,
         if (next_lexeme->type == Lexeme::type_literal) {
           if (next_is_sep) return false;
 
-          context.pushActionFromLexeme(next_lexeme);
+          context->pushActionFromLexeme(next_lexeme);
           next_is_sep = true;
           continue;
         } else if (next_lexeme->isSeparator(",")) {
           if (!next_is_sep) {
-            context.pushActionFromLexeme(context.lex_null);
+            context->pushActionFromLexeme(context->lex_null);
           }
 
           next_is_sep = false;
@@ -91,28 +95,28 @@ bool OnStatementStrategy::parseOnGotoGosub(ParserContext& context,
       } break;
     }
 
-    parm.addLexeme(next_lexeme);
+    parm->addLexeme(next_lexeme);
   }
 
   if (state) {
-    context.popActionRoot();
+    context->popActionRoot();
   }
 
   return state;
 }
 
-bool OnStatementStrategy::parseOnError(ParserContext& context,
-                                       LexerLineContext* statement) {
+bool OnStatementStrategy::parseOnError(shared_ptr<ParserContext> context,
+                                       shared_ptr<LexerLineContext> statement) {
   (void)context;
   (void)statement;
   return false;
 }
 
-bool OnStatementStrategy::parseOnInterval(ParserContext& context,
-                                          LexerLineContext* statement) {
+bool OnStatementStrategy::parseOnInterval(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
   shared_ptr<ActionNode> action, action_index;
-  LexerLineContext parm;
+  shared_ptr<LexerLineContext> parm = make_shared<LexerLineContext>();
   int state = 0;
   bool first = true;
 
@@ -120,9 +124,9 @@ bool OnStatementStrategy::parseOnInterval(ParserContext& context,
   if (!next_lexeme) return false;
 
   action = make_shared<ActionNode>(next_lexeme);
-  context.pushActionRoot(action);
+  context->pushActionRoot(action);
 
-  action_index = make_shared<ActionNode>(context.lex_index);
+  action_index = make_shared<ActionNode>(context->lex_index);
 
   while ((next_lexeme = statement->getNextLexeme())) {
     switch (state) {
@@ -135,22 +139,22 @@ bool OnStatementStrategy::parseOnInterval(ParserContext& context,
         }
 
         if (next_lexeme->isKeyword("GOSUB")) {
-          if (!parm.getLexemeCount()) {
+          if (!parm->getLexemeCount()) {
             return false;
           }
 
-          context.pushActionRoot(action_index);
+          context->pushActionRoot(action_index);
 
-          parm.setLexemeBOF();
-          if (!evaluateExpression(context, &parm)) {
+          parm->setLexemeBOF();
+          if (!evaluateExpression(context, parm)) {
             return false;
           }
-          parm.clearLexemes();
+          parm->clearLexemes();
 
-          context.popActionRoot();
+          context->popActionRoot();
 
           action = make_shared<ActionNode>(next_lexeme);
-          context.pushActionRoot(action);
+          context->pushActionRoot(action);
 
           state++;
           continue;
@@ -159,7 +163,7 @@ bool OnStatementStrategy::parseOnInterval(ParserContext& context,
 
       case 1: {
         if (next_lexeme->type == Lexeme::type_literal) {
-          context.pushActionFromLexeme(next_lexeme);
+          context->pushActionFromLexeme(next_lexeme);
           state++;
           continue;
         } else {
@@ -172,20 +176,20 @@ bool OnStatementStrategy::parseOnInterval(ParserContext& context,
       } break;
     }
 
-    parm.addLexeme(next_lexeme);
+    parm->addLexeme(next_lexeme);
   }
 
   if (state) {
-    context.popActionRoot();
+    context->popActionRoot();
   }
 
-  context.popActionRoot();
+  context->popActionRoot();
 
   return state;
 }
 
-bool OnStatementStrategy::parseOnKey(ParserContext& context,
-                                     LexerLineContext* statement) {
+bool OnStatementStrategy::parseOnKey(shared_ptr<ParserContext> context,
+                                     shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
   shared_ptr<ActionNode> action;
   int state = 0;
@@ -195,14 +199,14 @@ bool OnStatementStrategy::parseOnKey(ParserContext& context,
   if (!next_lexeme) return false;
 
   action = make_shared<ActionNode>(next_lexeme);
-  context.pushActionRoot(action);
+  context->pushActionRoot(action);
 
   while ((next_lexeme = statement->getNextLexeme())) {
     switch (state) {
       case 0: {
         if (next_lexeme->isKeyword("GOSUB")) {
           action = make_shared<ActionNode>(next_lexeme);
-          context.pushActionRoot(action);
+          context->pushActionRoot(action);
 
           state++;
           continue;
@@ -215,12 +219,12 @@ bool OnStatementStrategy::parseOnKey(ParserContext& context,
         if (next_lexeme->type == Lexeme::type_literal) {
           if (next_is_sep) return false;
 
-          context.pushActionFromLexeme(next_lexeme);
+          context->pushActionFromLexeme(next_lexeme);
           next_is_sep = true;
           continue;
         } else if (next_lexeme->isSeparator(",")) {
           if (!next_is_sep) {
-            context.pushActionFromLexeme(context.lex_null);
+            context->pushActionFromLexeme(context->lex_null);
           }
 
           next_is_sep = false;
@@ -233,37 +237,37 @@ bool OnStatementStrategy::parseOnKey(ParserContext& context,
   }
 
   if (state) {
-    context.popActionRoot();
+    context->popActionRoot();
   }
-  context.popActionRoot();
+  context->popActionRoot();
 
   return state;
 }
 
-bool OnStatementStrategy::parseOnSprite(ParserContext& context,
-                                        LexerLineContext* statement) {
+bool OnStatementStrategy::parseOnSprite(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   return parseOnKey(context, statement);
 }
 
-bool OnStatementStrategy::parseOnStop(ParserContext& context,
-                                      LexerLineContext* statement) {
+bool OnStatementStrategy::parseOnStop(shared_ptr<ParserContext> context,
+                                      shared_ptr<LexerLineContext> statement) {
   return parseOnKey(context, statement);
 }
 
-bool OnStatementStrategy::parseOnStrig(ParserContext& context,
-                                       LexerLineContext* statement) {
+bool OnStatementStrategy::parseOnStrig(shared_ptr<ParserContext> context,
+                                       shared_ptr<LexerLineContext> statement) {
   return parseOnKey(context, statement);
 }
 
-bool OnStatementStrategy::parseInterval(ParserContext& context,
-                                        LexerLineContext* statement) {
+bool OnStatementStrategy::parseInterval(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
 
   if ((next_lexeme = statement->getNextLexeme())) {
     if (next_lexeme->type == Lexeme::type_keyword) {
       if (next_lexeme->value == "ON" || next_lexeme->value == "OFF" ||
           next_lexeme->value == "STOP") {
-        context.pushActionFromLexeme(next_lexeme);
+        context->pushActionFromLexeme(next_lexeme);
         return true;
       }
     }
@@ -272,15 +276,15 @@ bool OnStatementStrategy::parseInterval(ParserContext& context,
   return false;
 }
 
-bool OnStatementStrategy::parseStop(ParserContext& context,
-                                    LexerLineContext* statement) {
+bool OnStatementStrategy::parseStop(shared_ptr<ParserContext> context,
+                                    shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
 
   if ((next_lexeme = statement->getNextLexeme())) {
     if (next_lexeme->type == Lexeme::type_keyword) {
       if (next_lexeme->value == "ON" || next_lexeme->value == "OFF" ||
           next_lexeme->value == "STOP") {
-        context.pushActionFromLexeme(next_lexeme);
+        context->pushActionFromLexeme(next_lexeme);
       } else {
         return false;
       }
@@ -292,25 +296,25 @@ bool OnStatementStrategy::parseStop(ParserContext& context,
   return true;
 }
 
-bool OnStatementStrategy::parseKey(ParserContext& context,
-                                   LexerLineContext* statement) {
+bool OnStatementStrategy::parseKey(shared_ptr<ParserContext> context,
+                                   shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
-  LexerLineContext parm;
+  shared_ptr<LexerLineContext> parm = make_shared<LexerLineContext>();
   int sepCount = 0;
 
   while ((next_lexeme = statement->getNextLexeme())) {
     if (next_lexeme->type == Lexeme::type_keyword) {
       if (next_lexeme->value == "ON" || next_lexeme->value == "OFF" ||
           next_lexeme->value == "STOP") {
-        if (parm.getLexemeCount()) {
-          parm.setLexemeBOF();
-          if (!evaluateExpression(context, &parm)) {
+        if (parm->getLexemeCount()) {
+          parm->setLexemeBOF();
+          if (!evaluateExpression(context, parm)) {
             return false;
           }
-          parm.clearLexemes();
+          parm->clearLexemes();
         }
 
-        context.pushActionFromLexeme(next_lexeme);
+        context->pushActionFromLexeme(next_lexeme);
         continue;
       }
 
@@ -321,38 +325,38 @@ bool OnStatementStrategy::parseKey(ParserContext& context,
       if (sepCount) sepCount--;
 
     } else if (next_lexeme->isSeparator(",") && sepCount == 0) {
-      if (parm.getLexemeCount()) {
-        parm.setLexemeBOF();
-        if (!evaluateExpression(context, &parm)) {
+      if (parm->getLexemeCount()) {
+        parm->setLexemeBOF();
+        if (!evaluateExpression(context, parm)) {
           return false;
         }
-        parm.clearLexemes();
+        parm->clearLexemes();
       }
 
       continue;
     }
 
-    parm.addLexeme(next_lexeme);
+    parm->addLexeme(next_lexeme);
   }
 
-  if (parm.getLexemeCount()) {
-    parm.setLexemeBOF();
-    if (!evaluateExpression(context, &parm)) {
+  if (parm->getLexemeCount()) {
+    parm->setLexemeBOF();
+    if (!evaluateExpression(context, parm)) {
       return false;
     }
-    parm.clearLexemes();
+    parm->clearLexemes();
   }
 
   return true;
 }
 
-bool OnStatementStrategy::parseStrig(ParserContext& context,
-                                     LexerLineContext* statement) {
+bool OnStatementStrategy::parseStrig(shared_ptr<ParserContext> context,
+                                     shared_ptr<LexerLineContext> statement) {
   return parseKey(context, statement);
 }
 
-bool OnStatementStrategy::execute(ParserContext& context,
-                                  LexerLineContext* statement,
+bool OnStatementStrategy::execute(shared_ptr<ParserContext> context,
+                                  shared_ptr<LexerLineContext> statement,
                                   shared_ptr<Lexeme> lexeme) {
   if (!lexeme || lexeme->type != Lexeme::type_keyword) return false;
 

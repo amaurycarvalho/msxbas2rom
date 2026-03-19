@@ -3,7 +3,8 @@
 #include "compiler_code_helper.h"
 #include "compiler_context.h"
 
-bool CompilerOpenGrpStatementStrategy::execute(CompilerContext* context) {
+bool CompilerOpenGrpStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   context->has_open_grp = true;
   return context->compiled;
 }

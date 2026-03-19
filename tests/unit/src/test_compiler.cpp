@@ -36,31 +36,35 @@ static std::string createTempBas(const std::string& filename,
   return path;
 }
 
-static bool compileProgram(const std::string& filename, Compiler& compiler,
-                           Parser& parser) {
-  Lexer lexer;
-  if (!lexer.load(filename)) return false;
-  if (!lexer.evaluate()) return false;
-  if (!parser.evaluate(&lexer)) return false;
-  return compiler.build(&parser);
+static bool compileProgram(const std::string& filename,
+                           shared_ptr<Compiler> compiler,
+                           shared_ptr<Parser> parser) {
+  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  if (!lexer->load(filename)) return false;
+  if (!lexer->evaluate()) return false;
+  if (!parser->evaluate(lexer)) return false;
+  return compiler->build(parser);
 }
 
-static bool compileProgram(const std::string& filename, Compiler& compiler) {
-  Lexer lexer;
-  Parser parser;
+static bool compileProgram(const std::string& filename,
+                           shared_ptr<Compiler> compiler) {
+  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Parser> parser = make_shared<Parser>();
 
-  if (!lexer.load(filename)) return false;
-  if (!lexer.evaluate()) return false;
-  if (!parser.evaluate(&lexer)) return false;
-  return compiler.build(&parser);
+  if (!lexer->load(filename)) return false;
+  if (!lexer->evaluate()) return false;
+  if (!parser->evaluate(lexer)) return false;
+  return compiler->build(parser);
 }
 
-static unique_ptr<CompilerContext> createCmdContext(
-    Z80OpcodeWriter& cpu, CpuWorkspaceContext& workspace) {
-  workspace.clear();
-  cpu.context = &workspace;
-  unique_ptr<CompilerContext> ctx(new CompilerContext());
-  ctx->cpu = &cpu;
+static shared_ptr<CompilerContext> createCmdContext(
+    shared_ptr<Z80OpcodeWriter> cpu,
+    shared_ptr<CpuWorkspaceContext> workspace) {
+  workspace->clear();
+  cpu->context = workspace;
+  shared_ptr<CompilerContext> ctx = make_shared<CompilerContext>();
+  ctx->setHelpers(ctx);
+  ctx->cpu = cpu;
   ctx->opts = make_shared<BuildOptions>();
   ctx->compiled = true;
   return ctx;
@@ -93,12 +97,12 @@ static bool compileStatementProgram(const std::string& filename,
                                     std::string* error_out = nullptr) {
   const std::string path = createTempBas(filename, program);
 
-  Z80OpcodeWriter cpuOpcodeWriter;
-  Compiler compiler(&cpuOpcodeWriter);
+  shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
+  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
 
   bool ok = compileProgram(path, compiler);
   if (!ok && error_out) {
-    *error_out = compiler.getLogger()->errors().toString();
+    *error_out = compiler->getLogger()->errors().toString();
   }
 
   std::remove(path.c_str());
@@ -111,12 +115,14 @@ TEST_SUITE("Compiler") {
     const std::string filename =
         createTempBas("compiler_valid.bas", "10 PRINT \"HI\"\n20 END\n");
 
-    Z80OpcodeWriter cpuOpcodeWriter;
-    Compiler compiler(&cpuOpcodeWriter);
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+
     CHECK(compileProgram(filename, compiler) == true);
-    CHECK(compiler.isCompiled() == true);
-    CHECK(compiler.getCodeSize() > 0);
-    CHECK(compiler.getRamSize() >= 0);
+    CHECK(compiler->isCompiled() == true);
+    CHECK(compiler->getCodeSize() > 0);
+    CHECK(compiler->getRamSize() >= 0);
 
     std::remove(filename.c_str());
   }
@@ -124,10 +130,11 @@ TEST_SUITE("Compiler") {
   TEST_CASE("Fails when parser has no tags") {
     const std::string filename = createTempBas("compiler_empty.bas", "\n\n");
 
-    Z80OpcodeWriter cpuOpcodeWriter;
-    Compiler compiler(&cpuOpcodeWriter);
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
-    CHECK(compiler.isCompiled() == false);
+    CHECK(compiler->isCompiled() == false);
 
     std::remove(filename.c_str());
   }
@@ -136,10 +143,11 @@ TEST_SUITE("Compiler") {
     const std::string filename = createTempBas(
         "compiler_duplicated_line.bas", "10 PRINT \"A\"\n10 PRINT \"B\"\n");
 
-    Z80OpcodeWriter cpuOpcodeWriter;
-    Compiler compiler(&cpuOpcodeWriter);
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
-    CHECK(compiler.getLogger()->errors().toString().find(
+    CHECK(compiler->getLogger()->errors().toString().find(
               "Line number already declared") != std::string::npos);
 
     std::remove(filename.c_str());
@@ -149,10 +157,11 @@ TEST_SUITE("Compiler") {
     const std::string filename = createTempBas(
         "compiler_for_without_next.bas", "10 FOR I=1 TO 10\n20 PRINT I\n");
 
-    Z80OpcodeWriter cpuOpcodeWriter;
-    Compiler compiler(&cpuOpcodeWriter);
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
-    CHECK(compiler.getLogger()->errors().toString().find(
+    CHECK(compiler->getLogger()->errors().toString().find(
               "FOR without a NEXT") != std::string::npos);
 
     std::remove(filename.c_str());
@@ -162,10 +171,11 @@ TEST_SUITE("Compiler") {
     const std::string filename =
         createTempBas("compiler_next_without_for.bas", "10 NEXT I\n");
 
-    Z80OpcodeWriter cpuOpcodeWriter;
-    Compiler compiler(&cpuOpcodeWriter);
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
-    CHECK(compiler.getLogger()->errors().toString().find(
+    CHECK(compiler->getLogger()->errors().toString().find(
               "NEXT without a FOR") != std::string::npos);
 
     std::remove(filename.c_str());
@@ -175,10 +185,11 @@ TEST_SUITE("Compiler") {
     const std::string filename =
         createTempBas("compiler_unknown_func.bas", "10 A=FOO(1)\n");
 
-    Z80OpcodeWriter cpuOpcodeWriter;
-    Compiler compiler(&cpuOpcodeWriter);
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
-    CHECK(compiler.getLogger()->errors().toString().find(
+    CHECK(compiler->getLogger()->errors().toString().find(
               "Undeclared array or unknown function") != std::string::npos);
 
     std::remove(filename.c_str());
@@ -188,12 +199,13 @@ TEST_SUITE("Compiler") {
     const std::string filename =
         createTempBas("compiler_data_idata.bas", "10 DATA 1,2\n20 IDATA 3\n");
 
-    Z80OpcodeWriter cpuOpcodeWriter;
-    Compiler compiler(&cpuOpcodeWriter);
-    Parser parser;
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Parser> parser = make_shared<Parser>();
     CHECK(compileProgram(filename, compiler, parser) == true);
-    CHECK(compiler.getResourceManager() != nullptr);
-    CHECK(compiler.getResourceManager()->resources.size() >= 2);
+    CHECK(compiler->getResourceManager() != nullptr);
+    CHECK(compiler->getResourceManager()->resources.size() >= 2);
 
     std::remove(filename.c_str());
   }
@@ -202,12 +214,13 @@ TEST_SUITE("Compiler") {
     const std::string filename =
         createTempBas("compiler_write.bas", "10 PRINT \"HI\"\n20 END\n");
 
-    Z80OpcodeWriter cpuOpcodeWriter;
-    Compiler compiler(&cpuOpcodeWriter);
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == true);
 
     std::vector<unsigned char> out(0x8000, 0);
-    int written = compiler.write(out.data(), 0x8000);
+    int written = compiler->write(out.data(), 0x8000);
     CHECK(written > 0);
 
     std::remove(filename.c_str());
@@ -628,10 +641,11 @@ TEST_SUITE("CompilerCmdHandlers") {
 
     for (const auto& test_case : cases) {
       SUBCASE(test_case.name) {
-        CpuWorkspaceContext workspace(COMPILE_CODE_SIZE, COMPILE_RAM_SIZE,
-                                      def_RAM_BOTTOM);
-        Z80OpcodeWriter cpu;
-        unique_ptr<CompilerContext> ctx = createCmdContext(cpu, workspace);
+        shared_ptr<CpuWorkspaceContext> workspace =
+            make_shared<CpuWorkspaceContext>(COMPILE_CODE_SIZE,
+                                             COMPILE_RAM_SIZE, def_RAM_BOTTOM);
+        shared_ptr<Z80OpcodeWriter> cpu = make_shared<Z80OpcodeWriter>();
+        shared_ptr<CompilerContext> ctx = createCmdContext(cpu, workspace);
 
         CompilerCmdHandlerFactory factory;
         ICompilerCmdHandler* handler = factory.getByKeyword(test_case.keyword);
@@ -640,7 +654,7 @@ TEST_SUITE("CompilerCmdHandlers") {
         shared_ptr<ActionNode> action =
             makeCmdAction(test_case.keyword, test_case.params);
 
-        bool ok = handler->execute(ctx.get(), action);
+        bool ok = handler->execute(ctx, action);
 
         CHECK(ok == test_case.expect_success);
         CHECK(ctx->pt3 == test_case.expect_pt3);
@@ -1126,10 +1140,11 @@ TEST_SUITE("CompilerFunctionStrategies") {
 
     for (const auto& test_case : cases) {
       SUBCASE(test_case.name) {
-        CpuWorkspaceContext workspace(COMPILE_CODE_SIZE, COMPILE_RAM_SIZE,
-                                      def_RAM_BOTTOM);
-        Z80OpcodeWriter cpu;
-        unique_ptr<CompilerContext> ctx = createCmdContext(cpu, workspace);
+        shared_ptr<CpuWorkspaceContext> workspace =
+            make_shared<CpuWorkspaceContext>(COMPILE_CODE_SIZE,
+                                             COMPILE_RAM_SIZE, def_RAM_BOTTOM);
+        shared_ptr<Z80OpcodeWriter> cpu = make_shared<Z80OpcodeWriter>();
+        shared_ptr<CompilerContext> ctx = createCmdContext(cpu, workspace);
 
         CompilerFunctionStrategyFactory factory;
         ICompilerFunctionStrategy* strategy =
@@ -1147,8 +1162,7 @@ TEST_SUITE("CompilerFunctionStrategies") {
           result[i] = test_case.result[i];
         }
 
-        int out =
-            strategy->execute(ctx.get(), action, result, test_case.parmCount);
+        int out = strategy->execute(ctx, action, result, test_case.parmCount);
 
         CHECK(out == test_case.expected);
       }

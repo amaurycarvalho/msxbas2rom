@@ -5,7 +5,7 @@
 #include "compiler_expression_evaluator.h"
 #include "lexeme.h"
 
-int CsngCompilerFunctionStrategy::execute(CompilerContext* context,
+int CsngCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                           shared_ptr<ActionNode> action,
                                           int* result, unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;

@@ -2,6 +2,7 @@
 
 #include "compiler_context.h"
 
-bool CompilerDefdblStatementStrategy::execute(CompilerContext* context) {
+bool CompilerDefdblStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   return true;  // resolved by parser
 }

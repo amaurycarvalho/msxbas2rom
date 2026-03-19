@@ -23,10 +23,10 @@ using namespace std;
  */
 class ResourceManager {
  public:
-  vector<std::unique_ptr<ResourceReader>> resources;
+  vector<std::shared_ptr<ResourceReader>> resources;
   vector<vector<unsigned char>> pages;
 
-  unique_ptr<Logger> logger;
+  shared_ptr<Logger> logger;
 
   int resourcesPackedSize;
   int resourcesUnpackedSize;
@@ -54,13 +54,13 @@ class ResourceManager {
    * @brief Add a DATA statement resource to the resource list
    * @todo Implement IDATA+DATA mix up bug fix
    */
-  void addDataResource(Parser* parser);
+  void addDataResource(shared_ptr<Parser> parser);
 
   /***
    * @brief Add a IDATA statement resource to the resource list
    * @todo Implement IDATA+DATA mix up bug fix
    */
-  void addIDataResource(Parser* parser);
+  void addIDataResource(shared_ptr<Parser> parser);
 
   /***
    * @brief build map and resources data

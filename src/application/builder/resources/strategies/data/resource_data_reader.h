@@ -29,12 +29,12 @@ class Parser;
  */
 class ResourceDataReader : public ResourceCsvReader {
  private:
-  Parser *parser;
+  shared_ptr<Parser> parser;
   bool populateFields();
 
  public:
   bool load();
-  ResourceDataReader(Parser *parser);
+  ResourceDataReader(shared_ptr<Parser> parser);
 };
 
 #endif  // RESOURCE_DATA_READER_H_INCLUDED

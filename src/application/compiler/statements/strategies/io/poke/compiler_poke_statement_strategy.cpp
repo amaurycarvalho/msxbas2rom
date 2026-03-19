@@ -1,9 +1,12 @@
 #include "compiler_poke_statement_strategy.h"
 
+#include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
+#include "lexeme.h"
 
-void CompilerPokeStatementStrategy::cmd_poke(CompilerContext* context) {
+void CompilerPokeStatementStrategy::cmd_poke(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme;
@@ -40,7 +43,8 @@ void CompilerPokeStatementStrategy::cmd_poke(CompilerContext* context) {
   }
 }
 
-bool CompilerPokeStatementStrategy::execute(CompilerContext* context) {
+bool CompilerPokeStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   cmd_poke(context);
   return context->compiled;
 }

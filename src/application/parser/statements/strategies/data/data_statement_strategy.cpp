@@ -1,10 +1,12 @@
 #include "data_statement_strategy.h"
 
-#include "lexer.h"
+#include "lexeme.h"
+#include "lexer_line_context.h"
 #include "logger.h"
+#include "tag_node.h"
 
-bool DataStatementStrategy::parseData(ParserContext& context,
-                                      LexerLineContext* statement,
+bool DataStatementStrategy::parseData(shared_ptr<ParserContext> context,
+                                      shared_ptr<LexerLineContext> statement,
                                       bool isBinaryData) {
   shared_ptr<Lexeme> next_lexeme, lexeme;
   Lexeme::LexemeSubType subtype;
@@ -14,36 +16,36 @@ bool DataStatementStrategy::parseData(ParserContext& context,
   bool lastWasSeparator = true;
 
   if (isBinaryData) {
-    context.has_idata = true;
+    context->has_idata = true;
     sname = "_IDATA_";
     subtype = Lexeme::subtype_integer_data;
   } else {
-    context.has_data = true;
+    context->has_data = true;
     sname = "_DATA_";
     subtype = Lexeme::subtype_string;
   }
 
   while ((next_lexeme = statement->getNextLexeme())) {
-    next_lexeme = context.coalesceSymbols(next_lexeme);
+    next_lexeme = context->coalesceSymbols(next_lexeme);
 
     if (next_lexeme->type == Lexeme::type_separator &&
         (next_lexeme->value == "," || next_lexeme->value == ";")) {
       if (lastWasSeparator) {
-        i = context.datas.size() + 1;
+        i = context->datas.size() + 1;
         lexeme =
             make_shared<Lexeme>(Lexeme::type_literal, Lexeme::subtype_string,
                                 sname + to_string(i), "");
         if (lexeme) {
-          lexeme->tag = context.tag->name;
-          context.pushActionFromLexeme(lexeme);
-          context.datas.push_back(lexeme);
+          lexeme->tag = context->tag->name;
+          context->pushActionFromLexeme(lexeme);
+          context->datas.push_back(lexeme);
         }
 
       } else if (stext.size()) {
-        i = context.datas.size() + 1;
+        i = context->datas.size() + 1;
         next_lexeme = make_shared<Lexeme>(Lexeme::type_literal, subtype,
                                           sname + to_string(i), stext);
-        next_lexeme->tag = context.tag->name;
+        next_lexeme->tag = context->tag->name;
 
         s = (char*)stext.c_str();
         if (s[0] == '&') {
@@ -57,20 +59,20 @@ bool DataStatementStrategy::parseData(ParserContext& context,
             else
               itext = 0;
           } catch (exception& e) {
-            context.logger->warning("Error while converting numeric constant " +
-                                    stext);
+            context->logger->warning(
+                "Error while converting numeric constant " + stext);
             itext = 0;
           }
           next_lexeme->value = to_string(itext);
         }
 
-        context.pushActionFromLexeme(next_lexeme);
-        context.datas.push_back(next_lexeme);
+        context->pushActionFromLexeme(next_lexeme);
+        context->datas.push_back(next_lexeme);
 
         stext = "";
 
       } else {
-        context.logger->error("Invalid DATA parameter type");
+        context->logger->error("Invalid DATA parameter type");
         return false;
       }
 
@@ -87,21 +89,21 @@ bool DataStatementStrategy::parseData(ParserContext& context,
   }
 
   if (lastWasSeparator) {
-    i = context.datas.size() + 1;
+    i = context->datas.size() + 1;
     lexeme = make_shared<Lexeme>(Lexeme::type_literal, Lexeme::subtype_string,
                                  sname + to_string(i), "");
     if (lexeme) {
-      lexeme->tag = context.tag->name;
-      context.pushActionFromLexeme(lexeme);
-      context.datas.push_back(lexeme);
+      lexeme->tag = context->tag->name;
+      context->pushActionFromLexeme(lexeme);
+      context->datas.push_back(lexeme);
     }
   }
 
   if (stext.size()) {
-    i = context.datas.size() + 1;
+    i = context->datas.size() + 1;
     next_lexeme = make_shared<Lexeme>(Lexeme::type_literal, subtype,
                                       "_DATA_" + to_string(i), stext);
-    next_lexeme->tag = context.tag->name;
+    next_lexeme->tag = context->tag->name;
 
     s = (char*)stext.c_str();
     if (s[0] == '&') {
@@ -115,22 +117,22 @@ bool DataStatementStrategy::parseData(ParserContext& context,
         else
           itext = 0;
       } catch (exception& e) {
-        context.logger->warning("Error while converting numeric constant " +
-                                stext);
+        context->logger->warning("Error while converting numeric constant " +
+                                 stext);
         itext = 0;
       }
       next_lexeme->value = to_string(itext);
     }
 
-    context.pushActionFromLexeme(next_lexeme);
-    context.datas.push_back(next_lexeme);
+    context->pushActionFromLexeme(next_lexeme);
+    context->datas.push_back(next_lexeme);
   }
 
   return true;
 }
 
-bool DataStatementStrategy::execute(ParserContext& context,
-                                    LexerLineContext* statement,
+bool DataStatementStrategy::execute(shared_ptr<ParserContext> context,
+                                    shared_ptr<LexerLineContext> statement,
                                     shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
   return parseData(context, statement, false);

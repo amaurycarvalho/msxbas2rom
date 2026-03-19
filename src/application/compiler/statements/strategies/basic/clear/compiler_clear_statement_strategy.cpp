@@ -6,7 +6,8 @@
 //! @brief CLEAR statement
 //! @note https://www.msx.org/wiki/CLEAR
 
-void CompilerClearStatementStrategy::cmd_clear(CompilerContext* context) {
+void CompilerClearStatementStrategy::cmd_clear(
+    shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
 
   /// clear variables workarea
@@ -23,7 +24,8 @@ void CompilerClearStatementStrategy::cmd_clear(CompilerContext* context) {
   cpu.addLDIR();    //! (DE++) = (HL++), until BC-- = 0
 }
 
-bool CompilerClearStatementStrategy::execute(CompilerContext* context) {
+bool CompilerClearStatementStrategy::execute(
+    shared_ptr<CompilerContext> context) {
   /// @remark issue #11
   cmd_clear(context);
   return context->compiled;

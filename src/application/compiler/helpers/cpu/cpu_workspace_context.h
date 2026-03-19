@@ -7,7 +7,6 @@
 #define CPU_WORKSPACE_CONTEXT_H
 
 #include <deque>
-#include <memory>
 #include <vector>
 
 using namespace std;
