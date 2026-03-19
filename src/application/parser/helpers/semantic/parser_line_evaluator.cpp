@@ -15,7 +15,7 @@ ParserLineEvaluator::ParserLineEvaluator(
     shared_ptr<ParserContext> context,
     shared_ptr<ExpressionEvaluator> expressionEvaluator,
     shared_ptr<AssignmentEvaluator> assignmentEvaluator,
-    ParserStatementStrategyFactory* strategyFactory)
+    shared_ptr<ParserStatementStrategyFactory> strategyFactory)
     : ctx(context),
       exprEval(expressionEvaluator),
       assignEval(assignmentEvaluator),

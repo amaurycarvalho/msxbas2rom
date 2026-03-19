@@ -680,11 +680,12 @@ TEST_SUITE("GenericStatementStrategy") {
 
 TEST_SUITE("LetStatementStrategy") {
   TEST_CASE("Parses a basic assignment") {
-    ParserStatementStrategyFactory factory;
+    shared_ptr<ParserStatementStrategyFactory> factory =
+        make_shared<ParserStatementStrategyFactory>();
     shared_ptr<ParserContext> ctx = createContext();
     LetStatementStrategy strategy;
 
-    ctx->setHelpers(ctx, &factory);
+    ctx->setHelpers(ctx, factory);
 
     shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
     line->addLexeme(id("A"));
@@ -719,11 +720,12 @@ TEST_SUITE("InputStatementStrategy") {
 
 TEST_SUITE("TimeStatementStrategy") {
   TEST_CASE("Parses TIME assignment and sets input flag") {
-    ParserStatementStrategyFactory factory;
+    shared_ptr<ParserStatementStrategyFactory> factory =
+        make_shared<ParserStatementStrategyFactory>();
     shared_ptr<ParserContext> ctx = createContext();
     TimeStatementStrategy strategy;
 
-    ctx->setHelpers(ctx, &factory);
+    ctx->setHelpers(ctx, factory);
 
     shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
     line->addLexeme(id("T"));
@@ -780,11 +782,12 @@ TEST_SUITE("NextStatementStrategy") {
 
 TEST_SUITE("ForStatementStrategy") {
   TEST_CASE("Parses FOR with TO") {
-    ParserStatementStrategyFactory factory;
+    shared_ptr<ParserStatementStrategyFactory> factory =
+        make_shared<ParserStatementStrategyFactory>();
     shared_ptr<ParserContext> ctx = createContext();
     ForStatementStrategy strategy;
 
-    ctx->setHelpers(ctx, &factory);
+    ctx->setHelpers(ctx, factory);
 
     shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
     line->addLexeme(id("I"));
@@ -803,11 +806,12 @@ TEST_SUITE("ForStatementStrategy") {
 
 TEST_SUITE("IfStatementStrategy") {
   TEST_CASE("Parses IF with THEN statement") {
-    ParserStatementStrategyFactory factory;
+    shared_ptr<ParserStatementStrategyFactory> factory =
+        make_shared<ParserStatementStrategyFactory>();
     shared_ptr<ParserContext> ctx = createContext();
     IfStatementStrategy strategy;
 
-    ctx->setHelpers(ctx, &factory);
+    ctx->setHelpers(ctx, factory);
 
     shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
     line->addLexeme(id("A"));

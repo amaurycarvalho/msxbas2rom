@@ -15,10 +15,11 @@ using namespace std;
 
 class ParserLineEvaluator {
  public:
-  ParserLineEvaluator(shared_ptr<ParserContext> context,
-                      shared_ptr<ExpressionEvaluator> expressionEvaluator,
-                      shared_ptr<AssignmentEvaluator> assignmentEvaluator,
-                      ParserStatementStrategyFactory* strategyFactory);
+  ParserLineEvaluator(
+      shared_ptr<ParserContext> context,
+      shared_ptr<ExpressionEvaluator> expressionEvaluator,
+      shared_ptr<AssignmentEvaluator> assignmentEvaluator,
+      shared_ptr<ParserStatementStrategyFactory> strategyFactory);
   ~ParserLineEvaluator();
 
   bool evaluateLine(shared_ptr<LexerLineEvaluator> lexerLine);
@@ -32,7 +33,7 @@ class ParserLineEvaluator {
   shared_ptr<ParserContext> ctx;
   shared_ptr<ExpressionEvaluator> exprEval;
   shared_ptr<AssignmentEvaluator> assignEval;
-  ParserStatementStrategyFactory* statementStrategyFactory;
+  shared_ptr<ParserStatementStrategyFactory> statementStrategyFactory;
   unique_ptr<IncludeLoader> includeLoader;
 };
 

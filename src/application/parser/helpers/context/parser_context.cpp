@@ -36,7 +36,7 @@ ParserContext::~ParserContext() = default;
 
 void ParserContext::setHelpers(
     shared_ptr<ParserContext> context,
-    ParserStatementStrategyFactory* statementStrategyFactory) {
+    shared_ptr<ParserStatementStrategyFactory> statementStrategyFactory) {
   exprEval = make_shared<ExpressionEvaluator>(context);
   assignEval = make_shared<AssignmentEvaluator>(context, exprEval);
   lineEval = make_shared<ParserLineEvaluator>(context, exprEval, assignEval,

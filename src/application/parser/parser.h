@@ -16,13 +16,12 @@
 #include <string>
 #include <vector>
 
-#include "parser_statement_strategy_factory.h"
-
 class Logger;
 class Lexer;
 class BuildOptions;
 class TagNode;
 class Lexeme;
+class ParserStatementStrategyFactory;
 
 class ParserContext;
 
@@ -34,7 +33,7 @@ using namespace std;
  */
 class Parser {
  private:
-  ParserStatementStrategyFactory statementStrategyFactory;
+  shared_ptr<ParserStatementStrategyFactory> statementStrategyFactory;
 
   shared_ptr<ParserContext> ctx;
 

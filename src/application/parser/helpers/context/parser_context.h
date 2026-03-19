@@ -38,7 +38,7 @@ class ParserContext {
   shared_ptr<BuildOptions> opts;
 
   //! support helpers
-  ParserStatementStrategyFactory* statementStrategyFactory;
+  shared_ptr<ParserStatementStrategyFactory> statementStrategyFactory;
   shared_ptr<ExpressionEvaluator> exprEval;
   shared_ptr<AssignmentEvaluator> assignEval;
   shared_ptr<ParserLineEvaluator> lineEval;
@@ -73,8 +73,9 @@ class ParserContext {
   shared_ptr<LexerLineContext> error_line;
 
   //! helper methods
-  void setHelpers(shared_ptr<ParserContext> context,
-                  ParserStatementStrategyFactory* statementStrategyFactory);
+  void setHelpers(
+      shared_ptr<ParserContext> context,
+      shared_ptr<ParserStatementStrategyFactory> statementStrategyFactory);
   void reset();
 
   int gfxOperatorCode(shared_ptr<Lexeme> lexeme);

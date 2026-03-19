@@ -20,6 +20,7 @@
 #include "logger.h"
 #include "parser_context.h"
 #include "parser_line_evaluator.h"
+#include "parser_statement_strategy_factory.h"
 #include "tag_node.h"
 
 /***
@@ -27,8 +28,9 @@
  */
 
 Parser::Parser() {
+  statementStrategyFactory = make_shared<ParserStatementStrategyFactory>();
   ctx = make_shared<ParserContext>();
-  ctx->setHelpers(ctx, &statementStrategyFactory);
+  ctx->setHelpers(ctx, statementStrategyFactory);
 }
 
 Parser::~Parser() = default;
