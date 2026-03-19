@@ -47,6 +47,7 @@ tests/deprecated/
 tests/unit/bin/
 tests/unit/obj/
 tests/unit/tmp/
+tests/**/.vscode/
 
 # Deploys
 dist/
