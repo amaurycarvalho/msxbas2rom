@@ -10,7 +10,7 @@ This guide explains how you can contribute and what rules apply for code submiss
 
 ### 🧑‍💻 For Users
 
-You don’t need to be a developer to help improve \*_MSXBAS2ROM_! Here are some valuable ways you can contribute:
+You don’t need to be a developer to help improve _MSXBAS2ROM_! Here are some valuable ways you can contribute:
 
 - **Report bugs or request features** by creating an [Issue](https://github.com/amaurycarvalho/msxbas2rom/issues);  
   Use following prefixes on the issue description:
@@ -187,4 +187,4 @@ If you run into any issues while contributing, feel free to:
 
 ---
 
-Let’s make \*_MSXBAS2ROM_ better, together! 🚀
+Let’s make _MSXBAS2ROM_ better, together! 🚀
