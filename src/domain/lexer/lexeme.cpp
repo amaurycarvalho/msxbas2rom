@@ -1,6 +1,6 @@
 /***
  * @file lexeme.cpp
- * @brief MSX BASIC lexeme class implementation
+ * @brief MSX-BASIC lexeme class implementation
  * @author Amaury Carvalho (2019-2025)
  */
 

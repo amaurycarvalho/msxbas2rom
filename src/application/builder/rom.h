@@ -74,7 +74,7 @@ class Rom {
   shared_ptr<Logger> getLogger();
 
   /***
-   * @brief Creates a MSX BASIC ROM based on a compiled source code
+   * @brief Creates a MSX-BASIC ROM based on a compiled source code
    * @param compiler Compiled source code
    * @return True, if success
    */

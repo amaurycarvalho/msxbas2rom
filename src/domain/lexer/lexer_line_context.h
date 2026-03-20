@@ -1,6 +1,6 @@
 /***
  * @file lexer_line_context.h
- * @brief MSX BASIC lexer line context
+ * @brief MSX-BASIC lexer line context
  * @author Amaury Carvalho (2019-2026)
  */
 
@@ -18,7 +18,7 @@ using namespace std;
 
 /***
  * @class LexerLineContext
- * @brief It represents a set of MSX BASIC lexemes forming a line.
+ * @brief It represents a set of MSX-BASIC lexemes forming a line.
  */
 class LexerLineContext {
  protected:

@@ -80,7 +80,7 @@ void BuildOptionsSetup::setupParser() {
   parser.addOption("", "--elf", "Generate symbols in .elf format", false, false,
                    [&](const std::string&) { symbols = SymbolsMode::Elf; });
   parser.addOption("-l", "--lin",
-                   "Write the MSX BASIC line numbers in the binary code", false,
+                   "Write the MSX-BASIC line numbers in the binary code", false,
                    false, [&](const std::string&) { lineNumber = true; });
 
   /// pcoded options setup (deprecated)

@@ -1,6 +1,6 @@
 /***
  * @file parser.h
- * @brief Parser class header specialized as a MSX BASIC syntax tree builder
+ * @brief Parser class header specialized as a MSX-BASIC syntax tree builder
  * @author Amaury Carvalho (2019-2025)
  * @note
  *   https://en.wikipedia.org/wiki/Parsing
@@ -29,7 +29,7 @@ using namespace std;
 
 /***
  * @class Parser
- * @brief Parser class specialized as a MSX BASIC syntax tree builder
+ * @brief Parser class specialized as a MSX-BASIC syntax tree builder
  */
 class Parser {
  private:
@@ -81,7 +81,7 @@ class Parser {
 
   /***
    * @brief Parse class constructor, specialized as a
-   * MSX BASIC syntax tree builder
+   * MSX-BASIC syntax tree builder
    */
   Parser();
   ~Parser();

@@ -1,6 +1,6 @@
 /***
  * @file lexer_line_context.cpp
- * @brief MSX BASIC lexer line context
+ * @brief MSX-BASIC lexer line context
  * @author Amaury Carvalho (2019-2026)
  */
 

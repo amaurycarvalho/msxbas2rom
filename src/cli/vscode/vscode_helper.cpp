@@ -80,8 +80,9 @@ string VSCodeHelper::launchContent =
       "name": "Run",
       "type": "node-terminal",
       "request": "launch",
-      "command": "${emulatorAppFilename} ${emulatorAppArgs} -cart ${fileBasenameNoExtension}*.rom -script .vscode/debug.tcl",
-      "cwd": "${workspaceFolder}"
+      "command": "exit",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "Debug on openMSX"
     }
   ]
 }
@@ -122,12 +123,35 @@ string VSCodeHelper::tasksContent =
       "command": "${emulatorAppFilename}",
       "args": [
         ${emulatorAppArgsParsed}
-        "-cart",
-        "${workspaceFolder}/${fileBasenameNoExtension}*.rom"
+        "-command",
+        "'user_setting create string fileBasenameNoExtension \"File base name no extension\" \"${workspaceFolder}/${fileBasenameNoExtension}\"'",
+        "-command",
+        "'user_setting create boolean debugMode \"Debug mode\" false'",
+        "-script",
+        ".vscode/debug.tcl"
       ],
       "group": {
         "kind": "test",
         "isDefault": true
+      }
+    },
+
+    {
+      "label": "Debug on openMSX",
+      "dependsOn": ["build"],
+      "type": "shell",
+      "command": "${emulatorAppFilename}",
+      "args": [
+        ${emulatorAppArgsParsed}
+        "-command",
+        "'user_setting create string fileBasenameNoExtension \"File base name no extension\" \"${workspaceFolder}/${fileBasenameNoExtension}\"'",
+        "-command",
+        "'user_setting create boolean debugMode \"Debug mode\" true'",
+        "-script",
+        ".vscode/debug.tcl"
+      ],
+      "group": {
+        "kind": "test"
       }
     }
   ]
@@ -137,40 +161,101 @@ string VSCodeHelper::tasksContent =
 string VSCodeHelper::debugContent =
     R"(#debug.tcl
 
-puts "==== MSXBAS2ROM Debug Session ===="
-#find first.noi file in current directory
-    set noi_files[glob - nocomplain *.noi]
+puts "==== MSXBAS2ROM Run Session ===="
 
-    if {[llength $noi_files] == 0} {puts "No .noi file found." return }
+#-----------------------------------------------
+# symbol load procedure
+#-----------------------------------------------
 
-#get first file
-set noi_file[lindex $noi_files 0]
-
-#remove extension to get ROM name
-    set rom[file rootname $noi_file]
-
-    puts "ROM base name: $rom"
-
-    proc load_symbols{} {
+proc load_symbols {} {
   global noi_file
 
-      puts "Loading debug symbols: $noi_file" debug symbols load $noi_file NoICE
-#resolve symbol
-      if {
-    [catch {debug symbols lookup - name START_PGM} result]
+  puts "Loading debug symbols: $noi_file" 
+  debug symbols load $noi_file NoICE
+
+  # search for program start address symbol
+  if {[catch {debug symbols lookup} result]} {
+    puts "No symbols found."
+    return
   }
-  {puts "Symbol START_PGM not found." return }
 
-#extract address
-      set entry[lindex $result 0] set addr[dict get $entry value]
+  # iterate and filter by name containing "LIN_"
+  foreach entry $result {
+    if {[dict exists $entry name] && [dict exists $entry value]} {
+        set name [dict get $entry name]
 
-      puts "Setting breakpoint at start of the program: $addr" debug breakpoint
-          create -
-      address $addr
+        if {[string first "LIN_" $name] != -1} {
+            set addr [dict get $entry value]
+            puts "Setting breakpoint for $name at: $addr"
+            debug breakpoint create -address $addr
+        }
+    }
+  }
 
-      puts "Debugger ready."
+  puts "Debugger ready."
 }
 
-#run after emulator startup
-after 1000 load_symbols
+#-----------------------------------------------
+# main procedure
+#-----------------------------------------------
+
+proc main {} {
+  global fileBasenameNoExtension debugMode noi_file
+
+  #-----------------------------------------------
+  # show parameters
+  #-----------------------------------------------
+
+  if {[llength $fileBasenameNoExtension] == 0} {
+    puts "No .bas file found." 
+    return  
+  }
+  puts "BAS base name: $fileBasenameNoExtension"
+
+  puts "Debug mode: $debugMode"
+
+  #-----------------------------------------------
+  # get .rom files in current directory
+  #-----------------------------------------------
+
+  set rom_files [glob -nocomplain $fileBasenameNoExtension*.rom]
+  if {[llength $rom_files] == 0} {
+    puts "No .rom file found." 
+    return 
+  }
+  set rom_file [lindex $rom_files 0]
+
+  #-----------------------------------------------
+  # load ROM into emulator
+  #-----------------------------------------------
+
+  puts "Loading ROM: $rom_file"
+  cart $rom_file
+
+  #-----------------------------------------------
+  # run in debug mode
+  #-----------------------------------------------
+
+  if {$debugMode} {
+    # get .noi files in current directory
+    set noi_files [glob -nocomplain $fileBasenameNoExtension*.noi]
+    if {[llength $noi_files] == 0} {
+      puts "No .noi file found." 
+      return 
+    }
+    set noi_file [lindex $noi_files 0]
+
+    # run after emulator startup
+    after 1000 load_symbols 
+  }
+
+  #-----------------------------------------------
+  # delete parameters
+  #-----------------------------------------------
+
+  user_setting destroy fileBasenameNoExtension
+  user_setting destroy debugMode
+}
+
+after 1000 main
     )";

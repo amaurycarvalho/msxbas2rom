@@ -1,6 +1,6 @@
 /***
  * @file lexer_line_evaluator.cpp
- * @brief MSX BASIC lexer line evaluator implementation
+ * @brief MSX-BASIC lexer line evaluator implementation
  * @author Amaury Carvalho (2019-2026)
  */
 

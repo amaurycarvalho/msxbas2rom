@@ -4,7 +4,7 @@
  * @author Amaury Carvalho
  * @copyright (GNU GPL3) 2019~
  * @see
- *   MSX BASIC to ROM compiler project:
+ *   MSX-BASIC to ROM compiler project:
  *     https://github.com/amaurycarvalho/msxbas2rom/
  *   Contact email:
  *     amauryspires@gmail.com
@@ -109,14 +109,23 @@ int main(int argc, char* argv[]) {
   }
 
   if (opts->vscode) {
-    VSCodeHelper vscodeHelper(argv[0]);
+    VSCodeHelper vscodeHelper(opts->appFilename);
 
     if (!vscodeHelper.initialize()) {
       printf("ERROR: VSCode MSX-BASIC project already initialized.\n");
       return 1;
     }
 
-    printf("VSCode MSX-BASIC project initialized successfully.\n");
+    printf("\nVSCode MSX-BASIC project initialized successfully.\n");
+    printf(
+        "Now, use on the VSCode:\n"
+        "- SHIFT+CTRL+B to build your project;\n"
+        "- SHIFT+CTRL+T to test your project on the emulator;\n"
+        "- F5 for debugging your code on the emulator (breakpoints will\n"
+        "  be created automatically for each line).\n");
+    printf(
+        "Please, check the correct emulator path settings on "
+        ".vscode/tasks.json.\n\n");
 
     if (argc == 2) return 0;
   }

@@ -1,6 +1,6 @@
 /***
  * @file lexer.h
- * @brief MSX BASIC lexer class header
+ * @brief MSX-BASIC lexer class header
  * @author Amaury Carvalho (2019-2025)
  * @note
  *   [Lexical analysis](https://en.wikipedia.org/wiki/Lexical_analysis)
@@ -21,7 +21,7 @@ using namespace std;
 
 /***
  * @class Lexer
- * @brief Lexer class specialized as a MSX BASIC lexical analyzer
+ * @brief Lexer class specialized as a MSX-BASIC lexical analyzer
  */
 class Lexer {
  private:

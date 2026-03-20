@@ -4,7 +4,7 @@
  * @author Amaury Carvalho
  * @copyright (GNU GPL3) 2019~
  * @see
- *   MSX BASIC to ROM compiler project:
+ *   MSX-BASIC to ROM compiler project:
  *     https://github.com/amaurycarvalho/msxbas2rom/
  *   Contact email:
  *     amauryspires@gmail.com

@@ -1,6 +1,6 @@
 /***
  * @file lexer_line_evaluator.h
- * @brief MSX BASIC lexer line evaluator header
+ * @brief MSX-BASIC lexer line evaluator header
  * @author Amaury Carvalho (2019-2026)
  */
 
@@ -11,7 +11,7 @@
 
 /***
  * @class LexerLine
- * @brief It represents a set of MSX BASIC lexemes forming a line.
+ * @brief It represents a set of MSX-BASIC lexemes forming a line.
  */
 class LexerLineEvaluator : public LexerLineContext {
  public:

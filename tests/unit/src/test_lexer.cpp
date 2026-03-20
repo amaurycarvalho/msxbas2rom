@@ -105,7 +105,7 @@ TEST_SUITE("Lexer") {
           std::string::npos);
   }
 
-  TEST_CASE("Fails for tokenized MSX BASIC input") {
+  TEST_CASE("Fails for tokenized MSX-BASIC input") {
     const std::string filename = "tmp/lexer_tokenized.bas";
     std::ofstream ofs(filename, std::ios::binary);
     unsigned char data[] = {0xFF, 0x00, 0x80};
@@ -114,7 +114,7 @@ TEST_SUITE("Lexer") {
 
     Lexer lexer;
     CHECK(lexer.load(filename) == false);
-    CHECK(lexer.getLogger()->trace().toString().find("Tokenized MSX BASIC") !=
+    CHECK(lexer.getLogger()->trace().toString().find("Tokenized MSX-BASIC") !=
           std::string::npos);
 
     std::remove(filename.c_str());
@@ -126,7 +126,7 @@ TEST_SUITE("Lexer") {
 
     Lexer lexer;
     CHECK(lexer.load(filename) == false);
-    CHECK(lexer.getLogger()->trace().toString().find("not a MSX BASIC") !=
+    CHECK(lexer.getLogger()->trace().toString().find("not a MSX-BASIC") !=
           std::string::npos);
 
     std::remove(filename.c_str());

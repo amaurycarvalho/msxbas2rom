@@ -1,6 +1,6 @@
 /***
  * @file lexer.cpp
- * @brief MSX BASIC lexer class implementation
+ * @brief MSX-BASIC lexer class implementation
  * @author Amaury Carvalho (2019-2025)
  * @note
  *   https://en.wikipedia.org/wiki/Lexical_analysis
@@ -59,7 +59,7 @@ bool Lexer::load(shared_ptr<BuildOptions> opts) {
     if (header[0] < 0x20 || header[0] > 126) {
       if (header[0] == 0xFF && header[2] == 0x80) {
         snprintf(lineText, sizeof(lineText),
-                 "Tokenized MSX BASIC source code file detected\nSave it as a "
+                 "Tokenized MSX-BASIC source code file detected\nSave it as a "
                  "plain text to use it "
                  "with MSXBAS2ROM:\nSAVE \"%s\",A",
                  opts->inputFilename.c_str());
@@ -67,7 +67,7 @@ bool Lexer::load(shared_ptr<BuildOptions> opts) {
         return false;
       } else if (header[0] != 0x0D && header[0] != 0x0A &&
                  header[0] != 0x0C) {  // CR LF FF
-        logger->error("This is not a MSX BASIC source code file.");
+        logger->error("This is not a MSX-BASIC source code file.");
         return false;
       }
     }

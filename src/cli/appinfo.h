@@ -20,7 +20,7 @@
 #define app_version "0.3.3.7"
 
 //! @brief Header information
-const char* info_header = R"(MSXBAS2ROM - MSX BASIC TO ROM COMPILER
+const char* info_header = R"(MSXBAS2ROM - MSX-BASIC TO ROM COMPILER
 Created by Amaury Carvalho (2020-2026)
 Version:)";
 
@@ -46,16 +46,18 @@ Compile options (optional):
     -a or --auto = auto mode (fallback to ASCII8 when plain ROM overflows)
     -x or -8 or --ascii8 = ASCII8 MegaROM compile mode
     -k or --scc = Konami SCC MegaROM compile mode
-    -s generate symbols in the default format (.noi)
-    --noi or --noice = generate symbols in .noi format (manual debugging)
-    --cdb = generate symbols in .cdb format (debugging via sdcdb)
-    --symbol = generate symbols in .symbol format
-    --omds = generate symbols in .omds format (openMSX deprecated)
-    --lin = write the MSX BASIC line numbers in the binary code
 
 Path options (optional)
     -i  = input path (default=source file path)
     -o  = output path (default=source file path)
+
+Special options:
+    -s generate symbols for Z80 debugging (default format: .noi)
+    --noi or --noice = generate symbols in .noi format (openMSX)
+    --cdb = generate symbols in .cdb format (sdcc)
+    --symbol = generate symbols in .symbol format (pasmo)
+    --omds = generate symbols in .omds format (openMSX deprecated)
+    --lin = write the MSX-BASIC line numbers in the binary code
     --vscode = initialize a VSCode MSX-BASIC project in the current path
 
 Output: <filename.rom>
@@ -82,9 +84,9 @@ Version history
 0.3.3.7 – (2026/03/20) CDB symbol export feature (issue #17), 
                        MAX name bug fix (issue #13), 
                        plain/megarom auto mode parameter (-a),
-                       VSCode MSX-BASIC project initializer (--vscode), 
-                       extensive code refactoring and memory
-                       allocation hardenings;
+                       VSCode MSX-BASIC project initializer 
+                       parameter (--vscode), extensive code 
+                       refactoring and memory allocation hardenings;
 0.3.3.6 – (2026/01/28) LINE statement parameters bug fix (issue #16);
 0.3.3.5 – (2026/01/16) SET/GET SPRITE COLOR/PATTERN new commands;
 0.3.3.4 – (2025/09/26) MSX Tile Forge map loading optimization and 

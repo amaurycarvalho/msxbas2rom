@@ -1,6 +1,6 @@
 /***
  * @file lexeme.h
- * @brief MSX BASIC lexeme class header
+ * @brief MSX-BASIC lexeme class header
  * @author Amaury Carvalho (2019-2025)
  */
 
@@ -14,7 +14,7 @@ using namespace std;
 
 /***
  * @class Lexeme
- * @brief It represents a simple MSX BASIC lexeme
+ * @brief It represents a simple MSX-BASIC lexeme
  *        (constant, keyword, identifier etc)
  */
 class Lexeme {

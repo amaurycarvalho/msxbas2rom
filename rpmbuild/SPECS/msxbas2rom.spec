@@ -1,7 +1,7 @@
 Name: msxbas2rom
 Version: 0.3.3.7
 Release: 1%{?dist}
-Summary: MSX BASIC to ROM compiler
+Summary: MSX-BASIC to ROM compiler
 
 Group: Applications
 License: GPL-3
@@ -14,7 +14,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 BuildArch: x86_64
 
 %description
-msxbas2rom is a command-line tool that converts MSX BASIC source files into ROM format.
+msxbas2rom is a command-line tool that converts MSX-BASIC source files into ROM format.
 
 %prep
 

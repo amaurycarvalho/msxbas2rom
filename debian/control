@@ -9,4 +9,4 @@ Homepage: https://github.com/amaurycarvalho/msxbas2rom
 Package: msxbas2rom
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-Description: MSX BASIC to ROM compiler
+Description: MSX-BASIC to ROM compiler

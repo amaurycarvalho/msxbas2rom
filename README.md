@@ -1,15 +1,15 @@
-# MSXBAS2ROM — MSX BASIC to ROM Compiler
+# MSXBAS2ROM — MSX-BASIC to ROM Compiler
 
-> **Compile your MSX BASIC programs into ROMs with ease — for use in emulators or real MSX hardware.**  
+> **Compile your MSX-BASIC programs into ROMs with ease — for use in emulators or real MSX hardware.**  
 > Fast, flexible, and open source.
 
 ---
 
 ### 💡 WHAT IS MSXBAS2ROM?
 
-\*_MSXBAS2shared_ptr<Rom>_ is a powerful, open-source, cross-platform compiler for MSX BASIC, developed in C++ within the VSCode IDE.
+\*_MSXBAS2shared_ptr<Rom>_ is a powerful, open-source, cross-platform compiler for MSX-BASIC, developed in C++ within the VSCode IDE.
 
-Designed as a command-line tool (CLI), it offers seamless execution from the terminal and easy integration with any development environment, giving developers full control over compiling their MSX BASIC programs into ROMs.
+Designed as a command-line tool (CLI), it offers seamless execution from the terminal and easy integration with any development environment, giving developers full control over compiling their MSX-BASIC programs into ROMs.
 
 ### 📥 INSTALL
 
@@ -19,13 +19,13 @@ Get a detailed How-To on the [Installation](https://github.com/amaurycarvalho/ms
 
 ### ⚙️ USAGE
 
-Use command below in a terminal to compile your MSX BASIC program from plain text code into a ROM file.
+Use command below in a terminal to compile your MSX-BASIC program from plain text code into a ROM file.
 
 ```bash
 msxbas2rom test.bas
 ```
 
-To test your brand new MSX BASIC ROM file, use an emulator like WebMSX or OpenMSX:
+To test your brand new MSX-BASIC ROM file, use an emulator like WebMSX or OpenMSX:
 
 - [WebMSX](https://webmsx.org/);
 - [OpenMSX](https://openmsx.org/).
@@ -78,4 +78,4 @@ Follow me on [LinkedIn](https://www.linkedin.com/comm/mynetwork/discovery-see-al
 
 ---
 
-\*_MSXBAS2shared_ptr<Rom>_ — Create a ROM file from your old MSX BASIC code!
+\*_MSXBAS2shared_ptr<Rom>_ — Create a ROM file from your old MSX-BASIC code!
