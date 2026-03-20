@@ -170,7 +170,18 @@ puts "==== MSXBAS2ROM Run Session ===="
 proc load_symbols {} {
   global noi_file
 
-  puts "Loading debug symbols: $noi_file" 
+  # clear previous loaded symbols
+  if {![catch {debug symbols files} result]} {
+    foreach entry $result {
+      if {[dict exists $entry filename]} {
+        set filename [dict get $entry filename]
+        puts "Clearing symbols from $filename"
+        debug symbols remove $filename
+      }
+    }
+  }
+
+  puts "Loading symbols from $noi_file" 
   debug symbols load $noi_file NoICE
 
   # search for program start address symbol
@@ -206,12 +217,14 @@ proc main {} {
   # show parameters
   #-----------------------------------------------
 
+  unset fileBasenameNoExtension
   if {[llength $fileBasenameNoExtension] == 0} {
     puts "No .bas file found." 
     return  
   }
   puts "BAS base name: $fileBasenameNoExtension"
 
+  unset debugMode
   puts "Debug mode: $debugMode"
 
   #-----------------------------------------------

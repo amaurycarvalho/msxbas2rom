@@ -1,5 +1,6 @@
 # Version history
 
+- 0.3.3.8 – (2026/03/21) VSCode parameter bug fix;
 - 0.3.3.7 – (2026/03/20) CDB symbol export feature (issue #17), MAX name bug fix (issue #13), plain/megarom auto mode parameter (-a), VSCode MSX-BASIC project initializer parameter (--vscode), extensive code refactoring and memory allocation hardenings;
 - 0.3.3.6 – (2026/01/28) LINE statement parameters bug fix (issue #16);
 - 0.3.3.5 – (2026/01/16) SET/GET SPRITE COLOR/PATTERN new commands;
