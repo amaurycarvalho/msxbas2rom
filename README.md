@@ -7,7 +7,7 @@
 
 ### 💡 WHAT IS MSXBAS2ROM?
 
-\*_MSXBAS2shared_ptr<Rom>_ is a powerful, open-source, cross-platform compiler for MSX-BASIC, developed in C++ within the VSCode IDE.
+\*_MSXBAS2ROM_ is a powerful, open-source, cross-platform compiler for MSX-BASIC, developed in C++ within the VSCode IDE.
 
 Designed as a command-line tool (CLI), it offers seamless execution from the terminal and easy integration with any development environment, giving developers full control over compiling their MSX-BASIC programs into ROMs.
 
@@ -78,4 +78,4 @@ Follow me on [LinkedIn](https://www.linkedin.com/comm/mynetwork/discovery-see-al
 
 ---
 
-\*_MSXBAS2shared_ptr<Rom>_ — Create a ROM file from your old MSX-BASIC code!
+\*_MSXBAS2ROM_ — Create a ROM file from your old MSX-BASIC code!

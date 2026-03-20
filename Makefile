@@ -75,12 +75,12 @@ DEP_RELEASE = $(OBJ_RELEASE:.o=.d)
 
 DIST_DIR = dist
 DEB_DIR = ..
-DEB_PACKAGE = msxbas2shared_ptr<Rom>.deb
+DEB_PACKAGE = msxbas2rom.deb
 RPM_DIR = /tmp/rpmbuild
 RPM_SPECS = rpmbuild/SPECS
 RPM_SOURCES = $(RPM_DIR)/SOURCES
 RPM_RPMS = $(RPM_DIR)/RPMS/x86_64
-RPM_PACKAGE = msxbas2shared_ptr<Rom>.rpm
+RPM_PACKAGE = msxbas2rom.rpm
 
 # ----------------------------
 # Main build
