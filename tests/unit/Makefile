@@ -3,7 +3,7 @@
 # by Amaury Carvalho (2025)                                                    #
 #------------------------------------------------------------------------------#
 
-.PHONY: all clean setup
+.PHONY: all clean setup build build-init run
 
 CC = gcc
 CXX = g++
@@ -44,7 +44,15 @@ else
  endif
 endif
 
-all: setup $(TEST_BIN)
+all:
+	@echo "📌 Run unit tests: make run"
+
+run: build
+	@echo "🧭 Running unit tests..."
+	@./bin/test_unit
+	@echo "✅ Unit testing finished"
+
+build: setup $(TEST_BIN)
 
 clean:
 	@echo "🧹 Cleaning artifacts..."
@@ -53,7 +61,7 @@ clean:
 	@rm -rf $(TMP)/*
 
 setup:
-	@echo "📦 Setting up environment..."
+	@echo "🧩 Setting up environment..."
 	@mkdir -p $(OBJ)
 	@mkdir -p $(BIN)
 	@mkdir -p $(TMP)

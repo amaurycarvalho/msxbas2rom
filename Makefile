@@ -160,18 +160,15 @@ $(OBJDIR_DEBUG) $(OBJDIR_RELEASE):
 test: test-unit
 
 test-unit:
-	@$(MAKE) -C tests/unit all
-	@cd tests/unit && ./bin/test_unit
-	@echo "✅ Unit testing finished"
+	@$(MAKE) -C tests/unit run
 
 test-integration:
-	@cd tests/integration && ./test.sh
-	@echo "✅ Integration test finished"
+	@$(MAKE) -C tests/integration run
 
 test-clean:
 	@echo "🧹 Cleaning testing files..."
 	@$(MAKE) -C tests/unit clean
-	@cd tests/integration && find . -type f -name "*.rom" -delete
+	@$(MAKE) -C tests/integration clean
 	@echo "✅ Cleaning test finished"
 
 # -----------------------------------------------
