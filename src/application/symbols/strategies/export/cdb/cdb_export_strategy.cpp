@@ -20,7 +20,7 @@ bool CdbExportStrategy::save(shared_ptr<SymbolExportContext> context,
                              shared_ptr<BuildOptions> opts) {
   FILE* file;
   shared_ptr<CodeNode> codeItem;
-  int i, t, size;
+  int size;
   char s[512];
 
   auto& codeList = context->codeList;
@@ -68,13 +68,11 @@ bool CdbExportStrategy::save(shared_ptr<SymbolExportContext> context,
   // VARIABLES
   // =====================================================
 
-  t = dataList.size();
-
-  for (i = 0; i < t; i++) {
-    codeItem = dataList[i];
+  for (auto& codeItem : dataList) {
     if (!codeItem || !codeItem->debug) continue;
 
-    const string& name = codeItem->name;
+    string name = codeItem->name;
+    if (name.empty()) continue;
 
     unsigned int addr = (codeItem->segm << 16) | codeItem->addr_within_segm;
 
@@ -142,6 +140,11 @@ bool CdbExportStrategy::save(shared_ptr<SymbolExportContext> context,
     // SYMBOL DEFINITION
     // -------------------------------------------------
 
+    char nameSuffix = name.back();
+    if (nameSuffix == '$' || nameSuffix == '#' || nameSuffix == '!' ||
+        nameSuffix == '%')
+      name.pop_back();
+
     size = snprintf(s, sizeof(s), "S:G$%s$0_0$0({%d}%s),G,0,0\n", name.c_str(),
                     totalSize, descriptor.c_str());
 
@@ -178,10 +181,7 @@ bool CdbExportStrategy::save(shared_ptr<SymbolExportContext> context,
   // SOURCE LINE MAPPING (PHYSICAL LINES)
   // =====================================================
 
-  t = codeList.size();
-
-  for (i = 0; i < t; i++) {
-    codeItem = codeList[i];
+  for (auto& codeItem : codeList) {
     if (!codeItem || !codeItem->debug) continue;
 
     unsigned int addr = (codeItem->segm << 16) | codeItem->addr_within_segm;

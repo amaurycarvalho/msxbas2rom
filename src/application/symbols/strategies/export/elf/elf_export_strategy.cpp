@@ -340,8 +340,14 @@ bool ElfExportStrategy::save(shared_ptr<SymbolExportContext> context,
   for (auto v : context->dataList) {
     if (!v || !v->debug) continue;
 
+    string varName = v->name;
+    char nameSuffix = varName.back();
+    if (nameSuffix == '$' || nameSuffix == '#' || nameSuffix == '!' ||
+        nameSuffix == '%')
+      varName.pop_back();
+
     uint32_t addr = (v->segm << 16) | v->addr_within_segm;
-    uint32_t name = strtab.add(v->name);
+    uint32_t name = strtab.add(varName);
 
     symtab.addVariable(name, addr, v->length);
   }
