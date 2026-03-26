@@ -74,6 +74,15 @@ bool CdbExportStrategy::save(shared_ptr<SymbolExportContext> context,
     string name = codeItem->name;
     if (name.empty()) continue;
 
+    string discardedPrefix = "VAR_FOR_TO_";
+    if (name.size() > discardedPrefix.size())
+      if (name.compare(0, discardedPrefix.size(), discardedPrefix) == 0)
+        continue;
+    discardedPrefix = "VAR_FOR_STEP_";
+    if (name.size() > discardedPrefix.size())
+      if (name.compare(0, discardedPrefix.size(), discardedPrefix) == 0)
+        continue;
+
     unsigned int addr = (codeItem->segm << 16) | codeItem->addr_within_segm;
 
     int totalSize = codeItem->length;
@@ -183,6 +192,7 @@ bool CdbExportStrategy::save(shared_ptr<SymbolExportContext> context,
 
   for (auto& codeItem : codeList) {
     if (!codeItem || !codeItem->debug) continue;
+    if (!codeItem->length) continue;
 
     unsigned int addr = (codeItem->segm << 16) | codeItem->addr_within_segm;
 

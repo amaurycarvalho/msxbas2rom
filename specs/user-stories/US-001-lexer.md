@@ -2,7 +2,7 @@
 
 ## Story
 
-As a MSX-BASIC developer, I need the lexer to tokenize source code lines into classified lexemes so that the parser can consume a normalized stream of tokens.
+As an MSX-BASIC developer, I need the lexer to tokenize source code lines into classified lexemes so that the parser can consume a normalized stream of tokens.
 
 ## Acceptance Criteria
 

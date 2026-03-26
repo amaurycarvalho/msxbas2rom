@@ -2,7 +2,7 @@
 
 ## Story
 
-As a MSX-BASIC developer, I need the parser to transform lexed tokens into action and symbol structures so that valid programs can be compiled into ROM code.
+As an MSX-BASIC developer, I need the parser to transform lexed tokens into action and symbol structures so that valid programs can be compiled into ROM code.
 
 ## Acceptance Criteria
 
