@@ -2,36 +2,6 @@
 
 ## To do list
 
-- [x] Write user stories in separate files at user-stories/ for lexer (src/lex.cpp), parser (src/parse.cpp), compiler (src/compiler.cpp), builder (rom.cpp and resources.cpp) and cli (src/main.cpp) writing test scenarios for each one (see ADR-001);
-- [x] Optimize the project Makefile to consider src/ and include/ dependencies;
-- [x] Rename test/ to tests/, adjusting the related .github/workflows/test.yml and .vscode/tasks.json (and any other reference on any file to the old folder) according the changes;
-- [x] Write unit tests on tests/unit/ for lexer, parser, compiler and builder refactoring test.cpp and test_resources, adjusting the related Makefile and .github/workflows/test.yml according the changes;
-- [x] Move all .cpp and .h files from src/ and include/ to src/cli/, src/application/, src/domain/ and src/infrastructure/ according by each file code objective (dont delete any file or modify its contents in this step, ask me if any doubt). Next, adjust the related Makefile, asm/Makefile and unit testings (tests/) according the changes. Finally, delete include/ folder if empty;
-- [x] At src/application/lexer, rename lex.cpp to lexer.cpp and lex.h to lexer.h. Next, at src/application/parser, rename parse.cpp to parser.cpp and parse.h to parser.h. Finally, adjust the related Makefile and unit testings according the changes;
-- [x] Create tests/unit/src/ folder. Next, move tests/unit/\*.cpp files to tests/unit/src/. Finally, adjust the related Makefile according the changes;
-- [x] Refactor src/domain/symbols/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
-- [x] Move src/domain/symbols/symbol_manager.\* to src/application/symbols/. Next, refactor it implementing a Strategy pattern (tell me if another pattern applies better) with minimum code change. The individual strategy files must be saved to src/application/symbols/strategies/ folder. Finally, adjust the related Makefile and unit testings according the changes;
-- [x] Move asm/ folder to src/infrastructure/kernel/asm/, adjusting the related Makefile and .vscode/tasks.json according the changes. Finally, check for more related dependencies;
-- [x] Refactor src/application/lexer/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
-- [x] Refactor src/application/lexer/lexer_line implementing a State pattern instanciated by a factory with minimum code change. The individual states files must be saved to src/application/lexer/states/ folder. Finally, adjust the related Makefile and unit testings according the changes;
-- [x] Refactor src/application/parser/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
-- [x] Refactor src/application/parser/ implementing a Strategy pattern instanciated by a factory with minimum code change. The individual strategy files must be saved to src/application/parser/strategies/ folder. Finally, adjust the related Makefile and unit testings according the changes;
-- [x] Refactor src/application/compiler/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
-- [x] Propose a plan to refactor step by step src/application/compiler/ implementing a Strategy pattern in a similar way to src/application/parser (helpers and strategies folders) and ask for approval;
-- [x] Refactor src/application/builder/ files to one file per class practice (do not change any code), adjusting the related Makefile and unit testings according the changes;
-- [x] Propose a plan to refactor step by step evalFunction method of CompilerExpressionEvaluator implementing a Strategy pattern at src/application/compiler/functions folder and ask for approval;
-- [x] Inspect src/ and tests/ searching for opportunities to apply `forward declaration` technique and housekeepings. If found, propose a plan to refactor it and ask for approval;
-- [x] Inspect application/symbols searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
-- [x] Inspect application/lexer searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
-- [x] Inspect application/parser searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
-- [x] Inspect application/compiler searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
-- [x] Inspect application/builder searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
-- [x] Inspect domain/ searching for unit testing opportunities, propose a plan to implement them step by step and ask for approval;
-- [x] Inspect application, domain and infrastructure searching for `printf`, debug, info, warnings and error messages. Next, propose a plan to refactor it step by step applying Logger class (similar to Lexer) and ask for approval;
-- [x] Inspect application/parser/statements/strategies to implement unit testing for each one at tests/unit/src/test_parser.cpp (see PrintStatementStrategy as an example). Next, propose a plan to implement them step by step and ask for approval;
-- [x] Inspect application/compiler/statements/strategies to implement unit testing for each one at tests/unit/src/test_compiler.cpp. Next, propose a plan to implement them step by step and ask for approval;
-- [x] Inspect application/compiler/statements/strategies/io/cmd/handlers/ to implement unit testing for each one at tests/unit/src/test_compiler.cpp. Next, propose a plan to implement them step by step and ask for approval;
-- [x] Inspect application/compiler/functions/strategies to implement unit testing for each one at tests/unit/src/test_compiler.cpp. Next, propose a plan to implement them step by step and ask for approval;
-- [x] Inspect application/lexer/states/factory to implement unit testing for it at tests/unit/src/test_lexer.cpp. Next, propose a plan to implement it and ask for approval;
-- [x] Inspect application/lexer/states/implementations to implement unit testing for each one at tests/unit/src/test_lexer.cpp. Next, propose a plan to implement them step by step and ask for approval;
-- [x] Inspect application/ and domain/ searching for memory allocation hardenings oportunities like `shared_ptr` and `shared_ptr` (C++11) on object allocations to avoid memory leaks and paying attention to vector pointers lists. Next, propose a plan to refactor them step by step and ask for approval.
+- [x] CDB empty code and variable name bug fixes;
+- [ ] When ON STICK or ON SPRITE statement is coded in the MSX-BASIC program, the ROM is not loaded immediately after booting. It seems to get stuck in a limbo between the basic and ROM initialization. When the LIST command is runned three times, the ROM is initialized (issue #18, [US-006], release 0.3.4.0).
+- [ ] File handling support implementation [US-007].

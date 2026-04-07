@@ -44,13 +44,51 @@ MSXBAS2ROM
 
 ---
 
-## Mandatory Use Case Pattern
+## Mandatory User Story Pattern
 
-All use cases must contain:
+All user stories must contain:
 
 1. User Story in the format: "As [actor], I need [functionality] so that [benefit/value]".
 2. Explicit Acceptance Criteria.
 3. Behavioral scenarios in BDD (`Given / When / Then`).
+4. Technical specification (if needed).
+5. References (if needed).
+
+Example:
+
+```
+# US-[nnn] - [summary]
+
+## Story
+
+As [actor], I need [functionality] so that [benefit/value].
+
+## Acceptance Criteria
+
+- [detail]
+
+---
+
+## BDD Scenarios
+
+### Scenario [n]: [summary]
+
+Given / When / Then
+
+---
+
+## Technical Specification
+
+### [summary]
+
+[detail]
+
+---
+
+## References
+
+- [summary](url)
+```
 
 ---
 
