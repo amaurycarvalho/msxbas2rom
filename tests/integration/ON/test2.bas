@@ -1,0 +1,16 @@
+10 INPUT "Enter a number between 1 and 9"; N%
+20 M$ = "WRONG NUMBER"
+30 ON N% GOTO 101, 102, 103, 104, 105, 106, 107, 108, 109
+40 PRINT M$
+50 GOTO 10
+
+101 M$ = "ONE" : GOTO 40
+102 M$ = "TWO" : GOTO 40
+103 M$ = "THREE" : GOTO 40
+104 M$ = "FOUR" : GOTO 40
+105 M$ = "FIVE" : GOTO 40
+106 M$ = "SIX" : GOTO 40
+107 M$ = "SEVEN" : GOTO 40
+108 M$ = "EIGHT" : GOTO 40
+109 M$ = "NINE" : GOTO 40
+

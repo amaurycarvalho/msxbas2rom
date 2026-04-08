@@ -107,7 +107,7 @@ Notes:
 FILEVL          EQU #6A0E
 OPNFIL          EQU #6AFA
 CLSFIL          EQU #6B24
-INDO            EQU #6C71 ;(Undocumented)
+INDSKC          EQU #6C71 ;(Undocumented)
 OUTDO           EQU #18
 
 INPUT_FILE      EQU 1
@@ -157,14 +157,14 @@ CALL OPNFIL
 
 ### READ/INPUT Implementation
 
-1. Use INDO to read byte-by-byte
+1. Use INDSKC to read byte-by-byte
 2. Compare with EOF (#1A)
 3. Store into buffer until EOF
 
 Example:
 
 ```
-CALL INDO
+CALL INDSKC
 CP EOF
 RET Z
 LD (HL),A
@@ -202,7 +202,7 @@ CALL CLSFIL
 
 ### EOF Handling
 
-1. EOF is detected when INDO returns #1A
+1. EOF is detected when INDSKC returns #1A
 2. Compiler must generate loop guards for INPUT# constructs
 
 ### Checking MSX DISK presence

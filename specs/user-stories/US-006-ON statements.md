@@ -12,7 +12,7 @@ ON <expr> GOSUB
 - The compiler supports event-driven constructs:
 ON INTERVAL GOSUB
 ON SPRITE GOSUB
-ON STICK GOSUB
+ON STRIG GOSUB
 ON KEY GOSUB
 ON STOP GOSUB
 ON ERROR GOTO
@@ -53,11 +53,24 @@ Given ON SPRITE GOSUB 2000
 When a sprite collision occurs
 Then subroutine at line 2000 is executed
 
-### Scenario 5: ON STICK input
+### Scenario 5: ON STRIG input
 
-Given ON STICK GOSUB 3000
-When joystick input is detected
-Then subroutine at line 3000 is executed
+Given ON STRIG GOSUB 1000, 1001, 1002, 1003, 1004
+And STRIG(0) ON
+And STRIG(1) ON
+And STRIG(2) ON
+And STRIG(3) ON
+And STRIG(4) ON
+When spacebar is pressed
+Then subroutine at line 1000 is executed
+When joystick 1 button 1 is pressed
+Then subroutine at line 1001 is executed
+When joystick 1 button 2 is pressed
+Then subroutine at line 1002 is executed
+When joystick 2 button 1 is pressed
+Then subroutine at line 1003 is executed
+When joystick 2 button 2 is pressed
+Then subroutine at line 1004 is executed
 
 ### Scenario 6: ON KEY press
 
@@ -68,6 +81,7 @@ Then subroutine at line 4000 is executed
 ### Scenario 7: ON STOP event
 
 Given ON STOP GOSUB 5000
+And STOP ON
 When STOP key is pressed
 Then subroutine at line 5000 is executed
 
@@ -96,7 +110,7 @@ ON <expression> GOSUB <line1>, <line2>, ..., <lineN>
 
 ON INTERVAL GOSUB <line>
 ON SPRITE GOSUB <line>
-ON STICK GOSUB <line>
+ON STRIG GOSUB <line>
 ON KEY GOSUB <line>
 ON STOP GOSUB <line>
 ON ERROR GOTO <line>
@@ -149,7 +163,11 @@ call HANDLER
 
 ### Error Handling
 
-ON ERROR not implemented yet.
+- ON ERROR not implemented yet.
+
+### STOP Statement
+
+- STOP statement works like END.
 
 ---
 
@@ -160,5 +178,6 @@ ON ERROR not implemented yet.
 - [ON INTERVAL](https://www.msx.org/wiki/ON_INTERVAL_GOSUB)
 - [ON SPRITE](https://www.msx.org/wiki/ON_SPRITE_GOSUB)
 - [ON ERROR](https://www.msx.org/wiki/ON_ERROR_GOTO)
-- [ON STOP](msx.org/wiki/ON_STOP_GOSUB)
+- [ON STOP](https://www.msx.org/wiki/ON_STOP_GOSUB)
 - [ON KEY](https://www.msx.org/wiki/ON_KEY_GOSUB)
+- [ON STRIG](https://www.msx.org/wiki/STRIG())
