@@ -4,8 +4,8 @@ Spec Driven Development (SDD) content folder.
 
 # Folder structure
 
-- `AGENTS.md`: AI agents guide file;
 - `constitution.md`: project guide file;
+- `glossary.md`: terms and concepts;
 - `insights.md`: project insights;
 - `plan.md`: project roadmap;
 - `tasks.md`: tasks on current sprint;
