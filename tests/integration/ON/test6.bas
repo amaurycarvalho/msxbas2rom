@@ -7,6 +7,7 @@
 60 PRINT"Press a function key or space..."
 70 FOR I = 1 TO 10 : KEY I,"OFF" : NEXT : KEY ON
 80 IF STRIG(0) = 0 THEN 80
+81 IF STRIG(0) <> 0 THEN 81
 90 CLS
 100 PRINT"TEST 2"
 110 PRINT"Press a function key or space"

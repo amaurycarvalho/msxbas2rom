@@ -1,6 +1,6 @@
 # Version history
 
-- 0.3.4.0 – (2026/04/08) CDB empty code and ON statement bug fixes (issue #18);
+- 0.3.4.0 – (2026/04/08) CDB empty code and ON statements bug fixes (issue #18);
 - 0.3.3.9 – (2026/03/25) CDB variable name bug fix;
 - 0.3.3.8 – (2026/03/21) VSCode parameter bug fix;
 - 0.3.3.7 – (2026/03/20) CDB symbol export feature (issue #17), MAX name bug fix (issue #13), plain/megarom auto mode parameter (-a), VSCode MSX-BASIC project initializer parameter (--vscode), extensive code refactoring and memory allocation hardenings;

@@ -69,19 +69,12 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 /***
  * @var
  * @brief History information (--ver parameter)
- * @todo
- *   0.0.0.0 – (2023/xx/xx) RUN support to call sub-programs;
- *   0.0.0.0 – (2023/xx/xx) FM/SCC music support (furnace? Trillo Tracker?);
- *   0.0.0.0 – (2023/xx/xx) AKG music file support (Arkos Tracker);
- *   0.0.0.0 – (2023/xx/xx) Disk file support;
- *   0.0.0.0 – (2023/xx/xx) Better support to double precision type (BCD);
- *   0.0.0.0 – (2023/xx/xx) SET TILE FLIP/ROTATE new command;
- *   0.3.3.5 – (2026/xx/xx) SET/GET TILE COLOR/PATTERN new commands;
  */
 const char* info_history = R"(
 Version history
 
-0.3.4.0 – (2026/03/31) CDB empty code bug fix;
+0.3.4.0 – (2026/04/08) CDB empty code and ON statements bug
+                       fixes (issue #18);
 0.3.3.9 – (2026/03/25) CDB variable name bug fix;
 0.3.3.8 – (2026/03/21) VSCode parameter bug fix;
 0.3.3.7 – (2026/03/20) CDB symbol export feature (issue #17), 

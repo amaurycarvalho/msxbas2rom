@@ -60,7 +60,7 @@ bool CompilerEndStatementStrategy::execute(
 
 bool CompilerEndStatementStrategy::registerEndRoutine(
     shared_ptr<CompilerContext> context) {
-  context->traps_checked = context->codeHelper->addCheckTraps();
+  // context->traps_checked = context->codeHelper->addCheckTraps();
   //! register END statement code
   cmd_end(context, true);
   return context->compiled;

@@ -3,7 +3,7 @@
 ## Sprints Backlog
 
 1. [x] Project refactoring to SDD, TDD, Clean Architecture and SOLID (release 0.3.3.0);
-2. [ ] ON statement refactoring ([US-006], release 0.3.4.0);
+2. [x] ON statement refactoring ([US-006], release 0.3.4.0);
 3. [ ] File handling support ([US-007], release 0.3.5.0);
 4. [ ] SET/GET TILE PATTERN improved syntax (release 0.3.6.0);
 5. [ ] MSX Tile Forge support enhancements (release 0.3.7.0).
