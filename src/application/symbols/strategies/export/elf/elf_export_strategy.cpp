@@ -5,6 +5,7 @@
 
 #include "elf_export_strategy.h"
 
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <string>
