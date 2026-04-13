@@ -1,5 +1,5 @@
 Name: msxbas2rom
-Version: 0.3.4.1
+Version: 0.3.4.2
 Release: 1%{?dist}
 Summary: MSX-BASIC to ROM compiler
 
