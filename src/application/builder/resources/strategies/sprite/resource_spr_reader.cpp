@@ -63,7 +63,7 @@ bool ResourceSprReader::parseTinySpriteFile() {
       length = (int)line.size();
 
       /// debug:
-      /// logger->debug("---> " + line);
+      // logger->debug("---> " + line);
 
       if (length) {
         switch (state) {
@@ -200,6 +200,7 @@ bool ResourceSprReader::parseTinySpriteFile() {
           } break;
         }
 
+        if (*spriteCount >= 64) break;
         if (!ok) break;
       }
     }

@@ -149,7 +149,7 @@ FILE "sprite2.spr"   ' resource 1: msx2 sprite set
 60 SPRITE LOAD 1     ' load resource 1 (msx2 sprite set)
 70 GOSUB 100         ' show sprite on screen
 
-90 SCREEN 0          
+90 SCREEN 0
 91 END
 
 100 COLOR 15,4,0
@@ -164,7 +164,9 @@ FILE "sprite2.spr"   ' resource 1: msx2 sprite set
 Notes:
 
 - .SPR files are in plain text format and can be opened by any text editor or edited by [Tiny Sprite](https://msx.jannone.org/tinysprite/tinysprite.html);
-- Use with sprite parameter size 2 or 3 on SCREEN statement.
+- Use with sprite parameter size 2 or 3 on SCREEN statement (16x16 sprite size);
+- Limited to 64 unique 16x16 shapes (patterns) for each file uploaded to the Sprite Generator Table;
+- The first 32 shapes uploaded are automatically assigned in the Sprite Attribute Table.
 
 ### Sprite Collision Detection Functions
 
@@ -210,20 +212,20 @@ Notes:
 Syntax:
 
 ```
-Set/Get sprite color 
+Set/Get sprite color
 
     SET SPRITE COLOR <n>, <8 integers color buffer array>
     GET SPRITE COLOR <n>, <8 integers color buffer array>
-      Example: 
+      Example:
         10 DIM CB%(7)
         20 GET SPRITE COLOR 0, CB%
         30 SET SPRITE COLOR 1, CB%
-        
+
   Set/Get sprite pattern
 
     SET SPRITE PATTERN <n>, <16 integers pattern buffer array>
     GET SPRITE PATTERN <n>, <16 integers pattern buffer array>
-      Example: 
+      Example:
         10 DIM PB%(3,3)
         20 GET SPRITE PATTERN 0, PB%
         30 SET SPRITE PATTERN 1, PB%
@@ -237,28 +239,11 @@ Set/Get sprite color
     SET SPRITE ROTATE <n>, <dir: 0=left, 1=right, 2=180 degrees>
 ```
 
-### [summary]
-
-[detail]
-
----
-
-## Implementation Findings (Code + Unit Tests)
-
-- `SPRITE ON/OFF/STOP` is parsed by `SpriteStatementStrategy` in `src/application/parser/statements/strategies/sprite/sprite_statement_strategy.cpp` and compiled by `CompilerSpriteStatementStrategy` in `src/application/compiler/statements/strategies/graphics/sprite/compiler_sprite_statement_strategy.cpp`. Unit tests: `tests/unit/src/test_parser.cpp` (parses `SPRITE ON`), `tests/unit/src/test_compiler.cpp` (compiles `SPRITE ON`).
-- `SPRITE LOAD <n>` is parsed by `SpriteStatementStrategy` in `src/application/parser/statements/strategies/sprite/sprite_statement_strategy.cpp` and compiled by `CompilerSpriteStatementStrategy::cmd_sprite_load` in `src/application/compiler/statements/strategies/graphics/sprite/compiler_sprite_statement_strategy.cpp`. Unit tests: resource reader test in `tests/unit/src/test_resources.cpp` (`ResourceSprReader loads SPR format`). No unit test found for `SPRITE LOAD` compilation.
-- `PUT SPRITE` is compiled by `CompilerPutStatementStrategy::cmd_put_sprite` in `src/application/compiler/statements/strategies/graphics/put/compiler_put_statement_strategy.cpp`. Unit tests: `tests/unit/src/test_parser.cpp` (parses minimal `PUT SPRITE`), `tests/unit/src/test_compiler.cpp` (compiles `PUT SPRITE` statement).
-- `SPRITE$(<n>) = <string>` assignment is compiled by `CompilerLetStatementStrategy` in `src/application/compiler/statements/strategies/basic/let/compiler_let_statement_strategy.cpp`. No unit test found for `SPRITE$` assignment.
-- `COLOR SPRITE(<n>)` and `COLOR SPRITE$(<n>)` are compiled by `CompilerColorStatementStrategy` in `src/application/compiler/statements/strategies/graphics/color/compiler_color_statement_strategy.cpp`. No unit tests found for these statements.
-- `SET SPRITE FLIP/ROTATE/PATTERN/COLOR` are compiled by `CompilerSetStatementStrategy::cmd_set_sprite` in `src/application/compiler/statements/strategies/graphics/set/compiler_set_statement_strategy.cpp`. No unit tests found for these statements.
-- `GET SPRITE PATTERN/COLOR` are compiled by `CompilerGetStatementStrategy::cmd_get_sprite` in `src/application/compiler/statements/strategies/graphics/get/compiler_get_statement_strategy.cpp`. No unit tests found for these statements.
-- `COLLISION()` function is compiled by `CollisionCompilerFunctionStrategy` in `src/application/compiler/functions/strategies/graphics/collision/compiler_collision_function_strategy.cpp`. Unit tests: `tests/unit/src/test_compiler.cpp` includes a function-case for `COLLISION` (0-parameter signature only).
-
 ## References
 
-- [SPRITE$()](https://www.msx.org/wiki/SPRITE$());
-- [COLOR SPRITE()](https://www.msx.org/wiki/COLOR_SPRITE());
-- [COLOR SPRITE$()](https://www.msx.org/wiki/COLOR_SPRITE$());
+- [SPRITE$()](<https://www.msx.org/wiki/SPRITE$()>);
+- [COLOR SPRITE()](<https://www.msx.org/wiki/COLOR_SPRITE()>);
+- [COLOR SPRITE$()](<https://www.msx.org/wiki/COLOR_SPRITE$()>);
 - [PUT SPRITE](https://www.msx.org/wiki/PUT_SPRITE);
 - [Tiny Sprite Support](https://github.com/amaurycarvalho/msxbas2rom/wiki/TS-Support);
 - [Sprite Extended Commands](https://github.com/amaurycarvalho/msxbas2rom/wiki/Extended-Commands#sprite-extended-commands);

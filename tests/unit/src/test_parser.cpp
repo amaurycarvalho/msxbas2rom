@@ -1128,6 +1128,21 @@ TEST_SUITE("SpriteStatementStrategy") {
 
     CHECK(result == true);
   }
+
+  TEST_CASE("Parses SPRITE LOAD") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SpriteStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("LOAD"));
+    line->addLexeme(num("0"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SPRITE"));
+
+    CHECK(result == true);
+  }
 }
 
 TEST_SUITE("PutStatementStrategy") {

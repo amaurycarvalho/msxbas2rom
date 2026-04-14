@@ -1757,19 +1757,24 @@ cmd_wrtspr.do.msx1:
   push hl
     xor a
     call gfxCALATR
-    inc hl
-    inc hl
-    inc hl
+    inc hl  ; from x to y field
+    inc hl  ; from y to pattern field
+    inc hl  ; from pattern to color field
   pop de
   ld a, (DAC)
+  cp 32
+  jr c, cmd_wrtspr.do.msx1.ok
+  jr z, cmd_wrtspr.do.msx1.ok
+  ld a, 32
+cmd_wrtspr.do.msx1.ok:
 cmd_wrtspr.do.msx1.loop:
   push af
-    ld a, (de)
+    ld a, (de)  ; copy sprite color to attribute table
     call WRTVRM
-    inc hl
-    inc hl
-    inc hl
-    inc hl
+    inc hl  ; from color to next x field
+    inc hl  ; from x to y field
+    inc hl  ; from y to pattern field
+    inc hl  ; from pattern to color field
     inc de
   pop af
   dec a
@@ -1791,6 +1796,11 @@ cmd_wrtspr.do.msx2:
 
 cmd_wrtspr.do.pattern:
   ld a, (hl)
+  cp 64
+  jr c, cmd_wrtspr.do.pattern.ok
+  jr z, cmd_wrtspr.do.pattern.ok
+  ld a, 64
+cmd_wrtspr.do.pattern.ok:
   inc hl
   push hl
     ld l, a
@@ -9496,7 +9506,5 @@ J7FF6:	LD	A,(BC)
 
 BASIC_KUN_END_FILLER:
 	DEFS	08000H-$,0FFH
-
-
 
 
