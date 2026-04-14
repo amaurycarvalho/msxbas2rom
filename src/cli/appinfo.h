@@ -73,7 +73,8 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char* info_history = R"(
 Version history
 
-0.3.4.2 – (2026/04/13) Sprite glitch bug fix (issue #19);
+0.3.4.2 – (2026/04/14) Sprite glitch bug fix (issue #19)
+                       and Z80 kernel SRP refactoring;
 0.3.4.1 – (2026/04/09) ELF export bug fix;
 0.3.4.0 – (2026/04/08) CDB empty code and ON statements bug
                        fixes (issue #18);
