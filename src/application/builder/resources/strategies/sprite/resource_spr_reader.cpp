@@ -181,6 +181,8 @@ bool ResourceSprReader::parseTinySpriteFile() {
                     *spriteCount += 1;
                     buffer += 32;
                     sizeRead += 32;
+                    //! @remark pattern table limited to 64 sprites
+                    if (*spriteCount > 63) break;
                   }
                 } while (found);
               } else {
@@ -192,6 +194,8 @@ bool ResourceSprReader::parseTinySpriteFile() {
                     *spriteCount += 1;
                     buffer += 32;
                     sizeRead += 32;
+                    //! @remark pattern table limited to 64 sprites
+                    if (*spriteCount > 63) break;
                   }
                 }
               }
@@ -200,7 +204,8 @@ bool ResourceSprReader::parseTinySpriteFile() {
           } break;
         }
 
-        if (*spriteCount >= 64) break;
+        //! @remark pattern table limited to 64 sprites
+        if (*spriteCount > 63) break;
         if (!ok) break;
       }
     }

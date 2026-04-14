@@ -1737,6 +1737,8 @@ cmd_wrtscr:
 
 ; write a Tiny Sprite resource to vram sprite pattern and color table
 ; CMD WRTSPR <resource number>
+WS.SPRITE.COUNT: EQU DAC              ; sprite count
+WS.SPRITE.COLOR_TABLE_SIZE: EQU ARG   ; sprite color table size
 cmd_wrtspr:
   push hl
     call SUB_CLRSPR
@@ -1761,7 +1763,7 @@ cmd_wrtspr.do.msx1:
     inc hl  ; from y to pattern field
     inc hl  ; from pattern to color field
   pop de
-  ld a, (DAC)
+  ld a, (WS.SPRITE.COUNT)
   cp 32
   jr c, cmd_wrtspr.do.msx1.ok
   jr z, cmd_wrtspr.do.msx1.ok
@@ -1786,11 +1788,12 @@ cmd_wrtspr.do.msx2:
   cp 4
   ret c
   call cmd_wrtspr.do.pattern
+cmd_wrtspr.do.msx2.color:
   push hl
     xor a
     call gfxCALCOL
     ex de, hl
-    ld bc, (ARG)
+    ld bc, (WS.SPRITE.COLOR_TABLE_SIZE)  ; sprite color table size
   pop hl
   jp LDIRVM      ; hl = ram data address, de = vram data address, bc = length
 
@@ -1805,12 +1808,12 @@ cmd_wrtspr.do.pattern.ok:
   push hl
     ld l, a
     ld h, 0
-    ld (DAC), hl
+    ld (WS.SPRITE.COUNT), hl         ; sprite count
     add hl, hl  ; x2
     add hl, hl  ; x4
     add hl, hl  ; x8
     add hl, hl  ; x16
-    ld (ARG), hl
+    call cmd_wrtspr.set_color_table_size
     add hl, hl  ; x32
     push hl
       xor a
@@ -1824,6 +1827,15 @@ cmd_wrtspr.do.pattern.ok:
   pop hl
   pop bc
   add hl, bc
+  ret
+
+cmd_wrtspr.set_color_table_size:
+  ld (WS.SPRITE.COLOR_TABLE_SIZE), hl         ; sprite color table size
+  ld a, (WS.SPRITE.COUNT)
+  cp 32
+  ret c
+  ld bc, 0x200
+  ld (WS.SPRITE.COLOR_TABLE_SIZE), bc
   ret
 
 ; write resource to vram sprite pattern table
