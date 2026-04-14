@@ -14,13 +14,14 @@ PLETTER = pletter
 SRC_DIR = src
 BIN_DIR = bin
 INC_DIR = ..
+SRC_FILES = $(shell find $(SRC_DIR)/header -name '*.asm' | sort)
 
 # Targets
 all: $(INC_DIR)/header.h \
      $(INC_DIR)/start.h 
 
 # Rule: header.asm → header.bin → header.h
-$(BIN_DIR)/header.bin: $(SRC_DIR)/header.asm
+$(BIN_DIR)/header.bin: $(SRC_DIR)/header.asm $(SRC_FILES)
 	$(PASMO) $< $@ $(SRC_DIR)/header.symbols.asm
 
 $(INC_DIR)/header.h: $(BIN_DIR)/header.bin

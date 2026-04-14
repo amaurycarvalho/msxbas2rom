@@ -6,7 +6,7 @@
 
 ## Structure
 
-- `src/`: assembly sources (`header.asm`, `start.asm`, and symbols helper)
+- `src/`: assembly sources (`header.asm`, `start.asm`, symbols helper, and `header/` domain modules)
 - `bin/`: generated binary artifacts (`*.bin`)
 - `assets/`: reference assets, external engine data, and helper scripts
 - `Makefile`: assembly-to-header build pipeline
