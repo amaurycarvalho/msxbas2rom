@@ -120,6 +120,15 @@ Given / When / Then
 - Uses semantic versioning style;
 - App version it's mantained as a constant named `app_version` at `src/cli/appinfo.h` and replicated at `CHANGELOG.md`, `debian/changelog` and `rpmbuild/SPECS/msxbas2rom.spec` files.
 
+Expected format:
+MAJOR.MINOR.PATCH.BUILD
+
+Semantic Versioning rules:
+- MAJOR: incompatible changes
+- MINOR: backward-compatible features
+- PATCH: backward-compatible fixes
+- BUILD: build number
+
 --
 
 ## Application releases
