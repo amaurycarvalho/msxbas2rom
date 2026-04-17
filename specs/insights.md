@@ -27,7 +27,7 @@ If an insight registered here is not relevant any more, remove it.
 - `src/application/symbols/symbol_manager` already uses Strategy + Factory (`src/application/symbols/strategies/*` and `strategies/factory/symbol_export_strategy_factory.*`) to dispatch export formats.
 - `src/application/compiler` now keeps the same `Compiler` class behavior split into multiple implementation units (`compiler.cpp` + `compiler_statements.cpp`), reducing monolithic file pressure and preparing upcoming strategy extraction work.
 - Compiler statement dispatch now uses Strategy + Factory (`src/application/compiler/strategies/*`), and strategy header names need compiler-specific prefixes to avoid collisions with parser strategy headers under global include discovery.
-- `src/infrastructure/kernel/asm/src/header.asm` now acts as an orchestrator with module includes under `src/infrastructure/kernel/asm/src/header/*`, keeping assembly order unchanged while separating constants/macros/runtime/USR domains.
+- `src/infrastructure/kernel/asm/src/header.asm` now acts as an orchestrator with module includes under `src/infrastructure/kernel/asm/src/header/*`, keeping assembly order unchanged while separating by domains (Single Responsability Principle).
 
 ### 2. Implicit Conventions
 
