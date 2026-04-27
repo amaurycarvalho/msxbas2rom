@@ -42,6 +42,7 @@ CompilerFunctionStrategyFactory::CompilerFunctionStrategyFactory() {
   strategies["IPEEK"] = &ipeekStrategy;
   strategies["VPEEK"] = &vpeekStrategy;
   strategies["INP"] = &inpStrategy;
+  strategies["DSKF"] = &dskfStrategy;
   strategies["EOF"] = &eofStrategy;
   strategies["PSG"] = &psgStrategy;
   strategies["PLAY"] = &playStrategy;

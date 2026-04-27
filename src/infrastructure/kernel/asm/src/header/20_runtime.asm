@@ -60,7 +60,7 @@ megarom_ascii8_bug_fix:
 
 clear_basic_environment:
   ld a, 0xC9
-  ld (HSTKE), a
+  ld (HSTKE), a              ; remove the hook
   ld (HSTKE+1), a
   ld (HSTKE+2), a
   ld (HSTKE+3), a
@@ -92,7 +92,22 @@ clear_basic_environment:
 
   ld a, 0xFF
   ld (PTRFLG), a             ; line number converted to pointer (0=false)
+  ld a, (STARTUP_CFG_FILEIO)
+  and a
+  jr z, clear_basic_environment.non_disk_mode
+
+clear_basic_environment.disk_mode:
+  xor a
+  ld (DSKDIS), a             ; enable disks
+  ld a, 1
+  ld (MAXFIL), a             ; default MAXFILES for disk mode
+  jr clear_basic_environment.disk_mode_done
+
+clear_basic_environment.non_disk_mode:
+  ld a, 0xFF
   ld (DSKDIS), a             ; disable disks
+
+clear_basic_environment.disk_mode_done:
 
   call KILBUF
   call INITXT                ; screen 0
@@ -109,11 +124,28 @@ run_user_basic_code_on_rom:
   ld a, h
   ld (BASROM), a             ; basic code location (0=RAM, not 0 = ROM)
 
-  ld HL,VARWRK
+  ld a, (STARTUP_CFG_FILEIO)
+  and a
+  jr z, run_user_basic_code_on_rom.non_disk_himem
+
+run_user_basic_code_on_rom.disk_himem:
+  ld hl, 0xF1C9              ; disk mode top memory
+  jr run_user_basic_code_on_rom.himem_done
+
+run_user_basic_code_on_rom.non_disk_himem:
+  ld HL,VARWRK               ; non-disk mode top memory (0xF380)
+
+run_user_basic_code_on_rom.himem_done:
   ld (HIMEM),HL              ; highest BASIC RAM address
   ld (MEMSIZ),hl
-  xor a                      ; user i/o channels (FILES number=0)
-  ld bc, 200                 ; string buffer size
+  ld a, (STARTUP_CFG_FILEIO)
+  and a
+  ld bc, 200                 ; default stack margin
+  jr z, run_user_basic_code_on_rom.stack_margin_done
+  ld bc, 256                 ; safer margin for disk mode
+
+run_user_basic_code_on_rom.stack_margin_done:
+  and a
   sbc hl, bc
   ld (STKTOP), hl
 
@@ -251,5 +283,5 @@ wrapper_routines_map_start:
   jp XBASIC_USING
   jp XBASIC_USING.do
   jp XBASIC_USR
-
-
+  jp cmd_preflight_disk
+  jp cmd_maxfiles

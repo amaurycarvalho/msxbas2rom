@@ -381,7 +381,8 @@ TEST_SUITE("CompilerFunctionStrategyFactory") {
         "INT",         "FIX",          "RND",    "SIN",       "COS",
         "TAN",         "ATN",          "EXP",    "LOG",       "SQR",
         "SGN",         "ABS",          "VAL",    "PEEK",      "IPEEK",
-        "VPEEK",       "INP",          "EOF",    "PSG",       "PLAY",
+        "VPEEK",       "INP",          "DSKF",   "EOF",       "PSG",
+        "PLAY",
         "STICK",       "STRIG",        "PAD",    "PDL",       "BASE",
 
         "ASC",         "LEN",          "CSNG",   "CDBL",      "CINT",
@@ -455,7 +456,7 @@ TEST_SUITE("CompilerFunctionStrategyFactory") {
   TEST_CASE("All function strategies have unit tests") {
     CompilerFunctionStrategyFactory factory;
 
-    CHECK(factory.size() == 78);
+    CHECK(factory.size() == 79);
   }
 }
 
@@ -852,6 +853,13 @@ TEST_SUITE("CompilerFunctionStrategies") {
          Lexeme::subtype_numeric},
         {"INP",
          "INP",
+         1,
+         {Lexeme::subtype_numeric},
+         false,
+         {},
+         Lexeme::subtype_numeric},
+        {"DSKF",
+         "DSKF",
          1,
          {Lexeme::subtype_numeric},
          false,

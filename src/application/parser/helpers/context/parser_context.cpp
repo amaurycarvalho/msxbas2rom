@@ -65,6 +65,7 @@ void ParserContext::reset() {
   has_akm = false;
   has_mtf = false;
   has_resource_restore = false;
+  has_file_support = false;
 
   for (i = 0; i < 26; i++) deftbl[i] = 0;
 

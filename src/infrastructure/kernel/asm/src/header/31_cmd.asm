@@ -2,6 +2,85 @@
 ; STATEMENTS / FUNCTIONS IMPLEMENTATIONS
 ; ------------------------------------------------------------------------------------------------------
 
+; preflight disk availability for file i/o
+; in : a = drive number (0=A:, 1=B:, ...)
+; out: a = 0 if available, a = 1 if unavailable
+;      z = 1 if available
+cmd_preflight_disk:
+  push hl
+  push de
+
+  ld l, a
+  ld h, 0
+  add hl, hl              ; offset = drive * 2
+  ld de, DRVTBL
+  add hl, de
+
+  ld a, (hl)
+  inc hl
+  or (hl)
+  jr z, cmd_preflight_disk.unavailable
+
+  xor a                   ; available
+  pop de
+  pop hl
+  ret
+
+cmd_preflight_disk.unavailable:
+  ld a, 1
+  pop de
+  pop hl
+  ret
+
+; MAXFILES statement
+; in : a = number of user i/o channels
+; out: none
+cmd_maxfiles:
+  cp 16
+  ret nc 
+  ld (MAXFIL), a
+  push af
+cmd_maxfiles.calculate_filtab:
+    ld hl, HEAPEND          ; end of the heap area (HIMEM)
+    ld de, -(256+9+2)
+cmd_maxfiles.calculate_filtab.loop:
+      add hl, de 
+      dec a 
+    jp p, cmd_maxfiles.calculate_filtab.loop
+    ld (FILTAB), hl         ; start of i/o channel pointers
+cmd_maxfiles.calculate_new_heap_size:
+    push hl 
+      ld de, (HEAPSTR)        ; heap start address
+      sbc hl, de
+      ld (HEAPSIZ), hl        ; heap size
+    pop de 
+cmd_maxfiles.populate_filtab:
+  pop af 
+  ld l, a
+  inc l                   ; number of i/o channels
+  ld h, 0
+  add hl, hl              ; *2
+  add hl, de              ; +start of i/o channel pointers
+  ex de, hl 
+  push de                 ; start of i/o channel buffers
+    ld bc, -2+256+9+2
+cmd_maxfiles.populate_filtab.loop:
+      ld (hl), e 
+      inc hl 
+      ld (hl), d 
+      inc hl              ; pointer to i/o channel buffer
+      ex de, hl 
+        ld (hl), 0        ; i/o channel closed
+        add hl, bc        ; to the next i/o channel buffer
+      ex de, hl 
+      dec a 
+    jp p, cmd_maxfiles.populate_filtab.loop ; next i/o channel
+  pop hl                  ; start of i/o channel buffer
+  ld bc, 9
+  add hl, bc
+  ld (NULBUF), hl         ; pointer to the i/o channel 0 buffer
+  ret
+
 ; play resource with Basic standard statement
 ; CMD PLAY <resource number> [, <channel C: 0=off|1=on>]
 cmd_play:
@@ -1686,6 +1765,5 @@ cmd_pad.WTTR2:
 cmd_pad.WTTR3:
 	djnz cmd_pad.WTTR3
 	ret
-
 
 

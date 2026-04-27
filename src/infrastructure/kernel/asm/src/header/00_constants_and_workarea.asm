@@ -241,10 +241,26 @@ DORES:        equ 0xF664     ; 1 - DATA flag to ASCII format
 PRMFLG:       equ 0xF7B4
 CONSAV:       equ 0xF668     ; numeric token used by CHRGTR
 SUBFLG:       equ 0xF6A5     ; 1 (0=simple variable, not 0 = array)
-MAXFIL:       equ 0xF85F
+MAXFIL:       equ 0xF85F     ; 1 - maxfiles
+FILTAB:       equ 0xF860     ; 2 - address of the pointer table for the I/O buffer FCBs
+NULBUF:       equ 0xF862     ; 2 - address of the first byte of the data buffer belonging to I/O buffer 0
+PTRFIL:       equ 0xF864     ; 2 - address of the currently active I/O buffer FCB
+FILNAM:       equ 0xF866     ; 11 - buffer to hold an user-specified filename
+FILNM2:       equ 0xF871     ; 11 - buffer to hold a filename read from an I/O device for comparison with the contents of FILNAM
+DRVTBL:       equ 0xFB21     ; drive table (2 bytes per drive)
+SECBUF:       equ 0xF34D     ; 2 - current drive FAT copy address 
+BUFFER:       equ 0xF34F     ; 2 - DTA buffer address (512 bytes)
+DIRBUF:       equ 0xF351     ; 2 - disk sector transfer area address (512 bytes, used by DSKI$ and DSKO$)
+SPADDRBAK:    equ 0xF304     ; SP register address copy
+DSKERRBAK:    equ 0xF302     ; disk error handler address copy 
+FCBBASE:      equ 0xF353     ; File Control Block base
+DPBLIST:      equ 0xF355     ; Drive Parameter Block list
+DTAADDR:      equ 0xF23D     ; Disk Transfer Area address
 FLGINP:       equ 0xF6A6     ; used by INPUT/READ (0=INPUT, not 0=READ)
 STMTKTAB:     equ 0x392E     ; addresses of BASIC statement token service routines (start from 081H to 0D8H)
 FNCTKTAB:     equ 0x39DE     ; addresses of BASIC function token service routines
+DISK_ERROR_HANDLER:  equ 0xF323  ; disk error handler address (pointer to pointer)
+ABORT_ERROR_HANDLER: equ 0xF1E6  ; abort error handler address
 
 MV_DPTR:      equ 0xF566     ; 2
 VM_DPTR:      equ 0xF562     ; 2
@@ -330,7 +346,7 @@ HEAPEND:      equ SPRSIZ - 1
 
 PageSize:	  equ 4000h	               ; 16kB
 
-BASTEXT:                equ 0x800E     ; address of user basic code
+STARTUP_CFG_FILEIO:     equ 0x800A     ; disk mode flag
 resource.map.address:   equ 0x800B     ; resource map address
 resource.map.segment:   equ 0x800D     ; resource map segment
-
+BASTEXT:                equ 0x800E     ; address of user basic code

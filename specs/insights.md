@@ -63,3 +63,9 @@ If an insight registered here is not relevant any more, remove it.
 ### 8. Open Questions
 
 - Should `fswrapper` evolve from free functions to an interface + injected implementation before parser/compiler/builder strategy refactors, or after them?
+
+### 9. File I/O Runtime Notes
+
+- File support now has a centralized disk preflight helper in kernel ASM (`cmd_preflight_disk`) using `DRVTBL` (`0xFB21`) to detect drive availability before file BIOS calls.
+- `DSKF(n)` is now handled by a dedicated compiler function strategy and reuses the same preflight semantics (`0=available`, `1=unavailable`).
+- Runtime startup now switches memory profile based on parser-detected file usage: non-file programs keep `HIMEM=0xF380`, while file-enabled programs use disk-safe top memory (`HIMEM/MEMSIZ=0xF1C9`) with `DSKDIS` enabled for disk operations.

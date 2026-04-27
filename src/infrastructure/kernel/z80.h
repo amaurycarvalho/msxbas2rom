@@ -1058,6 +1058,26 @@ class Z80OpcodeWriter : public ICpuOpcodeWriter {
   void addJp(int n);
 
   /***
+   * @brief JP C, nn performs an absolute jump to the specified 16-bit address
+   * if the Carry flag is set.
+   * @param n The 16-bit address to jump.
+   * @note [JP C, nn](http://z80-heaven.wikidot.com/instructions-set:jp)
+   * @result opcode size: 3 bytes; clock cycles: 10 t-states (if taken), 10
+   * t-states (if not)
+   */
+  void addJpC(int n);
+
+  /***
+   * @brief JP NC, nn performs an absolute jump to the specified 16-bit address
+   * if the Carry flag is not set.
+   * @param n The 16-bit address to jump.
+   * @note [JP NC, nn](http://z80-heaven.wikidot.com/instructions-set:jp)
+   * @result opcode size: 3 bytes; clock cycles: 10 t-states (if taken), 10
+   * t-states (if not)
+   */
+  void addJpNC(int n);
+
+  /***
    * @brief JP Z, nn performs an absolute jump to the specified 16-bit address
    * if the Zero flag is set.
    * @param n The 16-bit address to jump.

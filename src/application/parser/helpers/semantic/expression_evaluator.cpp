@@ -259,6 +259,10 @@ bool ExpressionEvaluator::push(shared_ptr<LexerLineContext> expression) {
 
       lastWasIdentifier = (lexeme->type == Lexeme::type_identifier);
       lastWasFunction = (lexeme->type == Lexeme::type_keyword);
+      if (lexeme->type == Lexeme::type_keyword &&
+          (lexeme->value == "EOF" || lexeme->value == "DSKF")) {
+        ctx->has_file_support = true;
+      }
 
       ctx->pushStackFromLexeme(lexeme);
 

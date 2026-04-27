@@ -51,10 +51,10 @@ void CompilerOpenStatementStrategy::cmd_open(
         case 1: {
           has[state] = true;
           state = 2;
-          if (lexeme->value == "OUT") {
+          if (lexeme->value == "OUT" || lexeme->value == "OUTPUT") {
             // ld a, 2     ; output mode
             cpu.addLdA(0x02);
-          } else if (lexeme->value == "APP") {
+          } else if (lexeme->value == "APP" || lexeme->value == "APPEND") {
             // ld a, 8     ; append mode
             cpu.addLdA(0x08);
           } else if (lexeme->value == "INPUT") {
@@ -171,6 +171,16 @@ void CompilerOpenStatementStrategy::cmd_open(
     // ld e, a                ; file mode
     cpu.addLdEA();
 
+    // ld a, 0                ; drive A:
+    cpu.addLdA(0x00);
+    // call preflight disk
+    cpu.addCall(def_cmd_preflight_disk);
+    // and a
+    cpu.addAndA();
+    // jp nz, skip OPEN
+    auto skipOpenMark = fixup.addMark();
+    cpu.addJpNZ(0x0000);
+
     // ld a, (TEMP)           ; io number
     cpu.addLdAii(def_TEMP);
 
@@ -179,6 +189,7 @@ void CompilerOpenStatementStrategy::cmd_open(
 
     // call OPEN     ; in: a = i/o number, e = filemode, d = devicecode
     cpu.addCall(def_OPEN);
+    skipOpenMark->symbol->address = cpu.context->code_pointer;
 
     codeHelper.addDisableBasicSlot();
 

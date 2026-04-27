@@ -7,4 +7,4 @@
 - [x] ELF export bug fix (release 0.3.4.1).
 - [x] Infrastructure/kernel/asm/src/header.asm refactoring breaking the code by domain applying Single Responsibility Principle;
 - [x] Sprite glitch bug fix (issue #19, release 0.3.4.2);
-- [ ] File handling support implementation [US-007].
+- [x] File handling support implementation [US-007] (release 1.0.0.0).

@@ -18,6 +18,7 @@
 #include "compiler.h"
 #include "header.h"
 #include "logger.h"
+#include "parser.h"
 #include "resource_manager.h"
 #include "start.h"
 
@@ -113,6 +114,9 @@ bool Rom::addKernel() {
   /// add start code
   pages.emplace_back(0x4000, 0);  // add new page
   memcpy(pages[1].data(), bin_start_bin, bin_start_bin_len);
+  pages[1][10] = (compiler->getParser() && compiler->getParser()->getHasFileSupport())
+                     ? 0x01
+                     : 0x00;
 
   if (opts->megaROM)
     if (!fixIfKonamiSCC()) return false;

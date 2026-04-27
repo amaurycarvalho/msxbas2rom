@@ -18,6 +18,7 @@ void CompilerPrintStatementStrategy::cmd_print(
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
   bool redirected = false;
+  shared_ptr<FixNode> skipPrintMark;
 
   if (t) {
     for (i = 0; i < t; i++) {
@@ -34,11 +35,22 @@ void CompilerPrintStatementStrategy::cmd_print(
           } else if (lexeme->value == "#") {
             if (context->has_open_grp) continue;
 
-            redirected = true;
             subaction = action->actions[0];
             result_subtype = expression.evalExpression(subaction);
             expression.addCast(result_subtype, Lexeme::subtype_numeric);
 
+            context->file_support = true;
+            // ld a, 0                ; drive A:
+            cpu.addLdA(0x00);
+            // call preflight disk
+            cpu.addCall(def_cmd_preflight_disk);
+            // and a
+            cpu.addAndA();
+            // jp nz, skip PRINT statement
+            if (!skipPrintMark) skipPrintMark = fixup.addMark();
+            cpu.addJpNZ(0x0000);
+
+            redirected = true;
             // call io redirect
             if (context->io_redirect_mark)
               fixup.addFix(context->io_redirect_mark->symbol);
@@ -91,6 +103,8 @@ void CompilerPrintStatementStrategy::cmd_print(
       context->io_screen_mark = fixup.addMark();
     cpu.addCall(0x0000);
   }
+
+  if (skipPrintMark) skipPrintMark->symbol->address = cpu.context->code_pointer;
 }
 
 bool CompilerPrintStatementStrategy::execute(

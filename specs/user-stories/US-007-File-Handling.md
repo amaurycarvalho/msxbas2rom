@@ -10,7 +10,7 @@ As an MSX-BASIC developer, I want to use OPEN, READ#, PRINT#, INPUT#, MAXFILES a
 - Sequential file access modes (INPUT, OUTPUT, APPEND) are correctly mapped to MSX BIOS routines.
 - READ# and INPUT# operations correctly retrieve data from an opened file.
 - CLOSE properly releases the file handle and flushes buffers when needed.
-- Multiple files (up to MAXFILES limit) can be opened and handled independently and when MAXFILES is setted it adjust the correct memory allocation for disk operation.
+- Multiple files (up to MAXFILES limit) can be opened and handled independently and when MAXFILES was set it adjust the correct memory allocation for disk operation.
 - EOF() conditions are correctly detected and handled.
 - DSKF() function returns if the MSX DISK is functional.
 - Always checks DSKF for default disk (A) before every file access statement to avoid disk calls errors.
@@ -123,8 +123,8 @@ EOF             EQU #1A
 
 ```
 HIMEM (FC4AH): Address of the highest byte available to BASIC (below the system work area).
-MEMSIZ (F672H): address of the top of the usable RAM for the BASIC interpreter (setted by CHKRAM boot routine).
-STKTOP (F674h): top location to be used for the stack. 
+MEMSIZ (F672H): address of the top of the usable RAM for the BASIC interpreter (set by CHKRAM boot routine).
+STKTOP (F674h): top location to be used for the stack.
 BOTTOM (FC48H): Address of the start of RAM available to BASIC.
 NLONLY (F87CH): loading basic program flags (bit 0=not close i/o buffer 0, bit 7=not close user i/o buffer)
 
@@ -133,6 +133,14 @@ FD9AH - FFCAH: RAM Hook Area, used by the disk interface and RS-232 to intercept
 F30FH (approx): In machines with a disk drive, the system variables often start lower (around F30Fh) to accommodate the extra Disk BIOS variables.
 
 F1C9H TO F380H = fixed area for disks communication
+
+F1E2H (6 bytes) – Routine to abort the program in case of error.
+F273H (3 bytes) – Disk access error handling routine.
+F302H (2 bytes) – Pointer to the abort routine handler for MSXDOS.
+F304H (2 bytes) – Stores the value of the SP (Stack Pointer) register.
+F323H (2 bytes) – Address of the disk error handler (pointer to pointer).
+F325H (2 bytes) – Address of the abort error handler (pointer to pointer).
+F37DH (3 bytes) – ROMBDOS Jump to the BDOS command handler.
 ```
 
 ### OPEN Implementation
@@ -140,8 +148,10 @@ F1C9H TO F380H = fixed area for disks communication
 1. Load filename (ASCIIZ) into HL
 2. Call FILEVL
 3. Set:
- - A = file number (channel)
- - E = mode (INPUT_FILE, OUTPUT_FILE, etc.)
+
+- A = file number (channel)
+- E = mode (INPUT_FILE, OUTPUT_FILE, etc.)
+
 4. Call OPNFIL
 
 Example:
@@ -205,18 +215,46 @@ CALL CLSFIL
 1. EOF is detected when INDSKC returns #1A
 2. Compiler must generate loop guards for INPUT# constructs
 
-### Checking MSX DISK presence
+### Checking MSX DISK presence and DSKF function
 
-DSKF(n) function must check DRVTBL (drive table) located at address 0xFB21 that lists the initialized drives.
+First, DSKF(n) function must check DRVTBL (drive table) located at address 0xFB21 that lists the initialized drives.
 
 - Start Address: 0xFB21
 - Size: 2 bytes per entry (16-bit pointers).
 - Total Size: Typically 16 bytes (8 drives x 2 bytes).
 - DSKF n parameter is 0 for default drive (A), 1 for drive B, 2 for drive C...
 
-Each 2-byte entry at DRVTBL + (drive_number * 2) does not usually point to raw data, but rather to a Device Driver Structure in the ROM of the disk interface.  
+Each 2-byte entry at DRVTBL + (drive_number \* 2) does not usually point to raw data, but rather to a Device Driver Structure in the ROM of the disk interface.
 
 If the entry is 0: No drive is assigned/detected for that drive number. If the entry is non-zero: It is an address (pointer) in a ROM slot that tells the BIOS how to communicate with that drive.
+
+Next, if disk is available, DSKF(n) must call BDOS 0x1B function (GetAllocationInfo) to return the number of free clusters on the disk inserted in the specified drive.
+
+```
+GetAllocationInfo (0x1B):
+  input:
+    C = 0x1B
+    E = drive number
+  output:
+    A = Sectors per cluster (255 if error)
+    BC = sector size (bytes)
+    DE = total clusters on disk
+    HL = free clusters on disk
+    IX = DPB address
+    IY = FAT address
+
+BDOS (0xF37D)
+```
+
+If an error occurs, DSKF(n) should return -1 as a result.
+
+Example:
+
+```
+ld e, n
+ld c, GetAllocationInfo
+CALL BDOS
+```
 
 ### Runtime Memory Configuration (Disk vs Non-Disk Modes)
 
@@ -311,6 +349,7 @@ Requirement:
 ```
 
 Recommendation:
+
 - No code change required if BASMEM remains in page 3 (>= C000h), but must be validated by compiler.
 
 6. Avoid DOS Memory Region Overlap
@@ -321,6 +360,7 @@ Reserved Region (Disk Mode)
 ```
 
 Must NOT be used for:
+
 - Variables
 - Stack
 - Buffers
@@ -358,7 +398,10 @@ ld (NLONLY), 0     ; reset i/o buffers
 - [PRINT statement](https://www.msx.org/wiki/PRINT);
 - [INPUT statement](https://www.msx.org/wiki/INPUT);
 - [MAXFILES statement](https://www.msx.org/wiki/MAXFILES);
-- [EOF function](https://www.msx.org/wiki/EOF());
-- [DSKF function](https://www.msx.org/wiki/DSKF());
+- [EOF function](<https://www.msx.org/wiki/EOF()>);
+- [DSKF function](<https://www.msx.org/wiki/DSKF()>);
+- [ROM with disks support](https://www.msx.org/wiki/Develop_a_program_in_cartridge_ROM#Create_a_ROM_with_disks_support);
 - [Using MSX DISK calls example](https://www.msx.org/forum/msx-talk/development/asm-basic-files);
-- [MSX memory map](https://www.msx.org/wiki/The_Memory).
+- [MSX memory map](https://www.msx.org/wiki/The_Memory);
+- [BDOS function calls](http://map.tni.nl/resources/dos2_functioncalls.php);
+- [BDOS error handling](https://map.grauw.nl/articles/dos-error-handling.php).

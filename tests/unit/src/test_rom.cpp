@@ -42,6 +42,59 @@ static bool compileWithOpts(const std::string& filename,
 }
 
 TEST_SUITE("Rom") {
+  TEST_CASE("Sets startup file I/O flag to non-disk mode by default") {
+    const std::string filename =
+        createTempBas("rom_nondisk_flag.bas", "10 PRINT \"HI\"\n20 END\n");
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+
+    REQUIRE(compileWithOpts(filename, compiler, opts) == true);
+
+    shared_ptr<Rom> rom = make_shared<Rom>();
+    REQUIRE(rom->build(compiler) == true);
+
+    std::ifstream out(opts->outputFilename, std::ios::binary);
+    REQUIRE(out.good());
+    out.seekg(0x4000 + 10, std::ios::beg);
+    unsigned char startupMode = 0xFF;
+    out.read(reinterpret_cast<char*>(&startupMode), 1);
+    CHECK(startupMode == 0x00);
+    out.close();
+
+    std::remove(filename.c_str());
+    std::remove(opts->outputFilename.c_str());
+  }
+
+  TEST_CASE("Sets startup file I/O flag to disk mode when file support is used") {
+    const std::string filename = createTempBas(
+        "rom_disk_flag.bas",
+        "10 OPEN \"A:TEST.TXT\" FOR INPUT AS #1\n20 CLOSE #1\n30 END\n");
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+
+    REQUIRE(compileWithOpts(filename, compiler, opts) == true);
+
+    shared_ptr<Rom> rom = make_shared<Rom>();
+    REQUIRE(rom->build(compiler) == true);
+
+    std::ifstream out(opts->outputFilename, std::ios::binary);
+    REQUIRE(out.good());
+    out.seekg(0x4000 + 10, std::ios::beg);
+    unsigned char startupMode = 0x00;
+    out.read(reinterpret_cast<char*>(&startupMode), 1);
+    CHECK(startupMode == 0x01);
+    out.close();
+
+    std::remove(filename.c_str());
+    std::remove(opts->outputFilename.c_str());
+  }
+
   TEST_CASE("Fails when compiler is not compiled") {
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();

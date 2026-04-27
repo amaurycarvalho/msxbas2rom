@@ -132,6 +132,9 @@ bool Parser::getHasAkm() const {
 bool Parser::getHasResourceRestore() const {
   return ctx->has_resource_restore;
 }
+bool Parser::getHasFileSupport() const {
+  return ctx->has_file_support;
+}
 
 int Parser::getResourceCount() const {
   return ctx->resourceCount;

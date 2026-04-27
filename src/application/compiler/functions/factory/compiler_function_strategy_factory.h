@@ -16,6 +16,7 @@
 #include "compiler_cos_function_strategy.h"
 #include "compiler_csng_function_strategy.h"
 #include "compiler_csrlin_function_strategy.h"
+#include "compiler_dskf_function_strategy.h"
 #include "compiler_eof_function_strategy.h"
 #include "compiler_exp_function_strategy.h"
 #include "compiler_fix_function_strategy.h"
@@ -78,6 +79,7 @@ using namespace std;
 class CompilerFunctionStrategyFactory {
  private:
   EofCompilerFunctionStrategy eofStrategy;
+  DskfCompilerFunctionStrategy dskfStrategy;
   FreCompilerFunctionStrategy freStrategy;
   HeapCompilerFunctionStrategy heapStrategy;
   InkeyCompilerFunctionStrategy inkeyStrategy;

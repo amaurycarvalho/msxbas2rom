@@ -354,8 +354,13 @@ TEST_SUITE("Parser") {
     const std::string okFile = createTempBas(
         "parser_open_ok.bas",
         "10 OPEN \"A\" FOR INPUT AS #1 LEN 1\n20 CLOSE #1\n30 MAXFILES=5\n");
+    const std::string okOutputNoLen = createTempBas(
+        "parser_open_output_ok.bas",
+        "10 OPEN \"A:TEST.TXT\" FOR OUTPUT AS #1\n20 CLOSE #1\n");
     const std::string badOpen =
         createTempBas("parser_open_bad.bas", "10 OPEN \"A\" INPUT\n");
+    const std::string badFileNumber = createTempBas(
+        "parser_open_bad_number.bas", "10 OPEN \"A\" FOR INPUT AS #16\n");
     const std::string badClose =
         createTempBas("parser_close_bad.bas", "10 CLOSE 1\n");
 
@@ -365,12 +370,25 @@ TEST_SUITE("Parser") {
     REQUIRE(lexer->load(okFile) == true);
     REQUIRE(lexer->evaluate() == true);
     CHECK(parser.evaluate(lexer) == true);
+    CHECK(parser.getHasFileSupport() == true);
+
+    REQUIRE(lexer->load(okOutputNoLen) == true);
+    REQUIRE(lexer->evaluate() == true);
+    CHECK(parser.evaluate(lexer) == true);
+    CHECK(parser.getHasFileSupport() == true);
 
     REQUIRE(lexer->load(badOpen) == true);
     REQUIRE(lexer->evaluate() == true);
     CHECK(parser.evaluate(lexer) == false);
     CHECK(parser.getLogger()->trace().toString().find(
               "FOR/AS is missing in OPEN statement") != std::string::npos);
+
+    REQUIRE(lexer->load(badFileNumber) == true);
+    REQUIRE(lexer->evaluate() == true);
+    CHECK(parser.evaluate(lexer) == false);
+    CHECK(parser.getLogger()->trace().toString().find(
+              "File number out of range in OPEN statement (1..15)") !=
+          std::string::npos);
 
     REQUIRE(lexer->load(badClose) == true);
     REQUIRE(lexer->evaluate() == true);
@@ -379,7 +397,9 @@ TEST_SUITE("Parser") {
               "# is missing in CLOSE statement") != std::string::npos);
 
     std::remove(okFile.c_str());
+    std::remove(okOutputNoLen.c_str());
     std::remove(badOpen.c_str());
+    std::remove(badFileNumber.c_str());
     std::remove(badClose.c_str());
   }
 }
@@ -962,6 +982,49 @@ TEST_SUITE("FileStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("OPEN"));
 
     CHECK(result == true);
+    CHECK(ctx->has_file_support == true);
+  }
+
+  TEST_CASE("Parses OPEN with OUTPUT and no LEN") {
+    shared_ptr<ParserContext> ctx = createContext();
+    FileStatementStrategy strategy;
+
+    setActionRoot(ctx, "OPEN");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(lit("\"A:TEST.TXT\""));
+    line->addLexeme(kw("FOR"));
+    line->addLexeme(kw("OUTPUT"));
+    line->addLexeme(kw("AS"));
+    line->addLexeme(sep("#"));
+    line->addLexeme(num("1"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("OPEN"));
+
+    CHECK(result == true);
+    CHECK(ctx->has_file_support == true);
+  }
+
+  TEST_CASE("Parses OPEN with inline AS# token") {
+    shared_ptr<ParserContext> ctx = createContext();
+    FileStatementStrategy strategy;
+
+    setActionRoot(ctx, "OPEN");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(lit("\"A:TEST.TXT\""));
+    line->addLexeme(kw("FOR"));
+    line->addLexeme(kw("INPUT"));
+    line->addLexeme(id("AS#10"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("OPEN"));
+
+    CHECK(result == true);
+    CHECK(ctx->has_file_support == true);
   }
 
   TEST_CASE("Parses CLOSE with channel") {

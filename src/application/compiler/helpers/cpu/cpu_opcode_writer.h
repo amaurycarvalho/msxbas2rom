@@ -163,6 +163,8 @@ class ICpuOpcodeWriter {
   virtual void addJrC(unsigned char n) = 0;
   virtual void addJrNC(unsigned char n) = 0;
   virtual void addJp(int n) = 0;
+  virtual void addJpC(int n) = 0;
+  virtual void addJpNC(int n) = 0;
   virtual void addJpZ(int n) = 0;
   virtual void addJpNZ(int n) = 0;
   virtual void addCall(unsigned int word) = 0;

@@ -102,7 +102,7 @@
 //! @warning
 //! see "wrapper_routines_map_start" correct address in
 //! "header.symbols.asm" if Z80 kernel was recompiled
-#define def_wrapper_routines_map_start 0x40DB
+#define def_wrapper_routines_map_start 0x4102
 
 #define def_castParamFloatInt def_wrapper_routines_map_start
 
@@ -232,6 +232,8 @@
 #define def_XBASIC_USING (def_XBASIC_TAB + 3)
 #define def_XBASIC_USING_DO (def_XBASIC_USING + 3)
 #define def_XBASIC_USR (def_XBASIC_USING_DO + 3)
+#define def_cmd_preflight_disk (def_XBASIC_USR + 3)
+#define def_cmd_maxfile (def_cmd_preflight_disk + 3)
 
 //! @remark end of header.symbols adjust
 //! @}
@@ -309,6 +311,7 @@
 #define def_STKTOP 0xF674   // 2
 #define def_SAVSTK 0xf6b1   // 2
 #define def_MAXFIL 0xF85F   // 1
+#define def_DSKDIS 0xFD99   // 1
 #define def_NLONLY 0xF87C   // 1
 #define def_USRTAB 0xF39A   // 10 x 2
 #define def_BDRATR 0xFCB2   // 1
@@ -326,6 +329,7 @@
 #define def_RAMAD3 0xF344   // 1
 #define def_EXPTBL 0xFCC1   // 1
 #define def_HIMEM 0xFC4A    // 2
+#define def_MEMSIZ 0xF672   // 2
 #define def_BUF 0xF55E      // 259
 #define def_KBUF 0xF41F     // 318
 #define def_GRPACY 0xFCB9   // 2
@@ -342,6 +346,8 @@
 #define def_RG9SAV 0xFFE8
 
 #define def_WriteParamBCD 0x6C0B
+#define def_SPADDRBAK 0xF304  // SP register address copy
+#define def_DSKERRBAK 0xF302  // disk error handler address copy
 
 /***************************************************************
  * @name xbasic

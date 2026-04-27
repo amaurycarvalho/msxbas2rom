@@ -6,37 +6,48 @@
 ; de = temporary string start address
 ; ix = temporary font buffer address
 XBASIC_INIT:
+  ; --> set temporary buffers 
   xor a
   ld (TMPSTRIND), a       ; temporary string list current position
   ld (TMPSTRADDR), de     ; temporary string list start pointer
+  ld (FONTADDR), ix       ; temporary font buffer address
 
+  ; --> calculate heap size 
   ld (HEAPSTR), hl        ; heap start address
   ld (STREND), hl         ; address of the end of the variable area
   ex de, hl
-  ld hl, HEAPEND          ; (HIMEM)
+  ld hl, HEAPEND          ; end of the heap area (HIMEM)
   sbc hl, de
   ld (HEAPSIZ), hl        ; heap size
 
+  ; --> set BDOS I/O buffer FCBs 
+  ld a, (MAXFIL)
+  and a
+  call nz, cmd_maxfiles   ; alloc i/o buffers and calculate heap size
+
+  ; --> variables area
   ld hl, BASMEM           ; address of the variables area
   ld (ARYTAB), hl         ; address of the array variables area
 
-  ld (FONTADDR), ix       ; temporary font buffer address
-
+  ; --> resource maps 
   ld hl, (resource.map.address)
   ld (RSCMAPAD), hl       ; resource map address (copy on ram)
   ld a, (resource.map.segment)
   ld (RSCMAPSG), a        ; resource map segment number (copy on ram)
 
+  ; --> character font data
   ld a, (CGPNTSLT)
   ld (FONTOLDSLT), a
   ld hl, (CGPNT)
   ld (FONTOLD), hl
 
+  ; --> randomize data 
   ld hl, 0x3579           ; RANDOMIZE 1 - FIX
   ld (SWPTMP), hl         ; SWPTMP+0
   ld hl, 0x7531           ; RANDOMIZE 2 - FIX
   ld (SWPTMP+2), hl       ; SWPTMP+2
 
+  ; --> usr function data 
   ld hl, usr0
   ld (USRTAB), hl
   ld hl, usr1
@@ -46,21 +57,23 @@ XBASIC_INIT:
   ld hl, usr3
   ld (USRTAB+6), hl
 
+  ; --> function keys data 
   call ERAFNK              ; disable function keys display
   ld hl, FNKSTR            ; configure function keys codes from 245 to 246
   ld de, FNKSTR+1
   ld a, 246
   ld b, 0
-XBASIC_INIT.1:
-  ld (hl), a
-  inc hl
-  inc de
-  ld (hl), b
-  ld c, 15
-  ldir
-  inc a
-  jr nz, XBASIC_INIT.1
+XBASIC_INIT.loop:
+    ld (hl), a
+    inc hl
+    inc de
+    ld (hl), b
+    ld c, 15
+    ldir
+    inc a
+  jr nz, XBASIC_INIT.loop
 
+  ; --> clear variables
   ld hl, (HEAPSTR)         ; heap start address
   ld de, BASMEM            ; variables start address
   xor a
@@ -73,7 +86,6 @@ XBASIC_INIT.1:
   ld d, h
   inc de                   ; de = hl + 1
   ldir                     ; clear all the rest
-
   ret
 
 XBASIC_END:
@@ -94,8 +106,8 @@ XBASIC_END.1:
   ld (FLGINP), a
   ld (DORES), a
   ld (CONSAV), a
-  ld (MAXFIL), a           ; MAXFIL - reset max files
-  ld (MAXFIL), a           ; NLONLY - reset io buffers
+  ;ld (MAXFIL), a           ; MAXFIL - reset max files
+  ;ld (NLONLY), a           ; NLONLY - reset io buffers
   ld hl, 0xC033
   ld (VARTAB), hl
   ld (ARYTAB), hl

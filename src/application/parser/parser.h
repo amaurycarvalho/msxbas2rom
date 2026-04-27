@@ -68,6 +68,7 @@ class Parser {
   bool getHasPt3() const;
   bool getHasAkm() const;
   bool getHasResourceRestore() const;
+  bool getHasFileSupport() const;
 
   int getResourceCount() const;
 

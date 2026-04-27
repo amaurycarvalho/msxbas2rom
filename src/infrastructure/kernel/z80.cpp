@@ -39,6 +39,14 @@ void Z80OpcodeWriter::addJp(int n) {
   addCmd(0xC3, n);
 }
 
+void Z80OpcodeWriter::addJpC(int n) {
+  addCmd(0xDA, n);
+}
+
+void Z80OpcodeWriter::addJpNC(int n) {
+  addCmd(0xD2, n);
+}
+
 void Z80OpcodeWriter::addJpZ(int n) {
   addCmd(0xCA, n);
 }
