@@ -189,7 +189,7 @@ void CompilerOpenStatementStrategy::cmd_open(
 
     // call OPEN     ; in: a = i/o number, e = filemode, d = devicecode
     cpu.addCall(def_OPEN);
-    skipOpenMark->symbol->address = cpu.context->code_pointer;
+    skipOpenMark->aimHere();
 
     codeHelper.addDisableBasicSlot();
 

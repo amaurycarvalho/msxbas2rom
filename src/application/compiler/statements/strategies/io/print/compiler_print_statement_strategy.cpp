@@ -104,7 +104,7 @@ void CompilerPrintStatementStrategy::cmd_print(
     cpu.addCall(0x0000);
   }
 
-  if (skipPrintMark) skipPrintMark->symbol->address = cpu.context->code_pointer;
+  if (skipPrintMark) skipPrintMark->aimHere();
 }
 
 bool CompilerPrintStatementStrategy::execute(

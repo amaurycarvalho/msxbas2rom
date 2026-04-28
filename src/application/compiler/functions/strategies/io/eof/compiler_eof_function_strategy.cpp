@@ -66,11 +66,11 @@ int EofCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
     eofDone = fixup.addMark();
     cpu.addJp(0x0000);
 
-    eofDiskUnavailable->symbol->address = cpu.context->code_pointer;
+    eofDiskUnavailable->aimHere();
     codeHelper.addDisableBasicSlot();
     // ld hl, 1            ; treat unavailable disk as eof
     cpu.addLdHL(0x0001);
-    eofDone->symbol->address = cpu.context->code_pointer;
+    eofDone->aimHere();
 
   } else
     result[0] = Lexeme::subtype_unknown;

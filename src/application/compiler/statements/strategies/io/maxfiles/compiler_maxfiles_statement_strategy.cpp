@@ -94,7 +94,7 @@ void CompilerMaxfilesStatementStrategy::cmd_maxfiles(
     // ld (SAVSTK), sp
     cpu.addLdiiSP(def_SAVSTK);
 
-    mark->symbol->address = cpu.context->code_pointer;
+    mark->aimHere();
 
   } else {
     context->syntaxError("Empty MAXFILES assignment");

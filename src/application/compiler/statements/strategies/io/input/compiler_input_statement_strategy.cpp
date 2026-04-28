@@ -107,7 +107,7 @@ void CompilerInputStatementStrategy::cmd_input(
       cpu.addCall(0x0000);
     }
 
-    if (skipInputMark) skipInputMark->symbol->address = cpu.context->code_pointer;
+    if (skipInputMark) skipInputMark->aimHere();
 
   } else {
     context->syntaxError();

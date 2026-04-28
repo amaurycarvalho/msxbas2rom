@@ -55,7 +55,7 @@ void CompilerCloseStatementStrategy::cmd_close(
 
       // call CLOSE    ; in: a = i/o number
       cpu.addCall(def_CLOSE);
-      skipCloseMark->symbol->address = cpu.context->code_pointer;
+      skipCloseMark->aimHere();
 
       codeHelper.addDisableBasicSlot();
     }
@@ -78,7 +78,7 @@ void CompilerCloseStatementStrategy::cmd_close(
 
     // call ClOSE ALL
     cpu.addCall(def_CLOSE_ALL);
-    skipCloseMark->symbol->address = cpu.context->code_pointer;
+    skipCloseMark->aimHere();
 
     codeHelper.addDisableBasicSlot();
   }
