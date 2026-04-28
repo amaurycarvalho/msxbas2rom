@@ -441,7 +441,7 @@ void CompilerOnStatementStrategy::cmd_on_goto_gosub(
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action, sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
-  shared_ptr<FixNode> mark;
+  shared_ptr<FixNode> skipIfZeroIndexMark;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
 
@@ -478,7 +478,7 @@ void CompilerOnStatementStrategy::cmd_on_goto_gosub(
     // and a
     cpu.addAndA();
     // jp z, address
-    mark = fixup.addMark();
+    skipIfZeroIndexMark = fixup.addMark();
     cpu.addJpZ(0x0000);
 
     for (i = 0; i < t; i++) {
@@ -536,7 +536,7 @@ void CompilerOnStatementStrategy::cmd_on_goto_gosub(
           fixup.addFix(sub_lexeme->value);
           cpu.addCall(0x0000);
           //   jp address
-          fixup.addFix(mark->symbol);
+          fixup.addFix(skipIfZeroIndexMark->symbol);
           cpu.addJp(0x0000);
         }
 
@@ -556,7 +556,7 @@ void CompilerOnStatementStrategy::cmd_on_goto_gosub(
       }
     }
 
-    mark->symbol->address = cpu.context->code_pointer;
+    skipIfZeroIndexMark->aimHere();
 
   } else {
     context->syntaxError("ON GOTO/GOSUB with empty parameters");

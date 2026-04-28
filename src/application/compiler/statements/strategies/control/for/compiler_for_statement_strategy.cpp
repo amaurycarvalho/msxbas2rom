@@ -162,8 +162,8 @@ void CompilerForStatementStrategy::cmd_for(
         }
 
         // ;step code
-        forNext->for_step_mark = fixup.addPreMark();
-        forNext->for_step_mark->address = cpu.context->code_pointer;
+        forNext->forStepMark = fixup.addPreMark();
+        forNext->forStepMark->address = cpu.context->code_pointer;
 
         // ld hl, (variable)
         fixup.addFix(forNext->for_var);
@@ -214,7 +214,7 @@ void CompilerForStatementStrategy::cmd_for(
         optimizer.addKernelCall(def_intCompareGT);
 
         // jp nz, end_for
-        forNext->for_end_mark = fixup.addMark();
+        forNext->forEndMark = fixup.addMark();
         cpu.addJpNZ(0x0000);
 
         // body start
@@ -224,8 +224,8 @@ void CompilerForStatementStrategy::cmd_for(
         cpu.addJr(0x19);
 
         // ;step code
-        forNext->for_step_mark = fixup.addPreMark();
-        forNext->for_step_mark->address = cpu.context->code_pointer;
+        forNext->forStepMark = fixup.addPreMark();
+        forNext->forStepMark->address = cpu.context->code_pointer;
 
         // ld a, (variable)
         fixup.addFix(forNext->for_var);
@@ -306,7 +306,7 @@ void CompilerForStatementStrategy::cmd_for(
         cpu.addOrH();
 
         // jp z, end_for
-        forNext->for_end_mark = fixup.addMark();
+        forNext->forEndMark = fixup.addMark();
         cpu.addJpZ(0x0000);
 
         // body start

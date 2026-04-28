@@ -49,10 +49,10 @@ void CompilerInputStatementStrategy::cmd_input(
 
             redirected = true;
             // call io redirect
-            if (context->io_redirect_mark)
-              fixup.addFix(context->io_redirect_mark->symbol);
+            if (context->ioRedirectMark)
+              fixup.addFix(context->ioRedirectMark->symbol);
             else
-              context->io_redirect_mark = fixup.addMark();
+              context->ioRedirectMark = fixup.addMark();
             cpu.addCall(0x0000);
 
             continue;
@@ -100,10 +100,10 @@ void CompilerInputStatementStrategy::cmd_input(
 
     if (redirected) {
       // call io screen
-      if (context->io_screen_mark)
-        fixup.addFix(context->io_screen_mark->symbol);
+      if (context->ioScreenMark)
+        fixup.addFix(context->ioScreenMark->symbol);
       else
-        context->io_screen_mark = fixup.addMark();
+        context->ioScreenMark = fixup.addMark();
       cpu.addCall(0x0000);
     }
 

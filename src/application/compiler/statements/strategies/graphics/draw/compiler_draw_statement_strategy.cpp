@@ -26,10 +26,10 @@ void CompilerDrawStatementStrategy::cmd_draw(
 
       if (result_subtype == Lexeme::subtype_string) {
         // call draw function
-        if (context->draw_mark)
-          fixup.addFix(context->draw_mark->symbol);
+        if (context->drawStmtMark)
+          fixup.addFix(context->drawStmtMark->symbol);
         else
-          context->draw_mark = fixup.addMark();
+          context->drawStmtMark = fixup.addMark();
         cpu.addCall(0x0000);
 
       } else {

@@ -41,10 +41,10 @@ void CompilerCodeHelper::addEnableBasicSlot() {
     cpu.addEI();
   } else {
     // call enable basic slot function
-    if (context->enable_basic_mark) {
-      fix.addFix(context->enable_basic_mark->symbol);
+    if (context->enableRomBasicMark) {
+      fix.addFix(context->enableRomBasicMark->symbol);
     } else {
-      context->enable_basic_mark = fix.addMark();
+      context->enableRomBasicMark = fix.addMark();
     }
     cpu.addCall(0x0000);
   }
@@ -133,10 +133,10 @@ void CompilerCodeHelper::addDisableBasicSlot() {
     cpu.addEI();
   } else {
     // call disable basic slot function
-    if (context->disable_basic_mark)
-      fix.addFix(context->disable_basic_mark->symbol);
+    if (context->disableRomBasicMark)
+      fix.addFix(context->disableRomBasicMark->symbol);
     else
-      context->disable_basic_mark = fix.addMark();
+      context->disableRomBasicMark = fix.addMark();
     cpu.addCall(0x0000);
   }
   cpu.addExx();

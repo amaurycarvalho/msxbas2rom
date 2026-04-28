@@ -25,8 +25,8 @@ class ForNextNode {
   int index;
   shared_ptr<TagNode> tag;
   shared_ptr<Lexeme> for_var, for_to, for_step;
-  shared_ptr<FixNode> for_end_mark;
-  shared_ptr<SymbolNode> for_step_mark;
+  shared_ptr<FixNode> forEndMark;
+  shared_ptr<SymbolNode> forStepMark;
   shared_ptr<ActionNode> for_to_action, for_step_action;
 };
 

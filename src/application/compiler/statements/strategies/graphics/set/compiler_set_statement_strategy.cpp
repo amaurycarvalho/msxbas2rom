@@ -17,7 +17,7 @@ void CompilerSetStatementStrategy::cmd_set(
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> next_lexeme;
   unsigned int t = context->current_action->actions.size();
-  shared_ptr<FixNode> mark;
+  shared_ptr<FixNode> skipMsx1Mark;
 
   if (t == 1) {
     action = context->current_action->actions[0];
@@ -41,7 +41,7 @@ void CompilerSetStatementStrategy::cmd_set(
     // and a
     cpu.addAndA();
     // jp z, $                ; skip if MSX1
-    mark = fixup.addMark();
+    skipMsx1Mark = fixup.addMark();
     cpu.addJpZ(0x0000);
 
     if (next_lexeme->type == Lexeme::type_keyword &&
@@ -82,7 +82,7 @@ void CompilerSetStatementStrategy::cmd_set(
       context->syntaxError("Invalid SET statement");
     }
 
-    mark->symbol->address = cpu.context->code_pointer;
+    skipMsx1Mark->aimHere();
 
   } else {
     context->syntaxError("Wrong SET parameters count");

@@ -73,11 +73,11 @@ void CompilerContext::clear() {
   compiled = false;
 
   end_mark = nullptr;
-  enable_basic_mark = nullptr;
-  disable_basic_mark = nullptr;
-  draw_mark = nullptr;
-  io_redirect_mark = nullptr;
-  io_screen_mark = nullptr;
+  enableRomBasicMark = nullptr;
+  disableRomBasicMark = nullptr;
+  drawStmtMark = nullptr;
+  ioRedirectMark = nullptr;
+  ioScreenMark = nullptr;
 
   symbols.clear();
   fixes.clear();

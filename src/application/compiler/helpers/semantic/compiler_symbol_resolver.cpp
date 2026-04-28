@@ -130,8 +130,8 @@ shared_ptr<SymbolNode> CompilerSymbolResolver::addSymbol(string line) {
 void CompilerSymbolResolver::addSupportSymbols() {
   auto& cpu = *context->cpu;
   // IO REDIRECT FUNCTION
-  if (context->io_redirect_mark) {
-    context->io_redirect_mark->symbol->address = cpu.context->code_pointer;
+  if (context->ioRedirectMark) {
+    context->ioRedirectMark->aimHere();
     // ld a, l  ; io number
     cpu.addLdAL();
     // ld hl, fake empty line
@@ -147,8 +147,8 @@ void CompilerSymbolResolver::addSupportSymbols() {
   }
 
   // IO SCREEN FUNCTION
-  if (context->io_screen_mark) {
-    context->io_screen_mark->symbol->address = cpu.context->code_pointer;
+  if (context->ioScreenMark) {
+    context->ioScreenMark->aimHere();
     // ld hl, fake empty line
     cpu.addLdHL(def_ENDPRG);
     // ld ix, IOTOSCREEN
@@ -162,8 +162,8 @@ void CompilerSymbolResolver::addSupportSymbols() {
   }
 
   // DRAW STATEMENT - in: hl (pointer to string)
-  if (context->draw_mark) {
-    context->draw_mark->symbol->address = cpu.context->code_pointer;
+  if (context->drawStmtMark) {
+    context->drawStmtMark->aimHere();
     // ld a, (SCRMOD)
     cpu.addLdAii(def_SCRMOD);
     // cp 2
@@ -182,10 +182,10 @@ void CompilerSymbolResolver::addSupportSymbols() {
     // xor a
     cpu.addXorA();
     // ld bc, disable basic slot
-    if (context->disable_basic_mark)
-      context->fixupResolver->addFix(context->disable_basic_mark->symbol);
+    if (context->disableRomBasicMark)
+      context->fixupResolver->addFix(context->disableRomBasicMark->symbol);
     else
-      context->disable_basic_mark = context->fixupResolver->addMark();
+      context->disableRomBasicMark = context->fixupResolver->addMark();
     cpu.addLdBC(0x0000);
     // push bc
     cpu.addPushBC();
@@ -217,8 +217,8 @@ void CompilerSymbolResolver::addSupportSymbols() {
   }
 
   // ENABLE BASIC SLOT FUNCTION
-  if (context->enable_basic_mark) {
-    context->enable_basic_mark->symbol->address = cpu.context->code_pointer;
+  if (context->enableRomBasicMark) {
+    context->enableRomBasicMark->aimHere();
     // ld a, (EXPTBL)
     cpu.addLdAii(def_EXPTBL);
     // jr $+4            ; jump to disable code
@@ -226,8 +226,8 @@ void CompilerSymbolResolver::addSupportSymbols() {
   }
 
   // DISABLE BASIC SLOT FUNCTION
-  if (context->disable_basic_mark) {
-    context->disable_basic_mark->symbol->address = cpu.context->code_pointer;
+  if (context->disableRomBasicMark) {
+    context->disableRomBasicMark->aimHere();
     // ld a, (SLTSTR)
     cpu.addLdAii(def_SLTSTR);
     // ld h,040h        ; <--- enable jump to here

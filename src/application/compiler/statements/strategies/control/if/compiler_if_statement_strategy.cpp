@@ -20,7 +20,7 @@ void CompilerIfStatementStrategy::cmd_if(shared_ptr<CompilerContext> context) {
   shared_ptr<ActionNode> saved_action = context->current_action;
   unsigned int i, t = saved_action->actions.size(), tt;
   int result_subtype;
-  shared_ptr<FixNode> mark_else = nullptr, mark_endif = nullptr;
+  shared_ptr<FixNode> elseMark = nullptr, endifMark = nullptr;
   bool isLastActionGoto = false, isElseLikeEndif = true;
 
   if (!t) {
@@ -42,7 +42,7 @@ void CompilerIfStatementStrategy::cmd_if(shared_ptr<CompilerContext> context) {
             // or h
             cpu.addOrH();
             // jp z, ELSE or ENDIF
-            mark_else = fixup.addMark();
+            elseMark = fixup.addMark();
             cpu.addJpZ(0x0000);
 
           } else {
@@ -72,7 +72,7 @@ void CompilerIfStatementStrategy::cmd_if(shared_ptr<CompilerContext> context) {
         } else if (lexeme->value == "ELSE") {
           if (!isLastActionGoto) {
             // jp ENDIF
-            mark_endif = fixup.addMark();
+            endifMark = fixup.addMark();
             cpu.addJp(0x0000);
           }
 
@@ -95,8 +95,8 @@ void CompilerIfStatementStrategy::cmd_if(shared_ptr<CompilerContext> context) {
             if (last_lexeme->type == Lexeme::type_literal &&
                 last_lexeme->subtype == Lexeme::subtype_numeric) {
               // mark ELSE position
-              if (mark_else) {
-                mark_else->symbol =
+              if (elseMark) {
+                elseMark->symbol =
                     context->symbolResolver->addSymbol(last_lexeme->value);
               } else {
                 context->syntaxError("ELSE parameter is missing");
@@ -107,8 +107,7 @@ void CompilerIfStatementStrategy::cmd_if(shared_ptr<CompilerContext> context) {
 
           } else {
             // mark ELSE position
-            if (mark_else)
-              mark_else->symbol->address = cpu.context->code_pointer;
+            if (elseMark) elseMark->aimHere();
 
             if (!evaluator.evalActions(action)) break;
           }
@@ -125,11 +124,10 @@ void CompilerIfStatementStrategy::cmd_if(shared_ptr<CompilerContext> context) {
     }
 
     // mark ENDIF position
-    if (mark_endif)
-      mark_endif->symbol->address = cpu.context->code_pointer;
-    else if (mark_else)
-      if (isElseLikeEndif)
-        mark_else->symbol->address = cpu.context->code_pointer;
+    if (endifMark)
+      endifMark->aimHere();
+    else if (elseMark)
+      if (isElseLikeEndif) elseMark->aimHere();
   }
 }
 

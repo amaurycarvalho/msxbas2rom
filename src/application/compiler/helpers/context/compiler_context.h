@@ -60,9 +60,9 @@ class CompilerContext {
   shared_ptr<SymbolNode> heap_mark;
   shared_ptr<SymbolNode> temp_str_mark;
   shared_ptr<SymbolNode> end_mark;
-  shared_ptr<FixNode> enable_basic_mark, disable_basic_mark;
-  shared_ptr<FixNode> draw_mark;
-  shared_ptr<FixNode> io_redirect_mark, io_screen_mark;
+  shared_ptr<FixNode> enableRomBasicMark, disableRomBasicMark;
+  shared_ptr<FixNode> drawStmtMark;
+  shared_ptr<FixNode> ioRedirectMark, ioScreenMark;
   shared_ptr<ActionNode> current_action;
 
   vector<shared_ptr<SymbolNode>> symbols;

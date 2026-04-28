@@ -18,7 +18,7 @@ void CompilerMaxfilesStatementStrategy::cmd_maxfiles(
   shared_ptr<ActionNode> action;
   unsigned int t = context->current_action->actions.size();
   int result_subtype;
-  shared_ptr<FixNode> mark;
+  shared_ptr<FixNode> skipMaxfilesMark;
 
   if (t) {
     // xor a
@@ -37,7 +37,7 @@ void CompilerMaxfilesStatementStrategy::cmd_maxfiles(
     // cp l
     cpu.addCpL();
     // jp z, $                ; skip if equal
-    mark = fixup.addMark();
+    skipMaxfilesMark = fixup.addMark();
     cpu.addJpZ(0x0000);
 
     // ld a, l
@@ -94,7 +94,7 @@ void CompilerMaxfilesStatementStrategy::cmd_maxfiles(
     // ld (SAVSTK), sp
     cpu.addLdiiSP(def_SAVSTK);
 
-    mark->aimHere();
+    skipMaxfilesMark->aimHere();
 
   } else {
     context->syntaxError("Empty MAXFILES assignment");

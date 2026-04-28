@@ -17,11 +17,10 @@ void CompilerNextStatementStrategy::cmd_next(
     context->forNextStack.pop();
 
     // jp step
-    fixup.addFix(forNext->for_step_mark);
+    fixup.addFix(forNext->forStepMark);
     cpu.addJp(0x0000);
 
-    if (forNext->for_end_mark)
-      forNext->for_end_mark->symbol->address = cpu.context->code_pointer;
+    if (forNext->forEndMark) forNext->forEndMark->aimHere();
 
   } else {
     context->syntaxError("NEXT without a FOR");
