@@ -240,6 +240,9 @@ PTRFLG:       equ 0xF6A9     ; line number converted to pointer (0=false)
 DORES:        equ 0xF664     ; 1 - DATA flag to ASCII format
 PRMFLG:       equ 0xF7B4
 CONSAV:       equ 0xF668     ; numeric token used by CHRGTR
+
+DFTDRV:       equ 0xF247     ; 1 - default drive
+DIRDRV:       equ 0xF246     ; 1 - current directory drive
 SUBFLG:       equ 0xF6A5     ; 1 (0=simple variable, not 0 = array)
 MAXFIL:       equ 0xF85F     ; 1 - maxfiles
 FILTAB:       equ 0xF860     ; 2 - address of the pointer table for the I/O buffer FCBs

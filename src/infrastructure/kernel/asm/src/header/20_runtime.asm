@@ -108,7 +108,6 @@ clear_basic_environment.non_disk_mode:
   ld (DSKDIS), a             ; disable disks
 
 clear_basic_environment.disk_mode_done:
-
   call KILBUF
   call INITXT                ; screen 0
   call SUB_CLRSPR            ; clear sprites

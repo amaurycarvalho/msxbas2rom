@@ -20,10 +20,10 @@ XBASIC_INIT:
   sbc hl, de
   ld (HEAPSIZ), hl        ; heap size
 
-  ; --> set BDOS I/O buffer FCBs 
-  ld a, (MAXFIL)
-  and a
-  call nz, cmd_maxfiles   ; alloc i/o buffers and calculate heap size
+  ; --> initialize disk mode, if supported
+  ld a, (STARTUP_CFG_FILEIO)
+  or a
+  call nz, XBASIC_INIT.disk_mode
 
   ; --> variables area
   ld hl, BASMEM           ; address of the variables area
@@ -87,6 +87,56 @@ XBASIC_INIT.loop:
   inc de                   ; de = hl + 1
   ldir                     ; clear all the rest
   ret
+
+XBASIC_INIT.disk_mode
+  ; test Disk Basic support
+  ld a, (HPHYD)
+	cp 0xC9
+	jr z, XBASIC_INIT.non_disk_mode	  ; Jump if no disk installed 
+
+  ; --> set BDOS I/O buffer FCBs and DTA address
+  xor a
+  ld (DSKDIS), a                    ; enable disks
+  ld a, 1                           ; default MAXFILES for disk mode
+  call cmd_maxfiles                 ; set DTA address, alloc i/o buffers and calculate heap size
+
+  ; --> read default drive to populate disk buffers
+  ld a, (DFTDRV)
+  or a
+  push af
+    add a, a
+    ld e, a
+    ld d, 0
+    ld hl, DPBLIST
+    add hl, de
+    ld a, (hl)
+    inc hl
+    ld h, (hl)
+    ld l, a			                    ; pointer to DPB
+  pop af
+  inc hl
+  ld c, (hl)
+  ld b, 1
+  ld hl, (DIRBUF)                   ; temporary use dirsector buffer
+  push hl
+    ld de, 0
+    call HPHYD
+    ld a, 0xFF
+    ld (DIRDRV), a		              ; invalid dirsector buffer
+  pop	hl
+  ret	c
+
+  ; --> copy from DIRBUF to DTAADDR
+  ld de, (DTAADDR)
+  ld bc, 0x0100
+  ldir
+  ret
+
+XBASIC_INIT.non_disk_mode
+  xor a
+  ld (DSKDIS), a             ; disable disks
+  ld (MAXFIL), a             ; no MAXFILES for disk mode
+  ret 
 
 XBASIC_END:
   ld a, (SCRMOD)

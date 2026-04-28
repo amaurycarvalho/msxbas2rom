@@ -114,7 +114,8 @@ void CompilerCodeHelper::addCallBDOSWE() {
   cpu.addRet();
 
   abortMark->symbol->address = cpu.context->code_pointer;
-  cpu.addLdA(0xFF);
+  cpu.addXorA();
+  cpu.addIncA();
 
   doneMark->symbol->address = cpu.context->code_pointer;
 

@@ -69,14 +69,6 @@ int DskfCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   driveNotFoundErrorMark = fixup.addMark();
   cpu.addJpZ(0x0000);
 
-  // ---> set disk transfer area address
-  // ld c, 0x1A    ; BDOS SetDta
-  cpu.addLdC(0x1A);
-  cpu.addPushDE();
-  cpu.addLdDE(def_HEAPSTR);
-  codeHelper.addCallBDOS();
-  cpu.addPopDE();
-
   // ---> get disk information
   // ld c, 0x1B    ; BDOS GetAllocationInfo
   cpu.addLdC(0x1B);
@@ -94,8 +86,10 @@ int DskfCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   driveNotFoundErrorMark->symbol->address = cpu.context->code_pointer;
   diskReadingErrorMark->symbol->address = cpu.context->code_pointer;
   invalidParameterErrorMark->symbol->address = cpu.context->code_pointer;
-  // ld hl, -1
-  cpu.addLdHL(0xFFFF);
+  // ld l, a
+  cpu.addLdLA();
+  // ld h, 0xFF
+  cpu.addLdH(0xFF);
 
   doneMark->symbol->address = cpu.context->code_pointer;
 

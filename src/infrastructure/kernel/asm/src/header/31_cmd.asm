@@ -12,7 +12,7 @@ cmd_preflight_disk:
 
   ld l, a
   ld h, 0
-  add hl, hl              ; offset = drive * 2
+  add hl, hl                          ; offset = drive * 2
   ld de, DRVTBL
   add hl, de
 
@@ -21,7 +21,7 @@ cmd_preflight_disk:
   or (hl)
   jr z, cmd_preflight_disk.unavailable
 
-  xor a                   ; available
+  xor a                               ; available
   pop de
   pop hl
   ret
@@ -40,22 +40,26 @@ cmd_maxfiles:
   ret nc 
   ld (MAXFIL), a
   push af
-cmd_maxfiles.calculate_filtab:
-    ld hl, HEAPEND          ; end of the heap area (HIMEM)
+cmd_maxfile.set_dta: 
+    ld hl, HEAPEND                    ; end of the heap area (HIMEM)
+    ld de, -512                       ; DTA size (0x200)
+    add hl, de 
+    ld (DTAADDR), hl                  ; set DTA address
+cmd_maxfiles.set_filtab:
     ld de, -(256+9+2)
-cmd_maxfiles.calculate_filtab.loop:
+cmd_maxfiles.set_filtab.loop:
       add hl, de 
       dec a 
-    jp p, cmd_maxfiles.calculate_filtab.loop
-    ld (FILTAB), hl         ; start of i/o channel pointers
-cmd_maxfiles.calculate_new_heap_size:
+    jp p, cmd_maxfiles.set_filtab.loop
+    ld (FILTAB), hl                   ; start of i/o channel pointers
+cmd_maxfiles.set_heap_size:
     push hl 
-      ld de, (HEAPSTR)        ; heap start address
+      ld de, (HEAPSTR)                ; heap start address
       sbc hl, de
-      ld (HEAPSIZ), hl        ; heap size
+      ld (HEAPSIZ), hl                ; new heap size
     pop de 
 cmd_maxfiles.populate_filtab:
-  pop af 
+  pop af
   ld l, a
   inc l                   ; number of i/o channels
   ld h, 0
