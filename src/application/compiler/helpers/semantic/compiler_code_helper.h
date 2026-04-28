@@ -16,7 +16,6 @@ using namespace std;
 class CompilerCodeHelper {
  private:
   shared_ptr<CompilerContext> context;
-  bool basicOnPage1;
 
  public:
   bool addCheckTraps();

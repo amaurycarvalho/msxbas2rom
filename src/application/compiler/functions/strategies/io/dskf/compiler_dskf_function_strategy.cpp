@@ -54,9 +54,6 @@ int DskfCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   diskReadingErrorMark = fixup.addMark();
   cpu.addJpNZ(0x0000);
 
-  // ---> enable ROM BASIC on page 1
-  codeHelper.addEnableBasicSlot();
-
   // ---> check drivers
   // ld c, 0x18    ; BDOS GetLoginVector (return drivers flag in L)
   cpu.addLdC(0x18);
@@ -74,27 +71,23 @@ int DskfCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   cpu.addLdC(0x1B);
   // ld e, drive_number       ; drive number
   codeHelper.addCallBDOSWE();
-
   // A = sectors per cluster (0xFF if error), HL = free clusters
-  // cp 0xFF
-  cpu.addCp(0xFF);
-  // jp nz, done
+  // cp 0x80
+  cpu.addCp(0x80);
+  // jp c, done
   doneMark = fixup.addMark();
-  cpu.addJpNZ(0x0000);
+  cpu.addJpC(0x0000);
 
   // ---> disk error fallback
-  driveNotFoundErrorMark->symbol->address = cpu.context->code_pointer;
-  diskReadingErrorMark->symbol->address = cpu.context->code_pointer;
-  invalidParameterErrorMark->symbol->address = cpu.context->code_pointer;
+  driveNotFoundErrorMark->aimHere();
+  diskReadingErrorMark->aimHere();
+  invalidParameterErrorMark->aimHere();
   // ld l, a
   cpu.addLdLA();
   // ld h, 0xFF
   cpu.addLdH(0xFF);
 
-  doneMark->symbol->address = cpu.context->code_pointer;
-
-  // ---> disable ROM BASIC on page 1
-  codeHelper.addDisableBasicSlot();
+  doneMark->aimHere();
 
   return Lexeme::subtype_numeric;
 }

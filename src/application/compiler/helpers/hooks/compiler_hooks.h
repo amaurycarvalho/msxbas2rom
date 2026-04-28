@@ -346,8 +346,8 @@
 #define def_RG9SAV 0xFFE8
 
 #define def_WriteParamBCD 0x6C0B
-#define def_SPADDRBAK 0xF304  // SP register address copy
-#define def_DSKERRBAK 0xF302  // disk error handler address copy
+#define def_SPADDR 0xF304   // SP register address copy
+#define def_HDSKERR 0xF302  // disk error handler address copy
 
 /***************************************************************
  * @name xbasic

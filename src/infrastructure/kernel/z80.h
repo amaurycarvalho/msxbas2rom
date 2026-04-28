@@ -244,6 +244,13 @@ class Z80OpcodeWriter : public ICpuOpcodeWriter {
   void addOrE();
 
   /***
+   * @brief This command literally subtracts A from 0 (A = 0 - A).
+   * @note [NEG](http://z80-heaven.wikidot.com/instructions-set:neg)
+   * @result opcode size: 2 bytes; clock cycles: 8 t-states
+   */
+  void addNeg();
+
+  /***
    * @brief CP L compares register A with L by internally subtracting L from A.
    * @note [CP](http://z80-heaven.wikidot.com/instructions-set:cp)
    * @result opcode size: 1 byte; clock cycles: 4 t-states

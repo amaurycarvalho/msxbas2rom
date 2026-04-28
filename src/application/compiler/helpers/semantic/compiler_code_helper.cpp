@@ -28,6 +28,7 @@ void CompilerCodeHelper::addEnableBasicSlot() {
   auto& cpu = *context->cpu;
   auto& opts = *context->opts;
   auto& fix = *context->fixupResolver;
+  cpu.addExAF();
   cpu.addExx();
   if (opts.megaROM) {
     // ld a, (EXPTBL)
@@ -48,24 +49,14 @@ void CompilerCodeHelper::addEnableBasicSlot() {
     cpu.addCall(0x0000);
   }
   cpu.addExx();
-  basicOnPage1 = true;
+  cpu.addExAF();
 }
 
 void CompilerCodeHelper::addCallBDOS() {
   auto& cpu = *context->cpu;
-  bool basicOnPage1ManualSet = false;
-
-  if (!basicOnPage1) {
-    addEnableBasicSlot();
-    basicOnPage1ManualSet = true;
-  }
 
   // call BDOS
   cpu.addCall(def_DSKBAS);
-
-  if (basicOnPage1ManualSet) {
-    addDisableBasicSlot();
-  }
 }
 
 void CompilerCodeHelper::addCallBDOSWE() {
@@ -74,33 +65,27 @@ void CompilerCodeHelper::addCallBDOSWE() {
   shared_ptr<FixNode> errorMark;
   shared_ptr<FixNode> abortMark;
   shared_ptr<FixNode> doneMark;
-  bool basicOnPage1ManualSet = false;
 
-  if (!basicOnPage1) {
-    addEnableBasicSlot();
-    basicOnPage1ManualSet = true;
-  }
-
+  // set BDOS error/abort handler addresses
   cpu.addPushHL();
-
-  // save BDOS error handler addresses
-  cpu.addLdHLii(0xF323);
-  cpu.addLdiiHL(def_DSKERRBAK);
-
-  // set BDOS error handler address
+  cpu.addLdHLii(0xF323);  // save error handler address
+  cpu.addLdiiHL(def_ARG);
+  cpu.addLdHLii(0xF1E6);  // save abort handler address
+  cpu.addLdiiHL(def_ARG + 2);
   errorMark = fixup.addMark();
   cpu.addLdHL(0x0000);
-  cpu.addLdiiHL(def_SPADDRBAK);
-  cpu.addLdHL(def_SPADDRBAK);
-  cpu.addLdiiHL(0xF323);
-
-  // set BDOS abort handler address
+  cpu.addLdiiHL(def_ARG + 4);
+  cpu.addLdHL(def_ARG + 4);
+  cpu.addLdiiHL(0xF323);  // set error handler address to errorMark
   abortMark = fixup.addMark();
   cpu.addLdHL(0x0000);
-  cpu.addLdiiHL(0xF1E6);
+  cpu.addLdiiHL(0xF1E6);  // set abort handler address to abortMark
+  cpu.addPopHL();
+
+  // save stack pointer
+  cpu.addLdiiSP(def_DAC);
 
   // call BDOS
-  cpu.addPopHL();
   cpu.addCall(def_DSKBAS);
 
   // jump to done if successful
@@ -108,34 +93,34 @@ void CompilerCodeHelper::addCallBDOSWE() {
   cpu.addJp(0x0000);
 
   // error handler
-  errorMark->symbol->address = cpu.context->code_pointer;
-  cpu.addLdAC();  // copy error code to A
-  cpu.addLdC(2);  // response = abort
+  errorMark->aimHere();
+  cpu.addLdAC();  // get error code
+  cpu.addLdC(2);  // reply = abort
   cpu.addRet();
 
-  abortMark->symbol->address = cpu.context->code_pointer;
-  cpu.addXorA();
-  cpu.addIncA();
+  // abort handler
+  abortMark->aimHere();
+  cpu.addAnd(0x7F);        // clear bit 7
+  cpu.addNeg();            // turn error code value to negative (A = -A)
+  cpu.addLdSPii(def_DAC);  // restore stack pointer
+  addDisableBasicSlot();   // restore page 1 to kernel slot
 
-  doneMark->symbol->address = cpu.context->code_pointer;
+  doneMark->aimHere();
 
-  // restore BDOS error and abort handler addresses
+  // restore default BDOS error/abort handler addresses
   cpu.addPushHL();
-  cpu.addLdHLii(def_DSKERRBAK);
-  cpu.addLdiiHL(0xF323);
-  cpu.addLdHL(0x0000);
-  cpu.addLdiiHL(0xF1E6);
+  cpu.addLdHLii(def_ARG);
+  cpu.addLdiiHL(0xF323);  // error handler address
+  cpu.addLdHLii(def_ARG + 2);
+  cpu.addLdiiHL(0xF1E6);  // abort handler address
   cpu.addPopHL();
-
-  if (basicOnPage1ManualSet) {
-    addDisableBasicSlot();
-  }
 }
 
 void CompilerCodeHelper::addDisableBasicSlot() {
   auto& cpu = *context->cpu;
   auto& opts = *context->opts;
   auto& fix = *context->fixupResolver;
+  cpu.addExAF();
   cpu.addExx();
   if (opts.megaROM) {
     // ld a, (SLTSTR)
@@ -155,7 +140,7 @@ void CompilerCodeHelper::addDisableBasicSlot() {
     cpu.addCall(0x0000);
   }
   cpu.addExx();
-  basicOnPage1 = false;
+  cpu.addExAF();
 }
 
 void CompilerCodeHelper::beginBasicSetStmt(string name) {
@@ -216,8 +201,6 @@ void CompilerCodeHelper::addBasicChar(char c) {
 }
 
 CompilerCodeHelper::CompilerCodeHelper(shared_ptr<CompilerContext> context)
-    : context(context) {
-  basicOnPage1 = false;
-}
+    : context(context) {}
 
 CompilerCodeHelper::~CompilerCodeHelper() = default;

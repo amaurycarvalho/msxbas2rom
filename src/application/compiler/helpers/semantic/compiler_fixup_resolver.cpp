@@ -17,7 +17,7 @@
 shared_ptr<FixNode> CompilerFixupResolver::addFix(
     shared_ptr<SymbolNode> symbol) {
   auto& cpu = *context->cpu;
-  shared_ptr<FixNode> fix = make_shared<FixNode>();
+  shared_ptr<FixNode> fix = make_shared<FixNode>(context->cpu);
   bool is_id = false;
 
   if (symbol->lexeme) {
@@ -42,6 +42,7 @@ shared_ptr<FixNode> CompilerFixupResolver::addFix(
   fix->symbol = symbol;
   fix->address = cpu.context->code_pointer + 1;
   fix->step = 0;
+
   context->fixes.push_back(fix);
 
   return fix;

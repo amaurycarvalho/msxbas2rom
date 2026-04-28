@@ -134,34 +134,35 @@ XBASIC_INIT.disk_mode
 
 XBASIC_INIT.non_disk_mode
   xor a
-  ld (DSKDIS), a             ; disable disks
-  ld (MAXFIL), a             ; no MAXFILES for disk mode
+  ld (DSKDIS), a              ; disable disks
+  ld (MAXFIL), a              ; no MAXFILES for disk mode
   ret 
 
 XBASIC_END:
   ld a, (SCRMOD)
   cp 2
-  jr c, XBASIC_END.1       ; skip if already in text mode
+  jr c, XBASIC_END.1          ; skip if already in text mode
     ld a, 15
     ld (FORCLR), a
     ld a, 4
     ld (BAKCLR), a
     ld (BDRCLR), a
-    call INITXT            ; screen 0
+    call INITXT               ; screen 0
 XBASIC_END.1:
-  call INIFNK              ; enable function keys
-  call DSPFNK              ; display function keys
+  call INIFNK                 ; enable function keys
+  call DSPFNK                 ; display function keys
   xor a
   ld (SUBFLG), a
   ld (FLGINP), a
   ld (DORES), a
   ld (CONSAV), a
-  ;ld (MAXFIL), a           ; MAXFIL - reset max files
-  ;ld (NLONLY), a           ; NLONLY - reset io buffers
-  ld hl, 0xC033
-  ld (VARTAB), hl
-  ld (ARYTAB), hl
-  ld (STREND), hl
+  ld (MAXFIL), a              ; MAXFIL - reset max files
+  ld (DSKDIS), a              ; disable disks
+  ;ld (NLONLY), a              ; NLONLY - reset io buffers
+  ld hl, (HEAPSTR)            ; heap start address
+  ld (VARTAB), hl		          ; start variable area
+  ld (ARYTAB), hl             ; start arrayvariable area = start variable area (no variables)
+  ld (STREND), hl             ; start free area = start variable area (no arrayvariables)
   ld hl, 0x8047
   ld (DATPTR), hl
   ld hl, TEMPST

@@ -14,6 +14,7 @@ class SymbolNode;
 class FixNode;
 class Lexeme;
 class TagNode;
+class ICpuOpcodeWriter;
 
 using namespace std;
 

@@ -179,6 +179,11 @@ void Z80OpcodeWriter::addOrE() {
   addByte(0xB3);
 }
 
+void Z80OpcodeWriter::addNeg() {
+  addByte(0xED);
+  addByte(0x44);
+}
+
 void Z80OpcodeWriter::addCpL() {
   addByte(0xBD);
 }

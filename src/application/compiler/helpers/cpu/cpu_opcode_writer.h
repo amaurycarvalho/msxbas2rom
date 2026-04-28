@@ -83,6 +83,7 @@ class ICpuOpcodeWriter {
   virtual void addSRLH() = 0;
   virtual void addRRL() = 0;
   virtual void addRRA() = 0;
+  virtual void addNeg() = 0;
   virtual void addCPL() = 0;
   virtual void addLDI() = 0;
   virtual void addLDIR() = 0;

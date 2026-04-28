@@ -45,6 +45,8 @@ cmd_maxfile.set_dta:
     ld de, -512                       ; DTA size (0x200)
     add hl, de 
     ld (DTAADDR), hl                  ; set DTA address
+    dec hl 
+    ld (HIMEM), hl                    ; highest memory adddress according to CLEAR stmt
 cmd_maxfiles.set_filtab:
     ld de, -(256+9+2)
 cmd_maxfiles.set_filtab.loop:
@@ -53,6 +55,8 @@ cmd_maxfiles.set_filtab.loop:
     jp p, cmd_maxfiles.set_filtab.loop
     ld (FILTAB), hl                   ; start of i/o channel pointers
 cmd_maxfiles.set_heap_size:
+    dec hl 
+    ld (MEMSIZ), hl                   ; highest memory address according to BASIC
     push hl 
       ld de, (HEAPSTR)                ; heap start address
       sbc hl, de
