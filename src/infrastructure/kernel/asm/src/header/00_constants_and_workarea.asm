@@ -155,7 +155,6 @@ VARWRK:       equ 0xF380   ; BASIC variables workspace start
 TRCFLG:       equ 0xF7C4   ; BASIC line number trace on/off (0=off)
 CLKFLG:       equ 0xF338   ; ask for clock flag (0=yes, 1=no)
 WRMBOOT:      equ 0xF340   ; warm boot? (1=yes)
-DSKDIS:       equ 0xFD99   ; disable disks (DEVICE, 0xFF=yes)
 
 ROMSLT:       equ 0xFFF7   ; Main-ROM slot
 EXPTBL:       equ 0xFCC1   ; Expanded Slot Table
@@ -234,13 +233,15 @@ BASROM:       equ 0xFBB1     ; user basic code on rom? (0=RAM, not 0 = ROM)
 NLONLY:       equ 0xF87C     ; loading basic program flags (bit 0=not close i/o buffer 0, bit 7=not close user i/o buffer)
 LPTPOS:       equ 0xF415     ; printer head horizontal position
 ONELIN:       equ 0xF6B9     ; error line number
-ONEFLG:       equ 0xF6BB     ; error flag
+ONEFLG:       equ 0xF6BB     ; 1 - error flag (0=not in ERROR handler routine)
+CURLIN:       equ 0xF41C     ; 2 - current line (BASIC interpreter, FFFF=direct mode)
 PRTFLG:       equ 0xF416     ; output to screen (0=true)
 PTRFLG:       equ 0xF6A9     ; line number converted to pointer (0=false)
 DORES:        equ 0xF664     ; 1 - DATA flag to ASCII format
 PRMFLG:       equ 0xF7B4
 CONSAV:       equ 0xF668     ; numeric token used by CHRGTR
 
+DSKDIS:       equ 0xFD99     ; disable disks (DEVICE, 0xFF=yes)
 DFTDRV:       equ 0xF247     ; 1 - default drive
 DIRDRV:       equ 0xF246     ; 1 - current directory drive
 SUBFLG:       equ 0xF6A5     ; 1 (0=simple variable, not 0 = array)
@@ -251,11 +252,12 @@ PTRFIL:       equ 0xF864     ; 2 - address of the currently active I/O buffer FC
 FILNAM:       equ 0xF866     ; 11 - buffer to hold an user-specified filename
 FILNM2:       equ 0xF871     ; 11 - buffer to hold a filename read from an I/O device for comparison with the contents of FILNAM
 DRVTBL:       equ 0xFB21     ; drive table (2 bytes per drive)
+BDOSBOTTOM:   equ 0xF34B     ; msxdos system bottom
 SECBUF:       equ 0xF34D     ; 2 - current drive FAT copy address 
 BUFFER:       equ 0xF34F     ; 2 - DTA buffer address (512 bytes)
 DIRBUF:       equ 0xF351     ; 2 - disk sector transfer area address (512 bytes, used by DSKI$ and DSKO$)
-SPADDRBAK:    equ 0xF304     ; SP register address copy
-DSKERRBAK:    equ 0xF302     ; disk error handler address copy 
+SPTEMP:       equ 0xF304     ; SP register address copy
+DSKERR:       equ 0xF302     ; disk error handler address copy 
 FCBBASE:      equ 0xF353     ; File Control Block base
 DPBLIST:      equ 0xF355     ; Drive Parameter Block list
 DTAADDR:      equ 0xF23D     ; Disk Transfer Area address
@@ -285,9 +287,10 @@ KBFMIN: equ 0xF41E
 CGTABL: equ 0x0004
 PRMSTK: equ 0xF6E4
 PRMPRV: equ 0xF74C
-STKTOP: equ 0xF674
-SAVSTK: equ 0xF6B1
-MEMSIZ: equ 0xF672
+STKTOP: equ 0xF674  ; 2 - stack top address used by BASIC interpreter
+SAVSTK: equ 0xF6B1  ; 2 - current stack position address (used by error handling and RESUME statement) 
+MEMSIZ: equ 0xF672  ; 2 - top memory address which can be used by BASIC interpreter
+FRETOP: equ 0xF69B  ; 2 - next free position address to BASIC's string area 
 ENDPRG: equ 0xF40F
 
 VERSION:      equ 0x002D       ; BIOS VERSION - 0 = MSX1, 1 = MSX2, 2 = MSX2+, 3 = MSXturboR

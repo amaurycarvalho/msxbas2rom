@@ -156,13 +156,22 @@ XBASIC_END.1:
   ld (FLGINP), a
   ld (DORES), a
   ld (CONSAV), a
-  ld (MAXFIL), a              ; MAXFIL - reset max files
-  ld (DSKDIS), a              ; disable disks
-  ;ld (NLONLY), a              ; NLONLY - reset io buffers
+  ;ld (MAXFIL), a              ; MAXFIL - reset max files
+  ;ld (NLONLY), a              ; NLONLY - reset io buffers (warning: commented because it halts the system)
+  ld (ONEFLG), a              ; error flag (0=not in ERROR handler routine)
+  cpl
+  ld (CURLIN), a              ; CURLIN = 0xFFFF
+  ld (CURLIN+1), a
+  ;ld (DSKDIS), a              ; disable disks
   ld hl, (HEAPSTR)            ; heap start address
   ld (VARTAB), hl		          ; start variable area
   ld (ARYTAB), hl             ; start arrayvariable area = start variable area (no variables)
   ld (STREND), hl             ; start free area = start variable area (no arrayvariables)
+  ld de, (HEAPSIZ)
+  ld bc, -256
+  add hl, de
+  add hl, bc 
+  ld (FRETOP), hl             ; start of string area
   ld hl, 0x8047
   ld (DATPTR), hl
   ld hl, TEMPST

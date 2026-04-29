@@ -40,8 +40,15 @@ cmd_maxfiles:
   ret nc 
   ld (MAXFIL), a
   push af
-cmd_maxfile.set_dta: 
-    ld hl, HEAPEND                    ; end of the heap area (HIMEM)
+cmd_maxfile.set_heap_end:
+    ;ld hl, HEAPEND                    ; end of the heap area (HIMEM)
+    ld hl, (BDOSBOTTOM)               ; BDOS bottom = end of the heap area
+    xor a         
+    or h
+    jr nz, cmd_maxfile.set_dta
+      ld hl, (FCBBASE)
+      ld (BDOSBOTTOM), hl
+cmd_maxfile.set_dta:
     ld de, -512                       ; DTA size (0x200)
     add hl, de 
     ld (DTAADDR), hl                  ; set DTA address
@@ -55,11 +62,11 @@ cmd_maxfiles.set_filtab.loop:
     jp p, cmd_maxfiles.set_filtab.loop
     ld (FILTAB), hl                   ; start of i/o channel pointers
 cmd_maxfiles.set_heap_size:
-    dec hl 
-    ld (MEMSIZ), hl                   ; highest memory address according to BASIC
     push hl 
+      dec hl 
+      ld (MEMSIZ), hl                 ; highest memory address according to BASIC
       ld de, (HEAPSTR)                ; heap start address
-      sbc hl, de
+      sbc hl, de                      ; heap size = memsiz - heap start
       ld (HEAPSIZ), hl                ; new heap size
     pop de 
 cmd_maxfiles.populate_filtab:
