@@ -31,6 +31,16 @@ void CompilerOpenStatementStrategy::cmd_open(
   context->file_support = true;
 
   if (t) {
+    // ld a, 0                ; drive A:
+    cpu.addLdA(0x00);
+    // call preflight disk
+    cpu.addCall(def_cmd_preflight_disk);
+    // and a
+    cpu.addAndA();
+    // jp nz, skip OPEN
+    auto skipOpenMark = fixup.addMark();
+    cpu.addJpNZ(0x0000);
+
     for (i = 0; i < t; i++) {
       action = context->current_action->actions[i];
       lexeme = action->lexeme;
@@ -171,16 +181,6 @@ void CompilerOpenStatementStrategy::cmd_open(
     // ld e, a                ; file mode
     cpu.addLdEA();
 
-    // ld a, 0                ; drive A:
-    cpu.addLdA(0x00);
-    // call preflight disk
-    cpu.addCall(def_cmd_preflight_disk);
-    // and a
-    cpu.addAndA();
-    // jp nz, skip OPEN
-    auto skipOpenMark = fixup.addMark();
-    cpu.addJpNZ(0x0000);
-
     // ld a, (TEMP)           ; io number
     cpu.addLdAii(def_TEMP);
 
@@ -189,9 +189,10 @@ void CompilerOpenStatementStrategy::cmd_open(
 
     // call OPEN     ; in: a = i/o number, e = filemode, d = devicecode
     cpu.addCall(def_OPEN);
-    skipOpenMark->aimHere();
 
     codeHelper.addDisableBasicSlot();
+
+    skipOpenMark->aimHere();
 
   } else {
     context->syntaxError("Empty OPEN statement");

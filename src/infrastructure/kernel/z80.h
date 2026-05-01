@@ -1114,6 +1114,46 @@ class Z80OpcodeWriter : public ICpuOpcodeWriter {
   void addCall(unsigned int word);
 
   /***
+   * @brief CALL z, nn calls a subroutine located at the specified 16-bit
+   * address. The current program counter is pushed to the stack before the
+   * jump.
+   * @param word The 16-bit subroutine address to call.
+   * @note [CALL](http://z80-heaven.wikidot.com/instructions-set:call)
+   * @result opcode size: 3 bytes; clock cycles: 17 t-states
+   */
+  void addCallZ(unsigned int word);
+
+  /***
+   * @brief CALL nz, nn calls a subroutine located at the specified 16-bit
+   * address. The current program counter is pushed to the stack before the
+   * jump.
+   * @param word The 16-bit subroutine address to call.
+   * @note [CALL](http://z80-heaven.wikidot.com/instructions-set:call)
+   * @result opcode size: 3 bytes; clock cycles: 17 t-states
+   */
+  void addCallNZ(unsigned int word);
+
+  /***
+   * @brief CALL c, nn calls a subroutine located at the specified 16-bit
+   * address. The current program counter is pushed to the stack before the
+   * jump.
+   * @param word The 16-bit subroutine address to call.
+   * @note [CALL](http://z80-heaven.wikidot.com/instructions-set:call)
+   * @result opcode size: 3 bytes; clock cycles: 17 t-states
+   */
+  void addCallC(unsigned int word);
+
+  /***
+   * @brief CALL nc, nn calls a subroutine located at the specified 16-bit
+   * address. The current program counter is pushed to the stack before the
+   * jump.
+   * @param word The 16-bit subroutine address to call.
+   * @note [CALL](http://z80-heaven.wikidot.com/instructions-set:call)
+   * @result opcode size: 3 bytes; clock cycles: 17 t-states
+   */
+  void addCallNC(unsigned int word);
+
+  /***
    * @remark End of IntructionsOpcodeGroup
    * @}
    */

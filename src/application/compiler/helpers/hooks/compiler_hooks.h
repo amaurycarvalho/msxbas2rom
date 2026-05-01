@@ -233,7 +233,7 @@
 #define def_XBASIC_USING_DO (def_XBASIC_USING + 3)
 #define def_XBASIC_USR (def_XBASIC_USING_DO + 3)
 #define def_cmd_preflight_disk (def_XBASIC_USR + 3)
-#define def_cmd_maxfile (def_cmd_preflight_disk + 3)
+#define def_cmd_maxfiles (def_cmd_preflight_disk + 3)
 
 //! @remark end of header.symbols adjust
 //! @}

@@ -59,6 +59,22 @@ void Z80OpcodeWriter::addCall(unsigned int address) {
   addCmd(0xCD, address);
 }
 
+void Z80OpcodeWriter::addCallZ(unsigned int address) {
+  addCmd(0xCC, address);
+}
+
+void Z80OpcodeWriter::addCallNZ(unsigned int address) {
+  addCmd(0xC4, address);
+}
+
+void Z80OpcodeWriter::addCallC(unsigned int address) {
+  addCmd(0xDC, address);
+}
+
+void Z80OpcodeWriter::addCallNC(unsigned int address) {
+  addCmd(0xD4, address);
+}
+
 void Z80OpcodeWriter::addNop() {
   addByte(0x00);
 }

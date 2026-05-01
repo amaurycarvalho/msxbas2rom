@@ -169,6 +169,10 @@ class ICpuOpcodeWriter {
   virtual void addJpZ(int n) = 0;
   virtual void addJpNZ(int n) = 0;
   virtual void addCall(unsigned int word) = 0;
+  virtual void addCallZ(unsigned int word) = 0;
+  virtual void addCallNZ(unsigned int word) = 0;
+  virtual void addCallC(unsigned int word) = 0;
+  virtual void addCallNC(unsigned int word) = 0;
 };
 
 #endif  // CPU_OPCODE_WRITER_H

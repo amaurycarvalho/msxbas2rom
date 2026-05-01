@@ -310,8 +310,15 @@ bool Compiler::build(shared_ptr<Parser> parser) {
 
     context->fixupResolver->doFix();
 
+    //! @todo refactoring to eliminate this magic constants
+    int freeRamSize = def_RAM_SIZE;
+    if (context->file_support)
+      freeRamSize = 5690;
+    else
+      freeRamSize = 10534;
+
     context->cpu->context->ram_memory_perc =
-        (context->cpu->context->ram_size * 100.0) / def_RAM_SIZE;
+        (context->cpu->context->ram_size * 100.0) / freeRamSize;
   }
 
   return context->compiled;
