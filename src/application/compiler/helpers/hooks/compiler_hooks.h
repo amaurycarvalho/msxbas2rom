@@ -233,7 +233,13 @@
 #define def_XBASIC_USING_DO (def_XBASIC_USING + 3)
 #define def_XBASIC_USR (def_XBASIC_USING_DO + 3)
 #define def_cmd_preflight_disk (def_XBASIC_USR + 3)
-#define def_cmd_maxfiles (def_cmd_preflight_disk + 3)
+#define def_cmd_fmaxfiles (def_cmd_preflight_disk + 3)
+#define def_cmd_fdskf (def_cmd_fmaxfiles + 3)
+#define def_cmd_feof (def_cmd_fdskf + 3)
+#define def_cmd_fopen (def_cmd_feof + 3)
+#define def_cmd_fclose (def_cmd_fopen + 3)
+#define def_cmd_finput (def_cmd_fclose + 3)
+#define def_cmd_fprint (def_cmd_finput + 3)
 
 //! @remark end of header.symbols adjust
 //! @}

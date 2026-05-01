@@ -130,6 +130,10 @@ VALTYP:       equ 0xF663   ; 1
 VALDAT:       equ 0xF7F8   ; 2
 DAC:          equ 0xF7F6   ; 16
 ARG:          equ 0xF847   ; 16
+HOLD:         equ 0xF83E   ; 8
+HOLD2:        equ 0xF836   ; 8
+HOLD8:        equ 0xF806   ; 48
+FBUFFR:       equ 0xF7C5   ; 43
 
 TEMP:         equ 0xF6A7   ; 2
 TEMP2:        equ 0xF6BC   ; 2

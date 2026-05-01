@@ -9,7 +9,7 @@
 #include "fix_node.h"
 #include "lexeme.h"
 
-void CompilerMaxfilesStatementStrategy::cmd_maxfiles(
+void CompilerMaxfilesStatementStrategy::cmd_fmaxfiles(
     shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
@@ -28,8 +28,8 @@ void CompilerMaxfilesStatementStrategy::cmd_maxfiles(
     cpu.addCpL();
     // ld a, l
     cpu.addLdAL();
-    // call nz, cmd_maxfiles
-    cpu.addCallNZ(def_cmd_maxfiles);
+    // call nz, cmd_fmaxfiles
+    cpu.addCallNZ(def_cmd_fmaxfiles);
 
   } else {
     context->syntaxError("Empty MAXFILES assignment");
@@ -38,6 +38,6 @@ void CompilerMaxfilesStatementStrategy::cmd_maxfiles(
 
 bool CompilerMaxfilesStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
-  cmd_maxfiles(context);
+  cmd_fmaxfiles(context);
   return context->compiled;
 }

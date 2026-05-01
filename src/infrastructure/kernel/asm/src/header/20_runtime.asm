@@ -283,4 +283,11 @@ wrapper_routines_map_start:
   jp XBASIC_USING.do
   jp XBASIC_USR
   jp cmd_preflight_disk
-  jp cmd_maxfiles
+  jp cmd_fmaxfiles
+  jp cmd_fdskf
+  jp cmd_feof
+  jp cmd_fopen
+  jp cmd_fclose
+  jp cmd_finput
+  jp cmd_fprint
+

@@ -310,12 +310,13 @@ bool Compiler::build(shared_ptr<Parser> parser) {
 
     context->fixupResolver->doFix();
 
-    //! @todo refactoring to eliminate this magic constants
+    //! @todo needs refactor the code below to eliminate its magic constants
     int freeRamSize = def_RAM_SIZE;
     if (context->file_support)
-      freeRamSize = 5690;
+      freeRamSize = 5690;  // with disk support
     else
-      freeRamSize = 10534;
+      freeRamSize = 10534;  // without disk support
+    freeRamSize += 0x538;   // kernel RAM internal usage
 
     context->cpu->context->ram_memory_perc =
         (context->cpu->context->ram_size * 100.0) / freeRamSize;

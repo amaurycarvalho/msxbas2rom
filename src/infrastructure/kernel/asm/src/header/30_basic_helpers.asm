@@ -98,7 +98,7 @@ XBASIC_INIT.disk_mode
   xor a
   ld (DSKDIS), a                    ; enable disks
   ld a, 1                           ; default MAXFILES for disk mode
-  call cmd_maxfiles                 ; set DTA address, alloc i/o buffers and calculate heap size
+  call cmd_fmaxfiles                 ; set DTA address, alloc i/o buffers and calculate heap size
 
   ; --> read default drive to populate disk buffers
   ld a, (DFTDRV)
@@ -127,9 +127,9 @@ XBASIC_INIT.disk_mode
   ret	c
 
   ; --> copy from DIRBUF to DTAADDR
-  ld de, (DTAADDR)
-  ld bc, 0x0100
-  ldir
+  ;ld de, (DTAADDR)
+  ;ld bc, 0x0100
+  ;ldir
   ret
 
 XBASIC_INIT.non_disk_mode

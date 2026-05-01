@@ -5,7 +5,7 @@
 
 class CompilerMaxfilesStatementStrategy : public ICompilerStatementStrategy {
  private:
-  void cmd_maxfiles(shared_ptr<CompilerContext> context);
+  void cmd_fmaxfiles(shared_ptr<CompilerContext> context);
 
  public:
   bool execute(shared_ptr<CompilerContext> context) override;
