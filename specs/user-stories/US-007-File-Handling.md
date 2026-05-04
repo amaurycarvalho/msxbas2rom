@@ -7,15 +7,14 @@ As an MSX-BASIC developer, I want to use OPEN, READ#, PRINT#, INPUT#, MAXFILES a
 ## Acceptance Criteria
 
 - The compiler supports the OPEN instruction with device, path, filename, direction, file number, and optional record length.
-- Sequential file access modes (INPUT, OUTPUT, APPEND) are correctly mapped to MSX BIOS routines.
+- Sequential file access modes (INPUT, OUTPUT, APPEND) are correctly mapped to BDOS routines.
 - READ# and INPUT# operations correctly retrieve data from an opened file.
 - CLOSE properly releases the file handle and flushes buffers when needed.
 - Multiple files (up to MAXFILES limit) can be opened and handled independently and when MAXFILES was set it adjust the correct memory allocation for disk operation.
 - EOF() conditions are correctly detected and handled.
 - DSKF() function returns if the MSX DISK is functional.
-- Always checks DSKF for default disk (A) before every file access statement to avoid disk calls errors.
-- MSXBAS2ROM programs that use file operations use RAM memory until F1C9h address for stack and variables.
-- Existing MSXBAS2ROM programs that do not use file operations remain unaffected and use RAM memory until F380H address for stack and variables.
+- Always checks if MSX DISK is functional before every file access statement to avoid disk calls errors.
+- MSXBAS2ROM programs that use file operations will have access to less free RAM memory (limited to FILTAB pointed address) than programs that do not use file operations (limited to HEAPEND address).
 
 ---
 
@@ -71,7 +70,108 @@ And the file handle becomes available for reuse
 
 ## Technical Specification
 
-### Parsing and Compilation
+### Code reference
+
+Z80 assembly code:
+
+- `/infrastructure/kernel/asm/src/`;
+  - `20_runtime.asm`;
+  - `30_basic_helpers.asm`;
+  - `34_file_handling.asm`.
+
+C++ code:
+
+- `/application/compiler/functions/strategies/io/`;
+- `/application/compiler/statements/strategies/io/`;
+
+### Disk vs Non-Disk Modes
+
+Concept:
+
+- **Non-Disk Mode (Default)** — Maximum RAM available, no file I/O support.
+- **Disk Mode (MSX-DOS / Disk BASIC)** — Enables file operations (`OPEN`, `INPUT#`, `PRINT#`, `CLOSE`).
+
+The default mode is **Non-Disk Mode** when the MSX-BASIC program dont needs file access.
+
+Implemented in `clear_basic_environment` Z80 assembly routine at `20_runtime.asm`.
+
+### Checking Disk BASIC support
+
+Implemented in `cmd_preflight_disk` (`34_file_handling.asm`):
+
+- Input:
+  - `A = drive number` (`0=A:`, `1=B:`, ...).
+- Output:
+  - `A = 0` when drive entry is valid (disk support available for that drive);
+  - `A != 0` when drive entry is null (disk unavailable).
+- Flow:
+  - computes `DRVTBL + (drive * 2)` and reads a 16-bit entry (slot pointer/descriptor for that drive).
+
+### MAXFILES statement
+
+Implemented in `cmd_fmaxfiles` (`34_file_handling.asm`):
+
+- Input:
+  - `A = number of user I/O channels`.
+- Flow:
+  - Guard: if `A >= 16`, routine returns immediately (no changes).
+  - On valid value:
+    - Stores `A` into `MAXFIL`.
+    - Uses `FCBBASE` as the top reference and relocates memory control variables for file support:
+      - updates `HIMEM`,
+      - computes/updates `FILTAB`,
+      - updates `MEMSIZ`,
+      - recalculates `HEAPSIZ = MEMSIZ - HEAPSTR`.
+    - Builds FILTAB pointer table and initializes channel buffers:
+      - each channel allocates metadata + 256-byte data area (`-(256+9+2)` and companion stride logic in routine),
+      - marks each channel as closed (`0` in channel status byte),
+      - updates `NULBUF` to point to channel 0 buffer payload (`start + 9`).
+
+### DSKF function
+
+Implemented in `cmd_fdskf` (`34_file_handling.asm`):
+
+- Input:
+  - `A = disk number` (`0=default`, `1=A:`, `2=B:`, ...).
+- Output:
+  - `HL = free clusters`; negative value means error.
+- Flow:
+  - Rejects invalid disk numbers `A >= 9`.
+  - Calls `cmd_preflight_disk`; if unavailable, returns error.
+  - Calls BDOS `GetLoginVector` (`C=0x18`, via `ROMBDOS`) and checks `L != 0`; if zero, returns error.
+  - Calls BDOS `GetAllocationInfo` (`C=0x1B`) through `cmd_bdos_we` (error-handled wrapper).
+  - On success (`A < 0x80`), returns with `HL` from BDOS (free clusters).
+  - On failure, fallback error return is `HL = 0xFFxx` (`H=0xFF`, `L=A`), i.e., negative signed result.
+
+BDOS (0xF37D) routines associated:
+
+```
+GetLoginVector (0x18):
+  input:
+    C = 18H
+  output:
+    HL = Login vector
+  note:
+    can be called directly using ROMBDOS
+
+GetAllocationInfo (0x1B):
+  input:
+    C = 0x1B
+    E = drive number
+  output:
+    A = Sectors per cluster (255 if error)
+    BC = sector size (bytes)
+    DE = total clusters on disk
+    HL = free clusters on disk
+    IX = DPB address
+    IY = FAT address
+  note:
+    must be called indirectly using cmd_bdos_we
+```
+
+If an error occurs, DSKF(n) should return a negative value as a result.
+
+### OPEN statement
 
 Parse the OPEN command with the following structure:
 
@@ -96,296 +196,169 @@ This parameter is not required for text screen, graphic screen and printer, but 
 <RecordLength> must be preceded by LEN to be used. It is an optional parameter to use only if you choose to open a file in random access on disk. It must be an integer. The default value is 256. In case FIELD definitions exceed record length "Field overflow" error is generated. Reading/writing is always done whole record at a time.
 ```
 
-Notes:
-
-- String for filename in MSX-DISK BIOS calls should be null-terminated.
-- LEN parameter is only required for RANDOM access (future extension).
-
-### MSX-DISK relevant assembly constants
+Implemented in `cmd_fopen` (`34_file_handling.asm`).
 
 ```
-FILEVL          EQU #6A0E
-OPNFIL          EQU #6AFA
-CLSFIL          EQU #6B24
-INDSKC          EQU #6C71 ;(Undocumented)
-OUTDO           EQU #18
-
-INPUT_FILE      EQU 1
-OUTPUT_FILE     EQU 2
-RANDOM_FILE     EQU 4
-APPEND_FILE     EQU 8
-RECORD_SIZE     EQU #F33D ; Only needed if RANDOM_FILE is used
-
-EOF             EQU #1A
+cmd_fopen:
+  input:
+    a = file number
+    hl = file name address (pascal string)
+    e = direction
+    bc = record len
+  output:
+    a = 0 if successfull, otherwise error
 ```
 
-### Memory mapping relevant addresses
+BDOS (0xF37D) routines associated:
 
 ```
-HIMEM (FC4AH): Address of the highest byte available to BASIC (below the system work area).
-MEMSIZ (F672H): address of the top of the usable RAM for the BASIC interpreter (set by CHKRAM boot routine).
-STKTOP (F674h): top location to be used for the stack.
-BOTTOM (FC48H): Address of the start of RAM available to BASIC.
-NLONLY (F87CH): loading basic program flags (bit 0=not close i/o buffer 0, bit 7=not close user i/o buffer)
+FILTAB (0xF860) - address of the pointer table for the I/O buffer FCBs
+FCBBASE (0xF353) - File Control Block base
 
-F380H - FD99H: System Work Area containing variables for the BIOS and Disk system.
-FD9AH - FFCAH: RAM Hook Area, used by the disk interface and RS-232 to intercept system calls.
-F30FH (approx): In machines with a disk drive, the system variables often start lower (around F30Fh) to accommodate the extra Disk BIOS variables.
+OpenFile (0x0F):
+  input:
+    C = 0FH
+    DE = Pointer to unopened FCB
+  output:
+    L=A = 0FFH if file not found
+        =   0  if file is found
+  note:
+    must be called indirectly using cmd_bdos_we
 
-F1C9H TO F380H = fixed area for disks communication
+CreateFile (0x16):
+  input:
+    C = 16H
+    DE = Pointer to unopened FCB
+  output:
+    L=A = 0FFH if unsuccessful
+        =   0  if successful
 
-F1E2H (6 bytes) – Routine to abort the program in case of error.
-F273H (3 bytes) – Disk access error handling routine.
-F302H (2 bytes) – Pointer to the abort routine handler for MSXDOS.
-F304H (2 bytes) – Stores the value of the SP (Stack Pointer) register.
-F323H (2 bytes) – Address of the disk error handler (pointer to pointer).
-F325H (2 bytes) – Address of the abort error handler (pointer to pointer).
-F37DH (3 bytes) – ROMBDOS Jump to the BDOS command handler.
-```
+FCB scheme:
 
-### OPEN Implementation
-
-1. Load filename (ASCIIZ) into HL
-2. Call FILEVL
-3. Set:
-
-- A = file number (channel)
-- E = mode (INPUT_FILE, OUTPUT_FILE, etc.)
-
-4. Call OPNFIL
-
-Example:
-
-```asm
-LD HL,NAME
-CALL FILEVL
-
-LD A,1              ; File number
-LD E,OUTPUT_FILE    ; Mode
-CALL OPNFIL
-```
-
-### READ/INPUT Implementation
-
-1. Use INDSKC to read byte-by-byte
-2. Compare with EOF (#1A)
-3. Store into buffer until EOF
-
-Example:
-
-```
-CALL INDSKC
-CP EOF
-RET Z
-LD (HL),A
-INC HL
-JP READ
-```
-
-### WRITE Implementation
-
-1. Load byte from buffer
-2. Output using RST OUTDO
-
-Example:
-
-```
-LD A,(HL)
-INC HL
-AND A
-RET Z
-RST OUTDO
-JP WRITE
+Offset  Size  Descrição
+------  ----  ----------------------------------------
+00h     1     Drive number (0 = default, 1 = A:, 2 = B:)
+01h     8     Filename (ASCII, padded with spaces)
+09h     3     Extension (ASCII, padded with spaces)
+0Ch     1     Current extent (EX)
+0Dh     2     Reserved
+0Fh     1     Record count (RC)
+10h     16    Disk map (allocation blocks)
+20h     1     Current record (CR)
+21h     2     Random record number (RR - low/high)
+23h     2     Random record number (RR - extended)
 ```
 
 ### CLOSE Implementation
 
-1. Set file number in A
-2. Call CLSFIL
-
-Example:
+Parse the CLOSE command with the following structure:
 
 ```
-LD A,1
-CALL CLSFIL
+CLOSE [#<FileNumber>[, #<FileNumber> ...]]
+
+When no file number is provided, it means CLOSE ALL.
+```
+
+Compiler behavior (`compiler_close_statement_strategy.cpp`):
+
+- `CLOSE #n1, #n2, ...`:
+  - each expression is evaluated/cast to numeric;
+  - each channel is closed individually by calling `cmd_fclose` in sequence.
+- `CLOSE` (no params):
+  - emits a call to `cmd_fclose` for each opened FCB in the FCB list.
+
+`cmd_fclose` behavior (`34_file_handling.asm`):
+
+```
+cmd_fclose:
+  input:
+    a = file number
+  output:
+    a = 0 if successfull, otherwise error
+```
+
+BDOS (0xF37D) routines associated:
+
+```
+CloseFile (0x10)
+  input:
+    C = 10H
+    DE = Pointer to opened FCB
+  output:
+    L=A = 0FFH if not successful
+        =   0  if successful
 ```
 
 ### EOF Handling
 
-1. EOF is detected when INDSKC returns #1A
-2. Compiler must generate loop guards for INPUT# constructs
+Get the file number passed as parameter to the EOF(n) function and checks the corresponding FCB if exists data to read in the file or not.
 
-### Checking MSX DISK presence and DSKF function
-
-First, DSKF(n) function must check DRVTBL (drive table) located at address 0xFB21 that lists the initialized drives.
-
-- Start Address: 0xFB21
-- Size: 2 bytes per entry (16-bit pointers).
-- Total Size: Typically 16 bytes (8 drives x 2 bytes).
-- DSKF n parameter is 0 for default drive (A), 1 for drive B, 2 for drive C...
-
-Each 2-byte entry at DRVTBL + (drive_number \* 2) does not usually point to raw data, but rather to a Device Driver Structure in the ROM of the disk interface.
-
-If the entry is 0: No drive is assigned/detected for that drive number. If the entry is non-zero: It is an address (pointer) in a ROM slot that tells the BIOS how to communicate with that drive.
-
-Next, if disk is available, DSKF(n) must call BDOS 0x1B function (GetAllocationInfo) to return the number of free clusters on the disk inserted in the specified drive.
+BDOS (0xF37D) routines associated:
 
 ```
-GetAllocationInfo (0x1B):
+HEOF (0xFEA3)
   input:
-    C = 0x1B
-    E = drive number
+    hl = FCB address
   output:
-    A = Sectors per cluster (255 if error)
-    BC = sector size (bytes)
-    DE = total clusters on disk
-    HL = free clusters on disk
-    IX = DPB address
-    IY = FAT address
-
-BDOS (0xF37D)
+    DAC+2 = true or false (integer)
 ```
 
-If an error occurs, DSKF(n) should return -1 as a result.
+### READ#/INPUT# Implementation
 
-Example:
-
-```
-ld e, n
-ld c, GetAllocationInfo
-CALL BDOS
-```
-
-### Runtime Memory Configuration (Disk vs Non-Disk Modes)
-
-This section defines the required changes to the MSXBAS2ROM runtime initialization code (`src/infrastructure/kernel/asm/header.asm`) in order to properly support two execution modes:
-
-- **Non-Disk Mode (Default)** — Maximum RAM available, no file I/O support.
-- **Disk Mode (MSX-DOS / Disk BASIC)** — Enables file operations (`OPEN`, `INPUT#`, `PRINT#`, `CLOSE`).
-
-The current implementation forces **Non-Disk Mode**, which prevents file handling and assumes a higher memory limit (`0xF380`). This specification introduces a dual-mode configuration with correct memory boundaries and BASIC environment setup, which must be take in consideration when the compiled MSX-BASIC program needs file access.
-
-Impacted variables:
-
-- Disk availability (DSKDIS)
-- Memory limits (HIMEM)
-- File channels (MAXFIL)
-- Stack positioning (STKTOP)
-
-Required Changes:
-
-1. Disk Enable/Disable Control
+BDOS (0xF37D) routines associated:
 
 ```
-Non-Disk Mode:
-  ld a, 0xFF
-  ld (DSKDIS), a
+SequentialReadFile (0x14)
+  input:
+    C = 14H
+    DE = Pointer to opened FCB
+  output:
+    L=A = 01H if error (end of file)
+        =  0  if read was successful
 
-Disk Mode:
-  xor a
-  ld (DSKDIS), a
+RandomReadFile (0x21)
+  input:
+    C = 21H
+    DE = Pointer to opened FCB
+  output:
+    L=A = 01H if error (end of file)
+        =  0  if read was successful
+
+SetDiskTransferAddress (0x1A)
+  input:
+    C = 1AH
+    DE = Required Disk Transfer Address
+  output:
+    None
+
+SetRandomRecordFile (0x24)
+  input:
+    C = 24H
+    DE = Pointer to opened FCB
+  output:
+    None
 ```
 
-IMPORTANT: Do not overwrite DSKDIS in Disk Mode after DOS initialization.
+### PRINT# Implementation
 
-2. HIMEM / MEMSIZ Adjustment
-
-```
-Non-Disk Mode:
-  ld hl, 0xF380
-  ld (HIMEM), hl
-  ld (MEMSIZ), hl
-
-Disk Mode:
-  ld hl, 0xF1C9
-  ld (HIMEM), hl
-  ld (MEMSIZ), hl
-```
-
-3. MAXFILES Configuration
+BDOS (0xF37D) routines associated:
 
 ```
-Non-Disk Mode:
-  xor a
-  ld (MAXFIL), a
+SequentialWriteFile (0x15)
+  input:
+    C = 15H
+    DE = Pointer to opened FCB
+  output:
+    L=A = 01H if error (disk full)
+        =  0  if write was successful
 
-Disk Mode:
-  ld a, 1            ; default for MAXFILES
-  ld (MAXFIL), a
-```
-
-4. Stack Top (STKTOP) Adjustment
-
-```
-Current implementation:
-  ld bc, 200
-  sbc hl, bc
-  ld (STKTOP), hl
-
-Required Change:
-  Compute stack based on HIMEM.
-    Safe Formula:
-    STKTOP = HIMEM - StackMargin
-
-Example Implementation:
-  ld hl, (HIMEM)
-  ld bc, 256         ; safer margin than 200
-  or a               ; clear carry
-  sbc hl, bc
-  ld (STKTOP), hl
-```
-
-Disk Mode requires a larger safety margin due to DOS activity.
-
-5. Variable Area Protection (VARTAB / BASMEM)
-
-```
-Current:
-  ld hl, BASMEM
-  ld (VARTAB), hl
-
-Requirement:
-  Ensure: BASMEM < HIMEM
-```
-
-Recommendation:
-
-- No code change required if BASMEM remains in page 3 (>= C000h), but must be validated by compiler.
-
-6. Avoid DOS Memory Region Overlap
-
-```
-Reserved Region (Disk Mode)
-  F1C9h → F380h
-```
-
-Must NOT be used for:
-
-- Variables
-- Stack
-- Buffers
-- Custom work areas
-
-7. File System Readiness
-
-```
-To enable BASIC file operations:
-  DSKDIS = 0
-  MAXFIL > 0
-  BASIC environment must not be in "I/O disabled" state
-```
-
-8. NLONLY (at address F87CH).
-
-It is a MSX Disk BASIC system work area variable used by the disk-operating system to manage how directory listings are displayed, specifically regarding newline characters and formatting. This system flag is used for controlling newline handling during file operations, often used to toggle ASCII text mode features.
-
-Bit 0 typically manages the auto-insertion of LF (Line Feed) after CR (Carriage Return), while Bit 7 often indicates if a file is being treated specifically as text/sequential.
-
-- Bit 0 for Line Feed Insertion flag: When set, this bit usually instructs Disk BASIC to add a LF automatically after every CR during disk output, ensuring compatibility with standard text files (CRLF).
-- Bit 7 for Text/Sequential Mode Toggle: Setting this bit often forces the file access to act in a "newline-only" mode, commonly used to ensure file I/O operations specifically treat ASCII data and do not add unwanted binary formatting, useful for reading/writing text files.
-
-```
-ld (NLONLY), 0     ; reset i/o buffers
+RandomWriteFile (0x22)
+  input:
+    C = 22H
+    DE = Pointer to opened FCB
+  output:
+    L=A = 01H if error (disk full)
+        =  0  if no error
 ```
 
 ---

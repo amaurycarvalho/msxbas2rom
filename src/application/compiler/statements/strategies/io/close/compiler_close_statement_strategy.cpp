@@ -4,21 +4,16 @@
 #include "compiler_code_helper.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
-#include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
-#include "fix_node.h"
 #include "lexeme.h"
 
 void CompilerCloseStatementStrategy::cmd_close(
     shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
-  auto& codeHelper = *context->codeHelper;
-  auto& fixup = *context->fixupResolver;
   shared_ptr<ActionNode> action;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
-  shared_ptr<FixNode> skipCloseMark;
 
   context->file_support = true;
 
@@ -30,57 +25,16 @@ void CompilerCloseStatementStrategy::cmd_close(
 
       // ld a, l
       cpu.addLdAL();
-      // push af
-      cpu.addPushAF();
-
-      codeHelper.addEnableBasicSlot();
-
-      // pop af
-      cpu.addPopAF();
-      // ld (TEMP), a           ; preserve i/o number
-      cpu.addLdiiA(def_TEMP);
-      // ld a, 0                ; drive A:
-      cpu.addLdA(0x00);
-      // call preflight disk
-      cpu.addCall(def_cmd_preflight_disk);
-      // and a
-      cpu.addAndA();
-      // jp nz, skip CLOSE
-      skipCloseMark = fixup.addMark();
-      cpu.addJpNZ(0x0000);
-      // ld a, (TEMP)
-      cpu.addLdAii(def_TEMP);
-      // ld hl, fake empty line
-      cpu.addLdHL(def_ENDPRG);
-
-      // call CLOSE    ; in: a = i/o number
-      cpu.addCall(def_CLOSE);
-      skipCloseMark->aimHere();
-
-      codeHelper.addDisableBasicSlot();
+      // call cmd_fclose
+      cpu.addCall(def_cmd_fclose);
     }
 
   } else {
-    codeHelper.addEnableBasicSlot();
-
-    // ld a, 0                ; drive A:
-    cpu.addLdA(0x00);
-    // call preflight disk
-    cpu.addCall(def_cmd_preflight_disk);
-    // and a
-    cpu.addAndA();
-    // jp nz, skip CLOSE ALL
-    skipCloseMark = fixup.addMark();
-    cpu.addJpNZ(0x0000);
-
-    // ld hl, fake empty line
-    cpu.addLdHL(def_ENDPRG);
-
-    // call ClOSE ALL
-    cpu.addCall(def_CLOSE_ALL);
-    skipCloseMark->aimHere();
-
-    codeHelper.addDisableBasicSlot();
+    // CLOSE without parameters = CLOSE ALL (from 1 to MAXFIL)
+    // ld a, 0xFF
+    cpu.addXorA();
+    // call cmd_fclose
+    cpu.addCall(def_cmd_fclose);
   }
 }
 

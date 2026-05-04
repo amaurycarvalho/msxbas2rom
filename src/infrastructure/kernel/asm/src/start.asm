@@ -73,10 +73,6 @@ select_basic_on_page_1:
   call ENASLT                ; Select main ROM on page 1 (4000h~7FFFh)
 
 start_basic:
-  ;ld a, (STARTUP_CFG_FILEIO)
-  ;or a
-  ;call nz, initialize_disk_mode
-
   ld a, 0x81                 ; 10000001b
   ld (NLONLY), a             ; dont close i/o buffers - its necessary to BASINIT run correctly on SofaRun
   call BASINIT               ; initialize interpreter, basic pointer at start of program
@@ -86,13 +82,6 @@ start_basic:
 
   jp NEWSTT                  ; execute next line
 
-;initialize_disk_mode:
-;  xor a
-;  ld (DSKDIS), a             ; enable disks
-;  ld a, 1
-;  ld (MAXFIL), a             ; default MAXFILES for disk mode
-;  ret
-
 ; dummy DEF USR into code to run compiled code
 msx_basic_pcode_startup:
   ; filler
@@ -101,8 +90,6 @@ msx_basic_pcode_startup:
   dw msx_basic_startup_end
   ; current MSX BASIC line number
   dw 0x0000
-  ; MAXFILES=1:
-  ;db 0xCD, 0xB7, 0xEF, 0x12, 0x3A
   ; DEFUSR9=&H0000:
   db 0x97, 0xDD, 0x1A, 0xEF, 0x0C
   dw compiled_start_code 

@@ -124,12 +124,6 @@ XBASIC_INIT.disk_mode
     ld a, 0xFF
     ld (DIRDRV), a		              ; invalid dirsector buffer
   pop	hl
-  ret	c
-
-  ; --> copy from DIRBUF to DTAADDR
-  ;ld de, (DTAADDR)
-  ;ld bc, 0x0100
-  ;ldir
   ret
 
 XBASIC_INIT.non_disk_mode

@@ -49,6 +49,7 @@ HSTKE:        equ 0xFEDA   ; stack hook (for after msx initialization)
 HCHPU:        equ 0xFDA4   ; char put hook
 HKEYI:        equ 0xFD9A
 HPHYD:        equ 0xFFA7   ; physical disk input-output hook
+HEOF:         equ 0xFEA3   ; EOF hook (in: hl=FCB address, out: )
 
 WRTVDP:       equ 0x0047
 RDVRM:        equ 0x004A
@@ -104,7 +105,23 @@ FRCINT:       equ 0x2F8A ; DAC to integer
 DECNRM:       equ 0x26FA ; normalize DAC
 CLPRIM:       equ 0xF38C
 
-ROMBDOS:      equ 0xF37D
+ROMBDOS:            equ 0xF37D ; BDOS
+BDOS_OPEN:          equ 0x6AFA ; in: a = i/o number, e = filemode, d = devicecode, hl = BASIC pointer
+BDOS_FILEVL:        equ 0x6A11 ; in hl = BASIC pointer, DAC=string descriptor; out d = device (note: native routine starts at 0x6A0E)
+BDOS_DEVICEVL:      equ 0x6F15
+BDOS_CLOSE:         equ 0x6B24 ; in: a = i/o number
+BDOS_CLOSE_ALL:     equ 0x6BE9 ; in: hl = BASIC pointer, a = (MAXFIL), bc = BDOS_CLOSE
+BDOS_INDSKC:        equ 0x6C71 ; INDO
+BDOS_OUTDO:         equ 0x0018
+BDOS_GET_FCB:       equ 0x6A6D ; in: a = i/o number; out hl=FCB address
+BDOS_OPN_INP:       equ 1
+BDOS_OPN_OUT:       equ 2
+BDOS_OPN_RND:       equ 4
+BDOS_OPN_APP:       equ 8
+BDOS_EOF:           equ 0x1A
+BDOS_REC_SIZE:      equ 0xF33D 
+BDOS_EMPTY_LINE:    equ 0xF40F ; fake empty line
+
 REDCLK:	      equ 0x01F5 ; Reading a register of the internal clock (RTC)
                          ; Entry:  C = block number (bits 5-4) and register (bits 3-0) to read.
                          ; Output: A = 4 least significant bits content of the register read.

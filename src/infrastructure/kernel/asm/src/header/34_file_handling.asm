@@ -5,33 +5,23 @@
 ; ------------------------------------------------------------------------------------------------------
 ; preflight disk availability for file i/o
 ; in : a = drive number (0=A:, 1=B:, ...)
-; out: a = 0 if available, a = 1 if unavailable
-;      z = 1 if available
+; out: a = 0 if available, otherwise is unavailable
 ; ------------------------------------------------------------------------------------------------------
 cmd_preflight_disk:
   push hl
-  push de
-
-  ld l, a
-  ld h, 0
-  add hl, hl                          ; offset = drive * 2
-  ld de, DRVTBL
-  add hl, de
-
-  ld a, (hl)
-  inc hl
-  or (hl)
-  jr z, cmd_preflight_disk.unavailable
-
-  xor a                               ; available
-  pop de
+    ld l, a
+    ld h, 0
+    add hl, hl                          ; offset = drive * 2
+    push de
+      ld de, DRVTBL
+      add hl, de
+    pop de 
+    ld a, (hl)
+    inc hl
+    or (hl)
   pop hl
-  ret
-
-cmd_preflight_disk.unavailable:
-  ld a, 1
-  pop de
-  pop hl
+  ret z                             ; disk unavailable
+  xor a                             ; disk available
   ret
 
 ; ------------------------------------------------------------------------------------------------------
@@ -98,6 +88,15 @@ cmd_bdos_we.abort_handler:
   jp cmd_bdos_we.done           ; warning: required, because it will run in RAM 
 cmd_bdos_we.abort_handler.end: 
 
+; ------------------------------------------------------------------------------------------------------
+; GET FCB
+; in : a = file number
+; out: hl = FCB address, 0 if error
+; ------------------------------------------------------------------------------------------------------
+cmd_fget_fcb:
+  ld ix, BDOS_GET_FCB
+  jp CALBAS 
+
 ; ======================================================================================================
 ; FILE HANDLING STATEMENTS/FUNCTIONS IMPLEMENTATIONS
 ; ======================================================================================================
@@ -114,16 +113,8 @@ cmd_fmaxfiles:
   push af
 cmd_fmaxfiles.set_heap_end:
     ;ld hl, HEAPEND                      ; end of the heap area (HIMEM)
-    ld hl, (BDOSBOTTOM)                 ; BDOS bottom = end of the heap area
-    xor a         
-    or h
-    jr nz, cmd_fmaxfiles.set_dta
-      ld hl, (FCBBASE)
-      ld (BDOSBOTTOM), hl
-cmd_fmaxfiles.set_dta:
-    ld de, -512                         ; DTA size (0x200)
-    add hl, de 
-    ld (DTAADDR), hl                    ; set DTA address
+    ld hl, (FCBBASE)
+cmd_fmaxfiles.set_himem:
     dec hl 
     ld (HIMEM), hl                      ; highest memory adddress according to CLEAR stmt
 cmd_fmaxfiles.set_filtab:
@@ -179,7 +170,7 @@ cmd_fdskf:
   jr nc, cmd_fdskf.error                ; error if a >= 9
   ; --> check disk
   call cmd_preflight_disk
-  and a
+  or a
   jr nz, cmd_fdskf.error                ; error if a != 0
   ; --> check drivers
   ld c, 0x18                            ; BDOS GetLoginVector (return drivers flag in L)
@@ -203,63 +194,112 @@ cmd_fdskf.error:
   ret
 
 ; ------------------------------------------------------------------------------------------------------
+; OPEN statement
+; in : a = file number
+;      hl = filename (pascal string)
+;      e = file mode (1=input, 2=output, 4=random, 8=append)
+;      bc = record length
+; out: hl = true if success, false if error
+; reference: BDOS 0x0F (OpenFile) and 0x16 (CreateFile)
+; ------------------------------------------------------------------------------------------------------
+cmd_fopen:
+  push af
+  push de
+  push bc
+    ld a, (hl)        
+    inc hl 
+    ld (ARG), a        ; string size 
+    ld (ARG+1), hl     ; string pointer
+    ld hl, ARG         ; string descriptor
+    ld a, 3
+    ld (VALTYP), a     ; DAC type = string 
+    ld (DAC+2), hl     ; DAC = string descriptor
+    ld hl, BDOS_EMPTY_LINE
+    ld ix, BDOS_FILEVL ; in hl=BASIC pointer, DAC = string descriptor; out d = device
+    call CALBAS
+  pop bc 
+  pop hl 
+  pop af 
+  ld e, l 
+  ld hl, BDOS_EMPTY_LINE
+  ld ix, BDOS_OPEN ; in: a = i/o number, e = filemode, d = devicecode, hl = BASIC pointer
+  jp CALBAS 
+
+; ------------------------------------------------------------------------------------------------------
 ; EOF function
 ; in : a = file number
 ; out: hl = true or false
 ; ------------------------------------------------------------------------------------------------------
 cmd_feof:
-  ret 
-
-; ------------------------------------------------------------------------------------------------------
-; OPEN statement
-; in : a = file number
-; out: hl = true if success, false if error
-; ------------------------------------------------------------------------------------------------------
-cmd_fopen:
-  ret
-
-; OPEN GRP: statement
-cmd_fopen.grp:
-  ret
-
-; OPEN CRT: statement
-cmd_fopen.crt:
-  ret
-
-; OPEN COM: statement
-cmd_fopen.com:
-  ret
-
-; OPEN LPT: statement
-cmd_fopen.lpt:
-  ret
-
-; OPEN CAS: statement
-cmd_fopen.cas:
+  call cmd_fget_fcb 
+  call HEOF              ; in: hl=FCB, out: DAC+2
+  ld hl, (DAC+2)         ; true or false
   ret
 
 ; ------------------------------------------------------------------------------------------------------
 ; CLOSE statement
-; in : a = file number
-; out: hl = true if success, false if error
+; in : a = file number (0xFF = all)
+; out: a = 0 if success, otherwise error
+; reference: BDOS 0x10 (CloseFile)
 ; ------------------------------------------------------------------------------------------------------
 cmd_fclose:
-  ret 
+  ld bc, BDOS_CLOSE  ; in: a = file number
+  push bc 
+  pop ix
+  cp 0xFF
+  jr nz, cmd_fclose.exec
+    ld hl, BDOS_EMPTY_LINE
+    ld a, (MAXFIL)
+    ld ix, BDOS_CLOSE_ALL  ; in: hl = BASIC pointer, a = (MAXFIL), bc = BDOS_CLOSE
+cmd_fclose.exec:
+  jp CALBAS 
 
 ; ------------------------------------------------------------------------------------------------------
 ; INPUT# statement
 ; in : a = file number
 ; out: hl = true if success, false if error
+; reference: BDOS 0x14 (SequentialReadFile) and 0x21 (RandomReadFile)
 ; ------------------------------------------------------------------------------------------------------
 cmd_finput:
+  ret
+
+; input from CON:
+cmd_finput.con:
+  ret
+
+; input from COMn:
+cmd_finput.com:
+  ret
+
+; input from CAS:
+cmd_finput.cas:
   ret
 
 ; ------------------------------------------------------------------------------------------------------
 ; PRINT# statement
 ; in : a = file number
 ; out: hl = true if success, false if error
+; reference: BDOS 0x15 (SequentialWriteFile) and 0x22 (RandomWriteFile)
 ; ------------------------------------------------------------------------------------------------------
 cmd_fprint:
   ret
 
+; print to GRP:
+cmd_fprint.grp:
+  ret
 
+; print to CRT: / CON:
+cmd_fprint.con:
+  ret
+
+; print to COMn:
+cmd_fprint.com:
+  ret
+
+; print to LPT: / PRN: / LST:
+cmd_fprint.lpt:
+  ret
+
+; print to CAS:
+cmd_fprint.cas:
+  ret
