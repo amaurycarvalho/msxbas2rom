@@ -5,11 +5,12 @@
 21   PRINT #1, "Reading TEST.TXT"
 
 30   OPEN "TEST.TXT" FOR INPUT AS #2
-31     IF EOF(2) THEN 35
-32       INPUT #2,A$
-33       PRINT #1,A$
-34     GOTO 31
-35   CLOSE #2
+31     IF EOF(2) THEN 36
+32       LINE INPUT #2,A$
+33       PRINT : PRINT A$
+34       PRINT #1,A$
+35     GOTO 31
+36   CLOSE #2
 
 40 CLOSE #1
 

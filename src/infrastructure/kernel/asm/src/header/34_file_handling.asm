@@ -89,11 +89,13 @@ cmd_bdos_we.abort_handler:
 cmd_bdos_we.abort_handler.end: 
 
 ; ------------------------------------------------------------------------------------------------------
-; RESET BASIC INTERPRETER REDIRECT
+; Turn off BASIC interpreter i/o redirect
 ; ------------------------------------------------------------------------------------------------------
 cmd_freset_fil:
-  ld hl, 0 
-  ld (PTRFIL), hl  
+  push hl 
+    ld hl, 0 
+    ld (PTRFIL), hl
+  pop hl 
   ret
 
 ; ------------------------------------------------------------------------------------------------------
@@ -102,7 +104,7 @@ cmd_freset_fil:
 ; ------------------------------------------------------------------------------------------------------
 cmd_ffilout:
   ld ix, BDOS_FILOUT
-  jp cmd_fsetfil.calbas
+  jp cmd_fcalbas
 
 ; ------------------------------------------------------------------------------------------------------
 ; Sequential input
@@ -110,7 +112,7 @@ cmd_ffilout:
 ; ------------------------------------------------------------------------------------------------------
 cmd_findskc:
   ld ix, BDOS_INDSKC
-  jp cmd_fsetfil.calbas
+  jp cmd_fcalbas
 
 ; ------------------------------------------------------------------------------------------------------
 ; Set BASIC interpreter i/o channel
@@ -118,7 +120,7 @@ cmd_findskc:
 ; ------------------------------------------------------------------------------------------------------
 cmd_fsetfil:
   ld ix, BDOS_SETFIL
-cmd_fsetfil.calbas:
+cmd_fcalbas:
   push bc
   push de
   push hl
@@ -264,8 +266,12 @@ cmd_fopen:
 cmd_feof:
   ld ix, BDOS_EOF 
 cmd_fcall.function:
-  ld (DAC+2), hl 
-  jp CALBAS
+  ld (DAC+2), hl                        ; file number
+  ld a, 2                               ; integer value
+  ld (VALTYP), a
+  call CALBAS
+  ld hl, (DAC+2)
+  ret
 
 ; ------------------------------------------------------------------------------------------------------
 ; LOC function
@@ -320,12 +326,13 @@ cmd_fclose.exec:
 ; ------------------------------------------------------------------------------------------------------
 cmd_finput:
   call cmd_fsetfil
-  ld a, e
-  ld (ARG), a                           ; keep read mode
+  ld a, e                               ; save INPUT# / LINE INPUT# mode
+  ld (ARG), a
   xor a 
   ld (hl), a
   ld e, l 
   ld d, h 
+  inc hl                                ; first character into string
   ld bc, cmd_finput.begin 
 cmd_finput.begin:
   call cmd_findskc
@@ -336,16 +343,16 @@ cmd_finput.begin:
   cp 0x0A                               ; LF 
   jr z, cmd_finput.exec
   push af
-  ld a, (ARG)
-  and a
-  jr nz, cmd_finput.keep_char           ; LINE INPUT#: only CR/LF are delimiters
+    ld a, (ARG)                         ; restore INPUT# / LINE INPUT# mode
+    or a
+    jr nz, cmd_finput.isLineInput       ; LINE INPUT#: only CR/LF are delimiters
   pop af
   cp 0x2C                               ; , 
   jr z, cmd_finput.exec
   cp 0x22                               ; "
   jr z, cmd_finput.exec
   jr cmd_finput.append
-cmd_finput.keep_char:
+cmd_finput.isLineInput:
   pop af
 cmd_finput.append:
   ld (hl), a                            ; next character
@@ -362,7 +369,7 @@ cmd_finput.exec:
   ret
 cmd_finput.end:
   ex de, hl                             ; return string address (hl)
-  ret 
+  jp cmd_freset_fil                     ; turn off BASIC interpreter i/o redirect
 
 ; ------------------------------------------------------------------------------------------------------
 ; PRINT# statement
@@ -392,5 +399,5 @@ cmd_fprint.end:
     call cmd_ffilout 
   pop af 
   or a                                  ; suffix? e.i: 0x0A (LF)
-  ret z 
-  jp cmd_ffilout
+  call nz, cmd_ffilout
+  jp cmd_freset_fil                     ; turn off BASIC interpreter i/o redirect
