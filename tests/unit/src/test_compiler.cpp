@@ -576,6 +576,99 @@ TEST_SUITE("CompilerStatementStrategies") {
       }
     }
   }
+
+  TEST_CASE("PRINT# compiles with file output variants and rejects invalid forms") {
+    SUBCASE("Valid PRINT# variants") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "compiler_stmt_print_file_valid.bas",
+          "10 OPEN \"A:TEST.TXT\" FOR OUTPUT AS #1\n"
+          "20 PRINT #1,\"A\",10,2.5\n"
+          "30 PRINT #1,\"B\";\n"
+          "40 PRINT #1,\"C\",\n"
+          "50 PRINT #1\n"
+          "60 CLOSE #1\n"
+          "70 END\n",
+          &errors);
+
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("Invalid PRINT# without file number expression") {
+      std::string errors;
+      bool ok = compileStatementProgram("compiler_stmt_print_file_invalid_1.bas",
+                                        "10 PRINT #,\"A\"\n20 END\n", &errors);
+
+      CHECK(ok == false);
+      CHECK(errors.size() > 0);
+    }
+
+    SUBCASE("Invalid PRINT# with duplicated separator") {
+      std::string errors;
+      bool ok = compileStatementProgram("compiler_stmt_print_file_invalid_2.bas",
+                                        "10 PRINT #1,,\"A\"\n20 END\n", &errors);
+
+      CHECK(ok == false);
+      CHECK(errors.size() > 0);
+    }
+  }
+
+  TEST_CASE(
+      "INPUT# and LINE INPUT# compile with file input variants and reject "
+      "invalid forms") {
+    SUBCASE("Valid INPUT# and LINE INPUT# variants") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "compiler_stmt_input_file_valid.bas",
+          "10 OPEN \"A:TEST.TXT\" FOR INPUT AS #1\n"
+          "20 INPUT #1,A$,B$\n"
+          "30 LINE INPUT #1,L$\n"
+          "40 CLOSE #1\n"
+          "50 END\n",
+          &errors);
+
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("Invalid INPUT# without file number expression") {
+      std::string errors;
+      bool ok = compileStatementProgram("compiler_stmt_input_file_invalid_1.bas",
+                                        "10 INPUT #,A$\n20 END\n", &errors);
+
+      CHECK(ok == false);
+      CHECK(errors.size() > 0);
+    }
+
+    SUBCASE("Invalid INPUT# with duplicated separator") {
+      std::string errors;
+      bool ok = compileStatementProgram("compiler_stmt_input_file_invalid_2.bas",
+                                        "10 INPUT #1,,A$\n20 END\n", &errors);
+
+      CHECK(ok == false);
+      CHECK(errors.size() > 0);
+    }
+
+    SUBCASE("Invalid INPUT# without destination variables") {
+      std::string errors;
+      bool ok = compileStatementProgram("compiler_stmt_input_file_invalid_3.bas",
+                                        "10 INPUT #1\n20 END\n", &errors);
+
+      CHECK(ok == false);
+      CHECK(errors.size() > 0);
+    }
+
+    SUBCASE("Invalid LINE INPUT# with non-identifier parameter") {
+      std::string errors;
+      bool ok = compileStatementProgram("compiler_stmt_input_file_invalid_4.bas",
+                                        "10 LINE INPUT #1,\"A\"\n20 END\n",
+                                        &errors);
+
+      CHECK(ok == false);
+      CHECK(errors.size() > 0);
+    }
+  }
 }
 
 TEST_SUITE("CompilerCmdHandlers") {

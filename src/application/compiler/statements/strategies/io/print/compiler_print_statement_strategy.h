@@ -5,6 +5,9 @@
 
 class CompilerPrintStatementStrategy : public ICompilerStatementStrategy {
  private:
+  bool isFilePrint(shared_ptr<CompilerContext> context);
+  void cmd_file_print(shared_ptr<CompilerContext> context);
+  void cmd_normal_print(shared_ptr<CompilerContext> context);
   void cmd_print(shared_ptr<CompilerContext> context);
 
  public:

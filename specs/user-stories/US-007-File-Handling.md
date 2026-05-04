@@ -2,13 +2,13 @@
 
 ## Story
 
-As an MSX-BASIC developer, I want to use OPEN, READ#, PRINT#, INPUT#, MAXFILES and CLOSE commands - and also EOF(), LOC(), LOF(), FPOS() and DSKF() functions - in my programs so that I can persist and retrieve data from files across different MSX devices (disk, cassette, memory, etc.).
+As an MSX-BASIC developer, I want to use OPEN, READ#, PRINT#, INPUT#, LINE INPUT#, MAXFILES and CLOSE commands - and also EOF(), LOC(), LOF(), FPOS() and DSKF() functions - in my programs so that I can persist and retrieve data from files across different MSX devices (disk, cassette, memory, etc.).
 
 ## Acceptance Criteria
 
 - The compiler supports the OPEN instruction with device, path, filename, direction, file number, and optional record length.
 - Sequential file access modes (INPUT, OUTPUT, APPEND) are correctly mapped to BDOS routines.
-- READ# and INPUT# operations correctly retrieve data from an opened file.
+- READ#, INPUT# and LINE INPUT# operations correctly retrieve data from an opened file.
 - CLOSE properly releases the file handle and flushes buffers when needed.
 - Multiple files (up to MAXFILES limit) can be opened and handled independently and when MAXFILES was set it adjust the correct memory allocation for disk operation.
 - EOF() conditions are correctly detected and handled.
@@ -44,6 +44,13 @@ Given a file is opened for INPUT as #1
 When I repeatedly read data using INPUT#
 Then the program detects EOF correctly
 And stops reading without crashing or reading invalid data
+
+### Scenario 3b: Read full lines with LINE INPUT#
+
+Given a file is opened for INPUT as #1
+When I read data using LINE INPUT#
+Then each read returns the full line content
+And only CR/LF is treated as delimiter
 
 ### Scenario 4: Append data to an existing file
 
@@ -287,7 +294,7 @@ BDOS_LOF (0x6D14) - returns file size in bytes.
 BDOS_FPOS (0x6D39) - returns current file pointer position.
 ```
 
-### READ#/INPUT# Implementation
+### INPUT#/LINE INPUT# Implementation
 
 Implemented in `cmd_finput` (`34_file_handling.asm`).
 
@@ -296,6 +303,7 @@ cmd_finput:
   input:
     a=file number
     hl=string address (pascal style)
+    e=mode (0=INPUT#, 1=LINE INPUT#)
   output:
     hl=string address (pascal style)
 ```
@@ -304,6 +312,8 @@ INPUT strategy behavior (`compiler_input_statement_strategy.cpp`) when a file nu
 
 - A temporary string must be passed to `cmd_finput` to be populated before each variable in the INPUT# list. The same temporary string can be used sequentially;
 - The `cmd_input` output must be converted from string to the correct data type of the variable being processed in the list, and an assignment must then be performed.
+- `INPUT#` calls `cmd_finput` with `e=0` (field mode): delimiters are comma, quote, CR and LF.
+- `LINE INPUT#` calls `cmd_finput` with `e=1` (line mode): delimiter is only CR/LF.
 
 BDOS calls actually used in `34_file_handling.asm`:
 

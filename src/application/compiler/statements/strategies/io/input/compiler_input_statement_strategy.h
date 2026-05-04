@@ -5,10 +5,17 @@
 
 class CompilerInputStatementStrategy : public ICompilerStatementStrategy {
  private:
-  //! @brief INPUT statement
+  //! @brief Detect INPUT# statement
+  bool isFileInput(shared_ptr<CompilerContext> context);
+
+  //! @brief INPUT# statement
+  //! @param lineMode false=INPUT# field mode, true=LINE INPUT# line mode
+  void cmd_file_input(shared_ptr<CompilerContext> context, bool lineMode);
+
+  //! @brief INPUT / LINE INPUT statement
   //! @param context Compiler context
   //! @param question Show question mark?
-  void cmd_input(shared_ptr<CompilerContext> context, bool questionMark);
+  void cmd_normal_input(shared_ptr<CompilerContext> context, bool questionMark);
 
  public:
   //! @brief INPUT statement

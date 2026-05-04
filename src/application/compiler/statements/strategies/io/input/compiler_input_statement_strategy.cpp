@@ -1,5 +1,7 @@
 #include "compiler_input_statement_strategy.h"
 
+#include <vector>
+
 #include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
@@ -9,17 +11,112 @@
 #include "fix_node.h"
 #include "lexeme.h"
 
-void CompilerInputStatementStrategy::cmd_input(
-    shared_ptr<CompilerContext> context, bool questionMark) {
+bool CompilerInputStatementStrategy::isFileInput(
+    shared_ptr<CompilerContext> context) {
+  if (context->current_action->actions.empty()) return false;
+
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<Lexeme> lexeme = action->lexeme;
+
+  return lexeme && lexeme->type == Lexeme::type_separator &&
+         lexeme->value == "#";
+}
+
+void CompilerInputStatementStrategy::cmd_file_input(
+    shared_ptr<CompilerContext> context, bool lineMode) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
-  shared_ptr<Lexeme> lexeme;
+  auto& variable = *context->variableEmitter;
   shared_ptr<ActionNode> action, subaction;
+  shared_ptr<Lexeme> lexeme;
+  shared_ptr<FixNode> skipInputMark;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
-  bool redirected = false;
-  shared_ptr<FixNode> skipInputMark;
+
+  action = context->current_action->actions[0];
+  if (action->actions.empty()) {
+    context->syntaxError("Invalid INPUT# file number");
+    return;
+  }
+
+  subaction = action->actions[0];
+  result_subtype = expression.evalExpression(subaction);
+  expression.addCast(result_subtype, Lexeme::subtype_numeric);
+  cpu.addLdAL();  // keep file number in A
+  cpu.addPushAF();
+
+  context->file_support = true;
+  cpu.addLdA(0x00);                     // drive A:
+  cpu.addCall(def_cmd_preflight_disk);  // check disk support
+  cpu.addAndA();
+  skipInputMark = fixup.addMark();
+  cpu.addJpNZ(0x0000);  // skip INPUT# when disk is unavailable
+
+  std::vector<shared_ptr<ActionNode>> values;
+  bool expectValue = true;
+
+  for (i = 1; i < t; i++) {
+    action = context->current_action->actions[i];
+    lexeme = action->lexeme;
+
+    if (lexeme && lexeme->type == Lexeme::type_separator) {
+      if (lexeme->value == ",") {
+        if (expectValue) {
+          context->syntaxError("Invalid INPUT# parameter separator");
+          return;
+        }
+        expectValue = true;
+        continue;
+      }
+
+      context->syntaxError("Invalid INPUT# parameter separator");
+      return;
+    }
+
+    if (!expectValue) {
+      context->syntaxError("Invalid INPUT# parameter separator");
+      return;
+    }
+
+    if (!lexeme || lexeme->type != Lexeme::type_identifier) {
+      context->syntaxError("Invalid INPUT# parameter type");
+      return;
+    }
+
+    values.push_back(action);
+    expectValue = false;
+  }
+
+  if (values.empty() || expectValue) {
+    context->syntaxError("INPUT# with empty parameters");
+    return;
+  }
+
+  for (i = 0; i < values.size(); i++) {
+    lexeme = values[i]->lexeme;
+    cpu.addCall(def_GET_NEXT_TEMP_STRING_ADDRESS);
+    cpu.addLdDE(lineMode ? 0x0001 : 0x0000);  // e=read mode for cmd_finput
+    cpu.addPopAF();
+    cpu.addPushAF();
+    cpu.addCall(def_cmd_finput);
+
+    expression.addCast(Lexeme::subtype_string, lexeme->subtype);
+    if (!variable.addAssignment(values[i])) return;
+  }
+
+  cpu.addPopAF();
+  skipInputMark->aimHere();
+}
+
+void CompilerInputStatementStrategy::cmd_normal_input(
+    shared_ptr<CompilerContext> context, bool questionMark) {
+  auto& cpu = *context->cpu;
+  auto& expression = *context->expressionEvaluator;
+  shared_ptr<Lexeme> lexeme;
+  shared_ptr<ActionNode> action;
+  unsigned int i, t = context->current_action->actions.size();
+  int result_subtype;
 
   if (t) {
     for (i = 0; i < t; i++) {
@@ -30,31 +127,6 @@ void CompilerInputStatementStrategy::cmd_input(
           if (lexeme->value == ",") {
             cpu.addCall(def_XBASIC_PRINT_TAB);  // call print_tab
           } else if (lexeme->value == ";") {
-            continue;
-          } else if (lexeme->value == "#") {
-            subaction = action->actions[0];
-            result_subtype = expression.evalExpression(subaction);
-            expression.addCast(result_subtype, Lexeme::subtype_numeric);
-
-            context->file_support = true;
-            // ld a, 0                ; drive A:
-            cpu.addLdA(0x00);
-            // call preflight disk
-            cpu.addCall(def_cmd_preflight_disk);
-            // and a
-            cpu.addAndA();
-            // jp nz, skip INPUT statement
-            if (!skipInputMark) skipInputMark = fixup.addMark();
-            cpu.addJpNZ(0x0000);
-
-            redirected = true;
-            // call io redirect
-            if (context->ioRedirectMark)
-              fixup.addFix(context->ioRedirectMark->symbol);
-            else
-              context->ioRedirectMark = fixup.addMark();
-            cpu.addCall(0x0000);
-
             continue;
           } else {
             context->syntaxError("Invalid INPUT parameter separator");
@@ -98,17 +170,6 @@ void CompilerInputStatementStrategy::cmd_input(
       }
     }
 
-    if (redirected) {
-      // call io screen
-      if (context->ioScreenMark)
-        fixup.addFix(context->ioScreenMark->symbol);
-      else
-        context->ioScreenMark = fixup.addMark();
-      cpu.addCall(0x0000);
-    }
-
-    if (skipInputMark) skipInputMark->aimHere();
-
   } else {
     context->syntaxError();
   }
@@ -116,12 +177,22 @@ void CompilerInputStatementStrategy::cmd_input(
 
 bool CompilerInputStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
-  cmd_input(context, true);
+  if (isFileInput(context)) {
+    cmd_file_input(context, false);
+    return context->compiled;
+  }
+
+  cmd_normal_input(context, true);
   return context->compiled;
 }
 
 bool CompilerInputStatementStrategy::executeLineInput(
     shared_ptr<CompilerContext> context) {
-  cmd_input(context, false);
+  if (isFileInput(context)) {
+    cmd_file_input(context, true);
+    return context->compiled;
+  }
+
+  cmd_normal_input(context, false);
   return context->compiled;
 }

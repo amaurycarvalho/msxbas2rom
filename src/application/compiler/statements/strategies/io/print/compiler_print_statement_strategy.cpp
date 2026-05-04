@@ -1,5 +1,7 @@
 #include "compiler_print_statement_strategy.h"
 
+#include <vector>
+
 #include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
@@ -8,16 +10,117 @@
 #include "fix_node.h"
 #include "lexeme.h"
 
-void CompilerPrintStatementStrategy::cmd_print(
+bool CompilerPrintStatementStrategy::isFilePrint(
+    shared_ptr<CompilerContext> context) {
+  if (context->current_action->actions.empty()) return false;
+
+  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<Lexeme> lexeme = action->lexeme;
+
+  return lexeme && lexeme->type == Lexeme::type_separator &&
+         lexeme->value == "#";
+}
+
+void CompilerPrintStatementStrategy::cmd_file_print(
     shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
+  auto& expression = *context->expressionEvaluator;
+  shared_ptr<ActionNode> action, subaction;
+  shared_ptr<Lexeme> lexeme;
+  shared_ptr<FixNode> skipPrintMark;
+  unsigned int i, t = context->current_action->actions.size();
+  int result_subtype;
+
+  action = context->current_action->actions[0];
+  if (action->actions.empty()) {
+    context->syntaxError("Invalid PRINT# file number");
+    return;
+  }
+
+  subaction = action->actions[0];
+  result_subtype = expression.evalExpression(subaction);
+  expression.addCast(result_subtype, Lexeme::subtype_numeric);
+  cpu.addLdAL();  // keep file number in A
+  cpu.addPushAF();
+
+  context->file_support = true;
+  cpu.addLdA(0x00);                     // drive A:
+  cpu.addCall(def_cmd_preflight_disk);  // check disk support
+  cpu.addAndA();
+  skipPrintMark = fixup.addMark();
+  cpu.addJpNZ(0x0000);  // skip PRINT# when disk is unavailable
+
+  std::vector<shared_ptr<ActionNode>> values;
+  bool expectValue = true;
+  bool trailingSeparator = false;
+
+  for (i = 1; i < t; i++) {
+    action = context->current_action->actions[i];
+    lexeme = action->lexeme;
+    if (lexeme && lexeme->type == Lexeme::type_separator) {
+      if (lexeme->value == "," || lexeme->value == ";") {
+        if (expectValue) {
+          context->syntaxError("Invalid PRINT# parameter separator");
+          return;
+        }
+        expectValue = true;
+        trailingSeparator = true;
+        continue;
+      }
+      context->syntaxError("Invalid PRINT# parameter separator");
+      return;
+    }
+
+    if (!expectValue) {
+      context->syntaxError("Invalid PRINT# parameter separator");
+      return;
+    }
+
+    values.push_back(action);
+    expectValue = false;
+    trailingSeparator = false;
+  }
+
+  if (values.empty()) {
+    // PRINT #n : output only LF
+    cpu.addCall(def_GET_NEXT_TEMP_STRING_ADDRESS);
+    cpu.addXorA();
+    cpu.addLdiHLA();  // temporary string length = 0
+    cpu.addPopAF();
+    cpu.addPushAF();
+    cpu.addLdDE(0x0A00);  // d=suffix LF, e=prefix 0
+    cpu.addCall(def_cmd_fprint);
+    cpu.addPopAF();
+  } else {
+    for (i = 0; i < values.size(); i++) {
+      int prefix = (i == 0) ? 0x00 : 0x2C;
+      int suffix = 0x00;
+      if (i == values.size() - 1 && !trailingSeparator) suffix = 0x0A;
+
+      result_subtype = expression.evalExpression(values[i]);
+      expression.addCast(result_subtype, Lexeme::subtype_string);
+      cpu.addPopAF();
+      cpu.addPushAF();
+      cpu.addLdDE((suffix << 8) | prefix);  // d=suffix, e=prefix
+      cpu.addCall(def_cmd_fprint);
+    }
+    cpu.addPopAF();
+  }
+
+  skipPrintMark->aimHere();
+}
+
+void CompilerPrintStatementStrategy::cmd_normal_print(
+    shared_ptr<CompilerContext> context) {
+  auto& cpu = *context->cpu;
+  // auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme, last_lexeme = 0;
   shared_ptr<ActionNode> action, subaction;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
-  bool redirected = false;
+  // bool redirected = false;
   shared_ptr<FixNode> skipPrintMark;
 
   if (t) {
@@ -32,6 +135,7 @@ void CompilerPrintStatementStrategy::cmd_print(
             cpu.addCall(def_XBASIC_PRINT_TAB);  // call print_tab
           } else if (lexeme->value == ";") {
             continue;
+            /*
           } else if (lexeme->value == "#") {
             if (context->has_open_grp) continue;
 
@@ -59,6 +163,7 @@ void CompilerPrintStatementStrategy::cmd_print(
             cpu.addCall(0x0000);
 
             continue;
+            */
           } else {
             context->syntaxError("Invalid PRINT parameter separator");
             return;
@@ -95,6 +200,7 @@ void CompilerPrintStatementStrategy::cmd_print(
     }
   }
 
+  /*
   if (redirected) {
     // call io screen
     if (context->ioScreenMark)
@@ -103,8 +209,19 @@ void CompilerPrintStatementStrategy::cmd_print(
       context->ioScreenMark = fixup.addMark();
     cpu.addCall(0x0000);
   }
+  */
 
   if (skipPrintMark) skipPrintMark->aimHere();
+}
+
+void CompilerPrintStatementStrategy::cmd_print(
+    shared_ptr<CompilerContext> context) {
+  if (isFilePrint(context)) {
+    cmd_file_print(context);
+    return;
+  }
+
+  cmd_normal_print(context);
 }
 
 bool CompilerPrintStatementStrategy::execute(

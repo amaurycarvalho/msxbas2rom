@@ -314,12 +314,14 @@ cmd_fclose.exec:
 
 ; ------------------------------------------------------------------------------------------------------
 ; INPUT# statement
-; in : a=file number, hl=string address (pascal style)
+; in : a=file number, hl=string address (pascal style), e=mode (0=INPUT#, 1=LINE INPUT#)
 ; out: hl=string address (pascal style)
 ; reference: BDOS 0x14 (SequentialReadFile) and 0x21 (RandomReadFile)
 ; ------------------------------------------------------------------------------------------------------
 cmd_finput:
   call cmd_fsetfil
+  ld a, e
+  ld (ARG), a                           ; keep read mode
   xor a 
   ld (hl), a
   ld e, l 
@@ -328,15 +330,23 @@ cmd_finput:
 cmd_finput.begin:
   call cmd_findskc
   cp BDOS_EOF_FLAG
-  ret z
+  jr z, cmd_finput.end
   cp 0x0D                               ; CR
   jr z, cmd_finput.exec
   cp 0x0A                               ; LF 
   jr z, cmd_finput.exec
+  push af
+  ld a, (ARG)
+  and a
+  jr nz, cmd_finput.keep_char           ; LINE INPUT#: only CR/LF are delimiters
+  pop af
   cp 0x2C                               ; , 
   jr z, cmd_finput.exec
   cp 0x22                               ; "
   jr z, cmd_finput.exec
+  jr cmd_finput.append
+cmd_finput.keep_char:
+  pop af
 cmd_finput.append:
   ld (hl), a                            ; next character
   inc hl
@@ -371,6 +381,7 @@ cmd_fprint:
     or a 
     jr z, cmd_fprint.end
     ld b, a
+    inc hl 
 cmd_fprint.loop:
       ld a, (hl)
       call cmd_ffilout                  ; print string next character
@@ -381,5 +392,5 @@ cmd_fprint.end:
     call cmd_ffilout 
   pop af 
   or a                                  ; suffix? e.i: 0x0A (LF)
-  call nz, cmd_ffilout 
-  ret
+  ret z 
+  jp cmd_ffilout

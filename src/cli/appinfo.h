@@ -73,10 +73,7 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char* info_history = R"(
 Version history
 
-1.0.0.0 – (2026/04/22) File handling support implementation ([US-007]):
-                       disk preflight helper, DSKF() function, file I/O
-                       safety checks, dual runtime memory mode
-                       (disk/non-disk), parser updates and tests;
+1.0.0.0 – (2026/05/04) File handling support implementation (US-007);
 0.3.4.2 – (2026/04/14) Sprite glitch bug fix (issue #19)
                        and Z80 kernel SRP refactoring;
 0.3.4.1 – (2026/04/09) ELF export bug fix;
