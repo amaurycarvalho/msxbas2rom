@@ -1,4 +1,4 @@
-#include "compiler_eof_function_strategy.h"
+#include "compiler_fpos_function_strategy.h"
 
 #include "action_node.h"
 #include "compiler_code_helper.h"
@@ -9,12 +9,12 @@
 #include "fix_node.h"
 #include "lexeme.h"
 
-int EofCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
-                                         shared_ptr<ActionNode> action,
-                                         int* result, unsigned int parmCount) {
+int FposCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
+                                          shared_ptr<ActionNode> action,
+                                          int* result, unsigned int parmCount) {
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (parmCount != 1) return Lexeme::subtype_unknown;
-  if (action->lexeme->value != "EOF") return Lexeme::subtype_unknown;
+  if (action->lexeme->value != "FPOS") return Lexeme::subtype_unknown;
 
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
@@ -30,8 +30,8 @@ int EofCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   context->file_support = true;
 
   // hl = file number
-  // call cmd_feof
-  cpu.addCall(def_cmd_feof);
+  // call cmd_fpos
+  cpu.addCall(def_cmd_fpos);
 
   return Lexeme::subtype_numeric;
 }

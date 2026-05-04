@@ -106,19 +106,25 @@ DECNRM:       equ 0x26FA ; normalize DAC
 CLPRIM:       equ 0xF38C
 
 ROMBDOS:            equ 0xF37D ; BDOS
-BDOS_OPEN:          equ 0x6AFA ; in: a = i/o number, e = filemode, d = devicecode, hl = BASIC pointer
-BDOS_FILEVL:        equ 0x6A11 ; in hl = BASIC pointer, DAC=string descriptor; out d = device (note: native routine starts at 0x6A0E)
-BDOS_DEVICEVL:      equ 0x6F15
-BDOS_CLOSE:         equ 0x6B24 ; in: a = i/o number
-BDOS_CLOSE_ALL:     equ 0x6BE9 ; in: hl = BASIC pointer, a = (MAXFIL), bc = BDOS_CLOSE
-BDOS_INDSKC:        equ 0x6C71 ; INDO
-BDOS_OUTDO:         equ 0x0018
-BDOS_GET_FCB:       equ 0x6A6D ; in: a = i/o number; out hl=FCB address
-BDOS_OPN_INP:       equ 1
-BDOS_OPN_OUT:       equ 2
-BDOS_OPN_RND:       equ 4
-BDOS_OPN_APP:       equ 8
-BDOS_EOF:           equ 0x1A
+BDOS_FILIDX:        equ 0x6A6D ; get pointer to I/O channel; in: a=i/o number; out hl=FCB address
+BDOS_SETFIL:        equ 0x6AAA ; redirect interpreter to I/O channel; in: a=i/o number
+BDOS_OPNFIL:        equ 0x6AFA ; open I/O channel; in: a=i/o number, e=file mode, d=device id, hl=BASIC pointer
+BDOS_FILEVL:        equ 0x6A11 ; file name parser; in: DAC=string descriptor, hl=BASIC pointer; out d=device (note: native routine starts at 0x6A0E)
+BDOS_DEVICEVL:      equ 0x6F15 ; device name parser
+BDOS_CLSFIL:        equ 0x6B24 ; close I/O channel; in: a = i/o number
+BDOS_CLSALL:        equ 0x6BE9 ; close all I/O channels; in: a=(MAXFIL), bc=BDOS_CLSFIL, hl=BASIC pointer
+BDOS_INDSKC:        equ 0x6C71 ; sequential input; out: a=character (requires SETFIL)
+BDOS_FILOUT:        equ 0x6C48 ; sequential output; in: a=character (requires SETFIL)
+BDOS_GETPUT:        equ 0x6C35 ; random input/output; in: hl=BASIC pointer, a=GET/PUT flag (0=get, 0x80=put)
+BDOS_FPOS:          equ 0x6D39 ; returns the current position of the file pointer within the specified file; in: DAC+2=i/o channel; out: DAC+2=result
+BDOS_LOC:           equ 0x6D03 ; returns the number of bytes that have been read (sequential) or record number (random); in: DAC+2=i/o channel; out: DAC+2=result
+BDOS_LOF:           equ 0x6D14 ; returns the size of a file on disk in bytes; in: DAC+2=i/o channel; out: DAC+2=result
+BDOS_EOF:           equ 0x6D25 ; returns  if the end of a file has been reached during input; in: DAC+2=i/o channel; out: DAC+2=result
+BDOS_INPUT_FLAG:    equ 1
+BDOS_OUTPUT_FLAG:   equ 2
+BDOS_RANDOM_FLAG:   equ 4
+BDOS_APPEND_FLAG:   equ 8
+BDOS_EOF_FLAG:      equ 0x1A
 BDOS_REC_SIZE:      equ 0xF33D 
 BDOS_EMPTY_LINE:    equ 0xF40F ; fake empty line
 

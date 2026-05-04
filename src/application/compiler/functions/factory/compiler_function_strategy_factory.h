@@ -19,6 +19,7 @@
 #include "compiler_dskf_function_strategy.h"
 #include "compiler_eof_function_strategy.h"
 #include "compiler_exp_function_strategy.h"
+#include "compiler_fpos_function_strategy.h"
 #include "compiler_fix_function_strategy.h"
 #include "compiler_fre_function_strategy.h"
 #include "compiler_function_strategy.h"
@@ -34,6 +35,8 @@
 #include "compiler_left_function_strategy.h"
 #include "compiler_len_function_strategy.h"
 #include "compiler_log_function_strategy.h"
+#include "compiler_lof_function_strategy.h"
+#include "compiler_loc_function_strategy.h"
 #include "compiler_lpos_function_strategy.h"
 #include "compiler_maker_function_strategy.h"
 #include "compiler_maxfiles_function_strategy.h"
@@ -79,6 +82,7 @@ using namespace std;
 class CompilerFunctionStrategyFactory {
  private:
   EofCompilerFunctionStrategy eofStrategy;
+  FposCompilerFunctionStrategy fposStrategy;
   DskfCompilerFunctionStrategy dskfStrategy;
   FreCompilerFunctionStrategy freStrategy;
   HeapCompilerFunctionStrategy heapStrategy;
@@ -115,6 +119,8 @@ class CompilerFunctionStrategyFactory {
   FixCompilerFunctionStrategy fixStrategy;
   IntCompilerFunctionStrategy intStrategy;
   LogCompilerFunctionStrategy logStrategy;
+  LofCompilerFunctionStrategy lofStrategy;
+  LocCompilerFunctionStrategy locStrategy;
   MakerCompilerFunctionStrategy makerStrategy;
   MsxCompilerFunctionStrategy msxStrategy;
   NtscCompilerFunctionStrategy ntscStrategy;

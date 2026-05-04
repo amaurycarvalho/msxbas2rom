@@ -20,8 +20,8 @@ cmd_preflight_disk:
     inc hl
     or (hl)
   pop hl
-  ret z                             ; disk unavailable
-  xor a                             ; disk available
+  ret z                                 ; disk unavailable
+  xor a                                 ; disk available
   ret
 
 ; ------------------------------------------------------------------------------------------------------
@@ -41,61 +41,92 @@ cmd_bdos_we:
     ld bc, cmd_bdos_we.abort_handler.end - cmd_bdos_we.abort_handler
     ldir 
     ; --> set BDOS error/abort handler addresses
-    ld hl, (0xF323)             ; save error handler address
+    ld hl, (0xF323)                     ; save error handler address
     ld (ARG), hl
-    ld hl, (0xF1E6)             ; save abort handler address
+    ld hl, (0xF1E6)                     ; save abort handler address
     ld (ARG + 2), hl
-    ld hl, HOLD2                ; error handler address in RAM
-    ld (HOLD), hl               ; save error handler address
-    ld hl, HOLD                 ; error handler pointer address
-    ld (0xF323), hl             ; set error handler pointer address
-    ld hl, HOLD8                ; abort handler address in RAM 
-    ld (0xF1E6), hl             ; set abort handler address
+    ld hl, HOLD2                        ; error handler address in RAM
+    ld (HOLD), hl                       ; save error handler address
+    ld hl, HOLD                         ; error handler pointer address
+    ld (0xF323), hl                     ; set error handler pointer address
+    ld hl, HOLD8                        ; abort handler address in RAM 
+    ld (0xF1E6), hl                     ; set abort handler address
   exx
   ex af, af'
 
-  ld (DAC), sp                  ; save stack pointer
-  call ROMBDOS
+  ld (DAC), sp                          ; save stack pointer
+  call ROMBDOS  
 
 cmd_bdos_we.done: 
   ; --> restore default BDOS error/abort handler addresses
   push hl 
     ld hl, (ARG) 
-    ld (0xF323), hl             ; error handler address
+    ld (0xF323), hl                     ; error handler address
     ld hl, (ARG + 2)
-    ld (0xF1E6), hl             ; abort handler address
+    ld (0xF1E6), hl                     ; abort handler address
   pop hl
   ret 
 
 cmd_bdos_we.error_handler:
-  ld a, c                       ; get error code
-  ld c, 2                       ; reply = abort
+  ld a, c                               ; get error code
+  ld c, 2                               ; reply = abort
   ret
 cmd_bdos_we.error_handler.end:
 
 cmd_bdos_we.abort_handler: 
-  and 0x7F                      ; clear bit 7
-  neg                           ; turn error code value to negative (A = -A)
-  ld sp, (DAC)                  ; restore stack pointer
+  and 0x7F                              ; clear bit 7
+  neg                                   ; turn error code value to negative (A = -A)
+  ld sp, (DAC)                          ; restore stack pointer
   ex af, af'
   exx
-    ld a, (SLTSTR)                ; kernel slot
-    ld h, 0x40                    ; select the ROM on page 4000h
-    call ENASLT                   ; restore page 1 to kernel slot
+    ld a, (SLTSTR)                      ; kernel slot
+    ld h, 0x40                          ; select the ROM on page 4000h
+    call ENASLT                         ; restore page 1 to kernel slot
   exx
   ex af, af'
   ei
-  jp cmd_bdos_we.done           ; warning: required, because it will run in RAM 
+  jp cmd_bdos_we.done                   ; warning: required, because it will run in RAM 
 cmd_bdos_we.abort_handler.end: 
 
 ; ------------------------------------------------------------------------------------------------------
-; GET FCB
-; in : a = file number
-; out: hl = FCB address, 0 if error
+; RESET BASIC INTERPRETER REDIRECT
 ; ------------------------------------------------------------------------------------------------------
-cmd_fget_fcb:
-  ld ix, BDOS_GET_FCB
-  jp CALBAS 
+cmd_freset_fil:
+  ld hl, 0 
+  ld (PTRFIL), hl  
+  ret
+
+; ------------------------------------------------------------------------------------------------------
+; Sequential output
+; in : a = character
+; ------------------------------------------------------------------------------------------------------
+cmd_ffilout:
+  ld ix, BDOS_FILOUT
+  jp cmd_fsetfil.calbas
+
+; ------------------------------------------------------------------------------------------------------
+; Sequential input
+; out: a = character
+; ------------------------------------------------------------------------------------------------------
+cmd_findskc:
+  ld ix, BDOS_INDSKC
+  jp cmd_fsetfil.calbas
+
+; ------------------------------------------------------------------------------------------------------
+; Set BASIC interpreter i/o channel
+; in : a = i/o channel
+; ------------------------------------------------------------------------------------------------------
+cmd_fsetfil:
+  ld ix, BDOS_SETFIL
+cmd_fsetfil.calbas:
+  push bc
+  push de
+  push hl
+    call CALBAS 
+  pop hl
+  pop de
+  pop bc
+  ret
 
 ; ======================================================================================================
 ; FILE HANDLING STATEMENTS/FUNCTIONS IMPLEMENTATIONS
@@ -112,7 +143,7 @@ cmd_fmaxfiles:
   ld (MAXFIL), a
   push af
 cmd_fmaxfiles.set_heap_end:
-    ;ld hl, HEAPEND                      ; end of the heap area (HIMEM)
+    ;ld hl, HEAPEND                     ; end of the heap area (HIMEM)
     ld hl, (FCBBASE)
 cmd_fmaxfiles.set_himem:
     dec hl 
@@ -208,33 +239,60 @@ cmd_fopen:
   push bc
     ld a, (hl)        
     inc hl 
-    ld (ARG), a        ; string size 
-    ld (ARG+1), hl     ; string pointer
-    ld hl, ARG         ; string descriptor
+    ld (ARG), a                         ; string size 
+    ld (ARG+1), hl                      ; string pointer
+    ld hl, ARG                          ; string descriptor
     ld a, 3
-    ld (VALTYP), a     ; DAC type = string 
-    ld (DAC+2), hl     ; DAC = string descriptor
+    ld (VALTYP), a                      ; DAC type=string 
+    ld (DAC+2), hl                      ; DAC=string descriptor
     ld hl, BDOS_EMPTY_LINE
-    ld ix, BDOS_FILEVL ; in hl=BASIC pointer, DAC = string descriptor; out d = device
+    ld ix, BDOS_FILEVL                  ; in hl=BASIC pointer, DAC=string descriptor; out d=device id
     call CALBAS
   pop bc 
   pop hl 
   pop af 
   ld e, l 
   ld hl, BDOS_EMPTY_LINE
-  ld ix, BDOS_OPEN ; in: a = i/o number, e = filemode, d = devicecode, hl = BASIC pointer
+  ld ix, BDOS_OPNFIL                    ; in: a=i/o number, e=file mode, d=device id, hl=BASIC pointer
   jp CALBAS 
 
 ; ------------------------------------------------------------------------------------------------------
 ; EOF function
-; in : a = file number
+; in : hl = file number
 ; out: hl = true or false
 ; ------------------------------------------------------------------------------------------------------
 cmd_feof:
-  call cmd_fget_fcb 
-  call HEOF              ; in: hl=FCB, out: DAC+2
-  ld hl, (DAC+2)         ; true or false
-  ret
+  ld ix, BDOS_EOF 
+cmd_fcall.function:
+  ld (DAC+2), hl 
+  jp CALBAS
+
+; ------------------------------------------------------------------------------------------------------
+; LOC function
+; in : a = file number
+; out: hl = number of bytes that have been read (sequential) or record number (random)
+; ------------------------------------------------------------------------------------------------------
+cmd_floc:
+  ld ix, BDOS_LOC
+  jr cmd_fcall.function
+
+; ------------------------------------------------------------------------------------------------------
+; LOF function
+; in : a = file number
+; out: hl = size of a file on disk in bytes
+; ------------------------------------------------------------------------------------------------------
+cmd_flof:
+  ld ix, BDOS_LOF
+  jr cmd_fcall.function
+
+; ------------------------------------------------------------------------------------------------------
+; FPOS function
+; in : a = file number
+; out: hl = current position of the file pointer within the specified file
+; ------------------------------------------------------------------------------------------------------
+cmd_fpos:
+  ld ix, BDOS_FPOS
+  jr cmd_fcall.function
 
 ; ------------------------------------------------------------------------------------------------------
 ; CLOSE statement
@@ -243,63 +301,83 @@ cmd_feof:
 ; reference: BDOS 0x10 (CloseFile)
 ; ------------------------------------------------------------------------------------------------------
 cmd_fclose:
-  ld bc, BDOS_CLOSE  ; in: a = file number
+  ld bc, BDOS_CLSFIL                    ; in: a = file number
   push bc 
   pop ix
   cp 0xFF
   jr nz, cmd_fclose.exec
     ld hl, BDOS_EMPTY_LINE
     ld a, (MAXFIL)
-    ld ix, BDOS_CLOSE_ALL  ; in: hl = BASIC pointer, a = (MAXFIL), bc = BDOS_CLOSE
+    ld ix, BDOS_CLSALL                  ; in: hl=BASIC pointer, a=(MAXFIL), bc=BDOS_CLOSE
 cmd_fclose.exec:
   jp CALBAS 
 
 ; ------------------------------------------------------------------------------------------------------
 ; INPUT# statement
-; in : a = file number
-; out: hl = true if success, false if error
+; in : a=file number, hl=string address (pascal style)
+; out: hl=string address (pascal style)
 ; reference: BDOS 0x14 (SequentialReadFile) and 0x21 (RandomReadFile)
 ; ------------------------------------------------------------------------------------------------------
 cmd_finput:
-  ret
-
-; input from CON:
-cmd_finput.con:
-  ret
-
-; input from COMn:
-cmd_finput.com:
-  ret
-
-; input from CAS:
-cmd_finput.cas:
-  ret
+  call cmd_fsetfil
+  xor a 
+  ld (hl), a
+  ld e, l 
+  ld d, h 
+  ld bc, cmd_finput.begin 
+cmd_finput.begin:
+  call cmd_findskc
+  cp BDOS_EOF_FLAG
+  ret z
+  cp 0x0D                               ; CR
+  jr z, cmd_finput.exec
+  cp 0x0A                               ; LF 
+  jr z, cmd_finput.exec
+  cp 0x2C                               ; , 
+  jr z, cmd_finput.exec
+  cp 0x22                               ; "
+  jr z, cmd_finput.exec
+cmd_finput.append:
+  ld (hl), a                            ; next character
+  inc hl
+  ld a, (de)                            ; string length
+  inc a 
+  ld (de), a
+  cp 0xFF
+  ret z                                 ; return if maximum string size reached
+  ld bc, cmd_finput.end
+  jr cmd_finput.begin 
+cmd_finput.exec:
+  push bc 
+cmd_finput.end:
+  ret 
 
 ; ------------------------------------------------------------------------------------------------------
 ; PRINT# statement
-; in : a = file number
-; out: hl = true if success, false if error
+; in : a=file number, hl=string address (pascal style), e=prefix, d=suffix
 ; reference: BDOS 0x15 (SequentialWriteFile) and 0x22 (RandomWriteFile)
 ; ------------------------------------------------------------------------------------------------------
 cmd_fprint:
-  ret
-
-; print to GRP:
-cmd_fprint.grp:
-  ret
-
-; print to CRT: / CON:
-cmd_fprint.con:
-  ret
-
-; print to COMn:
-cmd_fprint.com:
-  ret
-
-; print to LPT: / PRN: / LST:
-cmd_fprint.lpt:
-  ret
-
-; print to CAS:
-cmd_fprint.cas:
+  call cmd_fsetfil
+  push de 
+    ld a, e
+    or a                                ; prefix? i.e: 0x2C (comma)
+    call nz, cmd_ffilout
+    ld a, 0x22                          ; "
+    call cmd_ffilout
+    ld a, (hl)
+    or a 
+    jr z, cmd_fprint.end
+    ld b, a
+cmd_fprint.loop:
+      ld a, (hl)
+      call cmd_ffilout                  ; print string next character
+      inc hl
+    djnz cmd_fprint.loop
+cmd_fprint.end:
+    ld a, 0x22                          ; "
+    call cmd_ffilout 
+  pop af 
+  or a                                  ; suffix? e.i: 0x0A (LF)
+  call nz, cmd_ffilout 
   ret

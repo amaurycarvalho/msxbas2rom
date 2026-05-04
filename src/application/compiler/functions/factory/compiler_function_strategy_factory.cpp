@@ -44,6 +44,9 @@ CompilerFunctionStrategyFactory::CompilerFunctionStrategyFactory() {
   strategies["INP"] = &inpStrategy;
   strategies["DSKF"] = &dskfStrategy;
   strategies["EOF"] = &eofStrategy;
+  strategies["LOC"] = &locStrategy;
+  strategies["LOF"] = &lofStrategy;
+  strategies["FPOS"] = &fposStrategy;
   strategies["PSG"] = &psgStrategy;
   strategies["PLAY"] = &playStrategy;
   strategies["STICK"] = &stickStrategy;

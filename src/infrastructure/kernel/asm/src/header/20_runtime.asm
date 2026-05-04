@@ -286,8 +286,10 @@ wrapper_routines_map_start:
   jp cmd_fmaxfiles
   jp cmd_fdskf
   jp cmd_feof
+  jp cmd_floc
+  jp cmd_flof
+  jp cmd_fpos
   jp cmd_fopen
   jp cmd_fclose
   jp cmd_finput
   jp cmd_fprint
-

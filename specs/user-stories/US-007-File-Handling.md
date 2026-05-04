@@ -2,7 +2,7 @@
 
 ## Story
 
-As an MSX-BASIC developer, I want to use OPEN, READ#, PRINT#, INPUT#, MAXFILES and CLOSE commands - and also EOF() and DSKF() functions - in my programs so that I can persist and retrieve data from files across different MSX devices (disk, cassette, memory, etc.).
+As an MSX-BASIC developer, I want to use OPEN, READ#, PRINT#, INPUT#, MAXFILES and CLOSE commands - and also EOF(), LOC(), LOF(), FPOS() and DSKF() functions - in my programs so that I can persist and retrieve data from files across different MSX devices (disk, cassette, memory, etc.).
 
 ## Acceptance Criteria
 
@@ -12,6 +12,7 @@ As an MSX-BASIC developer, I want to use OPEN, READ#, PRINT#, INPUT#, MAXFILES a
 - CLOSE properly releases the file handle and flushes buffers when needed.
 - Multiple files (up to MAXFILES limit) can be opened and handled independently and when MAXFILES was set it adjust the correct memory allocation for disk operation.
 - EOF() conditions are correctly detected and handled.
+- LOC(), LOF(), and FPOS() return file state information correctly.
 - DSKF() function returns if the MSX DISK is functional.
 - Always checks if MSX DISK is functional before every file access statement to avoid disk calls errors.
 - MSXBAS2ROM programs that use file operations will have access to less free RAM memory (limited to FILTAB pointed address) than programs that do not use file operations (limited to HEAPEND address).
@@ -143,10 +144,10 @@ Implemented in `cmd_fdskf` (`34_file_handling.asm`):
   - On success (`A < 0x80`), returns with `HL` from BDOS (free clusters).
   - On failure, fallback error return is `HL = 0xFFxx` (`H=0xFF`, `L=A`), i.e., negative signed result.
 
-BDOS (0xF37D) routines associated:
+BDOS calls actually used in `34_file_handling.asm`:
 
 ```
-GetLoginVector (0x18):
+GetLoginVector (0x18, via `ROMBDOS`):
   input:
     C = 18H
   output:
@@ -154,7 +155,7 @@ GetLoginVector (0x18):
   note:
     can be called directly using ROMBDOS
 
-GetAllocationInfo (0x1B):
+GetAllocationInfo (0x1B, via `cmd_bdos_we`):
   input:
     C = 0x1B
     E = drive number
@@ -209,29 +210,12 @@ cmd_fopen:
     a = 0 if successfull, otherwise error
 ```
 
-BDOS (0xF37D) routines associated:
+BDOS calls actually used in `34_file_handling.asm`:
 
 ```
-FILTAB (0xF860) - address of the pointer table for the I/O buffer FCBs
-FCBBASE (0xF353) - File Control Block base
+BDOS_FILEVL (0x6A11) - file name parser/device resolver (used before open).
 
-OpenFile (0x0F):
-  input:
-    C = 0FH
-    DE = Pointer to unopened FCB
-  output:
-    L=A = 0FFH if file not found
-        =   0  if file is found
-  note:
-    must be called indirectly using cmd_bdos_we
-
-CreateFile (0x16):
-  input:
-    C = 16H
-    DE = Pointer to unopened FCB
-  output:
-    L=A = 0FFH if unsuccessful
-        =   0  if successful
+BDOS_OPNFIL (0x6AFA) - open I/O channel with mode (input/output/random/append).
 
 FCB scheme:
 
@@ -265,7 +249,7 @@ Compiler behavior (`compiler_close_statement_strategy.cpp`):
   - each expression is evaluated/cast to numeric;
   - each channel is closed individually by calling `cmd_fclose` in sequence.
 - `CLOSE` (no params):
-  - emits a call to `cmd_fclose` for each opened FCB in the FCB list.
+  - emits a call to `cmd_fclose` passing 0xFF as file number.
 
 `cmd_fclose` behavior (`34_file_handling.asm`):
 
@@ -277,88 +261,52 @@ cmd_fclose:
     a = 0 if successfull, otherwise error
 ```
 
-BDOS (0xF37D) routines associated:
+BDOS calls actually used in `34_file_handling.asm`:
 
 ```
-CloseFile (0x10)
-  input:
-    C = 10H
-    DE = Pointer to opened FCB
-  output:
-    L=A = 0FFH if not successful
-        =   0  if successful
+BDOS_CLSFIL (0x6B24) - close one I/O channel (CLOSE #n).
+
+BDOS_CLSALL (0x6BE9) - close all I/O channels (CLOSE sem parametros).
 ```
 
-### EOF Handling
+### EOF, LOC, LOF and FPOS Handling
 
-Get the file number passed as parameter to the EOF(n) function and checks the corresponding FCB if exists data to read in the file or not.
+Get the file number passed as parameter to each function and query the active channel state.
 
-BDOS (0xF37D) routines associated:
+Implemented in `cmd_feof`, `cmd_floc`, `cmd_flof`, and `cmd_fpos` (`34_file_handling.asm`).
+
+BDOS calls actually used in `34_file_handling.asm`:
 
 ```
-HEOF (0xFEA3)
-  input:
-    hl = FCB address
-  output:
-    DAC+2 = true or false (integer)
+BDOS_EOF (0x6D25) - returns EOF status for channel.
+
+BDOS_LOC (0x6D03) - returns bytes read (sequential) or current record (random).
+
+BDOS_LOF (0x6D14) - returns file size in bytes.
+
+BDOS_FPOS (0x6D39) - returns current file pointer position.
 ```
 
 ### READ#/INPUT# Implementation
 
-BDOS (0xF37D) routines associated:
+BDOS calls actually used in `34_file_handling.asm`:
 
 ```
-SequentialReadFile (0x14)
-  input:
-    C = 14H
-    DE = Pointer to opened FCB
-  output:
-    L=A = 01H if error (end of file)
-        =  0  if read was successful
+BDOS_SETFIL (0x6AAA) - selects active I/O channel for operation.
 
-RandomReadFile (0x21)
-  input:
-    C = 21H
-    DE = Pointer to opened FCB
-  output:
-    L=A = 01H if error (end of file)
-        =  0  if read was successful
+BDOS_INDSKC (0x6C71) - reads next character from selected file/channel.
 
-SetDiskTransferAddress (0x1A)
-  input:
-    C = 1AH
-    DE = Required Disk Transfer Address
-  output:
-    None
-
-SetRandomRecordFile (0x24)
-  input:
-    C = 24H
-    DE = Pointer to opened FCB
-  output:
-    None
+BDOS_EOF_FLAG (0x1A) - value checked by `cmd_finput` as end-of-file marker.
 ```
 
 ### PRINT# Implementation
 
-BDOS (0xF37D) routines associated:
+BDOS calls actually used in `34_file_handling.asm`:
 
 ```
-SequentialWriteFile (0x15)
-  input:
-    C = 15H
-    DE = Pointer to opened FCB
-  output:
-    L=A = 01H if error (disk full)
-        =  0  if write was successful
+BDOS_SETFIL (0x6AAA) - selects active I/O channel for operation.
 
-RandomWriteFile (0x22)
-  input:
-    C = 22H
-    DE = Pointer to opened FCB
-  output:
-    L=A = 01H if error (disk full)
-        =  0  if no error
+BDOS_FILOUT (0x6C48) - writes one character to selected file/channel.
 ```
 
 ---
@@ -372,6 +320,9 @@ RandomWriteFile (0x22)
 - [INPUT statement](https://www.msx.org/wiki/INPUT);
 - [MAXFILES statement](https://www.msx.org/wiki/MAXFILES);
 - [EOF function](<https://www.msx.org/wiki/EOF()>);
+- [LOC function](<https://www.msx.org/wiki/LOC()>);
+- [LOF function](<https://www.msx.org/wiki/LOF()>);
+- [FPOS function](https://www.msx.org/wiki/FPOS);
 - [DSKF function](<https://www.msx.org/wiki/DSKF()>);
 - [ROM with disks support](https://www.msx.org/wiki/Develop_a_program_in_cartridge_ROM#Create_a_ROM_with_disks_support);
 - [Using MSX DISK calls example](https://www.msx.org/forum/msx-talk/development/asm-basic-files);
