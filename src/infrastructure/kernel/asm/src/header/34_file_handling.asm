@@ -344,12 +344,14 @@ cmd_finput.append:
   inc a 
   ld (de), a
   cp 0xFF
-  ret z                                 ; return if maximum string size reached
+  jr z, cmd_finput.end                  ; return if maximum string size reached
   ld bc, cmd_finput.end
   jr cmd_finput.begin 
 cmd_finput.exec:
   push bc 
+  ret
 cmd_finput.end:
+  ex de, hl                             ; return string address (hl)
   ret 
 
 ; ------------------------------------------------------------------------------------------------------

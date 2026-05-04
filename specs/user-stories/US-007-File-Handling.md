@@ -256,7 +256,7 @@ Compiler behavior (`compiler_close_statement_strategy.cpp`):
 ```
 cmd_fclose:
   input:
-    a = file number
+    a = file number (0xFF = close all)
   output:
     a = 0 if successfull, otherwise error
 ```
@@ -289,6 +289,22 @@ BDOS_FPOS (0x6D39) - returns current file pointer position.
 
 ### READ#/INPUT# Implementation
 
+Implemented in `cmd_finput` (`34_file_handling.asm`).
+
+```
+cmd_finput:
+  input:
+    a=file number
+    hl=string address (pascal style)
+  output:
+    hl=string address (pascal style)
+```
+
+INPUT strategy behavior (`compiler_input_statement_strategy.cpp`) when a file number (#) is passed as first parameter:
+
+- A temporary string must be passed to `cmd_finput` to be populated before each variable in the INPUT# list. The same temporary string can be used sequentially;
+- The `cmd_input` output must be converted from string to the correct data type of the variable being processed in the list, and an assignment must then be performed.
+
 BDOS calls actually used in `34_file_handling.asm`:
 
 ```
@@ -300,6 +316,25 @@ BDOS_EOF_FLAG (0x1A) - value checked by `cmd_finput` as end-of-file marker.
 ```
 
 ### PRINT# Implementation
+
+Implemented in `cmd_fprint` (`34_file_handling.asm`).
+
+```
+cmd_fprint:
+  input:
+    a=file number
+    hl=string address (pascal style)
+    e=prefix (i.e: 0x2C - comma)
+    d=suffix (i.e: 0x0A - LF)
+```
+
+PRINT strategy behavior (`compiler_print_statement_strategy.cpp`) when a file number (#) is passed as first parameter:
+
+- All variables/constants must be converted to strings before being passed to `cmd_fprint` so that they can be processed by it;
+- Prefix and suffix values of the first variable/constant in the PRINT# list must be zero (0);
+- Next ones in the list must have value 0x2C (comma) as prefix and zero (0) as suffix;
+- Last one must have value 0x0A (LF) as suffix, except if there's a "," or ";" at the end of the PRINT# statement;
+- Dont insert an automatic CRLF at the end of the PRINT#.
 
 BDOS calls actually used in `34_file_handling.asm`:
 
