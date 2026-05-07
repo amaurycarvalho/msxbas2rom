@@ -153,6 +153,7 @@ XBASIC_END.1:
   ;ld (MAXFIL), a              ; MAXFIL - reset max files
   ;ld (NLONLY), a              ; NLONLY - reset io buffers (warning: commented because it halts the system)
   ld (ONEFLG), a              ; error flag (0=not in ERROR handler routine)
+  ld (ERRFLG), a              ; error number
   cpl
   ld (CURLIN), a              ; CURLIN = 0xFFFF
   ld (CURLIN+1), a

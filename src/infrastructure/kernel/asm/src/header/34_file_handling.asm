@@ -8,6 +8,10 @@
 ; out: a = 0 if available, otherwise is unavailable
 ; ------------------------------------------------------------------------------------------------------
 cmd_preflight_disk:
+  ; --> check disk number parameter
+  cp 9
+  ret nc                                ; return error if a >= 9
+  ; --> check disk availability
   push hl
     ld l, a
     ld h, 0
@@ -27,66 +31,124 @@ cmd_preflight_disk:
 ; ------------------------------------------------------------------------------------------------------
 ; BDOS with error handling
 ; ------------------------------------------------------------------------------------------------------
-cmd_bdos_we:
+;cmd_bdos_we:
+;  ex af, af'
+;  exx
+;    ; --> copy error handler to RAM
+;    ld de, HOLD2
+;    ld hl, cmd_bdos_we.error_handler
+;    ld bc, cmd_bdos_we.error_handler.end - cmd_bdos_we.error_handler
+;    ldir
+;    ; --> copy abort handler to RAM
+;    ld de, HOLD8 
+;    ld hl, cmd_bdos_we.abort_handler
+;    ld bc, cmd_bdos_we.abort_handler.end - cmd_bdos_we.abort_handler
+;    ldir 
+;    ; --> set BDOS error/abort handler addresses
+;    ld hl, (0xF323)                     ; save error handler address
+;    ld (ARG), hl
+;    ld hl, (0xF1E6)                     ; save abort handler address
+;    ld (ARG + 2), hl
+;    ld hl, HOLD2                        ; error handler address in RAM
+;    ld (HOLD), hl                       ; save error handler address
+;    ld hl, HOLD                         ; error handler pointer address
+;    ld (0xF323), hl                     ; set error handler pointer address
+;    ld hl, HOLD8                        ; abort handler address in RAM 
+;    ld (0xF1E6), hl                     ; set abort handler address
+;  exx
+;  ex af, af'
+;
+;  ld (DAC), sp                          ; save stack pointer
+;  call ROMBDOS  
+;
+;cmd_bdos_we.done: 
+;  ; --> restore default BDOS error/abort handler addresses
+;  push hl 
+;    ld hl, (ARG) 
+;    ld (0xF323), hl                     ; error handler address
+;    ld hl, (ARG + 2)
+;    ld (0xF1E6), hl                     ; abort handler address
+;  pop hl
+;  ret 
+;
+;cmd_bdos_we.error_handler:
+;  ld a, c                               ; get error code
+;  ld c, 2                               ; reply = abort
+;  ret
+;cmd_bdos_we.error_handler.end:
+;
+;cmd_bdos_we.abort_handler: 
+;  and 0x7F                              ; clear bit 7
+;  neg                                   ; turn error code value to negative (A = -A)
+;  ld sp, (DAC)                          ; restore stack pointer
+;  ex af, af'
+;  exx
+;    ld a, (SLTSTR)                      ; kernel slot
+;    ld h, 0x40                          ; select the ROM on page 4000h
+;    call ENASLT                         ; restore page 1 to kernel slot
+;  exx
+;  ex af, af'
+;  ei
+;  jp cmd_bdos_we.done                   ; warning: required, because it will run in RAM 
+;cmd_bdos_we.abort_handler.end: 
+
+; ------------------------------------------------------------------------------------------------------
+; Call BASIC with error handling
+; ------------------------------------------------------------------------------------------------------
+cmd_fcalbas_we:
   ex af, af'
   exx
+    ; --> reset error code
+    xor a 
+    ld (ERRFLG), a                      ; reset error code 
+    ; --> set Disk BASIC error handler
+    ld a, 0xC3                          ; Z80 jp 
+    ld (HERRO), a 
+    ld de, PARM2
+    ld (HERRO+1), de 
     ; --> copy error handler to RAM
-    ld de, HOLD2
-    ld hl, cmd_bdos_we.error_handler
-    ld bc, cmd_bdos_we.error_handler.end - cmd_bdos_we.error_handler
+    ld hl, cmd_fcalbas_we.error_handler
+    ld bc, cmd_fcalbas_we.error_handler.end - cmd_fcalbas_we.error_handler
     ldir
-    ; --> copy abort handler to RAM
-    ld de, HOLD8 
-    ld hl, cmd_bdos_we.abort_handler
-    ld bc, cmd_bdos_we.abort_handler.end - cmd_bdos_we.abort_handler
-    ldir 
-    ; --> set BDOS error/abort handler addresses
-    ld hl, (0xF323)                     ; save error handler address
-    ld (ARG), hl
-    ld hl, (0xF1E6)                     ; save abort handler address
-    ld (ARG + 2), hl
-    ld hl, HOLD2                        ; error handler address in RAM
-    ld (HOLD), hl                       ; save error handler address
-    ld hl, HOLD                         ; error handler pointer address
-    ld (0xF323), hl                     ; set error handler pointer address
-    ld hl, HOLD8                        ; abort handler address in RAM 
-    ld (0xF1E6), hl                     ; set abort handler address
   exx
   ex af, af'
-
-  ld (DAC), sp                          ; save stack pointer
-  call ROMBDOS  
-
-cmd_bdos_we.done: 
-  ; --> restore default BDOS error/abort handler addresses
-  push hl 
-    ld hl, (ARG) 
-    ld (0xF323), hl                     ; error handler address
-    ld hl, (ARG + 2)
-    ld (0xF1E6), hl                     ; abort handler address
-  pop hl
+  ld (PARM2+50), sp                     ; save stack pointer
+  call CALBAS  
+cmd_fcalbas_we.done: 
+  ; --> restore default BASIC error handler
+  push af 
+    ld a, 0xC9                          ; Z80 ret
+    ld (HERRO), a 
+  pop af
   ret 
 
-cmd_bdos_we.error_handler:
-  ld a, c                               ; get error code
-  ld c, 2                               ; reply = abort
-  ret
-cmd_bdos_we.error_handler.end:
-
-cmd_bdos_we.abort_handler: 
-  and 0x7F                              ; clear bit 7
-  neg                                   ; turn error code value to negative (A = -A)
-  ld sp, (DAC)                          ; restore stack pointer
+cmd_fcalbas_we.error_handler:
+  ld sp, (PARM2+50)                     ; restore stack pointer
   ex af, af'
-  exx
-    ld a, (SLTSTR)                      ; kernel slot
-    ld h, 0x40                          ; select the ROM on page 4000h
-    call ENASLT                         ; restore page 1 to kernel slot
-  exx
+    ld a, e                             ; copy error code 
+    ld (ERRFLG), a
+    exx
+      ld a, (SLTSTR)                    ; kernel slot
+      ld h, 0x40                        ; select the ROM on page 4000h
+      call ENASLT                       ; restore page 1 to kernel slot
+    exx
   ex af, af'
   ei
-  jp cmd_bdos_we.done                   ; warning: required, because it will run in RAM 
-cmd_bdos_we.abort_handler.end: 
+  jp cmd_fcalbas_we.done                 ; warning: required, because it will run in RAM 
+cmd_fcalbas_we.error_handler.end:
+
+; ------------------------------------------------------------------------------------------------------
+; Call BASIC saving registers
+; ------------------------------------------------------------------------------------------------------
+cmd_fcalbas:
+  push bc
+  push de
+  push hl
+    call CALBAS 
+  pop hl
+  pop de
+  pop bc
+  ret
 
 ; ------------------------------------------------------------------------------------------------------
 ; Turn off BASIC interpreter i/o redirect
@@ -117,15 +179,7 @@ cmd_findskc:
 ; ------------------------------------------------------------------------------------------------------
 cmd_fsetfil:
   ld ix, BDOS_SETFIL
-cmd_fcalbas:
-  push bc
-  push de
-  push hl
-    call CALBAS 
-  pop hl
-  pop de
-  pop bc
-  ret
+  jr cmd_fcalbas
 
 ; ======================================================================================================
 ; FILE HANDLING STATEMENTS/FUNCTIONS IMPLEMENTATIONS
@@ -219,21 +273,28 @@ cmd_fopen:
   ld e, l 
   ld hl, BDOS_EMPTY_LINE
   ld ix, BDOS_OPNFIL                    ; in: a=i/o number, e=file mode, d=device id, hl=BASIC pointer
-  jp CALBAS 
+  jp cmd_fcalbas_we 
 
 ; ------------------------------------------------------------------------------------------------------
 ; EOF function
 ; in : hl = file number
-; out: hl = true or false
+; out: hl = true (FFFF) or false (0)
 ;      DAC+2 = integer value
 ; ------------------------------------------------------------------------------------------------------
 cmd_feof:
   ld ix, BDOS_EOF 
+  call cmd_fcall.function
+  or a 
+  ret z                                 ; return if no error
+  ld hl, 0xFFFF                         ; return true if error                                        
+  ret 
+
 cmd_fcall.function:
   ld (DAC+2), hl                        ; file number
   ld a, 2                               ; integer value
   ld (VALTYP), a
-  call CALBAS
+  call cmd_fcalbas_we
+  ld a, (ERRFLG) 
   ld hl, (DAC+2)
   ret
 
@@ -269,38 +330,46 @@ cmd_fpos:
 
 ; ------------------------------------------------------------------------------------------------------
 ; DSKF function
-; in : a = disk number (0 = default drive, 1=A, 2=B...)
+; in : hl and a = disk number (0 = default drive, 1=A, 2=B...)
 ; out: hl = free clusters (negative = disk error)
 ; ------------------------------------------------------------------------------------------------------
 cmd_fdskf:
-  ; --> check disk number parameter
-  cp 9
-  jr nc, cmd_fdskf.error                ; error if a >= 9
   ; --> check disk
   call cmd_preflight_disk
   or a
   jr nz, cmd_fdskf.error                ; error if a != 0
-  ;ld ix, BDOS_DSKF
-  ;jr cmd_fcall.function
-  ; --> check drivers
-  ld c, 0x18                            ; BDOS GetLoginVector (return drivers flag in L)
-  push hl 
-    call ROMBDOS
-  pop de
-  ld a, l 
-  and a 
-  jr z, cmd_fdskf.error                 ; error if A = 0
-  ; ---> get disk information
-  ld c, 0x1B                            ; BDOS GetAllocationInfo (e = drive number)
-  call cmd_bdos_we                      ; out: a = sectors per cluster (0xFF if error)
-                                        ;      hl = free clusters
-  cp 0x80
-  ret c                                 ; return if success
+  ; --> call DSKF function
+  ld ix, BDOS_DSKF
+  call cmd_fcall.function
+  or a 
+  ret z                                 ; return if no error
 cmd_fdskf.error:
   ; --> disk error fallback
+  and 0x7F                              ; clear bit 7
+  neg                                   ; turn error code value to negative (A = -A)
   ld l, a
   ld h, 0xFF
   ret
+  
+;  ; --> check drivers
+;  ld c, 0x18                            ; BDOS GetLoginVector (return drivers flag in L)
+;  push hl 
+;    call ROMBDOS
+;  pop de
+;  ld a, l 
+;  and a 
+;  jr z, cmd_fdskf.error                 ; error if A = 0
+;  ; ---> get disk information
+;  ld c, 0x1B                            ; BDOS GetAllocationInfo (e = drive number)
+;  call cmd_bdos_we                      ; out: a = sectors per cluster (0xFF if error)
+;                                        ;      hl = free clusters
+;  cp 0x80
+;  ret c                                 ; return if success
+;cmd_fdskf.error:
+;  ; --> disk error fallback
+;  ld l, a
+;  ld h, 0xFF
+;  ret
 
 ; ------------------------------------------------------------------------------------------------------
 ; CLOSE statement
@@ -312,12 +381,12 @@ cmd_fclose:
   ld hl, BDOS_EMPTY_LINE
   ld ix, BDOS_CLSFIL                    ; in: a = file number, hl=BASIC pointer
   cp 0xFF
-  jp nz, CALBAS
+  jp nz, cmd_fcalbas_we
     push ix
     pop bc 
     ld a, (MAXFIL)
     ld ix, BDOS_CLSALL                  ; in: a=(MAXFIL), bc=BDOS_CLSFIL, hl=BASIC pointer
-    jp CALBAS 
+    jp cmd_fcalbas_we 
 
 ; ------------------------------------------------------------------------------------------------------
 ; INPUT# statement

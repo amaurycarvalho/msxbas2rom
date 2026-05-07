@@ -50,6 +50,7 @@ HCHPU:        equ 0xFDA4   ; char put hook
 HKEYI:        equ 0xFD9A
 HPHYD:        equ 0xFFA7   ; physical disk input-output hook
 HEOF:         equ 0xFEA3   ; EOF hook (in: hl=FCB address, out: )
+HERRO:        equ 0xFFB1   ; ERROR hook (in: e=error code)
 
 WRTVDP:       equ 0x0047
 RDVRM:        equ 0x004A
@@ -256,14 +257,18 @@ TXTTAB:       equ 0xF676     ; start of basic program
 VARTAB:       equ 0xF6C2     ; start of variables area (end of basic program)
 ARYTAB:       equ 0xF6C4     ; start of array area
 STREND:       equ 0xF6C6     ; end of variables area
-OLDTXT:       equ 0xF6C0     ; last program line
-OLDLIN:       equ 0xF6BE     ; last line executed by interpreter
+OLDTXT:       equ 0xF6C0     ; 2 - last program line address
+OLDLIN:       equ 0xF6BE     ; 2 - last line executed by interpreter
 BASROM:       equ 0xFBB1     ; user basic code on rom? (0=RAM, not 0 = ROM)
-NLONLY:       equ 0xF87C     ; loading basic program flags (bit 0=not close i/o buffer 0, bit 7=not close user i/o buffer)
+NLONLY:       equ 0xF87C     ; 1 - loading basic program flags (bit 0=not close i/o buffer 0, bit 7=not close user i/o buffer)
 LPTPOS:       equ 0xF415     ; printer head horizontal position
-ONELIN:       equ 0xF6B9     ; error line number
+ONELIN:       equ 0xF6B9     ; 2 - error line number address for ON ERROR GOTO
 ONEFLG:       equ 0xF6BB     ; 1 - error flag (0=not in ERROR handler routine)
 CURLIN:       equ 0xF41C     ; 2 - current line (BASIC interpreter, FFFF=direct mode)
+DOT:          equ 0xF6B5     ; 2 - last processed line (BASIC interpreter)
+ERRLIN:       equ 0xF6B3     ; 2 - error line 
+ERRTXT:       equ 0xF6B7     ; 2 - error message address
+ERRFLG:       equ 0xF414     ; 1 - error code
 PRTFLG:       equ 0xF416     ; output to screen (0=true)
 PTRFLG:       equ 0xF6A9     ; line number converted to pointer (0=false)
 DORES:        equ 0xF664     ; 1 - DATA flag to ASCII format
