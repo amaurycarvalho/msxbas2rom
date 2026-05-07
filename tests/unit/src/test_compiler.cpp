@@ -382,9 +382,8 @@ TEST_SUITE("CompilerFunctionStrategyFactory") {
         "TAN",         "ATN",          "EXP",    "LOG",       "SQR",
         "SGN",         "ABS",          "VAL",    "PEEK",      "IPEEK",
         "VPEEK",       "INP",          "DSKF",   "EOF",       "LOC",
-        "LOF",         "FPOS",         "PSG",
-        "PLAY",
-        "STICK",       "STRIG",        "PAD",    "PDL",       "BASE",
+        "LOF",         "FPOS",         "PSG",    "PLAY",      "STICK",
+        "STRIG",       "PAD",          "PDL",    "BASE",
 
         "ASC",         "LEN",          "CSNG",   "CDBL",      "CINT",
 
@@ -518,7 +517,7 @@ TEST_SUITE("CompilerStatementStrategies") {
         {"CMD", "10 CMD KEYCLKOFF\n20 END\n", true},
         {"MAXFILES", "10 MAXFILES=5\n20 END\n", true},
         {"OPEN", "10 OPEN \"A\" FOR INPUT AS #1 LEN 1\n20 END\n", true},
-        {"OPEN_GRP", "10 OPEN \"GRP:\"\n20 END\n", true},
+        {"OPEN_GRP", "10 OPEN \"GRP:\" FOR OUTPUT AS #1\n20 END\n", true},
         {"CLOSE", "10 CLOSE #1\n20 END\n", true},
         {"BLOAD", "10 BLOAD \"ASSET.SCR\",S\n20 END\n", true},
         {"PLAY", "10 PLAY \"AB\"\n20 END\n", true},
@@ -540,25 +539,19 @@ TEST_SUITE("CompilerStatementStrategies") {
         {"STRIG", "10 STRIG 1,ON\n20 END\n", true},
         {"SPRITE", "10 SPRITE ON\n20 END\n", true},
         {"SPRITE_LOAD", "10 SPRITE LOAD 0\n20 END\n", true},
-        {"SPRITE_ASSIGN",
-         "10 A$=STRING$(8,255)\n20 SPRITE$(0)=A$\n30 END\n",
+        {"SPRITE_ASSIGN", "10 A$=STRING$(8,255)\n20 SPRITE$(0)=A$\n30 END\n",
          true},
         {"COLOR_SPRITE", "10 COLOR SPRITE(1)=33\n20 END\n", true},
-        {"COLOR_SPRITE_STR",
-         "10 COLOR SPRITE$(0)=CHR$(1)+CHR$(2)\n20 END\n",
+        {"COLOR_SPRITE_STR", "10 COLOR SPRITE$(0)=CHR$(1)+CHR$(2)\n20 END\n",
          true},
         {"SET_SPRITE_PATTERN",
-         "10 DIM PB%(3,3)\n20 SET SPRITE PATTERN 0, PB%\n30 END\n",
-         true},
+         "10 DIM PB%(3,3)\n20 SET SPRITE PATTERN 0, PB%\n30 END\n", true},
         {"GET_SPRITE_PATTERN",
-         "10 DIM PB%(3,3)\n20 GET SPRITE PATTERN 0, PB%\n30 END\n",
-         true},
+         "10 DIM PB%(3,3)\n20 GET SPRITE PATTERN 0, PB%\n30 END\n", true},
         {"SET_SPRITE_COLOR",
-         "10 DIM CB%(7)\n20 SET SPRITE COLOR 0, CB%\n30 END\n",
-         true},
+         "10 DIM CB%(7)\n20 SET SPRITE COLOR 0, CB%\n30 END\n", true},
         {"GET_SPRITE_COLOR",
-         "10 DIM CB%(7)\n20 GET SPRITE COLOR 0, CB%\n30 END\n",
-         true},
+         "10 DIM CB%(7)\n20 GET SPRITE COLOR 0, CB%\n30 END\n", true},
     };
 
     for (const auto& test_case : cases) {
@@ -577,19 +570,20 @@ TEST_SUITE("CompilerStatementStrategies") {
     }
   }
 
-  TEST_CASE("PRINT# compiles with file output variants and rejects invalid forms") {
+  TEST_CASE(
+      "PRINT# compiles with file output variants and rejects invalid forms") {
     SUBCASE("Valid PRINT# variants") {
       std::string errors;
-      bool ok = compileStatementProgram(
-          "compiler_stmt_print_file_valid.bas",
-          "10 OPEN \"A:TEST.TXT\" FOR OUTPUT AS #1\n"
-          "20 PRINT #1,\"A\",10,2.5\n"
-          "30 PRINT #1,\"B\";\n"
-          "40 PRINT #1,\"C\",\n"
-          "50 PRINT #1\n"
-          "60 CLOSE #1\n"
-          "70 END\n",
-          &errors);
+      bool ok =
+          compileStatementProgram("compiler_stmt_print_file_valid.bas",
+                                  "10 OPEN \"A:TEST.TXT\" FOR OUTPUT AS #1\n"
+                                  "20 PRINT #1,\"A\",10,2.5\n"
+                                  "30 PRINT #1,\"B\";\n"
+                                  "40 PRINT #1,\"C\",\n"
+                                  "50 PRINT #1\n"
+                                  "60 CLOSE #1\n"
+                                  "70 END\n",
+                                  &errors);
 
       CHECK(ok == true);
       CHECK(errors.empty());
@@ -597,8 +591,9 @@ TEST_SUITE("CompilerStatementStrategies") {
 
     SUBCASE("Invalid PRINT# without file number expression") {
       std::string errors;
-      bool ok = compileStatementProgram("compiler_stmt_print_file_invalid_1.bas",
-                                        "10 PRINT #,\"A\"\n20 END\n", &errors);
+      bool ok =
+          compileStatementProgram("compiler_stmt_print_file_invalid_1.bas",
+                                  "10 PRINT #,\"A\"\n20 END\n", &errors);
 
       CHECK(ok == false);
       CHECK(errors.size() > 0);
@@ -606,8 +601,9 @@ TEST_SUITE("CompilerStatementStrategies") {
 
     SUBCASE("Invalid PRINT# with duplicated separator") {
       std::string errors;
-      bool ok = compileStatementProgram("compiler_stmt_print_file_invalid_2.bas",
-                                        "10 PRINT #1,,\"A\"\n20 END\n", &errors);
+      bool ok =
+          compileStatementProgram("compiler_stmt_print_file_invalid_2.bas",
+                                  "10 PRINT #1,,\"A\"\n20 END\n", &errors);
 
       CHECK(ok == false);
       CHECK(errors.size() > 0);
@@ -619,14 +615,14 @@ TEST_SUITE("CompilerStatementStrategies") {
       "invalid forms") {
     SUBCASE("Valid INPUT# and LINE INPUT# variants") {
       std::string errors;
-      bool ok = compileStatementProgram(
-          "compiler_stmt_input_file_valid.bas",
-          "10 OPEN \"A:TEST.TXT\" FOR INPUT AS #1\n"
-          "20 INPUT #1,A$,B$\n"
-          "30 LINE INPUT #1,L$\n"
-          "40 CLOSE #1\n"
-          "50 END\n",
-          &errors);
+      bool ok =
+          compileStatementProgram("compiler_stmt_input_file_valid.bas",
+                                  "10 OPEN \"A:TEST.TXT\" FOR INPUT AS #1\n"
+                                  "20 INPUT #1,A$,B$\n"
+                                  "30 LINE INPUT #1,L$\n"
+                                  "40 CLOSE #1\n"
+                                  "50 END\n",
+                                  &errors);
 
       CHECK(ok == true);
       CHECK(errors.empty());
@@ -634,8 +630,9 @@ TEST_SUITE("CompilerStatementStrategies") {
 
     SUBCASE("Invalid INPUT# without file number expression") {
       std::string errors;
-      bool ok = compileStatementProgram("compiler_stmt_input_file_invalid_1.bas",
-                                        "10 INPUT #,A$\n20 END\n", &errors);
+      bool ok =
+          compileStatementProgram("compiler_stmt_input_file_invalid_1.bas",
+                                  "10 INPUT #,A$\n20 END\n", &errors);
 
       CHECK(ok == false);
       CHECK(errors.size() > 0);
@@ -643,8 +640,9 @@ TEST_SUITE("CompilerStatementStrategies") {
 
     SUBCASE("Invalid INPUT# with duplicated separator") {
       std::string errors;
-      bool ok = compileStatementProgram("compiler_stmt_input_file_invalid_2.bas",
-                                        "10 INPUT #1,,A$\n20 END\n", &errors);
+      bool ok =
+          compileStatementProgram("compiler_stmt_input_file_invalid_2.bas",
+                                  "10 INPUT #1,,A$\n20 END\n", &errors);
 
       CHECK(ok == false);
       CHECK(errors.size() > 0);
@@ -652,8 +650,9 @@ TEST_SUITE("CompilerStatementStrategies") {
 
     SUBCASE("Invalid INPUT# without destination variables") {
       std::string errors;
-      bool ok = compileStatementProgram("compiler_stmt_input_file_invalid_3.bas",
-                                        "10 INPUT #1\n20 END\n", &errors);
+      bool ok =
+          compileStatementProgram("compiler_stmt_input_file_invalid_3.bas",
+                                  "10 INPUT #1\n20 END\n", &errors);
 
       CHECK(ok == false);
       CHECK(errors.size() > 0);
@@ -661,9 +660,9 @@ TEST_SUITE("CompilerStatementStrategies") {
 
     SUBCASE("Invalid LINE INPUT# with non-identifier parameter") {
       std::string errors;
-      bool ok = compileStatementProgram("compiler_stmt_input_file_invalid_4.bas",
-                                        "10 LINE INPUT #1,\"A\"\n20 END\n",
-                                        &errors);
+      bool ok =
+          compileStatementProgram("compiler_stmt_input_file_invalid_4.bas",
+                                  "10 LINE INPUT #1,\"A\"\n20 END\n", &errors);
 
       CHECK(ok == false);
       CHECK(errors.size() > 0);

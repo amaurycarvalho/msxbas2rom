@@ -42,12 +42,15 @@ bool FileStatementStrategy::parseOpen(shared_ptr<ParserContext> context,
             for (auto& c : str) c = (char)toupper(c);
           }
 
+          /*
           if (next_lexeme->type == Lexeme::type_literal && str == "GRP:") {
             context->actionRoot->lexeme->name = "OPEN_GRP";
             context->actionRoot->lexeme->value =
                 context->actionRoot->lexeme->name;
             return true;
           }
+          */
+
           context->pushActionFromLexeme(next_lexeme);
           state = 1;
           continue;

@@ -1,0 +1,30 @@
+10 IF DSKF(0) <= 0 THEN PRINT "Insert a disk to read TEST.TXT" : END
+11 MAXFILES=2
+
+20 OPEN "CRT:" FOR OUTPUT AS #1
+21   PRINT #1, "Free memory: "; FRE(0)
+
+22   PRINT #1, "Reading TEST.TXT (LINE INPUT#)"
+30   OPEN "TEST.TXT" FOR INPUT AS #2
+31     IF EOF(2) THEN 35
+32       LINE INPUT #2,A$
+33       PRINT #1,A$
+34     GOTO 31
+35   CLOSE #2
+
+36   PRINT #1, "Reading TEST.TXT (INPUT#)"
+40   OPEN "TEST.TXT" FOR INPUT AS #2
+41     IF EOF(2) THEN 45
+42       INPUT #2,A$
+43       PRINT #1,A$
+44     GOTO 41
+45   CLOSE #2
+
+47   PRINT #1, "Reading TEST.TXT (NUMERIC)"
+50   OPEN "TEST.TXT" FOR INPUT AS #2
+51     INPUT #2, A$, B$, C$, N%
+52     PRINT #1, "Numeric value: "; N%
+53   CLOSE #2
+
+60 CLOSE #1
+

@@ -108,10 +108,11 @@ CLPRIM:       equ 0xF38C
 ROMBDOS:            equ 0xF37D ; BDOS
 BDOS_FILIDX:        equ 0x6A6D ; get pointer to I/O channel; in: a=i/o number; out hl=FCB address
 BDOS_SETFIL:        equ 0x6AAA ; redirect interpreter to I/O channel; in: a=i/o number
+BDOS_FINPRT:        equ 0x4AFF ; end BASIC interpreter redirect
 BDOS_OPNFIL:        equ 0x6AFA ; open I/O channel; in: a=i/o number, e=file mode, d=device id, hl=BASIC pointer
 BDOS_FILEVL:        equ 0x6A11 ; file name parser; in: DAC=string descriptor, hl=BASIC pointer; out d=device (note: native routine starts at 0x6A0E)
 BDOS_DEVICEVL:      equ 0x6F15 ; device name parser
-BDOS_CLSFIL:        equ 0x6B24 ; close I/O channel; in: a = i/o number
+BDOS_CLSFIL:        equ 0x6B24 ; close I/O channel; in: a = i/o number, hl=BASIC pointer
 BDOS_CLSALL:        equ 0x6BE9 ; close all I/O channels; in: a=(MAXFIL), bc=BDOS_CLSFIL, hl=BASIC pointer
 BDOS_INDSKC:        equ 0x6C71 ; sequential input; out: a=character (requires SETFIL)
 BDOS_FILOUT:        equ 0x6C48 ; sequential output; in: a=character (requires SETFIL)
@@ -119,7 +120,8 @@ BDOS_GETPUT:        equ 0x6C35 ; random input/output; in: hl=BASIC pointer, a=GE
 BDOS_FPOS:          equ 0x6D39 ; returns the current position of the file pointer within the specified file; in: DAC+2=i/o channel; out: DAC+2=result
 BDOS_LOC:           equ 0x6D03 ; returns the number of bytes that have been read (sequential) or record number (random); in: DAC+2=i/o channel; out: DAC+2=result
 BDOS_LOF:           equ 0x6D14 ; returns the size of a file on disk in bytes; in: DAC+2=i/o channel; out: DAC+2=result
-BDOS_EOF:           equ 0x6D25 ; returns  if the end of a file has been reached during input; in: DAC+2=i/o channel; out: DAC+2=result
+BDOS_EOF:           equ 0x6D25 ; returns if the end of a file has been reached during input; in: DAC+2=i/o channel; out: DAC+2=result
+BDOS_DSKF:          equ 0x7C39 ; returns the number of free clusters on the disk inserted in the specified drive.
 BDOS_INPUT_FLAG:    equ 1
 BDOS_OUTPUT_FLAG:   equ 2
 BDOS_RANDOM_FLAG:   equ 4

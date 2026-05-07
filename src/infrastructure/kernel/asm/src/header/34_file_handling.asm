@@ -92,11 +92,8 @@ cmd_bdos_we.abort_handler.end:
 ; Turn off BASIC interpreter i/o redirect
 ; ------------------------------------------------------------------------------------------------------
 cmd_freset_fil:
-  push hl 
-    ld hl, 0 
-    ld (PTRFIL), hl
-  pop hl 
-  ret
+  ld ix, BDOS_FINPRT
+  jr cmd_fcalbas
 
 ; ------------------------------------------------------------------------------------------------------
 ; Sequential output
@@ -104,7 +101,7 @@ cmd_freset_fil:
 ; ------------------------------------------------------------------------------------------------------
 cmd_ffilout:
   ld ix, BDOS_FILOUT
-  jp cmd_fcalbas
+  jr cmd_fcalbas
 
 ; ------------------------------------------------------------------------------------------------------
 ; Sequential input
@@ -112,7 +109,7 @@ cmd_ffilout:
 ; ------------------------------------------------------------------------------------------------------
 cmd_findskc:
   ld ix, BDOS_INDSKC
-  jp cmd_fcalbas
+  jr cmd_fcalbas
 
 ; ------------------------------------------------------------------------------------------------------
 ; Set BASIC interpreter i/o channel
@@ -193,40 +190,6 @@ cmd_fmaxfiles.populate_filtab.loop:
   ret
 
 ; ------------------------------------------------------------------------------------------------------
-; DSKF function
-; in : a = disk number (0 = default drive, 1=A, 2=B...)
-; out: hl = free clusters (negative = disk error)
-; ------------------------------------------------------------------------------------------------------
-cmd_fdskf:
-  ; --> check disk number parameter
-  cp 9
-  jr nc, cmd_fdskf.error                ; error if a >= 9
-  ; --> check disk
-  call cmd_preflight_disk
-  or a
-  jr nz, cmd_fdskf.error                ; error if a != 0
-  ; --> check drivers
-  ld c, 0x18                            ; BDOS GetLoginVector (return drivers flag in L)
-  push hl 
-    call ROMBDOS
-  pop de
-  ld a, l 
-  and a 
-  jr z, cmd_fdskf.error                 ; error if A = 0
-  ; ---> get disk information
-  ld c, 0x1B                            ; BDOS GetAllocationInfo (e = drive number)
-  call cmd_bdos_we                      ; out: a = sectors per cluster (0xFF if error)
-                                        ;      hl = free clusters
-  cp 0x80
-  ret c                                 ; return if success
-
-cmd_fdskf.error:
-  ; --> disk error fallback
-  ld l, a
-  ld h, 0xFF
-  ret
-
-; ------------------------------------------------------------------------------------------------------
 ; OPEN statement
 ; in : a = file number
 ;      hl = filename (pascal string)
@@ -241,9 +204,9 @@ cmd_fopen:
   push bc
     ld a, (hl)        
     inc hl 
-    ld (ARG), a                         ; string size 
-    ld (ARG+1), hl                      ; string pointer
-    ld hl, ARG                          ; string descriptor
+    ld (PARM1), a                       ; string size 
+    ld (PARM1+1), hl                    ; string pointer
+    ld hl, PARM1                        ; string descriptor
     ld a, 3
     ld (VALTYP), a                      ; DAC type=string 
     ld (DAC+2), hl                      ; DAC=string descriptor
@@ -262,6 +225,7 @@ cmd_fopen:
 ; EOF function
 ; in : hl = file number
 ; out: hl = true or false
+;      DAC+2 = integer value
 ; ------------------------------------------------------------------------------------------------------
 cmd_feof:
   ld ix, BDOS_EOF 
@@ -277,6 +241,7 @@ cmd_fcall.function:
 ; LOC function
 ; in : a = file number
 ; out: hl = number of bytes that have been read (sequential) or record number (random)
+;      DAC = BCD value
 ; ------------------------------------------------------------------------------------------------------
 cmd_floc:
   ld ix, BDOS_LOC
@@ -285,7 +250,8 @@ cmd_floc:
 ; ------------------------------------------------------------------------------------------------------
 ; LOF function
 ; in : a = file number
-; out: hl = size of a file on disk in bytes
+; out: hl = size of a file on disk in bytes 
+;      DAC = BCD value
 ; ------------------------------------------------------------------------------------------------------
 cmd_flof:
   ld ix, BDOS_LOF
@@ -295,10 +261,46 @@ cmd_flof:
 ; FPOS function
 ; in : a = file number
 ; out: hl = current position of the file pointer within the specified file
+;      DAC = BCD value
 ; ------------------------------------------------------------------------------------------------------
 cmd_fpos:
   ld ix, BDOS_FPOS
   jr cmd_fcall.function
+
+; ------------------------------------------------------------------------------------------------------
+; DSKF function
+; in : a = disk number (0 = default drive, 1=A, 2=B...)
+; out: hl = free clusters (negative = disk error)
+; ------------------------------------------------------------------------------------------------------
+cmd_fdskf:
+  ; --> check disk number parameter
+  cp 9
+  jr nc, cmd_fdskf.error                ; error if a >= 9
+  ; --> check disk
+  call cmd_preflight_disk
+  or a
+  jr nz, cmd_fdskf.error                ; error if a != 0
+  ;ld ix, BDOS_DSKF
+  ;jr cmd_fcall.function
+  ; --> check drivers
+  ld c, 0x18                            ; BDOS GetLoginVector (return drivers flag in L)
+  push hl 
+    call ROMBDOS
+  pop de
+  ld a, l 
+  and a 
+  jr z, cmd_fdskf.error                 ; error if A = 0
+  ; ---> get disk information
+  ld c, 0x1B                            ; BDOS GetAllocationInfo (e = drive number)
+  call cmd_bdos_we                      ; out: a = sectors per cluster (0xFF if error)
+                                        ;      hl = free clusters
+  cp 0x80
+  ret c                                 ; return if success
+cmd_fdskf.error:
+  ; --> disk error fallback
+  ld l, a
+  ld h, 0xFF
+  ret
 
 ; ------------------------------------------------------------------------------------------------------
 ; CLOSE statement
@@ -307,16 +309,15 @@ cmd_fpos:
 ; reference: BDOS 0x10 (CloseFile)
 ; ------------------------------------------------------------------------------------------------------
 cmd_fclose:
-  ld bc, BDOS_CLSFIL                    ; in: a = file number
-  push bc 
-  pop ix
+  ld hl, BDOS_EMPTY_LINE
+  ld ix, BDOS_CLSFIL                    ; in: a = file number, hl=BASIC pointer
   cp 0xFF
-  jr nz, cmd_fclose.exec
-    ld hl, BDOS_EMPTY_LINE
+  jp nz, CALBAS
+    push ix
+    pop bc 
     ld a, (MAXFIL)
-    ld ix, BDOS_CLSALL                  ; in: hl=BASIC pointer, a=(MAXFIL), bc=BDOS_CLOSE
-cmd_fclose.exec:
-  jp CALBAS 
+    ld ix, BDOS_CLSALL                  ; in: a=(MAXFIL), bc=BDOS_CLSFIL, hl=BASIC pointer
+    jp CALBAS 
 
 ; ------------------------------------------------------------------------------------------------------
 ; INPUT# statement
@@ -327,33 +328,93 @@ cmd_fclose.exec:
 cmd_finput:
   call cmd_fsetfil
   ld a, e                               ; save INPUT# / LINE INPUT# mode
-  ld (ARG), a
+  or a                                  ; FLGINP states:
+  jr nz, cmd_finput.line_mode           ; 1 = LINE INPUT#
+  ld a, 2                               ; 2 = INPUT# first char pending
+  jr cmd_finput.mode_saved
+cmd_finput.line_mode:
+  ld a, 1
+cmd_finput.mode_saved:
+  ld (FLGINP), a
   xor a 
   ld (hl), a
   ld e, l 
   ld d, h 
   inc hl                                ; first character into string
-  ld bc, cmd_finput.begin 
 cmd_finput.begin:
   call cmd_findskc
   cp BDOS_EOF_FLAG
-  jr z, cmd_finput.end
+  jp z, cmd_finput.end
+  ld b, a
+  ld a, (FLGINP)
+  ld c, a
+  cp 4                                  ; pending LF after previous CR (INPUT#)
+  jr z, cmd_finput.pending_lf
+  cp 5                                  ; pending LF after previous CR (LINE INPUT#)
+  jr z, cmd_finput.pending_lf
+  ld a, b
+  jr cmd_finput.check_delimiter
+cmd_finput.pending_lf:
+  ld a, b
+  cp 0x0A                               ; LF
+  jr nz, cmd_finput.pending_no_lf
+  ld a, 2                               ; consume paired LF and prepare next INPUT# field
+  ld a, c
+  cp 5
+  jr nz, cmd_finput.pending_lf_save
+  ld a, 1                               ; restore LINE INPUT# mode
+  jr cmd_finput.pending_lf_store
+cmd_finput.pending_lf_save:
+  ld a, 2
+cmd_finput.pending_lf_store:
+  ld (FLGINP), a
+  jr cmd_finput.begin
+cmd_finput.pending_no_lf:
+  ld a, c
+  cp 5
+  jr nz, cmd_finput.pending_no_lf_save
+  ld a, 1                               ; restore LINE INPUT# mode
+  jr cmd_finput.pending_no_lf_store
+cmd_finput.pending_no_lf_save:
+  ld a, 2                               ; continue as regular INPUT#
+cmd_finput.pending_no_lf_store:
+  ld (FLGINP), a
+  ld a, b
+cmd_finput.check_delimiter:
   cp 0x0D                               ; CR
   jr z, cmd_finput.exec
   cp 0x0A                               ; LF 
   jr z, cmd_finput.exec
-  push af
-    ld a, (ARG)                         ; restore INPUT# / LINE INPUT# mode
-    or a
-    jr nz, cmd_finput.isLineInput       ; LINE INPUT#: only CR/LF are delimiters
-  pop af
+  ld b, a
+  ld a, (FLGINP)
+  cp 1                                  ; LINE INPUT# mode?
+  jr z, cmd_finput.append_b
+  cp 3                                  ; INPUT# quoted mode?
+  jr z, cmd_finput.quoted
+  cp 2                                  ; first char pending?
+  jr nz, cmd_finput.normal
+  ld a, b
+  cp 0x22
+  jr nz, cmd_finput.first_done
+  ld a, 3                               ; enter quoted mode
+  ld (FLGINP), a
+  jr cmd_finput.begin                   ; skip opening quote
+cmd_finput.first_done:
+  xor a                                 ; FLGINP=0 regular INPUT# mode
+  ld (FLGINP), a
+cmd_finput.normal:
+  ld a, b
   cp 0x2C                               ; , 
   jr z, cmd_finput.exec
-  cp 0x22                               ; "
+  cp 0x09                               ; TAB
   jr z, cmd_finput.exec
+cmd_finput.append_b:
+  ld a, b
   jr cmd_finput.append
-cmd_finput.isLineInput:
-  pop af
+cmd_finput.quoted:
+  ld a, b
+  cp 0x22                               ; closing quote
+  jr z, cmd_finput.end
 cmd_finput.append:
   ld (hl), a                            ; next character
   inc hl
@@ -362,28 +423,44 @@ cmd_finput.append:
   ld (de), a
   cp 0xFF
   jr z, cmd_finput.end                  ; return if maximum string size reached
-  ld bc, cmd_finput.end
-  jr cmd_finput.begin 
+  jp cmd_finput.begin 
 cmd_finput.exec:
-  push bc 
-  ret
+  cp 0x0D                               ; when CR is delimiter, ignore immediate next LF (CR+LF files)
+  jr nz, cmd_finput.exec_ret
+  ld a, (FLGINP)
+  cp 1
+  ld a, 4
+  jr nz, cmd_finput.exec_set_pending
+  ld a, 5                               ; pending LF after CR for LINE INPUT#
+cmd_finput.exec_set_pending:
+  ld (FLGINP), a
+cmd_finput.exec_ret:
+  ld a, (FLGINP)
+  cp 1                                  ; LINE INPUT#: delimiter always finishes current read
+  jr z, cmd_finput.end
+  cp 5                                  ; LINE INPUT# pending LF after CR
+  jr z, cmd_finput.end
+  ;cp 4                                  ; INPUT# pending LF after CR
+  ;jr z, cmd_finput.exec_check_started
+cmd_finput.exec_check_started:
+  ld a, (de)                            ; string length
+  or a
+  jr nz, cmd_finput.end
+  jp cmd_finput.begin                   ; ignore leading delimiters in INPUT#
 cmd_finput.end:
   ex de, hl                             ; return string address (hl)
+  xor a 
+  ld (FLGINP), a
   jp cmd_freset_fil                     ; turn off BASIC interpreter i/o redirect
 
 ; ------------------------------------------------------------------------------------------------------
 ; PRINT# statement
-; in : a=file number, hl=string address (pascal style), e=prefix, d=suffix
+; in : a=file number, hl=string address (pascal style), e=sufix1, d=suffix2
 ; reference: BDOS 0x15 (SequentialWriteFile) and 0x22 (RandomWriteFile)
 ; ------------------------------------------------------------------------------------------------------
 cmd_fprint:
   call cmd_fsetfil
   push de 
-    ld a, e
-    or a                                ; prefix? i.e: 0x2C (comma)
-    call nz, cmd_ffilout
-    ld a, 0x22                          ; "
-    call cmd_ffilout
     ld a, (hl)
     or a 
     jr z, cmd_fprint.end
@@ -395,9 +472,11 @@ cmd_fprint.loop:
       inc hl
     djnz cmd_fprint.loop
 cmd_fprint.end:
-    ld a, 0x22                          ; "
-    call cmd_ffilout 
-  pop af 
-  or a                                  ; suffix? e.i: 0x0A (LF)
+  pop de
+  ld a, e 
+  or a                                  ; suffix1? i.e: 0x09 (TAB) or 0x0D (CR)
+  call nz, cmd_ffilout
+  ld a, d
+  or a                                  ; suffix2? e.i: 0x0A (LF)
   call nz, cmd_ffilout
   jp cmd_freset_fil                     ; turn off BASIC interpreter i/o redirect

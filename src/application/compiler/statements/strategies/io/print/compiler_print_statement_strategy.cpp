@@ -52,6 +52,7 @@ void CompilerPrintStatementStrategy::cmd_file_print(
   cpu.addJpNZ(0x0000);  // skip PRINT# when disk is unavailable
 
   std::vector<shared_ptr<ActionNode>> values;
+  std::vector<string> separatorsAfterValue;
   bool expectValue = true;
   bool trailingSeparator = false;
 
@@ -64,6 +65,7 @@ void CompilerPrintStatementStrategy::cmd_file_print(
           context->syntaxError("Invalid PRINT# parameter separator");
           return;
         }
+        separatorsAfterValue.push_back(lexeme->value);
         expectValue = true;
         trailingSeparator = true;
         continue;
@@ -82,6 +84,10 @@ void CompilerPrintStatementStrategy::cmd_file_print(
     trailingSeparator = false;
   }
 
+  if (!expectValue && separatorsAfterValue.size() < values.size()) {
+    separatorsAfterValue.push_back("");
+  }
+
   if (values.empty()) {
     // PRINT #n : output only LF
     cpu.addCall(def_GET_NEXT_TEMP_STRING_ADDRESS);
@@ -89,20 +95,27 @@ void CompilerPrintStatementStrategy::cmd_file_print(
     cpu.addLdiHLA();  // temporary string length = 0
     cpu.addPopAF();
     cpu.addPushAF();
-    cpu.addLdDE(0x0A00);  // d=suffix LF, e=prefix 0
+    cpu.addLdDE(0x0A00);  // d=suffix2 LF, e=suffix1 0
     cpu.addCall(def_cmd_fprint);
     cpu.addPopAF();
   } else {
     for (i = 0; i < values.size(); i++) {
-      int prefix = (i == 0) ? 0x00 : 0x2C;
-      int suffix = 0x00;
-      if (i == values.size() - 1 && !trailingSeparator) suffix = 0x0A;
+      int suffix1 = 0x00;  // e
+      int suffix2 = 0x00;  // d
+      const string& separator = separatorsAfterValue[i];
+
+      if (separator == ",") {
+        suffix1 = 0x09;  // TAB
+      } else if (i == values.size() - 1 && !trailingSeparator) {
+        suffix1 = 0x0D;  // CR
+        suffix2 = 0x0A;  // LF
+      }
 
       result_subtype = expression.evalExpression(values[i]);
       expression.addCast(result_subtype, Lexeme::subtype_string);
       cpu.addPopAF();
       cpu.addPushAF();
-      cpu.addLdDE((suffix << 8) | prefix);  // d=suffix, e=prefix
+      cpu.addLdDE((suffix2 << 8) | suffix1);  // d=suffix2, e=suffix1
       cpu.addCall(def_cmd_fprint);
     }
     cpu.addPopAF();

@@ -173,33 +173,35 @@ XBASIC_END.1:
   ld hl, 0x0000
   ld (OLDTXT), hl
   ld (OLDLIN), hl
+  ld a, 2
+  ld (VALTYP), a              ; OPEN statement bug fix
   ld a, (EXPTBL)
   ld h, 0x40
-  jp ENASLT                ; enable basic page
+  jp ENASLT                   ; enable basic page
 
 ; l = width size
 XBASIC_WIDTH:
-  ld a, (SCRMOD)          ; SCRMOD (current screen mode), OLDSCR (last text screen mode)
+  ld a, (SCRMOD)              ; SCRMOD (current screen mode), OLDSCR (last text screen mode)
   cp 2
   ret nc
   ex de, hl
   ld hl, LINL40
-  add a, l                ; screen 0 = LINL40 (F3AE), screen 1 = LINL32 (F3AF)
+  add a, l                    ; screen 0 = LINL40 (F3AE), screen 1 = LINL32 (F3AF)
   ld l, a
-  ld a, e                 ; copy parameter to A
+  ld a, e                     ; copy parameter to A
   ld (hl), a
-  ld (LINLEN), a          ; LINLEN
+  ld (LINLEN), a              ; LINLEN
   sub 0x0E
   add a, 0x1C
   cpl
   inc a
   add a, e
   ld (CLMLST), a
-  ; ld a, 0x0C             ; new page (clear the screen)
-  ; rst 0x18               ; OUTDO - output to screen
-  ld a, (SCRMOD)          ; SCRMOD (current screen mode), OLDSCR (last text screen mode)
+  ; ld a, 0x0C                  ; new page (clear the screen)
+  ; rst 0x18                    ; OUTDO - output to screen
+  ld a, (SCRMOD)              ; SCRMOD (current screen mode), OLDSCR (last text screen mode)
   ld l, a
-  call XBASIC_SCREEN      ; xbasic SCREEN mode (in: a, l = screen mode)
+  call XBASIC_SCREEN          ; xbasic SCREEN mode (in: a, l = screen mode)
   jp XBASIC_CLS
 
 ; a, l = screen mode

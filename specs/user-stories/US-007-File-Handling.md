@@ -312,8 +312,13 @@ INPUT strategy behavior (`compiler_input_statement_strategy.cpp`) when a file nu
 
 - A temporary string must be passed to `cmd_finput` to be populated before each variable in the INPUT# list. The same temporary string can be used sequentially;
 - The `cmd_input` output must be converted from string to the correct data type of the variable being processed in the list, and an assignment must then be performed.
-- `INPUT#` calls `cmd_finput` with `e=0` (field mode): delimiters are comma, quote, CR and LF.
-- `LINE INPUT#` calls `cmd_finput` with `e=1` (line mode): delimiter is only CR/LF.
+- `INPUT#` calls `cmd_finput` with `e=0` (field mode):
+  - delimiters are comma (`0x2C`), TAB (`0x09`), CR and LF;
+  - line endings are accepted as `LF` only or `CR+LF`; when `CR+LF` is found, `LF` is consumed as part of the same terminator (no empty field in the next read);
+  - if the first character is quote (`0x22`), it opens quoted mode and the value is read until the next quote or CR/LF;
+  - opening/closing quotes are not copied to the output string;
+  - quote characters in the middle/end of non-quoted values are treated as regular characters and copied to the output string.
+- `LINE INPUT#` calls `cmd_finput` with `e=1` (line mode): delimiter is only CR/LF, with `LF` only and `CR+LF` both accepted (no quoted parsing, no TAB/comma field split).
 
 BDOS calls actually used in `34_file_handling.asm`:
 
@@ -334,17 +339,16 @@ cmd_fprint:
   input:
     a=file number
     hl=string address (pascal style)
-    e=prefix (i.e: 0x2C - comma)
-    d=suffix (i.e: 0x0A - LF)
+    e=suffix1 (i.e: 0x09=TAB or 0x0D=CR)
+    d=suffix2 (i.e: 0x0A=LF)
 ```
 
 PRINT strategy behavior (`compiler_print_statement_strategy.cpp`) when a file number (#) is passed as first parameter:
 
 - All variables/constants must be converted to strings before being passed to `cmd_fprint` so that they can be processed by it;
-- Prefix and suffix values of the first variable/constant in the PRINT# list must be zero (0);
-- Next ones in the list must have value 0x2C (comma) as prefix and zero (0) as suffix;
-- Last one must have value 0x0A (LF) as suffix, except if there's a "," or ";" at the end of the PRINT# statement;
-- Dont insert an automatic CRLF at the end of the PRINT#.
+- If one variable/constant is followed by `,`, it must pass `E=0x09` (TAB) and `D=0x00` to `cmd_fprint`;
+- If the last variable/constant is not followed by `,` or `;`, it must pass `E=0x0D` and `D=0x0A` (CRLF) to `cmd_fprint`;
+- In all other cases, it must pass `E=0x00` and `D=0x00`.
 
 BDOS calls actually used in `34_file_handling.asm`:
 
