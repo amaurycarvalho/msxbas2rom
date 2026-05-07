@@ -180,7 +180,7 @@ BUF:          equ 0xF55E   ; 258
 KBUF:         equ 0xF41F   ; 318
 SWPTMP:       equ 0xF7BC   ; 8
 STRBUF:       equ 0xF7C5   ; 43
-JIFFY:        equ 0xFC9E   ; timer counter
+JIFFY:        equ 0xFC9E   ; 2 - timer counter
 VARWRK:       equ 0xF380   ; BASIC variables workspace start
 TRCFLG:       equ 0xF7C4   ; BASIC line number trace on/off (0=off)
 CLKFLG:       equ 0xF338   ; ask for clock flag (0=yes, 1=no)

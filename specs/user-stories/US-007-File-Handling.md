@@ -2,7 +2,7 @@
 
 ## Story
 
-As an MSX-BASIC developer, I want to use OPEN, READ#, PRINT#, INPUT#, LINE INPUT#, MAXFILES and CLOSE commands - and also EOF(), LOC(), LOF(), FPOS() and DSKF() functions - in my programs so that I can persist and retrieve data from files across different MSX devices (disk, cassette, memory, etc.).
+As an MSX-BASIC developer, I want to use OPEN, READ#, PRINT#, INPUT#, LINE INPUT#, MAXFILES and CLOSE commands - and also EOF(), LOC(), LOF(), FPOS(), ERR() and DSKF() functions - in my programs so that I can persist and retrieve data from files across different MSX devices (disk, cassette, memory, etc.).
 
 ## Acceptance Criteria
 
@@ -12,6 +12,7 @@ As an MSX-BASIC developer, I want to use OPEN, READ#, PRINT#, INPUT#, LINE INPUT
 - CLOSE properly releases the file handle and flushes buffers when needed.
 - Multiple files (up to MAXFILES limit) can be opened and handled independently and when MAXFILES was set it adjust the correct memory allocation for disk operation.
 - EOF() conditions are correctly detected and handled.
+- ERR() returns the error code when file handling errors occurs.
 - LOC(), LOF(), and FPOS() return file state information correctly.
 - DSKF() function returns if the MSX DISK is functional.
 - Always checks if MSX DISK is functional before every file access statement to avoid disk calls errors.
@@ -275,6 +276,10 @@ BDOS_CLSFIL (0x6B24) - close one I/O channel (CLOSE #n).
 
 BDOS_CLSALL (0x6BE9) - close all I/O channels (CLOSE sem parametros).
 ```
+
+### ERR Handling
+
+Get the last error code from `def_ERRFLG` address.
 
 ### EOF, LOC, LOF and FPOS Handling
 

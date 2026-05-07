@@ -2,6 +2,7 @@
 
 #include "action_node.h"
 #include "compiler_context.h"
+#include "compiler_hooks.h"
 #include "lexeme.h"
 
 int MaxfilesCompilerFunctionStrategy::execute(
@@ -17,7 +18,7 @@ int MaxfilesCompilerFunctionStrategy::execute(
   auto& cpu = *context->cpu;
 
   // ld hl, (MAXFIL)
-  cpu.addLdHLii(0xF85F);
+  cpu.addLdHLii(def_MAXFIL);
 
   return Lexeme::subtype_numeric;
 }

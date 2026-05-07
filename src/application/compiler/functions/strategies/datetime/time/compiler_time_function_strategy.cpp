@@ -2,6 +2,7 @@
 
 #include "action_node.h"
 #include "compiler_context.h"
+#include "compiler_hooks.h"
 #include "lexeme.h"
 
 int TimeCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
@@ -17,7 +18,7 @@ int TimeCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   auto& cpu = *context->cpu;
 
   // ld hl, (0xFC9E)    ; JIFFY
-  cpu.addLdHLii(0xFC9E);
+  cpu.addLdHLii(def_JIFFY);
 
   return Lexeme::subtype_numeric;
 }

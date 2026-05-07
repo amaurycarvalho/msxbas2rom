@@ -17,6 +17,7 @@
 #include "compiler_csng_function_strategy.h"
 #include "compiler_csrlin_function_strategy.h"
 #include "compiler_dskf_function_strategy.h"
+#include "compiler_err_function_strategy.h"
 #include "compiler_eof_function_strategy.h"
 #include "compiler_exp_function_strategy.h"
 #include "compiler_fpos_function_strategy.h"
@@ -84,6 +85,7 @@ class CompilerFunctionStrategyFactory {
   EofCompilerFunctionStrategy eofStrategy;
   FposCompilerFunctionStrategy fposStrategy;
   DskfCompilerFunctionStrategy dskfStrategy;
+  ErrCompilerFunctionStrategy errStrategy;
   FreCompilerFunctionStrategy freStrategy;
   HeapCompilerFunctionStrategy heapStrategy;
   InkeyCompilerFunctionStrategy inkeyStrategy;

@@ -43,6 +43,7 @@ CompilerFunctionStrategyFactory::CompilerFunctionStrategyFactory() {
   strategies["VPEEK"] = &vpeekStrategy;
   strategies["INP"] = &inpStrategy;
   strategies["DSKF"] = &dskfStrategy;
+  strategies["ERR"] = &errStrategy;
   strategies["EOF"] = &eofStrategy;
   strategies["LOC"] = &locStrategy;
   strategies["LOF"] = &lofStrategy;

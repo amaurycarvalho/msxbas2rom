@@ -4,27 +4,35 @@
 20 OPEN "CRT:" FOR OUTPUT AS #1
 21   PRINT #1, "Free memory: "; FRE(0)
 
-22   PRINT #1, "Reading TEST.TXT (LINE INPUT#)"
-30   OPEN "TEST.TXT" FOR INPUT AS #2
-31     IF EOF(2) THEN 35
-32       LINE INPUT #2,A$
-33       PRINT #1,A$
-34     GOTO 31
-35   CLOSE #2
+30   PRINT #1, "Reading TEST.TXT (LINE INPUT#)"
+31   OPEN "TEST.TXT" FOR INPUT AS #2
+32     IF ERR THEN 100
+33     IF EOF(2) THEN 37
+34       LINE INPUT #2,A$
+35       PRINT #1,A$
+36     GOTO 33
+37   CLOSE #2
 
-36   PRINT #1, "Reading TEST.TXT (INPUT#)"
-40   OPEN "TEST.TXT" FOR INPUT AS #2
-41     IF EOF(2) THEN 45
-42       INPUT #2,A$
-43       PRINT #1,A$
-44     GOTO 41
-45   CLOSE #2
+40   PRINT #1, "Reading TEST.TXT (INPUT#)"
+41   OPEN "TEST.TXT" FOR INPUT AS #2
+42     IF ERR THEN 100
+43     IF EOF(2) THEN 47
+44       INPUT #2,A$
+45       PRINT #1,A$
+46     GOTO 43
+47   CLOSE #2
 
-47   PRINT #1, "Reading TEST.TXT (NUMERIC)"
-50   OPEN "TEST.TXT" FOR INPUT AS #2
-51     INPUT #2, A$, B$, C$, N%
-52     PRINT #1, "Numeric value: "; N%
-53   CLOSE #2
+50   PRINT #1, "Reading TEST.TXT (NUMERIC)"
+51   OPEN "TEST.TXT" FOR INPUT AS #2
+52     IF ERR THEN 100
+53     INPUT #2, A$, B$, C$, N%
+54     PRINT #1, "Numeric value: "; N%
+55   CLOSE #2
 
 60 CLOSE #1
+61 END
+
+100 PRINT #1, "Error reading the file" 
+101 GOTO 60
+
 

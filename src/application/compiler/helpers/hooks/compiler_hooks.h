@@ -252,13 +252,6 @@
  * @brief ROM basic interpreter internal addresses and workarea
  */
 
-#define def_CLEAR 0x62A1  // initialize the interpreter
-#define def_OPEN 0x6AFA
-#define def_FILESPEC 0x6A1F  // 0x6A0E
-#define def_DEVICESPEC 0x6F15
-#define def_CLOSE 0x6B24
-#define def_CLOSE_ALL 0x6C1C
-#define def_MAXFILES 0x7E6B
 #define def_IOREDIRECT \
   0x6AAA  // redirect interpreter input/output to i/o channel
 #define def_IOTOSCREEN 0x4AFF  // return interpreter output to screen
@@ -333,6 +326,8 @@
 #define def_ONELIN 0xF6B9   // 2 - on error goto <line>
 #define def_ERRLIN 0xF6B3   // 2 - ERL
 #define def_CURLIN 0xF41C   // 2 - current line
+#define def_JIFFY 0xFC9E    // 2 - time value
+#define def_ERRFLG 0xF414   // 1 - error code
 #define def_SUBFLG 0xF6A5   // 1
 #define def_DORES 0xF664    // 1
 #define def_RAMAD3 0xF344   // 1

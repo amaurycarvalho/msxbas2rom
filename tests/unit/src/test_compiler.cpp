@@ -373,7 +373,8 @@ TEST_SUITE("CompilerFunctionStrategyFactory") {
 
         "NOOPERATION",
 
-        "TIME",        "POS",          "LPOS",   "CSRLIN",    "INKEY",
+        "TIME",        "ERR",          "POS",    "LPOS",      "CSRLIN",
+        "INKEY",
         "INKEY$",      "MAXFILES",     "FRE",    "HEAP",      "MSX",
         "NTSC",        "VDP",          "TURBO",  "COLLISION", "MAKER",
         "PLYSTATUS",
@@ -456,7 +457,7 @@ TEST_SUITE("CompilerFunctionStrategyFactory") {
   TEST_CASE("All function strategies have unit tests") {
     CompilerFunctionStrategyFactory factory;
 
-    CHECK(factory.size() == 82);
+    CHECK(factory.size() == 83);
   }
 }
 
@@ -801,6 +802,7 @@ TEST_SUITE("CompilerFunctionStrategies") {
          Lexeme::subtype_unknown},
 
         {"TIME", "TIME", 0, {}, false, {}, Lexeme::subtype_numeric},
+        {"ERR", "ERR", 0, {}, false, {}, Lexeme::subtype_numeric},
         {"POS", "POS", 0, {}, false, {}, Lexeme::subtype_numeric},
         {"LPOS", "LPOS", 0, {}, false, {}, Lexeme::subtype_numeric},
         {"CSRLIN", "CSRLIN", 0, {}, false, {}, Lexeme::subtype_numeric},

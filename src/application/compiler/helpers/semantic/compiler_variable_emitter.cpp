@@ -303,17 +303,23 @@ bool CompilerVariableEmitter::addAssignment(shared_ptr<ActionNode> action) {
   if (action->lexeme->type == Lexeme::type_keyword) {
     if (action->lexeme->value == "TIME") {
       // ld (0xFC9E), hl    ; JIFFY
-      cpu.addLdiiHL(0xFC9E);
+      cpu.addLdiiHL(def_JIFFY);
 
-    } else if (action->lexeme->value == "MAXFILES") {
+    } else if (action->lexeme->value == "ERR") {
       // ld a, l
       cpu.addLdAL();
-      // ld ix, MAXFILES
-      cpu.addLdIX(def_MAXFILES);
-      // call CALBAS
-      cpu.addCall(def_CALBAS);
-      // ei
-      cpu.addEI();
+      // ld (ERRFLG), a
+      cpu.addLdiiA(def_ERRFLG);
+
+    } else if (action->lexeme->value == "MAXFILES") {
+      // ld a, (MAXFIL)
+      cpu.addLdAii(def_MAXFIL);
+      // cp l
+      cpu.addCpL();
+      // ld a, l
+      cpu.addLdAL();
+      // call nz, cmd_fmaxfiles
+      cpu.addCallNZ(def_cmd_fmaxfiles);
 
     } else {
       context->syntaxError("Invalid KEYWORD/FUNCTION assignment");
