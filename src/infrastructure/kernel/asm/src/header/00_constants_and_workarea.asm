@@ -51,6 +51,7 @@ HKEYI:        equ 0xFD9A
 HPHYD:        equ 0xFFA7   ; physical disk input-output hook
 HEOF:         equ 0xFEA3   ; EOF hook (in: hl=FCB address, out: )
 HERRO:        equ 0xFFB1   ; ERROR hook (in: e=error code)
+HNOFO:        equ 0xFE58   ; Open statement extension hook
 
 WRTVDP:       equ 0x0047
 RDVRM:        equ 0x004A

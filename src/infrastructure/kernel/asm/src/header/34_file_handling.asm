@@ -189,6 +189,8 @@ cmd_fmaxfiles.populate_filtab.loop:
 ; reference: BDOS 0x0F (OpenFile) and 0x16 (CreateFile)
 ; ------------------------------------------------------------------------------------------------------
 cmd_fopen:
+  or a 
+  jr z, cmd_fopen.error
   push af
   push de
   push bc
@@ -211,6 +213,10 @@ cmd_fopen:
   ld ix, BDOS_OPNFIL                    ; in: a=i/o number, e=file mode, d=device id, hl=BASIC pointer
   call cmd_fcalbas_we                   ; call BASIC with error handling
   jp cmd_freset_fil                     ; turn off BASIC interpreter i/o redirect
+cmd_fopen.error:
+  ld a, 52                              ; bad file number error
+  ld (ERRFLG), a
+  ret 
 
 ; ------------------------------------------------------------------------------------------------------
 ; EOF function
