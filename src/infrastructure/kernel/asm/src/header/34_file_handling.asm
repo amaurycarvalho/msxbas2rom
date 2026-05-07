@@ -209,7 +209,8 @@ cmd_fopen:
   ld e, l 
   ld hl, BDOS_EMPTY_LINE
   ld ix, BDOS_OPNFIL                    ; in: a=i/o number, e=file mode, d=device id, hl=BASIC pointer
-  jp cmd_fcalbas_we 
+  call cmd_fcalbas_we                   ; call BASIC with error handling
+  jp cmd_freset_fil                     ; turn off BASIC interpreter i/o redirect
 
 ; ------------------------------------------------------------------------------------------------------
 ; EOF function
