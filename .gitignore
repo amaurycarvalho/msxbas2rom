@@ -51,3 +51,39 @@ tests/**/.vscode/
 
 # Deploys
 dist/
+
+# CocoIndex
+.cocoindex/
+.cocoindex_code/
+
+# Embedding caches
+*.faiss
+*.ann
+*.index
+*.embeddings
+
+# Local semantic databases
+*.sqlite
+*.sqlite3
+
+# Python cache
+__pycache__/
+*.pyc
+
+# MCP local runtime
+.mcp/
+
+# Ollama local models
+.ollama/
+
+# Temporary AI caches
+.ai-cache/
+.semantic-cache/
+
+# VSCode local MCP config
+.vscode/mcp.json
+
+# Environment settings
+.env
+.env.local
+

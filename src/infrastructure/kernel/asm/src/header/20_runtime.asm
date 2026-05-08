@@ -128,7 +128,8 @@ run_user_basic_code_on_rom:
   jr z, run_user_basic_code_on_rom.non_disk_himem
 
 run_user_basic_code_on_rom.disk_himem:
-  ld hl, 0xF1C9              ; disk mode top memory
+  ; honor Disk ROM/BIOS negotiated top-of-memory to avoid trampling disk work area
+  ld hl, (HIMEM)
   jr run_user_basic_code_on_rom.himem_done
 
 run_user_basic_code_on_rom.non_disk_himem:

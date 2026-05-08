@@ -304,12 +304,16 @@ cmd_fclose:
   ld hl, BDOS_EMPTY_LINE
   ld ix, BDOS_CLSFIL                    ; in: a = file number, hl=BASIC pointer
   cp 0xFF
-  jp nz, cmd_fcalbas_we
+  jr z, cmd_fclose.all
+  call cmd_fcalbas_we
+  jp cmd_freset_fil
+cmd_fclose.all:
     push ix
     pop bc 
     ld a, (MAXFIL)
     ld ix, BDOS_CLSALL                  ; in: a=(MAXFIL), bc=BDOS_CLSFIL, hl=BASIC pointer
-    jp cmd_fcalbas_we 
+    call cmd_fcalbas_we
+    jp cmd_freset_fil
 
 ; ------------------------------------------------------------------------------------------------------
 ; INPUT# statement
