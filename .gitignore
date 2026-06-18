@@ -55,7 +55,6 @@ dist/
 # CocoIndex
 .cocoindex/
 .cocoindex_code/
-.cocoindex_code/**/*.*
 
 # Embedding caches
 *.faiss

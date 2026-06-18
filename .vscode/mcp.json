@@ -1,9 +1,0 @@
-{
-  "servers": {
-    "cocoindex": {
-      "type": "stdio",
-      "command": "ccc",
-      "args": ["mcp"]
-    }
-  }
-}
