@@ -1,5 +1,6 @@
 # Version history
 
+- #.#.#.# – (2026/06/18) Spec migration to OpenSpec format. All specifications now live under `openspec/`. See `openspec/changes/import-existing-specs/` for details.
 - 1.0.0.0 – (2026/05/04) File handling support implementation (US-007);
 - 0.3.4.2 – (2026/04/14) Sprite glitch bug fix (issue #19) and Z80 kernel SRP refactoring;
 - 0.3.4.1 – (2026/04/09) ELF export bug fix;

@@ -3,6 +3,8 @@
 > **Compile your MSX-BASIC programs into ROMs with ease — for use in emulators or real MSX hardware.**  
 > Fast, flexible, and open source.
 
+[![Spec-Driven Development](https://img.shields.io/badge/SDD-OpenSpec-yellow)](openspec/specs/governance/spec.md)
+
 ---
 
 ### 💡 WHAT IS MSXBAS2ROM?
@@ -55,6 +57,13 @@ msxbas2rom --doc
 ### 🧠 WANT TO KNOW MORE?
 
 See the [Main](https://github.com/amaurycarvalho/msxbas2rom/wiki) project wiki page for more information.
+
+### 📐 SPECIFICATIONS
+
+Project specifications, requirements, and architectural decisions are maintained in the `openspec/` directory using the OpenSpec format:
+
+- `openspec/specs/<capability>/spec.md` — Capability specifications (lexer, parser, compiler, builder, CLI, ON statements, file handling, sprites handling, architecture, governance, glossary)
+- `openspec/changes/` — Active and archived changes with proposal, design, and task artifacts
 
 ### ❤️ SUPPORT THE PROJECT!
 
