@@ -18,6 +18,10 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - `GET TILE PATTERN` with bank parameter: `GET TILE PATTERN <n>, <4-int-array> [, <bank>]` with LDIRMV read via `get_tile_pattern` (replaces stub).
 - Z80 kernel routines for `get_tile_pattern` and `set_tile_pattern_buffer` with screen mode validation (mode 0 single bank, mode ≥5 no-op).
 - Unit and integration tests for all three syntax variants (inline, array, array+bank).
+- `SET TILE COLOR` all syntax variants: inline FC/BC, per-row FC array (with/without BC array), and buffer form (`SET TILE COLOR <n>, <4-int-array> [, <bank>]`), with bank parameter support (0-2 for individual banks, 3 or omitted for all banks).
+- `GET TILE COLOR` with bank parameter: `GET TILE COLOR <n>, <4-int-array> [, <bank>]` with LDIRMV read via `get_tile_color` (replaces stub).
+- Z80 kernel routines for `set_tile_color_buf` (3-pass LDIRVM for bank=all) and `get_tile_color` with screen mode validation (mode 0 single bank, mode ≥5 no-op).
+- Unit and integration tests for all SET/GET TILE COLOR syntax forms (10 test cases covering inline, array, buffer, bank variants, and invalid syntax).
 
 ### Changed
 - Magic constants in RAM percentage calculation (5931, 10534, 0x538) replaced with named, documented constants in `compiler_hooks.h`.

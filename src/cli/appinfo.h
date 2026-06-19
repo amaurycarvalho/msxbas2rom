@@ -91,6 +91,10 @@ Version history
 - `SET TILE PATTERN` buffer form with 4-integer array and bank parameter.
 - `GET TILE PATTERN` with bank parameter (former stub now implemented).
 - Z80 kernel bulk LDIRVM/LDIRMV routines for `get_tile_pattern` / `set_tile_pattern_buffer`.
+- `SET TILE COLOR` all syntax variants: inline FC/BC, per-row FC array (with/without BC array), and buffer form (`SET TILE COLOR <n>, <4-int-array> [, <bank>]`), with bank parameter support (0-2 for individual banks, 3 or omitted for all banks).
+- `GET TILE COLOR` with bank parameter: `GET TILE COLOR <n>, <4-int-array> [, <bank>]` with LDIRMV read via `get_tile_color` (replaces stub).
+- Z80 kernel routines for `set_tile_color_buf` (3-pass LDIRVM for bank=all) and `get_tile_color` with screen mode validation.
+- Unit and integration tests for all SET/GET TILE COLOR syntax forms.
 
 ### Changed
 - Magic constants in RAM percentage calculation replaced with named constants.

@@ -694,8 +694,89 @@ get_tile_pattern.exit:
 
 ; a = tile number
 ; hl = buffer pointer to an 8 bytes buffer
+; b = bank (0-2 specific, 3=all banks)
 get_tile_color:
+  ld (TEMP8), hl
+  ld l, a
+  ld h, 0
+  ld a, (SCRMOD)
+  cp 5
+  jr nc, get_tile_color.exit
+  or a
+  jr z, get_tile_color.exit
+  add hl, hl
+  add hl, hl
+  add hl, hl
+  ld de, 0x2000
+  add hl, de
+  ld a, b
+  or a
+  jr z, get_tile_color.do
+  ld de, 0x0800
+get_tile_color.bank_loop:
+  add hl, de
+  dec a
+  jr nz, get_tile_color.bank_loop
+get_tile_color.do:
+  ld de, (TEMP8)
+  ld bc, 8
+  call LDIRMV
+get_tile_color.exit:
   ret
+
+; a = tile number
+; hl = 8-byte color buffer (packed FC<<4|BC per byte)
+; b = bank (0-2 specific, 3=all banks)
+set_tile_color_buf:
+  ld (TEMP8), hl
+  ld l, a
+  ld h, 0
+  ld a, (SCRMOD)
+  cp 5
+  ret nc
+  or a
+  ret z
+  add hl, hl
+  add hl, hl
+  add hl, hl
+  ld de, 0x2000
+  add hl, de
+  ld a, b
+  cp 3
+  jr z, set_tile_color_buf.all
+  or a
+  jr z, set_tile_color_buf.do
+set_tile_color_buf.bank_loop:
+  ld de, 0x0800
+  add hl, de
+  dec a
+  jr nz, set_tile_color_buf.bank_loop
+set_tile_color_buf.do:
+  ex de, hl
+  ld hl, (TEMP8)
+  ld bc, 8
+  jp LDIRVM
+set_tile_color_buf.all:
+  ex de, hl
+  ld hl, (TEMP8)
+  ld bc, 8
+  push de
+    call LDIRVM
+  pop hl
+  ld de, 0x0800
+  add hl, de
+  ex de, hl
+  ld hl, (TEMP8)
+  ld bc, 8
+  push de
+    call LDIRVM
+  pop hl
+  ld de, 0x0800
+  add hl, de
+  ex de, hl
+  ld hl, (TEMP8)
+  ld bc, 8
+  jp LDIRVM
 
 ; a = tile number
 ; hl = 8-byte pattern buffer

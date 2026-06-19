@@ -20,6 +20,8 @@ The color table in VRAM (screen 2+) is 8 bytes per tile, one byte per row, forma
 - Buffer uses 4 integer array (4 × 16-bit = 8 bytes), each byte = FC<<4 | BC
 - Use LDIRVM/LDIRMV for efficient block transfer
 - Fix buffer form calling convention
+- Add unit tests in `tests/unit/src/test_compiler.cpp` covering all syntax forms (following existing pattern from SPRITE COLOR / TILE PATTERN tests)
+- Add integration test `tests/integration/GRAPH/test97.bas` covering all syntaxes (following test94.bas pattern)
 
 **Non-Goals:**
 - SET/GET TILE PATTERN (separate change)
@@ -90,8 +92,33 @@ Replace the existing stubs in the runtime jump table (`20_runtime.asm`) with JPs
 
 Corresponding `compiler_hooks.h` constants computed as offsets from `def_wrapper_routines_map_start`.
 
+### Decision 6: Unit test pattern
+Unit tests follow the existing `compileStatementProgram` helper pattern used by SPRITE COLOR and TILE PATTERN tests. Each syntax variant is a `SUBCASE` inside `TEST_CASE("All statement strategies execute successfully")`. The setup already tests compile-only success/failure and optionally checks error messages. No VRAM/hardware involved.
+
+New test cases to add inside the existing `StatementCase cases[]` array at `tests/unit/src/test_compiler.cpp`:
+- `SET_TILE_COLOR_FC_BC` — simplest form
+- `SET_TILE_COLOR_FC_BC_BANK` — with bank
+- `SET_TILE_COLOR_FC_ARRAY` — per-row FC array
+- `SET_TILE_COLOR_FC_BC_ARRAYS` — FC+BC arrays
+- `SET_TILE_COLOR_FC_ARRAY_BANK` — FC array + bank
+- `SET_TILE_COLOR_BUFFER` — buffer form
+- `SET_TILE_COLOR_BUFFER_BANK` — buffer + bank
+- `GET_TILE_COLOR` — buffer (default bank)
+- `GET_TILE_COLOR_BANK` — buffer + bank
+
+### Decision 7: Integration test pattern
+`test97.bas` follows the same structure as `test94.bas` (tile pattern integration test). It will:
+- Set screen 2, enable tile mode
+- Exercise all SET TILE COLOR syntax forms (fc/bc, arrays, buffer, with/without bank)
+- Exercise both GET TILE COLOR forms (default bank, explicit bank)
+- Use `PUT TILE` to display tiles on screen for visual verification
+- Print hex values of read-back color data via `PRINT HEX$()`
+- Wait for key press between operations to allow visual inspection
+
 ## Risks / Trade-offs
 
 - **LDIRVM/LDIRMV** uses BIOS call interruptions → safe but slightly slower than WRTVDM loop. However, block transfer is much faster than 8 individual WRTVRM calls.
 - **Jump table shift**: Adding a new entry shifts all subsequent addresses. Must update compiler_hooks.h accordingly.
 - **Screen mode check**: Current routines check SCRMOD and bail out for modes 0 and ≥5. New routines must do the same to avoid VRAM corruption.
+- **Unit test coverage**: Compiler-only tests verify translation but not runtime behavior. Integration tests fill this gap.
+- **Integration test fragility**: `test97.bas` depends on screen mode 2 and tile mode being on — must match setup exactly. Following `test94.bas` pattern mitigates this.

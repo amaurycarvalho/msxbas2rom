@@ -62,3 +62,21 @@ The parser SHALL reject invalid combinations of parameters with a clear syntax e
 #### Scenario: Invalid bank value
 - **WHEN** `SET TILE COLOR 5, 1, 15, 5` (bank out of range 0-3) is compiled and executed
 - **THEN** the kernel SHALL treat the bank value modulo 4, or silently ignore the operation
+
+### Requirement: Unit tests verify compiler translation
+The compiler unit tests in tests/unit/src/test_compiler.cpp SHALL include test cases that verify all TILE COLOR syntax forms compile without errors and produce the expected Z80 output structure.
+
+#### Scenario: All 6 SET syntax forms compile successfully
+- **WHEN** each SET TILE COLOR syntax form (fc/bc, fc/bc+bank, fc-array, fc+bc-arrays, buffer, buffer+bank) is passed to the compiler as a complete BASIC program
+- **THEN** the compiler returns success
+
+#### Scenario: Both GET syntax forms compile successfully
+- **WHEN** GET TILE COLOR with buffer (default bank) and GET TILE COLOR with buffer and explicit bank are passed to the compiler
+- **THEN** the compiler returns success
+
+### Requirement: Integration test validates end-to-end execution
+A BASIC integration test program SHALL be created at tests/integration/GRAPH/test97.bas that exercises all SET and GET TILE COLOR syntax forms and prints results for visual verification in an emulator or real hardware.
+
+#### Scenario: All syntax forms execute without runtime errors
+- **WHEN** `test97.bas` is compiled and executed on MSX BASIC (screen 2, tile mode on)
+- **THEN** all SET TILE COLOR and GET TILE COLOR commands complete without crashing, and printed color values are correct

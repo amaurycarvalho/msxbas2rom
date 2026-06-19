@@ -1,3 +1,9 @@
+msxbas2rom (1.0.0.0-1) bionic; urgency=low
+
+  * SET/GET TILE COLOR with all syntax variants (inline FC/BC, arrays, buffer form, bank parameter support)
+
+ -- Amaury Carvalho <amauryspires@gmail.com>  Thu, 19 Jun 2026 11:00:00 -0300
+
 msxbas2rom (1.0.0.0-0) bionic; urgency=low
 
   * Release 1.0.0.0: File handling support implementation (US-007)

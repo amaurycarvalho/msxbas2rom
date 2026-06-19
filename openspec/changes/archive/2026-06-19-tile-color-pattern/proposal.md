@@ -1,6 +1,6 @@
 ## Why
 
-Tile color manipulation is a gap in the current tile API — SET/GET TILE COLOR exist as stubs or use incompatible calling conventions, breaking the buffer-based syntax. This change implements the full tile color API so developers can read and write tile color tables using the same buffer pattern as SPRITE COLOR commands.
+Tile color manipulation is a gap in the current tile API — SET/GET TILE COLOR exist as stubs or use incompatible calling conventions, breaking the buffer-based syntax. This change implements the full tile color API so developers can read and write tile color tables using the same buffer pattern as SPRITE COLOR commands. Unit and integration tests are needed alongside implementation to prevent regressions and validate all syntax forms.
 
 ## What Changes
 
@@ -11,6 +11,8 @@ Tile color manipulation is a gap in the current tile API — SET/GET TILE COLOR 
 - Fix the SET TILE COLOR buffer form calling convention (currently generates wrong Z80 code)
 - Implement the Z80 kernel routines for buffer-based SET and GET (currently stub/missing)
 - Use LDIRVM/LDIRMV for block transfer (3 calls for 3 banks)
+- Add unit tests in tests/unit/ covering all syntax forms for both SET and GET TILE COLOR (compiler translation layer)
+- Add integration test program in tests/integration/graph/ similar to test94.bas to exercise all syntaxes on real/virtual hardware
 
 ## Capabilities
 
@@ -28,4 +30,6 @@ Tile color manipulation is a gap in the current tile API — SET/GET TILE COLOR 
 - `src/application/compiler/helpers/hooks/compiler_hooks.h` — new `def_` constants
 - `src/application/compiler/statements/strategies/graphics/set/compiler_set_statement_strategy.cpp` — restructure COLOR handler logic
 - `src/application/compiler/statements/strategies/graphics/get/compiler_get_statement_strategy.cpp` — add bank parameter support
+- `tests/unit/src/test_compiler.cpp` — new test cases for all SET/GET TILE COLOR syntax forms
+- `tests/integration/GRAPH/test97.bas` — integration test exercising all syntaxes
 - Release 1.0.0.0
