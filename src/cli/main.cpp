@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 #endif
 
   shared_ptr<BuildOptionsSetup> opts = make_shared<BuildOptionsSetup>();
-  set<Logger::LogLevel> logLevels = {Logger::LogLevel::ERROR};
+  set<Logger::LogLevel> logLevels = {Logger::LogLevel::ERR};
   shared_ptr<Lexer> lexer;
   shared_ptr<Rom> rom;
   shared_ptr<Parser> parser;

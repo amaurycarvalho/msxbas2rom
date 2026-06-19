@@ -13,7 +13,7 @@ class Logger {
   Logger();
   ~Logger();
 
-  enum class LogLevel { INFO, WARNING, DEBUG, ERROR };
+  enum class LogLevel { INFO, WARNING, DEBUG, ERR };
 
   class LogEntry {
    private:

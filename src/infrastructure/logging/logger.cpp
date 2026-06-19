@@ -62,11 +62,11 @@ bool Logger::containWarnings() const {
 }
 
 bool Logger::containErrors() const {
-  return contain({LogLevel::ERROR});
+  return contain({LogLevel::ERR});
 }
 
 Logger Logger::errors() const {
-  return filter({LogLevel::ERROR});
+  return filter({LogLevel::ERR});
 }
 
 Logger Logger::infos() const {
@@ -74,7 +74,7 @@ Logger Logger::infos() const {
 }
 
 Logger Logger::trace() const {
-  return filter({LogLevel::INFO, LogLevel::ERROR});
+  return filter({LogLevel::INFO, LogLevel::ERR});
 }
 
 void Logger::setFile(string file) {
@@ -119,7 +119,7 @@ Logger::LogEntry& Logger::debug(const string& msg) {
 }
 
 Logger::LogEntry& Logger::error(const string& msg) {
-  auto& entry = add(LogLevel::ERROR, msg);
+  auto& entry = add(LogLevel::ERR, msg);
   entry.file = file;
   entry.line = lineNumber;
   return entry;
@@ -149,7 +149,7 @@ string Logger::LogEntry::levelToString(LogLevel level) const {
       return "WARNING";
     case LogLevel::DEBUG:
       return "DEBUG";
-    case LogLevel::ERROR:
+    case LogLevel::ERR:
       return "ERROR";
   }
 
