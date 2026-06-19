@@ -636,20 +636,33 @@ void CompilerSetStatementStrategy::cmd_set_tile(
       if (t >= 2) {
         sub_action = action->actions[1];
         lexeme = sub_action->lexeme;
-        if (t == 2 && lexeme->value != "ARRAY") {
+
+        bool isBuffer = false;
+
+        if (lexeme->value == "ARRAY") {
+          if (sub_action->actions.size() == 1 &&
+              sub_action->actions[0]->lexeme->type == Lexeme::type_identifier) {
+            // array variable with (): PB%()
+            sub_action = sub_action->actions[0];
+            isBuffer = true;
+          }
+        } else if (lexeme->type == Lexeme::type_identifier) {
+          // plain identifier without parens: PB%
+          isBuffer = true;
+        }
+
+        if (isBuffer) {
+          // buffer form: <4-int-array> [, <bank>]
+          if (t == 2 || t == 3) {
           // tile number
-          sub_action = action->actions[0];
-          // ld hl, parameter value    ; tile number
-          result_subtype = expression.evalExpression(sub_action);
+          result_subtype = expression.evalExpression(action->actions[0]);
           expression.addCast(result_subtype, Lexeme::subtype_numeric);
           cpu.addLdAL();
           cpu.addPushAF();
 
-          // tile buffer pointer (8 bytes)
-          sub_action = action->actions[1];
+          // buffer address
           sub_lexeme = sub_action->lexeme;
           if (sub_lexeme->type == Lexeme::type_identifier) {
-            // ld hl, variable
             fixup.addFix(sub_lexeme);
             cpu.addLdHL(0x0000);
             result_subtype = Lexeme::subtype_numeric;
@@ -657,26 +670,48 @@ void CompilerSetStatementStrategy::cmd_set_tile(
             result_subtype = expression.evalExpression(sub_action);
           }
           expression.addCast(result_subtype, Lexeme::subtype_numeric);
-          cpu.addPopAF();
 
-          // call set_tile_pattern
+          if (t == 3) {
+            // push hl (buffer)
+            cpu.addPushHL();
+            // bank number
+            result_subtype = expression.evalExpression(action->actions[2]);
+            expression.addCast(result_subtype, Lexeme::subtype_numeric);
+            // ld b, l
+            cpu.addLdBL();
+            // pop hl (buffer)
+            cpu.addPopHL();
+            // pop af (tile number)
+            cpu.addPopAF();
+          } else {
+            // ld b, 3     ; default = all banks
+            cpu.addLdB(0x03);
+            // pop af (tile number)
+            cpu.addPopAF();
+          }
+
+          // call set_tile_pattern_buffer
           //   a = tile number
           //   hl = pointer to an 8 bytes buffer
-          cpu.addCall(def_set_tile_pattern);
-        } else if (t <= 3) {
+          //   b = bank (0-2 specific, 3=all)
+          cpu.addCall(def_set_tile_pattern_buffer);
+          } else {
+          context->syntaxError(
+              "Wrong parameters count on SET TILE PATTERN statement");
+          }
+
+        } else if (lexeme->value == "ARRAY") {
+          // inline tuple form: (<l0>,...,<l7>) [, <bank>]
+          if (t <= 3) {
           // tile number
-          sub_action = action->actions[0];
-          // ld hl, parameter value    ; tile number
-          result_subtype = expression.evalExpression(sub_action);
+          result_subtype = expression.evalExpression(action->actions[0]);
           expression.addCast(result_subtype, Lexeme::subtype_numeric);
           // ld (ARG), hl
           cpu.addLdiiHL(def_ARG);
 
           // bank number
           if (t == 3) {
-            sub_action = action->actions[2];
-            // ld hl, parameter value    ; tile number
-            result_subtype = expression.evalExpression(sub_action);
+            result_subtype = expression.evalExpression(action->actions[2]);
             expression.addCast(result_subtype, Lexeme::subtype_numeric);
             // ld h, l
             cpu.addLdHL();
@@ -687,44 +722,36 @@ void CompilerSetStatementStrategy::cmd_set_tile(
           // ld (ARG2), hl
           cpu.addLdiiHL(def_ARG2);
 
-          // pattern data
-          sub_action = action->actions[1];
-          lexeme = sub_action->lexeme;
+          // pattern data (always ARRAY at this point)
+          tt = sub_action->actions.size();
 
-          if (lexeme->value == "ARRAY") {
-            tt = sub_action->actions.size();
+          for (i = 0; i < tt; i++) {
+            sub_sub_action = sub_action->actions[i];
+            lexeme = sub_sub_action->lexeme;
 
-            for (i = 0; i < tt; i++) {
-              sub_sub_action = sub_action->actions[i];
-              lexeme = sub_sub_action->lexeme;
+            if (lexeme->type == Lexeme::type_literal &&
+                lexeme->subtype == Lexeme::subtype_null) {
+              continue;
 
-              if (lexeme->type == Lexeme::type_literal &&
-                  lexeme->subtype == Lexeme::subtype_null) {
-                continue;
+            } else {
+              // ld hl, parameter value    ; pattern data parameter
+              result_subtype = expression.evalExpression(sub_sub_action);
+              expression.addCast(result_subtype, Lexeme::subtype_numeric);
 
-              } else {
-                // ld hl, parameter value    ; pattern data parameter
-                result_subtype = expression.evalExpression(sub_sub_action);
-                expression.addCast(result_subtype, Lexeme::subtype_numeric);
+              // ld bc, (ARG2)
+              cpu.addLdBCii(def_ARG2);
+              // ld c, l
+              cpu.addLdCL();
+              // ld de, *i*
+              cpu.addLdDE(i);
+              // ld hl, (ARG)
+              cpu.addLdHLii(def_ARG);
 
-                // ld bc, (ARG2)
-                cpu.addLdBCii(def_ARG2);
-                // ld c, l
-                cpu.addLdCL();
-                // ld de, *i*
-                cpu.addLdDE(i);
-                // ld hl, (ARG)
-                cpu.addLdHLii(def_ARG);
-
-                // call set_tile_pattern ; hl = tile number, de = line number, b
-                // = bank number (3=all), c = pattern data
-                cpu.addCall(def_set_tile_pattern);
-              }
+              // call set_tile_pattern ; hl = tile number, de = line number, b
+              // = bank number (3=all), c = pattern data
+              cpu.addCall(def_set_tile_pattern);
             }
-
-          } else {
-            context->syntaxError(
-                "Wrong pattern parameter on SET TILE PATTERN statement");
+          }
           }
         } else {
           context->syntaxError(

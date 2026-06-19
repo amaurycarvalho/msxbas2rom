@@ -654,14 +654,110 @@ set_tile_color.multi.do:
   ret
 
 ; a = tile number
-; hl = buffer pointer to an 8 bytes buffer
+; hl = buffer pointer to an 8 bytes buffer (to fill)
+; b = bank number (0-2)
 get_tile_pattern:
+  push hl                    ; save buffer address
+    ld l, a
+    ld h, 0                  ; hl = tile number
+    ld de, 0                 ; line = 0 (start of tile)
+    ld a, (SCRMOD)
+    cp 5
+    jr nc, get_tile_pattern.exit
+    or a
+    jr nz, get_tile_pattern.skip
+      ld d, 0x08             ; screen 0: pattern table at 0x0800
+      ld b, 0x00             ; screen 0: only bank 0
+get_tile_pattern.skip:
+    add hl, hl
+    add hl, hl
+    add hl, hl               ; hl = tile * 8
+    add hl, de               ; hl = tile*8 + base
+
+    ld a, b
+    or a
+    jr z, get_tile_pattern.do
+    ld de, 0x0800
+get_tile_pattern.bank_loop:
+    add hl, de
+    dec a
+    jr nz, get_tile_pattern.bank_loop
+get_tile_pattern.do:
+    ; hl = VRAM source address
+  pop de                     ; de = buffer destination
+  ld bc, 8                   ; 8 bytes per tile
+  jp LDIRMV
+
+get_tile_pattern.exit:
+  pop hl
   ret
 
 ; a = tile number
 ; hl = buffer pointer to an 8 bytes buffer
 get_tile_color:
   ret
+
+; a = tile number
+; hl = 8-byte pattern buffer
+; b = bank (0-2 specific, 3=all banks)
+set_tile_pattern_buffer:
+  ld (TEMP8), hl             ; save buffer address
+  ld l, a
+  ld h, 0                    ; hl = tile number
+  ld de, 0                   ; line = 0 (start of tile)
+  ld a, (SCRMOD)
+  cp 5
+  ret nc
+  or a
+  jr nz, set_tile_pattern_buffer.skip
+    ld d, 0x08               ; screen 0: pattern table at 0x0800
+    ld b, 0x00               ; screen 0: only bank 0
+set_tile_pattern_buffer.skip:
+  add hl, hl
+  add hl, hl
+  add hl, hl                 ; hl = tile * 8
+  add hl, de                 ; hl = tile*8 + base
+
+  ld a, b
+  cp 3
+  jr z, set_tile_pattern_buffer.all
+
+  ; single bank
+  or a
+  jr z, set_tile_pattern_buffer.do
+  ld de, 0x0800
+set_tile_pattern_buffer.bank_loop:
+  add hl, de
+  dec a
+  jr nz, set_tile_pattern_buffer.bank_loop
+set_tile_pattern_buffer.do:
+  ex de, hl                  ; de = VRAM address
+  ld hl, (TEMP8)             ; hl = buffer
+  ld bc, 8
+  jp LDIRVM
+
+set_tile_pattern_buffer.all:
+  ; write to bank 0
+  ex de, hl                  ; de = VRAM base (bank 0)
+  ld hl, (TEMP8)             ; hl = buffer
+  ld bc, 8
+  push de                    ; save vram base
+    call LDIRVM              ; write bank 0
+  pop hl                     ; hl = vram base (bank 0)
+  ld de, 0x0800
+  add hl, de                 ; hl = vram base + 0x0800 (bank 1)
+  ex de, hl                  ; de = vram address (bank 1)
+  ld hl, (TEMP8)             ; hl = buffer
+  ld bc, 8
+  push de                    ; save vram bank 1
+    call LDIRVM              ; write bank 1
+  pop hl                     ; hl = vram bank 1
+  ld de, 0x0800
+  add hl, de                 ; hl = vram bank 2
+  ex de, hl                  ; de = vram address (bank 2)
+  ld hl, (TEMP8)             ; hl = buffer
+  ld bc, 8
+  jp LDIRVM                  ; write bank 2 and return
 
 ; de = sprite number
 ; hl = direction (0=horizontal, 1=vertical, 2=both)

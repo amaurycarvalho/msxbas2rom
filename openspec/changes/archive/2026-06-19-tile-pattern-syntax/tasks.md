@@ -9,7 +9,7 @@
 - Use LDIRMV to read 8 bytes from VRAM to buffer
 - Existing label `get_tile_pattern` at `31_cmd.asm:658` — edit in place
 
-- [ ] 1.1 Replace `get_tile_pattern` stub with LDIRMV-based implementation
+- [x] 1.1 Replace `get_tile_pattern` stub with LDIRMV-based implementation
 
 ### 1.2 Add `set_tile_pattern_buffer` routine in `31_cmd.asm`
 
@@ -20,7 +20,7 @@
 - Use LDIRVM for each pass
 - Handle screen mode 0 (force B=0, use 0x0800 base)
 
-- [ ] 1.2 Add `set_tile_pattern_buffer` routine after `set_tile_pattern` in `31_cmd.asm`
+- [x] 1.2 Add `set_tile_pattern_buffer` routine after `set_tile_pattern` in `31_cmd.asm`
 
 ### 1.3 Update runtime jump table in `20_runtime.asm`
 
@@ -28,7 +28,7 @@
 - The existing `jp set_tile_pattern` and `jp get_tile_pattern` stay unchanged
 - Shift subsequent entries accordingly
 
-- [ ] 1.3 Add `jp set_tile_pattern_buffer` to `20_runtime.asm`
+- [x] 1.3 Add `jp set_tile_pattern_buffer` to `20_runtime.asm`
 
 ### 1.4 Update compiler hooks in `compiler_hooks.h`
 
@@ -38,14 +38,14 @@
   - `def_usr1` → `def_usr0 + 3`
   - etc.
 
-- [ ] 1.4 Add `def_set_tile_pattern_buffer` hook constant and shift USR defines
+- [x] 1.4 Add `def_set_tile_pattern_buffer` hook constant and shift USR defines
 
 ### 1.5 Update symbol table in `header.symbols.asm`
 
 - Add symbol `set_tile_pattern_buffer EQU <address>`
 - The address depends on the code layout — determined during assembly
 
-- [ ] 1.5 Add `set_tile_pattern_buffer` symbol
+- [x] 1.5 Add `set_tile_pattern_buffer` symbol
 
 ## 2. Compiler (C++)
 
@@ -69,7 +69,7 @@ New:
 
 The condition check should examine `action->actions[1]->lexeme->value == "ARRAY"` regardless of t value.
 
-- [ ] 2.1 Restructure SET TILE PATTERN dispatch in compiler
+- [x] 2.1 Restructure SET TILE PATTERN dispatch in compiler
 
 ### 2.2 Update GET TILE PATTERN compiler in `compiler_get_statement_strategy.cpp`
 
@@ -89,7 +89,7 @@ if (lexeme->value == "PATTERN") {
 
 The `get_tile_pattern` calling convention changes from `A=tile, HL=buffer` to `A=tile, HL=buffer, B=bank`. The existing `def_get_tile_pattern` entry stays; the Z80 routine reads B for bank.
 
-- [ ] 2.2 Extend GET TILE PATTERN to handle t==3 and pass bank
+- [x] 2.2 Extend GET TILE PATTERN to handle t==3 and pass bank
 
 ## 3. Testing
 
@@ -98,7 +98,7 @@ The `get_tile_pattern` calling convention changes from `A=tile, HL=buffer` to `A
 - Verify parser produces correct ActionNode trees for both inline and array syntaxes
 - Verify compiler emits correct Z80 opcodes for each syntax variant
 
-- [ ] 3.1 Add unit tests for parser and compiler changes
+- [x] 3.1 Add unit tests for parser and compiler changes
 
 ### 3.2 Integration tests
 
@@ -108,11 +108,11 @@ The `get_tile_pattern` calling convention changes from `A=tile, HL=buffer` to `A
 - Test backward compatibility — existing inline syntax still works
 - Test screen mode validation (mode ≥5 = no-op)
 
-- [ ] 3.2 Add integration test BAS files for all syntax variants
-- [ ] 3.3 Verify all integration tests pass
+- [x] 3.2 Add integration test BAS files for all syntax variants
+- [x] 3.3 Verify all integration tests pass
 
 ## 4. Build & Verify
 
-- [ ] 4.1 Build project in release mode (`make release`)
-- [ ] 4.2 Run unit tests (`make test-unit`)
-- [ ] 4.3 Run integration tests (`make test-integration`)
+- [x] 4.1 Build project in release mode (`make release`)
+- [x] 4.2 Run unit tests (`make test-unit`)
+- [x] 4.3 Run integration tests (`make test-integration`)

@@ -14,6 +14,10 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - Changelog standardized to [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 - Windows Unicode argv support via `__wargv` → UTF-8 conversion on program startup.
 - `--` (end-of-options) support in CLI parser for filenames starting with `-`.
+- `SET TILE PATTERN` buffer form: `SET TILE PATTERN <n>, <4-int-array> [, <bank>]` with bulk LDIRVM transfer via `set_tile_pattern_buffer`.
+- `GET TILE PATTERN` with bank parameter: `GET TILE PATTERN <n>, <4-int-array> [, <bank>]` with LDIRMV read via `get_tile_pattern` (replaces stub).
+- Z80 kernel routines for `get_tile_pattern` and `set_tile_pattern_buffer` with screen mode validation (mode 0 single bank, mode ≥5 no-op).
+- Unit and integration tests for all three syntax variants (inline, array, array+bank).
 
 ### Changed
 - Magic constants in RAM percentage calculation (5931, 10534, 0x538) replaced with named, documented constants in `compiler_hooks.h`.

@@ -234,6 +234,7 @@ wrapper_routines_map_start:
   jp set_sprite_pattern
   jp get_sprite_color
   jp get_sprite_pattern
+  jp set_tile_pattern_buffer
 
   jp usr0
   jp usr1

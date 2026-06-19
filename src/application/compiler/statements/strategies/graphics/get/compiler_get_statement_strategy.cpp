@@ -173,10 +173,9 @@ void CompilerGetStatementStrategy::cmd_get_tile(
     t = action->actions.size();
 
     if (lexeme->value == "PATTERN") {
-      if (t == 2) {
+      if (t == 2 || t == 3) {
         // tile number
         sub_action = action->actions[0];
-        // ld hl, parameter value    ; tile number
         result_subtype = expression.evalExpression(sub_action);
         expression.addCast(result_subtype, Lexeme::subtype_numeric);
         cpu.addLdAL();
@@ -186,7 +185,6 @@ void CompilerGetStatementStrategy::cmd_get_tile(
         sub_action = action->actions[1];
         sub_lexeme = sub_action->lexeme;
         if (sub_lexeme->type == Lexeme::type_identifier) {
-          // ld hl, variable
           fixup.addFix(sub_lexeme);
           cpu.addLdHL(0x0000);
           result_subtype = Lexeme::subtype_numeric;
@@ -194,11 +192,31 @@ void CompilerGetStatementStrategy::cmd_get_tile(
           result_subtype = expression.evalExpression(sub_action);
         }
         expression.addCast(result_subtype, Lexeme::subtype_numeric);
-        cpu.addPopAF();
+
+        if (t == 3) {
+          // push hl (buffer)
+          cpu.addPushHL();
+          // bank number
+          sub_action = action->actions[2];
+          result_subtype = expression.evalExpression(sub_action);
+          expression.addCast(result_subtype, Lexeme::subtype_numeric);
+          // ld b, l
+          cpu.addLdBL();
+          // pop hl (buffer)
+          cpu.addPopHL();
+          // pop af (tile number)
+          cpu.addPopAF();
+        } else {
+          // ld b, 0     ; default = bank 0
+          cpu.addLdB(0x00);
+          // pop af (tile number)
+          cpu.addPopAF();
+        }
 
         // call get_tile_pattern
         //   a = tile number
         //   hl = pointer to an 8 bytes buffer
+        //   b = bank (0-2)
         cpu.addCall(def_get_tile_pattern);
 
       } else {

@@ -1137,7 +1137,42 @@ TEST_SUITE("GetStatementStrategy") {
     line->setLexemeBOF();
 
     bool result = strategy.execute(ctx, line, kw("GET"));
+    CHECK(result == true);
+  }
 
+  TEST_CASE("Parses GET TILE PATTERN with array") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("TILE"));
+    line->addLexeme(kw("PATTERN"));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(id("PB%"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("GET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses GET TILE PATTERN with array and bank") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("TILE"));
+    line->addLexeme(kw("PATTERN"));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(id("PB%"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("1"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("GET"));
     CHECK(result == true);
   }
 }
@@ -1154,7 +1189,110 @@ TEST_SUITE("SetStatementStrategy") {
     line->setLexemeBOF();
 
     bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
 
+  TEST_CASE("Parses SET TILE PATTERN with inline tuple") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("TILE"));
+    line->addLexeme(kw("PATTERN"));
+    line->addLexeme(num("65"));
+    line->addLexeme(sep(","));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("255"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("129"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("129"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("129"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("129"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("129"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("129"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("255"));
+    line->addLexeme(sep(")"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SET TILE PATTERN with inline tuple and bank") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("TILE"));
+    line->addLexeme(kw("PATTERN"));
+    line->addLexeme(num("65"));
+    line->addLexeme(sep(","));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("255"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("255"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("255"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("255"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SET TILE PATTERN with array variable") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("TILE"));
+    line->addLexeme(kw("PATTERN"));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(id("PB%"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SET TILE PATTERN with array variable and bank") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("TILE"));
+    line->addLexeme(kw("PATTERN"));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(id("PB%"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("1"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
     CHECK(result == true);
   }
 }

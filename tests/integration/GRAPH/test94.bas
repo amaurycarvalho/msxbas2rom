@@ -1,69 +1,48 @@
-10 DIM BA%(15), BB%(3,3), BC%(3,3)          ' sprite pattern memory buffers (16 integers = 32 bytes)
-11 SCREEN 2, 2
+10 REM TEST94.BAS - SET/GET TILE PATTERN ALL SYNTAXES
+20 SCREEN 2
+30 SET TILE ON
+40 REM INLINE FORM WITHOUT BANK
+41 Y% = 5 : GOSUB 300 
+42 Y% = 10 : GOSUB 300 
+43 Y% = 20 : GOSUB 300 
+44 GOSUB 500
+50 SET TILE PATTERN 65, (255,129,129,129,129,129,129,255)
+51 GOSUB 500
+60 REM INLINE FORM WITH BANK
+70 SET TILE PATTERN 66, (255,0,255,0,255,0,255,0), 1
+71 GOSUB 500
+80 REM ARRAY FORM (4 INTEGER ARRAY)
+90 DIM PB%(3)
+100 PB%(0)=&H0C03 : PB%(1)=&HB08C
+110 PB%(2)=&HC0B0 : PB%(3)=&H30C0
+120 SET TILE PATTERN 67, PB%()
+121 GOSUB 500
+130 REM ARRAY FORM WITH BANK
+140 SET TILE PATTERN 68, PB%(), 2
+141 GOSUB 500
+150 REM GET TILE PATTERN
+160 DIM QB%(3)
+170 GET TILE PATTERN 67, QB%()
+171 Y% = 1 : GOSUB 400
+180 REM GET TILE PATTERN WITH BANK
+190 GET TILE PATTERN 67, QB%(), 1
+191 Y% = 3 : GOSUB 400
+200 GOSUB 500
+210 SCREEN 0
+211 END
 
-' fill sprite pattern memory buffer A
-' sprite pattern (16x16):  
-'     low  BA%(0)  low  BA%(8)
-'     high BA%(0)  high BA%(8)
-'     low  BA%(1)  low  BA%(9)
-'     high BA%(1)  high BA%(9)
-'     low  BA%(2)  low  BA%(10)
-'     high BA%(2)  high BA%(10)
-'     low  BA%(3)  low  BA%(11)
-'     high BA%(3)  high BA%(11)
-'     low  BA%(4)  low  BA%(12)
-'     high BA%(4)  high BA%(12)
-'     low  BA%(5)  low  BA%(13)
-'     high BA%(5)  high BA%(13)
-'     low  BA%(6)  low  BA%(14)
-'     high BA%(6)  high BA%(14)
-'     low  BA%(7)  low  BA%(15)
-'     high BA%(7)  high BA%(15)
-20 FOR I% = 0 TO 15
-21   BA%(I%)   = &hFF00
-22 NEXT
+300 PUT TILE 65, (10,Y%) 
+301 PUT TILE 66, (12,Y%) 
+302 PUT TILE 67, (14,Y%) 
+303 PUT TILE 68, (16,Y%)
+304 RETURN
 
-' copy memory buffer A to sprite pattern #0 and show it
-30 SET SPRITE PATTERN 0, BA%
-31 PUT SPRITE 0,(50,100),15,0
+400 LOCATE  0, Y% : PRINT HEX$(QB%(0))
+401 LOCATE  6, Y% : PRINT HEX$(QB%(1))
+402 LOCATE 12, Y% : PRINT HEX$(QB%(2))
+403 LOCATE 18, Y% : PRINT HEX$(QB%(3))
+404 RETURN
 
-' copy sprite pattern #0 to buffer B
-40 GET SPRITE PATTERN 0, BB%
-
-' modify memory buffer B content and fill buffer C
-' sprite pattern (16x16):  
-'     low  BB%(0,0)  low  BB%(0,2)
-'     high BB%(0,0)  high BB%(0,2)
-'     low  BB%(1,0)  low  BB%(1,2)
-'     high BB%(1,0)  high BB%(1,2)
-'     low  BB%(2,0)  low  BB%(2,2)
-'     high BB%(2,0)  high BB%(2,2)
-'     low  BB%(3,0)  low  BB%(3,2)
-'     high BB%(3,0)  high BB%(3,2)
-'     low  BB%(0,1)  low  BB%(0,3)
-'     high BB%(0,1)  high BB%(0,3)
-'     low  BB%(1,1)  low  BB%(1,3)
-'     high BB%(1,1)  high BB%(1,3)
-'     low  BB%(2,1)  low  BB%(2,3)
-'     high BB%(2,1)  high BB%(2,3)
-'     low  BB%(3,1)  low  BB%(3,3)
-'     high BB%(3,1)  high BB%(3,3)
-51 FOR I% = 0 TO 3
-52   BB%(1,I%) = &h55AA
-53   BB%(3,I%) = &h55AA
-54   BC%(0,I%) = &h55AA
-55   BC%(2,I%) = &h55AA
-56 NEXT
-
-' copy buffer B to sprite pattern #1 and show it
-60 SET SPRITE PATTERN 1, BB%
-61 PUT SPRITE 1,(100,100),15,1
-
-' copy buffer C to sprite pattern #2 and show it
-70 SET SPRITE PATTERN 2, BC%
-71 PUT SPRITE 2,(150,100),15,2
-
-80 A$ = INPUT$(1)
-81 SCREEN 0
-82 END
+500 A$ = INPUT$(1)
+502 RETURN 
 

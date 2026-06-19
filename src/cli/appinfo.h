@@ -88,6 +88,9 @@ Version history
 - Changelog standardized to Keep a Changelog format.
 - Windows Unicode argv support via `__wargv` to UTF-8 conversion on program startup.
 - `--` (end-of-options) support in CLI parser for filenames starting with `-`.
+- `SET TILE PATTERN` buffer form with 4-integer array and bank parameter.
+- `GET TILE PATTERN` with bank parameter (former stub now implemented).
+- Z80 kernel bulk LDIRVM/LDIRMV routines for `get_tile_pattern` / `set_tile_pattern_buffer`.
 
 ### Changed
 - Magic constants in RAM percentage calculation replaced with named constants.
