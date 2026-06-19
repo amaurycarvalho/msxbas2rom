@@ -87,6 +87,9 @@ Version history
 - Spec migration to OpenSpec format.
 - Changelog standardized to Keep a Changelog format.
 
+### Changed
+- Magic constants in RAM percentage calculation (5931, 10534, 0x538) replaced with named, documented constants in `compiler_hooks.h`.
+
 ## [0.3.4.2] - 2026-04-14
 
 Sprite glitch bug fix (issue #19) and Z80 kernel SRP refactoring.

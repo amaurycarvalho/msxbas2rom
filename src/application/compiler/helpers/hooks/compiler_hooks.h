@@ -48,6 +48,21 @@
 #define def_RAM_TOP (def_SPRSIZ - 1)
 #define def_RAM_SIZE (def_RAM_TOP - def_RAM_BOTTOM)
 
+//! @brief free variable RAM available when file I/O is NOT enabled
+//! @note empirical value; represents usable space within BASMEM..HEAPEND
+//!       after accounting for temp strings and kernel variable bookkeeping
+#define def_VAR_RAM_NON_DISK 10534
+
+//! @brief free variable RAM available when file I/O IS enabled
+//! @note 4603 bytes less than def_VAR_RAM_NON_DISK due to DSKBAS
+//!       workarea and disk I/O internal structures
+#define def_VAR_RAM_DISK 5931
+
+//! @brief kernel internal RAM overhead above HEAPEND
+//! @note covers sprite tables, player buffer, heap metadata, mapper
+//!       state, MR routines, stack margin, and other kernel structures
+#define def_KERNEL_RAM_OVERHEAD 0x538
+
 //! @note 2176 bytes of font buffer in RAM
 #define def_RAM_BUFSIZ 0x0880
 

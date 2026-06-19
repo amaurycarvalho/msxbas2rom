@@ -13,6 +13,9 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - Spec migration to OpenSpec format. All specifications now live under `openspec/`.
 - Changelog standardized to [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
+### Changed
+- Magic constants in RAM percentage calculation (5931, 10534, 0x538) replaced with named, documented constants in `compiler_hooks.h`.
+
 ## [0.3.4.2] - 2026-04-14
 
 ### Fixed
