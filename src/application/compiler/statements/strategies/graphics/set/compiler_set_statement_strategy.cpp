@@ -583,7 +583,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
       cpu.addLdiiA(def_SOMODE);
 
     } else if (lexeme->value == "FLIP") {
-      if (t == 2) {
+      if (t >= 2 && t <= 3) {
         // tile number
         sub_action = action->actions[0];
         // ld hl, parameter value    ; parameter
@@ -599,6 +599,22 @@ void CompilerSetStatementStrategy::cmd_set_tile(
         expression.addCast(result_subtype, Lexeme::subtype_numeric);
         // pop de
         cpu.addPopDE();
+
+        // bank number (optional)
+        if (t == 3) {
+          // save direction before evaluating bank (clobbers HL)
+          cpu.addPushHL();
+          sub_action = action->actions[2];
+          result_subtype = expression.evalExpression(sub_action);
+          expression.addCast(result_subtype, Lexeme::subtype_numeric);
+          // ld b, l
+          cpu.addLdBL();
+          // restore direction to HL
+          cpu.addPopHL();
+        } else {
+          // ld b, 3     ; default = all banks
+          cpu.addLdB(0x03);
+        }
 
         cpu.addCall(def_set_tile_flip);
 
@@ -608,7 +624,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
       }
 
     } else if (lexeme->value == "ROTATE") {
-      if (t == 2) {
+      if (t >= 2 && t <= 3) {
         // tile number
         sub_action = action->actions[0];
         // ld hl, parameter value    ; parameter
@@ -624,6 +640,22 @@ void CompilerSetStatementStrategy::cmd_set_tile(
         expression.addCast(result_subtype, Lexeme::subtype_numeric);
         // pop de
         cpu.addPopDE();
+
+        // bank number (optional)
+        if (t == 3) {
+          // save direction before evaluating bank (clobbers HL)
+          cpu.addPushHL();
+          sub_action = action->actions[2];
+          result_subtype = expression.evalExpression(sub_action);
+          expression.addCast(result_subtype, Lexeme::subtype_numeric);
+          // ld b, l
+          cpu.addLdBL();
+          // restore direction to HL
+          cpu.addPopHL();
+        } else {
+          // ld b, 3     ; default = all banks
+          cpu.addLdB(0x03);
+        }
 
         cpu.addCall(def_set_tile_rotate);
 

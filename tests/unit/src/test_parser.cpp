@@ -1295,6 +1295,78 @@ TEST_SUITE("SetStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("SET"));
     CHECK(result == true);
   }
+
+  TEST_CASE("Parses SET TILE FLIP with 2 params") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("TILE"));
+    line->addLexeme(kw("FLIP"));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("0"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SET TILE FLIP with 3 params (bank)") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("TILE"));
+    line->addLexeme(kw("FLIP"));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SET TILE ROTATE with 2 params") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("TILE"));
+    line->addLexeme(kw("ROTATE"));
+    line->addLexeme(num("5"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("0"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SET TILE ROTATE with 3 params (bank)") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("TILE"));
+    line->addLexeme(kw("ROTATE"));
+    line->addLexeme(num("5"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("0"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
 }
 
 TEST_SUITE("ScreenStatementStrategy") {

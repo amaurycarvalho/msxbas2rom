@@ -564,12 +564,195 @@ cmd_restore:
 
 ; de = tile number
 ; hl = direction (0=horizontal, 1=vertical, 2=both)
+; b  = bank (0-2 specific, 3=all)
 set_tile_flip:
+  ld a, (SCRMOD)
+  cp 5
+  ret nc                       ; return if screen mode >= 5
+  ld a, b
+  ld (TEMP2), a                ; save bank
+  push hl                      ; save direction
+  call get_tile_vram_addr      ; hl = VRAM address (bank 0)
+  ld (TEMP), hl                ; save VRAM base
+  call set_tile.copy           ; read 8 bytes to STRBUF
+  pop hl                       ; restore direction
+
+  ld a, l                      ; direction
+  or a
+  jr z, set_tile_flip.horiz
+  dec a
+  jr z, set_tile_flip.vert
+  ; direction = 2 (both)
+  call set_tile_flip.horiz.do
+  call set_tile_flip.vert.do
+  jr set_tile_flip.paste
+
+set_tile_flip.horiz:
+  call set_tile_flip.horiz.do
+  jr set_tile_flip.paste
+
+set_tile_flip.horiz.do:
+  ld hl, STRBUF
+  ld b, 8
+set_tile_flip.horiz.loop:
+  ld a, (hl)
+  call binaryReverseA
+  ld (hl), a
+  inc hl
+  djnz set_tile_flip.horiz.loop
   ret
+
+set_tile_flip.vert:
+  call set_tile_flip.vert.do
+  jr set_tile_flip.paste
+
+set_tile_flip.vert.do:
+  ld hl, STRBUF
+  ld de, STRBUF+7
+  ld b, 4
+set_tile_flip.vert.loop:
+  ld a, (hl)
+  ld c, a
+  ld a, (de)
+  ld (hl), a
+  ld a, c
+  ld (de), a
+  inc hl
+  dec de
+  djnz set_tile_flip.vert.loop
+  ret
+
+set_tile_flip.paste:
+  ld a, (TEMP2)                ; restore bank
+  ld b, a
+  jp set_tile.paste
 
 ; de = tile number
 ; hl = direction (0=left, 1=right, 2=180 degrees)
+; b  = bank (0-2 specific, 3=all)
 set_tile_rotate:
+  ld a, (SCRMOD)
+  cp 5
+  ret nc                       ; return if screen mode >= 5
+  ld a, b
+  ld (TEMP2), a                ; save bank
+  push hl                      ; save direction
+  call get_tile_vram_addr      ; hl = VRAM address (bank 0)
+  ld (TEMP), hl                ; save VRAM base
+  call set_tile.copy           ; read 8 bytes to STRBUF
+  pop hl                       ; restore direction
+
+  ld a, l                      ; direction
+  cp 2
+  jr z, set_tile_rotate.flip   ; 180 degrees = flip both
+
+  or a
+  jr z, set_tile_rotate.left
+
+set_tile_rotate.right:
+  call set_tile.backup_rotate
+  call blockRotateR
+  jr set_tile_rotate.paste
+
+set_tile_rotate.flip:
+  call set_tile_flip.horiz.do
+  call set_tile_flip.vert.do
+  jr set_tile_rotate.paste
+
+set_tile_rotate.left:
+  call set_tile.backup_rotate
+  call blockRotateL
+
+set_tile_rotate.paste:
+  ld a, (TEMP2)                ; restore bank
+  ld b, a
+
+; b = bank (0-2 specific, 3=all)
+; (TEMP) = VRAM base address of tile (bank 0)
+set_tile.paste:
+  ld a, (SCRMOD)
+  or a
+  jr nz, set_tile.paste.normal
+    ; screen 0: write to base address only (single bank)
+    ld hl, (TEMP)
+    ex de, hl
+    ld hl, STRBUF
+    ld bc, 8
+    jp LDIRVM
+
+set_tile.paste.normal:
+  ld a, b
+  cp 3
+  jr z, set_tile.paste.all
+
+  ; single bank
+  ld hl, (TEMP)
+  or a
+  jr z, set_tile.paste.do_1
+  push bc
+    ld de, 0x0800
+set_tile.paste.bank_loop:
+    add hl, de
+    djnz set_tile.paste.bank_loop
+  pop bc
+set_tile.paste.do_1:
+  ex de, hl
+  ld hl, STRBUF
+  ld bc, 8
+  jp LDIRVM
+
+set_tile.paste.all:
+  ld hl, (TEMP)
+  ex de, hl
+  ld hl, STRBUF
+  ld bc, 8
+  push de
+    call LDIRVM
+  pop hl
+  ld de, 0x0800
+  add hl, de
+  ex de, hl
+  ld hl, STRBUF
+  ld bc, 8
+  push de
+    call LDIRVM
+  pop hl
+  ld de, 0x0800
+  add hl, de
+  ex de, hl
+  ld hl, STRBUF
+  ld bc, 8
+  jp LDIRVM
+
+; backup STRBUF[0..7] to STRBUF[8..15], HL=STRBUF+8, DE=STRBUF
+set_tile.backup_rotate:
+  ld hl, STRBUF
+  ld de, STRBUF+8
+  ld bc, 8
+  ldir
+  ld de, STRBUF
+  ret
+
+; in:  hl = VRAM address
+; out: STRBUF = 8-byte tile pattern from VRAM
+set_tile.copy:
+  ld de, STRBUF
+  ld bc, 8
+  jp LDIRMV
+
+; in:  de = tile number
+; out: hl = VRAM address of tile (bank 0)
+get_tile_vram_addr:
+  ld l, e
+  ld h, d                      ; hl = tile number
+  add hl, hl
+  add hl, hl
+  add hl, hl                   ; hl = tile * 8
+  ld a, (SCRMOD)
+  or a
+  ret nz                       ; screens 1-4: no base offset
+  ld de, 0x0800
+  add hl, de                   ; screen 0: base at 0x0800
   ret
 
 ; hl = tile number

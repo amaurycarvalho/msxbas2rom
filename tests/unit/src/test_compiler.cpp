@@ -590,8 +590,16 @@ TEST_SUITE("CompilerStatementStrategies") {
           "10 DIM C%(3)\n20 GET TILE COLOR 5, C%()\n30 END\n", true},
          {"GET_TILE_COLOR_BANK",
           "10 DIM C%(3)\n20 GET TILE COLOR 5, C%(), 2\n30 END\n", true},
-         {"SET_TILE_COLOR_INVALID",
-          "10 SET TILE COLOR 5\n20 END\n", false},
+        {"SET_TILE_FLIP",
+         "10 SET TILE FLIP 0, 0\n20 END\n", true},
+        {"SET_TILE_FLIP_BANK",
+         "10 SET TILE FLIP 0, 1, 2\n20 END\n", true},
+        {"SET_TILE_ROTATE",
+         "10 SET TILE ROTATE 0, 0\n20 END\n", true},
+        {"SET_TILE_ROTATE_BANK",
+         "10 SET TILE ROTATE 0, 1, 1\n20 END\n", true},
+        {"SET_TILE_COLOR_INVALID",
+         "10 SET TILE COLOR 5\n20 END\n", false},
      };
 
     for (const auto& test_case : cases) {
