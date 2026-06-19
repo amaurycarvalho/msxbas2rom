@@ -32,8 +32,24 @@ void CommandLineParser::parse(int argc, char* argv[]) {
   //   throw std::runtime_error("No input file provided.");
   // }
 
+  bool endOfOptions = false;
+
   for (int i = 1; i < argc; ++i) {
     std::string arg = argv[i];
+
+    if (arg == "--") {
+      endOfOptions = true;
+      continue;
+    }
+
+    if (endOfOptions) {
+      if (filename_.empty()) {
+        filename_ = arg;
+      } else {
+        throw std::runtime_error("Unexpected argument: " + arg);
+      }
+      continue;
+    }
 
     if (options_.count(arg)) {
       Option& opt = options_.at(arg);

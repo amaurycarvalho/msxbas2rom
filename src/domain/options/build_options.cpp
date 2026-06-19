@@ -21,7 +21,7 @@ BuildOptions::BuildOptions() {
   appFilename = "None";
 
   /// default options flags
-  help = debug = quiet = error = version = doc = history = autoROM = false;
+  help = debug = quiet = error = version = doc = history = autoROM = vscode = false;
 
   /// default compile mode
   compileMode = CompileMode::Plain;

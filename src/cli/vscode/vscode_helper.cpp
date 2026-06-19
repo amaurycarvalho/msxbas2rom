@@ -5,7 +5,7 @@
 VSCodeHelper::VSCodeHelper(string compilerAppFilename) {
   this->compilerAppFilename = compilerAppFilename;
 
-#ifdef Win
+#ifdef _WIN32
   this->emulatorAppFilename = "openmsx.exe";
 #else
   //! @remark check if flatpak openMSX is installed (linux/macOS)

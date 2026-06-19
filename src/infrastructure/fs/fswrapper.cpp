@@ -72,8 +72,9 @@ bool createPath(const string& pathName) {
 }
 
 bool pathExists(const string& pathName) {
-#ifdef Win
-  return false;
+#ifdef _WIN32
+  DWORD attr = GetFileAttributesA(pathName.c_str());
+  return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
 #else
   struct stat info;
   if (stat(pathName.c_str(), &info) != 0) {

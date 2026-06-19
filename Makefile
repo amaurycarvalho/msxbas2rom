@@ -30,7 +30,7 @@ LDFLAGS =
 LDFLAGS_PLUS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc 
 
 ifeq ($(OS),Windows_NT)
- OSFLAG += -D Win $(PARMS)
+ OSFLAG += -D _WIN32 $(PARMS)
  LDFLAGS_PLUS += $(PARMS) -lodbc32 -lwsock32 -lwinspool -lwinmm -lshell32 -lcomctl32 -ladvapi32 -lglu32 -lole32 -loleaut32 -luuid 
 else
  UNAME_S := $(shell uname -s)

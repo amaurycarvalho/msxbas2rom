@@ -21,8 +21,6 @@ void BuildOptionsSetup::setupParser() {
   /// general options setup
   parser.addOption("-h", "--help", "Show help message", false, false,
                    [&](const std::string&) { help = true; });
-  parser.addOption("-?", "", "Show help message", false, false,
-                   [&](const std::string&) { help = true; });
   parser.addOption("-q", "--quiet", "Quiet mode (no verbose)", false, false,
                    [&](const std::string&) { quiet = true; });
   parser.addOption("-d", "--debug", "Debug mode (show details)", false, false,

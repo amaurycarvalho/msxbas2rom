@@ -19,8 +19,9 @@
 
 using namespace std;
 
-#ifdef Win
+#ifdef _WIN32
 #include <direct.h>  // For _mkdir on Windows
+#include <windows.h>
 #define MKDIR(path) _mkdir(path)
 #define strlcpy(dst, src, size) strcpy_s((dst), (size), (src))
 #define strlcat(dst, src, size) strcat_s((dst), (size), (src))
@@ -91,8 +92,6 @@ bool createPath(const string& pathName);
 /***
  * @brief Check if a path exists
  * @return true or false
- * @note WARNING: Windows support is missing
- * @todo to implement Windows support
  */
 bool pathExists(const string& pathName);
 

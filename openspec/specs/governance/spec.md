@@ -57,3 +57,37 @@ The system SHALL consult `openspec/changes/` for the project roadmap and current
 - **WHEN** planning new work
 - **THEN** active changes in `openspec/changes/` SHALL be consulted for current sprint items
 - **AND** archived changes in `openspec/changes/archive/` SHALL be consulted for completed work
+
+### Requirement: Every change must be associated with a release and registered in CHANGELOG
+Every change SHALL be associated with a target release version (e.g., `1.0.0.0`). The release MUST be captured during the explore or propose phase — if the user does not specify it, the agent SHALL ask. At archive time, the agent SHALL update `CHANGELOG.md` with the change's entries under the correct release section, categorized as Added, Changed, Fixed, Deprecated, Removed, or Security per the Keep a Changelog format. If the release affects the `info_history` string in `src/cli/appinfo.h`, that SHALL also be updated to reflect the current release.
+
+#### Scenario: Release is captured during planning
+- **WHEN** exploring or proposing a new change
+- **THEN** the agent SHALL confirm the target release version with the user
+- **AND** if the user does not provide it, the agent SHALL ask before proceeding
+
+#### Scenario: CHANGELOG is updated at archive time
+- **WHEN** archiving a completed change
+- **THEN** the agent SHALL add the change's entries to `CHANGELOG.md` under the appropriate release section
+- **AND** SHALL use the Keep a Changelog categories (Added, Changed, Fixed, Deprecated, Removed, Security)
+
+#### Scenario: info_history is synced from CHANGELOG at release time
+- **WHEN** preparing a release
+- **THEN** `src/cli/appinfo.h` `info_history` SHALL be synced to mirror the current release entry from `CHANGELOG.md`, a summary of the last 2 releases, and the release URL
+- **AND** `CHANGELOG.md` is the authoritative source — do NOT write to `info_history` first
+- **AND** the architecture spec (`openspec/specs/architecture/spec.md`) SHALL be consulted for the full syncing rule
+
+### Requirement: Run builds and tests asynchronously
+The project has **278 `.cpp` source files** and a full build (`make release` or `make debug`) can take **several minutes**. To avoid timeouts and blocking the agent, all compilation and test commands SHALL be run asynchronously via the Task tool or in background processes. Direct synchronous compilation of the full tree SHALL be avoided.
+
+#### Scenario: Large compilation tasks are delegated
+- **WHEN** a full build or test run is needed (e.g., `make release`, `make test-unit`)
+- **THEN** the agent SHALL delegate the command to a background task or sub-agent
+- **AND** SHALL NOT wait synchronously for the result
+- **AND** SHALL verify compilation of only the changed files synchronously when possible (using `g++ -c` with proper include paths)
+
+#### Scenario: Changed files are verified individually
+- **WHEN** only a subset of files have been modified
+- **THEN** the agent SHALL prefer compiling only the changed `.cpp` files with `g++ -c <file> -o <output>` using the same flags as the Makefile
+- **AND** SHALL use the full project include tree (`$(shell find src -type f \( -name "*.h" -o -name "*.hpp" \) -exec dirname {} + | sort -u | sed 's/^/-I /')`)
+- **AND** only fall back to `make release` or `make test-unit` as a final integration verification, run asynchronously

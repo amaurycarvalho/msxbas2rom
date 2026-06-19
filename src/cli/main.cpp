@@ -29,10 +29,11 @@
 #include <string.h>
 
 #include <memory>
-#ifndef MacOS
-#include <malloc.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#include <vector>
 #endif
-#include <math.h>
 
 #include <set>
 
@@ -43,6 +44,22 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
+#ifdef _WIN32
+  std::vector<std::string> utf8Storage;
+  std::vector<char*> utf8Argv;
+  utf8Storage.reserve(argc);
+  utf8Argv.reserve(argc);
+  for (int i = 0; i < argc; i++) {
+    wchar_t* warg = __wargv[i];
+    int len = WideCharToMultiByte(CP_UTF8, 0, warg, -1, NULL, 0, NULL, NULL);
+    utf8Storage.emplace_back(len - 1, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, warg, -1, &utf8Storage.back()[0], len,
+                        NULL, NULL);
+    utf8Argv.push_back(&utf8Storage.back()[0]);
+  }
+  argv = utf8Argv.data();
+#endif
+
   shared_ptr<BuildOptionsSetup> opts = make_shared<BuildOptionsSetup>();
   set<Logger::LogLevel> logLevels = {Logger::LogLevel::ERROR};
   shared_ptr<Lexer> lexer;

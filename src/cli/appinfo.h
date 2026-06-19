@@ -37,7 +37,7 @@ const char* info_help = R"(
 Usage: msxbas2rom [options] <filename.bas>
 
 General options:
-    -h or --help or -? = help
+    -h or --help = help
     -q or --quiet = quiet (no verbose)
     -d or --debug = debug mode (show details)
     -D or --doc = display quick reference guide
@@ -80,15 +80,24 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char* info_history = R"(
 Version history
 
-## [1.0.0.0] - 2026-05-04
+## [1.0.0.0] - 2026-06-19
 
 ### Added
 - File handling support implementation (US-007).
 - Spec migration to OpenSpec format.
 - Changelog standardized to Keep a Changelog format.
+- Windows Unicode argv support via `__wargv` to UTF-8 conversion on program startup.
+- `--` (end-of-options) support in CLI parser for filenames starting with `-`.
 
 ### Changed
-- Magic constants in RAM percentage calculation (5931, 10534, 0x538) replaced with named, documented constants in `compiler_hooks.h`.
+- Magic constants in RAM percentage calculation replaced with named constants.
+- Platform detection normalized from `#ifdef Win` to standard `#ifdef _WIN32`.
+- Removed dead includes (`<malloc.h>`, `<math.h>`) from `main.cpp`.
+
+### Fixed
+- Uninitialized `vscode` member causing "VSCode already initialized" error on Windows.
+- `pathExists()` on Windows: replaced stub with `GetFileAttributesA`.
+- `-?` help option removed due to glob expansion risk in POSIX shells.
 
 ## [0.3.4.2] - 2026-04-14
 

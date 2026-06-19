@@ -6,15 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 with a MAJOR.MINOR.PATCH.BUILD scheme.
 
-## [1.0.0.0] - 2026-05-04
+## [1.0.0.0] - 2026-06-19
 
 ### Added
 - File handling support implementation (US-007).
 - Spec migration to OpenSpec format. All specifications now live under `openspec/`.
 - Changelog standardized to [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
+- Windows Unicode argv support via `__wargv` → UTF-8 conversion on program startup.
+- `--` (end-of-options) support in CLI parser for filenames starting with `-`.
 
 ### Changed
 - Magic constants in RAM percentage calculation (5931, 10534, 0x538) replaced with named, documented constants in `compiler_hooks.h`.
+- Platform detection normalized from non-standard `#ifdef Win` to standard `#ifdef _WIN32` across all source files.
+- Removed dead includes (`<malloc.h>`, `<math.h>`) from `main.cpp`.
+
+### Fixed
+- Uninitialized `vscode` member in `BuildOptions` constructor causing "VSCode already initialized" error on Windows.
+- `pathExists()` on Windows: replaced `return false` stub with real `GetFileAttributesA` implementation.
+- `-?` help option removed: glob expansion in POSIX shells (bash/zsh/sh) could silently transform `-?` into a different option when single-character filenames existed in the working directory. Use `-h` or `--help` instead.
 
 ## [0.3.4.2] - 2026-04-14
 
