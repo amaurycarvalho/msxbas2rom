@@ -335,12 +335,12 @@ int Compiler::write(unsigned char* dest, int start_address) {
   bool is_id, is_jump, is_load;
 
   // Resolve MR wrapper target addresses from dw dispatch table
-  unsigned int mr_call_target = bin_header_bin[def_wrapper_routines_map_table - 0x4000 + DISP_MR_CALL * 2]
-                              | (bin_header_bin[def_wrapper_routines_map_table - 0x4000 + DISP_MR_CALL * 2 + 1] << 8);
-  unsigned int mr_jump_target = bin_header_bin[def_wrapper_routines_map_table - 0x4000 + DISP_MR_JUMP * 2]
-                              | (bin_header_bin[def_wrapper_routines_map_table - 0x4000 + DISP_MR_JUMP * 2 + 1] << 8);
-  unsigned int mr_get_data_target = bin_header_bin[def_wrapper_routines_map_table - 0x4000 + DISP_MR_GET_DATA * 2]
-                                  | (bin_header_bin[def_wrapper_routines_map_table - 0x4000 + DISP_MR_GET_DATA * 2 + 1] << 8);
+  unsigned int mr_call_target = bin_header_bin[DISP_MR_CALL * 2]
+                              | (bin_header_bin[DISP_MR_CALL * 2 + 1] << 8);
+  unsigned int mr_jump_target = bin_header_bin[DISP_MR_JUMP * 2]
+                              | (bin_header_bin[DISP_MR_JUMP * 2 + 1] << 8);
+  unsigned int mr_get_data_target = bin_header_bin[DISP_MR_GET_DATA * 2]
+                                  | (bin_header_bin[DISP_MR_GET_DATA * 2 + 1] << 8);
 
   // copy compiled code to final destination
 

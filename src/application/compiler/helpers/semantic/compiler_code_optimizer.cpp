@@ -243,12 +243,14 @@ void CompilerCodeOptimizer::addKernelCallNZ(unsigned char index) {
 int CompilerCodeOptimizer::getKernelCallAddr(unsigned int address) {
   int result = address, i;
 
-  if (address >= 0x4000 && address < 0x8000) {
-    i = address - 0x4000;
+  if (address < 0x4000) {
     if (address >= def_wrapper_routines_map_table &&
         address < def_wrapper_routines_map_table + DISP_ENTRIES * 2) {
-      result = bin_header_bin[i] | (bin_header_bin[i + 1] << 8);
-    } else if (bin_header_bin[i] == 0xC3) {  // jp
+      result = bin_header_bin[address] | (bin_header_bin[address + 1] << 8);
+    }
+  } else if (address >= 0x4000 && address < 0x8000) {
+    i = address;
+    if (bin_header_bin[i] == 0xC3) {  // jp
       result = bin_header_bin[i + 1] | (bin_header_bin[i + 2] << 8);
     }
   }

@@ -117,7 +117,9 @@
 //! @warning
 //! see "wrapper_routines_map_table" correct address in
 //! "header.symbols.asm" if Z80 kernel was recompiled
-#define def_wrapper_routines_map_table 0x4102
+//! Table is now at logical address 0x0000 in the virtual
+//! first half of header.bin (not written to ROM).
+#define def_wrapper_routines_map_table 0x0000
 
 // Dispatch indexes for wrapper routine word-pointer table
 // (0-indexed, matching order in wrapper_routines_map_table)

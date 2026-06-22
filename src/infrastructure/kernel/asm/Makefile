@@ -24,10 +24,16 @@ all: $(INC_DIR)/header.h \
 $(BIN_DIR)/header.bin: $(SRC_DIR)/header.asm $(SRC_FILES)
 	$(PASMO) $< $@ $(SRC_DIR)/header.symbols.asm
 	@SIZE=$$(stat -c%s $@ 2>/dev/null || echo 0); \
-	LIMIT=16384; \
+	LIMIT=32768; \
 	if [ $$SIZE -gt $$LIMIT ]; then \
 		EXCESS=$$((SIZE - LIMIT)); \
-		echo "WARNING: Kernel size $$SIZE bytes exceeds 0x4000 limit by $$EXCESS bytes"; \
+		echo "WARNING: Total header.bin size $$SIZE bytes exceeds 0x8000 limit by $$EXCESS bytes"; \
+	else \
+		KERNEL_SIZE=$$((SIZE - 16384)); \
+		if [ $$KERNEL_SIZE -gt 16384 ]; then \
+			EXCESS=$$((KERNEL_SIZE - 16384)); \
+			echo "WARNING: Kernel portion $$KERNEL_SIZE bytes exceeds 0x4000 limit by $$EXCESS bytes"; \
+		fi; \
 	fi
 
 $(INC_DIR)/header.h: $(BIN_DIR)/header.bin

@@ -1,8 +1,156 @@
 ; ------------------------------------------------------------------------------------------------------
-; INITIALIZE
+; VIRTUAL DISPATCH TABLE (compile-time oracle only, not written to ROM)
 ; ------------------------------------------------------------------------------------------------------
 
-	org 4000h
+	org 0000h
+
+wrapper_routines_map_table:
+  dw castParamFloatInt
+  dw cmd_clrkey
+  dw cmd_clrscr
+  dw cmd_disscr
+  dw cmd_draw
+  dw cmd_enascr
+  dw cmd_keyclkoff
+  dw cmd_mute
+  dw cmd_play
+  dw cmd_pad
+
+  dw cmd_plyload
+  dw cmd_plyloop
+  dw cmd_plymute
+  dw cmd_plyplay
+  dw cmd_plyreplay
+  dw cmd_plysong
+  dw cmd_plysound
+
+  dw cmd_ramtoram
+  dw cmd_ramtovram
+  dw cmd_rsctoram
+  dw cmd_restore
+  dw cmd_runasm
+
+  dw cmd_screen_copy
+  dw cmd_screen_load
+  dw cmd_screen_paste
+
+  dw cmd_mtf
+
+  dw cmd_setfnt
+  dw cmd_turbo
+  dw cmd_updfntclr
+  dw cmd_vramtoram
+  dw cmd_wrtchr
+  dw cmd_wrtclr
+  dw cmd_wrtfnt
+  dw cmd_wrtscr
+  dw cmd_wrtspr
+  dw cmd_wrtspratr
+  dw cmd_wrtsprclr
+  dw cmd_wrtsprpat
+  dw cmd_wrtvram
+  dw cmd_page
+
+  dw floatNeg
+  dw gfxTileAddress
+
+  dw intCompareAND
+  dw intCompareEQ
+  dw intCompareGE
+  dw intCompareGT
+  dw intCompareLE
+  dw intCompareLT
+  dw intCompareNE
+  dw intCompareNOT
+  dw intCompareOR
+  dw intCompareXOR
+  dw intNeg
+  dw intSHL
+  dw intSHR
+
+  dw player.initialize
+  dw player.unhook
+
+  dw set_tile_flip
+  dw set_tile_rotate
+  dw set_tile_color
+  dw set_tile_pattern
+  dw get_tile_color
+  dw get_tile_pattern
+  dw set_sprite_flip
+  dw set_sprite_rotate
+  dw set_sprite_color
+  dw set_sprite_pattern
+  dw get_sprite_color
+  dw get_sprite_pattern
+  dw set_tile_color_buf
+  dw set_tile_pattern_buffer
+
+  dw usr0
+  dw usr1
+  dw usr2
+  dw usr2_play
+  dw usr2_player_status
+  dw usr3
+  dw usr3.COLLISION_ALL
+  dw usr3.COLLISION_COUPLE
+  dw usr3.COLLISION_ONE
+  dw gfxVDP.set
+
+  dw cmd_get_date
+  dw cmd_get_time
+  dw cmd_set_date
+  dw cmd_set_time
+
+  dw GET_NEXT_TEMP_STRING_ADDRESS
+
+  dw MR_CALL
+  dw MR_CALL_TRAP
+  dw MR_CHANGE_SGM
+  dw MR_GET_BYTE
+  dw MR_GET_DATA
+  dw MR_JUMP
+
+  dw XBASIC_BASE
+  dw XBASIC_CLS
+  dw XBASIC_COPY
+  dw XBASIC_COPY_FROM
+  dw XBASIC_COPY_TO
+  dw XBASIC_END
+  dw XBASIC_INIT
+  dw XBASIC_INPUT_1
+  dw XBASIC_INPUT_2
+  dw XBASIC_IREAD
+  dw XBASIC_LOCATE
+  dw XBASIC_PLAY
+  dw XBASIC_PRINT_STR
+  dw XBASIC_PUT_SPRITE
+  dw XBASIC_READ
+  dw XBASIC_RESTORE
+  dw XBASIC_SCREEN
+  dw XBASIC_WIDTH
+  dw XBASIC_SOUND
+  dw XBASIC_TAB
+  dw XBASIC_USING
+  dw XBASIC_USING.do
+  dw XBASIC_USR
+  dw cmd_preflight_disk
+  dw cmd_fmaxfiles
+  dw cmd_fdskf
+  dw cmd_feof
+  dw cmd_floc
+  dw cmd_flof
+  dw cmd_fpos
+  dw cmd_fopen
+  dw cmd_fclose
+  dw cmd_finput
+  dw cmd_fprint
+
+	DEFS 0x4000 - $
+
+; ------------------------------------------------------------------------------------------------------
+; INITIALIZE (actual kernel, written to ROM)
+; ------------------------------------------------------------------------------------------------------
 
 ; ### ROM header ###
 
@@ -153,155 +301,3 @@ run_user_basic_code_on_rom.stack_margin_done:
   ld (STKTOP), hl
 
   jp 0x8010      	         ; Jump to above page (start code)
-
-  nop                           ; padding to keep wrapper_routines_map_start at 0x4102
-  nop
-  nop
-  nop
-  nop
-
-;---------------------------------------------------------------------------------------------------------
-; ROUTINES ENTRY MAP FOR EXTERNAL ACCESS (word-pointer dispatch table)
-;---------------------------------------------------------------------------------------------------------
-
-wrapper_routines_map_table:
-  dw castParamFloatInt
-  dw cmd_clrkey
-  dw cmd_clrscr
-  dw cmd_disscr
-  dw cmd_draw
-  dw cmd_enascr
-  dw cmd_keyclkoff
-  dw cmd_mute
-  dw cmd_play
-  dw cmd_pad
-
-  dw cmd_plyload
-  dw cmd_plyloop
-  dw cmd_plymute
-  dw cmd_plyplay
-  dw cmd_plyreplay
-  dw cmd_plysong
-  dw cmd_plysound
-
-  dw cmd_ramtoram
-  dw cmd_ramtovram
-  dw cmd_rsctoram
-  dw cmd_restore
-  dw cmd_runasm
-
-  dw cmd_screen_copy
-  dw cmd_screen_load
-  dw cmd_screen_paste
-
-  dw cmd_mtf
-
-  dw cmd_setfnt
-  dw cmd_turbo
-  dw cmd_updfntclr
-  dw cmd_vramtoram
-  dw cmd_wrtchr
-  dw cmd_wrtclr
-  dw cmd_wrtfnt
-  dw cmd_wrtscr
-  dw cmd_wrtspr
-  dw cmd_wrtspratr
-  dw cmd_wrtsprclr
-  dw cmd_wrtsprpat
-  dw cmd_wrtvram
-  dw cmd_page
-
-  dw floatNeg
-  dw gfxTileAddress
-
-  dw intCompareAND
-  dw intCompareEQ
-  dw intCompareGE
-  dw intCompareGT
-  dw intCompareLE
-  dw intCompareLT
-  dw intCompareNE
-  dw intCompareNOT
-  dw intCompareOR
-  dw intCompareXOR
-  dw intNeg
-  dw intSHL
-  dw intSHR
-
-  dw player.initialize
-  dw player.unhook
-
-  dw set_tile_flip
-  dw set_tile_rotate
-  dw set_tile_color
-  dw set_tile_pattern
-  dw get_tile_color
-  dw get_tile_pattern
-  dw set_sprite_flip
-  dw set_sprite_rotate
-  dw set_sprite_color
-  dw set_sprite_pattern
-  dw get_sprite_color
-  dw get_sprite_pattern
-  dw set_tile_color_buf
-  dw set_tile_pattern_buffer
-
-  dw usr0
-  dw usr1
-  dw usr2
-  dw usr2_play
-  dw usr2_player_status
-  dw usr3
-  dw usr3.COLLISION_ALL
-  dw usr3.COLLISION_COUPLE
-  dw usr3.COLLISION_ONE
-  dw gfxVDP.set
-
-  dw cmd_get_date
-  dw cmd_get_time
-  dw cmd_set_date
-  dw cmd_set_time
-
-  dw GET_NEXT_TEMP_STRING_ADDRESS
-
-  dw MR_CALL
-  dw MR_CALL_TRAP
-  dw MR_CHANGE_SGM
-  dw MR_GET_BYTE
-  dw MR_GET_DATA
-  dw MR_JUMP
-
-  dw XBASIC_BASE
-  dw XBASIC_CLS
-  dw XBASIC_COPY
-  dw XBASIC_COPY_FROM
-  dw XBASIC_COPY_TO
-  dw XBASIC_END
-  dw XBASIC_INIT
-  dw XBASIC_INPUT_1
-  dw XBASIC_INPUT_2
-  dw XBASIC_IREAD
-  dw XBASIC_LOCATE
-  dw XBASIC_PLAY
-  dw XBASIC_PRINT_STR
-  dw XBASIC_PUT_SPRITE
-  dw XBASIC_READ
-  dw XBASIC_RESTORE
-  dw XBASIC_SCREEN
-  dw XBASIC_WIDTH
-  dw XBASIC_SOUND
-  dw XBASIC_TAB
-  dw XBASIC_USING
-  dw XBASIC_USING.do
-  dw XBASIC_USR
-  dw cmd_preflight_disk
-  dw cmd_fmaxfiles
-  dw cmd_fdskf
-  dw cmd_feof
-  dw cmd_floc
-  dw cmd_flof
-  dw cmd_fpos
-  dw cmd_fopen
-  dw cmd_fclose
-  dw cmd_finput
-  dw cmd_fprint

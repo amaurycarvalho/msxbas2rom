@@ -32,12 +32,12 @@ else
     exit 1
 fi
 
-# 2. Verify header.bin exists and has correct size (16KB)
+# 2. Verify header.bin exists and has correct size (32KB total, 16KB kernel portion)
 BIN_SIZE=$(stat -c%s "$BIN_DIR/header.bin" 2>/dev/null || echo 0)
-if [ "$BIN_SIZE" -eq 16384 ]; then
-    pass "header.bin is 16384 bytes (16KB)"
+if [ "$BIN_SIZE" -eq 32768 ]; then
+    pass "header.bin is 32768 bytes (32KB — 16KB virtual table + 16KB kernel)"
 else
-    fail "header.bin size is $BIN_SIZE, expected 16384"
+    fail "header.bin size is $BIN_SIZE, expected 32768"
 fi
 
 # 3. Verify header.symbols.asm was generated

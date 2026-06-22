@@ -7,6 +7,7 @@
 
 #include <cstdio>
 #include <string>
+
 #include "doctest/doctest.h"
 
 TEST_CASE("Kernel ROM size within 0x4000 limit") {
@@ -22,18 +23,19 @@ TEST_CASE("Kernel ROM size within 0x4000 limit") {
     f = fopen("../../../../src/infrastructure/kernel/asm/bin/header.bin", "rb");
   }
 
-  REQUIRE_MESSAGE(f != nullptr, "header.bin not found — run kernel build first");
+  REQUIRE_MESSAGE(f != nullptr,
+                  "header.bin not found — run kernel build first");
 
   fseek(f, 0, SEEK_END);
   long size = ftell(f);
   fclose(f);
 
-  const long limit = 16384;
+  const long limit = 32768;  // 0x8000 (0x4000 for kernel routines map table and
+                             // 0x4000 for kernel routines)
 
   CHECK_MESSAGE(size > 0, "header.bin should be non-empty");
-  CHECK_MESSAGE(size <= limit,
-                "Kernel ROM size ", size, " bytes exceeds 0x4000 limit by ",
-                size - limit, " bytes");
+  CHECK_MESSAGE(size <= limit, "Kernel ROM size ", size,
+                " bytes exceeds 0x4000 limit by ", size - limit, " bytes");
 }
 
 // NOLINTEND

@@ -109,7 +109,7 @@ bool Rom::addKernel() {
   ///     ARKOS_PLAYER (06481H) - BASIC_KUN_START_FILLER (05D2EH)
   ///     = 753H = 1875 bytes
   pages.emplace_back(0x4000, 0);  // add new page
-  memcpy(pages[0].data(), bin_header_bin, bin_header_bin_len);
+  memcpy(pages[0].data(), bin_header_bin + 0x4000, 0x4000);
 
   /// add start code
   pages.emplace_back(0x4000, 0);  // add new page
