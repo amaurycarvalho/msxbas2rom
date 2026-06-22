@@ -1,0 +1,42 @@
+## 1. Assembly — split header.bin into virtual table + kernel
+
+- [ ] 1.1 Restructure `20_runtime.asm`: prepend `org 0000h` + `wrapper_routines_map_table` + `DEFS 0x4000 - $` before the existing ROM header
+- [ ] 1.2 Remove the 5 `nop` alignment bytes (lines 157-161) since the table is no longer in the kernel section
+- [ ] 1.3 Remove the `org 4000h` from line 5 (the DEFS padding naturally reaches logical 0x4000)
+- [ ] 1.4 Verify forward references work: `dw` entries in the first half reference labels defined in later includes (`21_logic_pack.asm` through `90_support.asm`)
+
+## 2. Build system — update size check
+
+- [ ] 2.1 Update `kernel/asm/Makefile`: change `LIMIT=16384` to `LIMIT=32768`
+- [ ] 2.2 Update the excess calculation message to reflect the new limit context (total binary 0x8000)
+- [ ] 2.3 Rebuild kernel: `make` in `src/infrastructure/kernel/asm/` and verify `header.bin` is ~32768 bytes and `header.h` contains `bin_header_bin_len = 32768`
+
+## 3. C++ constants — update dispatch table address
+
+- [ ] 3.1 Change `def_wrapper_routines_map_table` from `0x4102` to `0x0000` in `compiler_hooks.h`
+- [ ] 3.2 Update the warning comment about checking `header.symbols.asm` to reference the new virtual table location
+
+## 4. C++ address resolution — adapt getKernelCallAddr
+
+- [ ] 4.1 Add 0x0000-0x3FFF range handling: when address is within table bounds, read `bin_header_bin[address] | (bin_header_bin[address + 1] << 8)` with no `- 0x4000` offset
+- [ ] 4.2 Change 0x4000-0x7FFF range: use `bin_header_bin[address]` directly instead of `bin_header_bin[address - 0x4000]`
+- [ ] 4.3 Verify `addKernelCall` and `addKernelCallNZ` still resolve correctly through the updated logic
+
+## 5. C++ MegaROM — simplify MR target resolution
+
+- [ ] 5.1 Replace `bin_header_bin[def_wrapper_routines_map_table - 0x4000 + DISP_MR_CALL * 2]` with `bin_header_bin[DISP_MR_CALL * 2]`
+- [ ] 5.2 Apply same simplification to `DISP_MR_JUMP` and `DISP_MR_GET_DATA` target resolutions
+- [ ] 5.3 Remove the `extern unsigned char bin_header_bin[]` declaration if already included via header (line 36 of `compiler.cpp`)
+
+## 6. ROM builder — copy only second half
+
+- [ ] 6.1 Change `memcpy(pages[0].data(), bin_header_bin, bin_header_bin_len)` to `memcpy(pages[0].data(), bin_header_bin + 0x4000, 0x4000)` in `rom.cpp`
+- [ ] 6.2 Verify `fixIfKonamiSCC` still works — the pattern-based scan (offset 0xDB-0x3FFF) operates on the kernel portion bytes which are shifted but pattern-identical
+
+## 7. Rebuild and verify
+
+- [ ] 7.1 Full project rebuild: `make` (or equivalent top-level build command)
+- [ ] 7.2 Run kernel tests: `make -C tests/kernel check` to verify symbol table integrity
+- [ ] 7.3 Run integration tests: compile existing `.bas` test files and verify they produce valid ROMs
+- [ ] 7.4 Verify ROM output: kernel page in resulting ROM should be 16KB and start with `AB` signature
+- [ ] 7.5 Verify `header.symbols.asm` shows `wrapper_routines_map_table` at address `0x0000`
