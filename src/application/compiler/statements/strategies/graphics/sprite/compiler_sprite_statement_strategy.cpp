@@ -69,7 +69,7 @@ void CompilerSpriteStatementStrategy::cmd_sprite_load(
       // ld (DAC), hl
       cpu.addLdiiHL(def_DAC);
       // call cmd_wrtspr                    ; tiny sprite loader
-      cpu.addCall(def_cmd_wrtspr);
+      context->codeOptimizer->addKernelDispatch(DISP_cmd_wrtspr);
     }
 
   } else {

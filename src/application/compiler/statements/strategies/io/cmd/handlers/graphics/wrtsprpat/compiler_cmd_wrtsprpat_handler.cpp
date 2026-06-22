@@ -19,7 +19,7 @@ bool CompilerCmdWrtSprPatHandler::execute(shared_ptr<CompilerContext> context,
     // ld (DAC), hl
     cpu.addLdiiHL(def_DAC);
     // call cmd_wrtsprpat
-    cpu.addCall(def_cmd_wrtsprpat);
+    context->codeOptimizer->addKernelDispatch(DISP_cmd_wrtsprpat);
 
   } else {
     context->syntaxError("CMD WRTSPRPAT syntax error");

@@ -9,7 +9,7 @@ bool CompilerCmdClrKeyHandler::execute(shared_ptr<CompilerContext> context,
   auto& cpu = *context->cpu;
 
   // call cmd_clrkey
-  cpu.addCall(def_cmd_clrkey);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_clrkey);
 
   return context->compiled;
 }

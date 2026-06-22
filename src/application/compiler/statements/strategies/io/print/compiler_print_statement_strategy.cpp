@@ -46,7 +46,7 @@ void CompilerPrintStatementStrategy::cmd_file_print(
 
   context->file_support = true;
   cpu.addLdA(0x00);                     // drive A:
-  cpu.addCall(def_cmd_preflight_disk);  // check disk support
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_preflight_disk);  // check disk support
   cpu.addAndA();
   skipPrintMark = fixup.addMark();
   cpu.addJpNZ(0x0000);  // skip PRINT# when disk is unavailable
@@ -90,13 +90,13 @@ void CompilerPrintStatementStrategy::cmd_file_print(
 
   if (values.empty()) {
     // PRINT #n : output only LF
-    cpu.addCall(def_GET_NEXT_TEMP_STRING_ADDRESS);
+    context->codeOptimizer->addKernelDispatch(DISP_GET_NEXT_TEMP_STRING_ADDRESS);
     cpu.addXorA();
     cpu.addLdiHLA();  // temporary string length = 0
     cpu.addPopAF();
     cpu.addPushAF();
     cpu.addLdDE(0x0A00);  // d=suffix2 LF, e=suffix1 0
-    cpu.addCall(def_cmd_fprint);
+    context->codeOptimizer->addKernelDispatch(DISP_cmd_fprint);
     cpu.addPopAF();
   } else {
     for (i = 0; i < values.size(); i++) {
@@ -116,7 +116,7 @@ void CompilerPrintStatementStrategy::cmd_file_print(
       cpu.addPopAF();
       cpu.addPushAF();
       cpu.addLdDE((suffix2 << 8) | suffix1);  // d=suffix2, e=suffix1
-      cpu.addCall(def_cmd_fprint);
+      context->codeOptimizer->addKernelDispatch(DISP_cmd_fprint);
     }
     cpu.addPopAF();
   }
@@ -160,7 +160,7 @@ void CompilerPrintStatementStrategy::cmd_normal_print(
             // ld a, 0                ; drive A:
             cpu.addLdA(0x00);
             // call preflight disk
-            cpu.addCall(def_cmd_preflight_disk);
+            context->codeOptimizer->addKernelDispatch(DISP_cmd_preflight_disk);
             // and a
             cpu.addAndA();
             // jp nz, skip PRINT statement
@@ -185,7 +185,7 @@ void CompilerPrintStatementStrategy::cmd_normal_print(
           result_subtype = expression.evalExpression(action);
 
           if (result_subtype == Lexeme::subtype_string) {
-            cpu.addCall(def_XBASIC_PRINT_STR);  // call print_str
+            context->codeOptimizer->addKernelDispatch(DISP_XBASIC_PRINT_STR);  // call print_str
 
           } else if (result_subtype == Lexeme::subtype_numeric) {
             cpu.addCall(def_XBASIC_PRINT_INT);  // call print_int

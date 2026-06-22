@@ -35,7 +35,7 @@ void CompilerLocateStatementStrategy::cmd_locate(
     // pop de
     optimizer.addByteOptimized(0xD1);
     // call XBASIC_LOCATE    ; hl = y, de = x
-    cpu.addCall(def_XBASIC_LOCATE);
+    context->codeOptimizer->addKernelDispatch(DISP_XBASIC_LOCATE);
   }
 }
 

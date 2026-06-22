@@ -161,147 +161,154 @@ run_user_basic_code_on_rom.stack_margin_done:
   nop
 
 ;---------------------------------------------------------------------------------------------------------
-; ROUTINES ENTRY MAP FOR EXTERNAL ACCESS
+; ROUTINES ENTRY MAP FOR EXTERNAL ACCESS (word-pointer dispatch table)
 ;---------------------------------------------------------------------------------------------------------
 
 wrapper_routines_map_start:
-  jp castParamFloatInt
-  jp cmd_clrkey
-  jp cmd_clrscr
-  jp cmd_disscr
-  jp cmd_draw
-  jp cmd_enascr
-  jp cmd_keyclkoff
-  jp cmd_mute
-  jp cmd_play
-  jp cmd_pad
+  ld a, (hl)
+  inc hl
+  ld h, (hl)
+  ld l, a
+  jp (hl)
 
-  jp cmd_plyload
-  jp cmd_plyloop
-  jp cmd_plymute
-  jp cmd_plyplay
-  jp cmd_plyreplay
-  jp cmd_plysong
-  jp cmd_plysound
+wrapper_routines_map_table:
+  dw castParamFloatInt
+  dw cmd_clrkey
+  dw cmd_clrscr
+  dw cmd_disscr
+  dw cmd_draw
+  dw cmd_enascr
+  dw cmd_keyclkoff
+  dw cmd_mute
+  dw cmd_play
+  dw cmd_pad
 
-  jp cmd_ramtoram
-  jp cmd_ramtovram
-  jp cmd_rsctoram
-  jp cmd_restore
-  jp cmd_runasm
+  dw cmd_plyload
+  dw cmd_plyloop
+  dw cmd_plymute
+  dw cmd_plyplay
+  dw cmd_plyreplay
+  dw cmd_plysong
+  dw cmd_plysound
 
-  jp cmd_screen_copy
-  jp cmd_screen_load
-  jp cmd_screen_paste
+  dw cmd_ramtoram
+  dw cmd_ramtovram
+  dw cmd_rsctoram
+  dw cmd_restore
+  dw cmd_runasm
 
-  jp cmd_mtf
+  dw cmd_screen_copy
+  dw cmd_screen_load
+  dw cmd_screen_paste
 
-  jp cmd_setfnt
-  jp cmd_turbo
-  jp cmd_updfntclr
-  jp cmd_vramtoram
-  jp cmd_wrtchr
-  jp cmd_wrtclr
-  jp cmd_wrtfnt
-  jp cmd_wrtscr
-  jp cmd_wrtspr
-  jp cmd_wrtspratr
-  jp cmd_wrtsprclr
-  jp cmd_wrtsprpat
-  jp cmd_wrtvram
-  jp cmd_page
+  dw cmd_mtf
 
-  jp floatNeg
-  jp gfxTileAddress
+  dw cmd_setfnt
+  dw cmd_turbo
+  dw cmd_updfntclr
+  dw cmd_vramtoram
+  dw cmd_wrtchr
+  dw cmd_wrtclr
+  dw cmd_wrtfnt
+  dw cmd_wrtscr
+  dw cmd_wrtspr
+  dw cmd_wrtspratr
+  dw cmd_wrtsprclr
+  dw cmd_wrtsprpat
+  dw cmd_wrtvram
+  dw cmd_page
 
-  jp intCompareAND
-  jp intCompareEQ
-  jp intCompareGE
-  jp intCompareGT
-  jp intCompareLE
-  jp intCompareLT
-  jp intCompareNE
-  jp intCompareNOT
-  jp intCompareOR
-  jp intCompareXOR
-  jp intNeg
-  jp intSHL
-  jp intSHR
+  dw floatNeg
+  dw gfxTileAddress
 
-  jp player.initialize
-  jp player.unhook
+  dw intCompareAND
+  dw intCompareEQ
+  dw intCompareGE
+  dw intCompareGT
+  dw intCompareLE
+  dw intCompareLT
+  dw intCompareNE
+  dw intCompareNOT
+  dw intCompareOR
+  dw intCompareXOR
+  dw intNeg
+  dw intSHL
+  dw intSHR
 
-  jp set_tile_flip
-  jp set_tile_rotate
-  jp set_tile_color
-  jp set_tile_pattern
-  jp get_tile_color
-  jp get_tile_pattern
-  jp set_sprite_flip
-  jp set_sprite_rotate
-  jp set_sprite_color
-  jp set_sprite_pattern
-  jp get_sprite_color
-  jp get_sprite_pattern
-  jp set_tile_color_buf
-  jp set_tile_pattern_buffer
+  dw player.initialize
+  dw player.unhook
 
-  jp usr0
-  jp usr1
-  jp usr2
-  jp usr2_play
-  jp usr2_player_status
-  jp usr3
-  jp usr3.COLLISION_ALL
-  jp usr3.COLLISION_COUPLE
-  jp usr3.COLLISION_ONE
-  jp gfxVDP.set
+  dw set_tile_flip
+  dw set_tile_rotate
+  dw set_tile_color
+  dw set_tile_pattern
+  dw get_tile_color
+  dw get_tile_pattern
+  dw set_sprite_flip
+  dw set_sprite_rotate
+  dw set_sprite_color
+  dw set_sprite_pattern
+  dw get_sprite_color
+  dw get_sprite_pattern
+  dw set_tile_color_buf
+  dw set_tile_pattern_buffer
 
-  jp cmd_get_date
-  jp cmd_get_time
-  jp cmd_set_date
-  jp cmd_set_time
+  dw usr0
+  dw usr1
+  dw usr2
+  dw usr2_play
+  dw usr2_player_status
+  dw usr3
+  dw usr3.COLLISION_ALL
+  dw usr3.COLLISION_COUPLE
+  dw usr3.COLLISION_ONE
+  dw gfxVDP.set
 
-  jp GET_NEXT_TEMP_STRING_ADDRESS
+  dw cmd_get_date
+  dw cmd_get_time
+  dw cmd_set_date
+  dw cmd_set_time
 
-  jp MR_CALL
-  jp MR_CALL_TRAP
-  jp MR_CHANGE_SGM
-  jp MR_GET_BYTE
-  jp MR_GET_DATA
-  jp MR_JUMP
+  dw GET_NEXT_TEMP_STRING_ADDRESS
 
-  jp XBASIC_BASE
-  jp XBASIC_CLS
-  jp XBASIC_COPY
-  jp XBASIC_COPY_FROM
-  jp XBASIC_COPY_TO
-  jp XBASIC_END
-  jp XBASIC_INIT
-  jp XBASIC_INPUT_1
-  jp XBASIC_INPUT_2
-  jp XBASIC_IREAD
-  jp XBASIC_LOCATE
-  jp XBASIC_PLAY
-  jp XBASIC_PRINT_STR
-  jp XBASIC_PUT_SPRITE
-  jp XBASIC_READ
-  jp XBASIC_RESTORE
-  jp XBASIC_SCREEN
-  jp XBASIC_WIDTH
-  jp XBASIC_SOUND
-  jp XBASIC_TAB
-  jp XBASIC_USING
-  jp XBASIC_USING.do
-  jp XBASIC_USR
-  jp cmd_preflight_disk
-  jp cmd_fmaxfiles
-  jp cmd_fdskf
-  jp cmd_feof
-  jp cmd_floc
-  jp cmd_flof
-  jp cmd_fpos
-  jp cmd_fopen
-  jp cmd_fclose
-  jp cmd_finput
-  jp cmd_fprint
+  dw MR_CALL
+  dw MR_CALL_TRAP
+  dw MR_CHANGE_SGM
+  dw MR_GET_BYTE
+  dw MR_GET_DATA
+  dw MR_JUMP
+
+  dw XBASIC_BASE
+  dw XBASIC_CLS
+  dw XBASIC_COPY
+  dw XBASIC_COPY_FROM
+  dw XBASIC_COPY_TO
+  dw XBASIC_END
+  dw XBASIC_INIT
+  dw XBASIC_INPUT_1
+  dw XBASIC_INPUT_2
+  dw XBASIC_IREAD
+  dw XBASIC_LOCATE
+  dw XBASIC_PLAY
+  dw XBASIC_PRINT_STR
+  dw XBASIC_PUT_SPRITE
+  dw XBASIC_READ
+  dw XBASIC_RESTORE
+  dw XBASIC_SCREEN
+  dw XBASIC_WIDTH
+  dw XBASIC_SOUND
+  dw XBASIC_TAB
+  dw XBASIC_USING
+  dw XBASIC_USING.do
+  dw XBASIC_USR
+  dw cmd_preflight_disk
+  dw cmd_fmaxfiles
+  dw cmd_fdskf
+  dw cmd_feof
+  dw cmd_floc
+  dw cmd_flof
+  dw cmd_fpos
+  dw cmd_fopen
+  dw cmd_fclose
+  dw cmd_finput
+  dw cmd_fprint

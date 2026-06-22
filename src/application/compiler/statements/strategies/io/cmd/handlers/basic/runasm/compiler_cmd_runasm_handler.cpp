@@ -24,7 +24,7 @@ bool CompilerCmdRunAsmHandler::execute(shared_ptr<CompilerContext> context,
   // ld (DAC), hl
   cpu.addLdiiHL(def_DAC);
   // call cmd_runasm
-  cpu.addCall(def_cmd_runasm);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_runasm);
 
   return context->compiled;
 }

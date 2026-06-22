@@ -25,11 +25,11 @@ void CompilerEndStatementStrategy::cmd_end(shared_ptr<CompilerContext> context,
     /// write the END statement code
     if (parser.getHasAkm()) {
       // disable akm player
-      cpu.addCall(def_player_unhook);
+      context->codeOptimizer->addKernelDispatch(DISP_player_unhook);
     }
 
     // call XBASIC_END
-    cpu.addCall(def_XBASIC_END);
+    context->codeOptimizer->addKernelDispatch(DISP_XBASIC_END);
 
     // ld sp, (SAVSTK)
     cpu.addLdSPii(0xf6b1);

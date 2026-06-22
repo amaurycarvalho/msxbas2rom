@@ -26,7 +26,7 @@ int BaseCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (result[0] == Lexeme::subtype_numeric) {
     // call base function
-    cpu.addCall(def_XBASIC_BASE);
+    context->codeOptimizer->addKernelDispatch(DISP_XBASIC_BASE);
     // ctx.cpu->addCall(def_XBASIC_ABS_INT);  // abs()
   } else
     result[0] = Lexeme::subtype_unknown;

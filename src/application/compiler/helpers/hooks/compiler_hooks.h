@@ -118,148 +118,152 @@
 //! see "wrapper_routines_map_start" correct address in
 //! "header.symbols.asm" if Z80 kernel was recompiled
 #define def_wrapper_routines_map_start 0x4102
+#define def_wrapper_routines_map_table (def_wrapper_routines_map_start + 6)  // 0x4108
 
-#define def_castParamFloatInt def_wrapper_routines_map_start
+// Dispatch indexes for wrapper routine word-pointer table
+// (0-indexed, matching order in wrapper_routines_map_table)
+#define DISP_castParamFloatInt 0
+#define DISP_cmd_clrkey 1
+#define DISP_cmd_clrscr 2
+#define DISP_cmd_disscr 3
+#define DISP_cmd_draw 4
+#define DISP_cmd_enascr 5
+#define DISP_cmd_keyclkoff 6
+#define DISP_cmd_mute 7
+#define DISP_cmd_play 8
+#define DISP_cmd_pad 9
 
-#define def_cmd_clrkey (def_castParamFloatInt + 3)
-#define def_cmd_clrscr (def_cmd_clrkey + 3)
-#define def_cmd_disscr (def_cmd_clrscr + 3)
-#define def_cmd_draw (def_cmd_disscr + 3)
-#define def_cmd_enascr (def_cmd_draw + 3)
-#define def_cmd_keyclkoff (def_cmd_enascr + 3)
-#define def_cmd_mute (def_cmd_keyclkoff + 3)
-#define def_cmd_play (def_cmd_mute + 3)
-#define def_cmd_pad (def_cmd_play + 3)
+#define DISP_cmd_plyload 10
+#define DISP_cmd_plyloop 11
+#define DISP_cmd_plymute 12
+#define DISP_cmd_plyplay 13
+#define DISP_cmd_plyreplay 14
+#define DISP_cmd_plysong 15
+#define DISP_cmd_plysound 16
 
-#define def_cmd_plyload (def_cmd_pad + 3)
-#define def_cmd_plyloop (def_cmd_plyload + 3)
-#define def_cmd_plymute (def_cmd_plyloop + 3)
-#define def_cmd_plyplay (def_cmd_plymute + 3)
-#define def_cmd_plyreplay (def_cmd_plyplay + 3)
-#define def_cmd_plysong (def_cmd_plyreplay + 3)
-#define def_cmd_plysound (def_cmd_plysong + 3)
+#define DISP_cmd_ramtoram 17
+#define DISP_cmd_ramtovram 18
+#define DISP_cmd_rsctoram 19
+#define DISP_cmd_restore 20
+#define DISP_cmd_runasm 21
 
-#define def_cmd_ramtoram (def_cmd_plysound + 3)
-#define def_cmd_ramtovram (def_cmd_ramtoram + 3)
-#define def_cmd_rsctoram (def_cmd_ramtovram + 3)
-#define def_cmd_restore (def_cmd_rsctoram + 3)
-#define def_cmd_runasm (def_cmd_restore + 3)
+#define DISP_cmd_screen_copy 22
+#define DISP_cmd_screen_load 23
+#define DISP_cmd_screen_paste 24
 
-#define def_cmd_screen_copy (def_cmd_runasm + 3)
-#define def_cmd_screen_load (def_cmd_screen_copy + 3)
-#define def_cmd_screen_paste (def_cmd_screen_load + 3)
+#define DISP_cmd_mtf 25
 
-#define def_cmd_mtf (def_cmd_screen_paste + 3)
+#define DISP_cmd_setfnt 26
+#define DISP_cmd_turbo 27
+#define DISP_cmd_updfntclr 28
+#define DISP_cmd_vramtoram 29
+#define DISP_cmd_wrtchr 30
+#define DISP_cmd_wrtclr 31
+#define DISP_cmd_wrtfnt 32
+#define DISP_cmd_wrtscr 33
+#define DISP_cmd_wrtspr 34
+#define DISP_cmd_wrtspratr 35
+#define DISP_cmd_wrtsprclr 36
+#define DISP_cmd_wrtsprpat 37
+#define DISP_cmd_wrtvram 38
+#define DISP_cmd_page 39
 
-#define def_cmd_setfnt (def_cmd_mtf + 3)
-#define def_cmd_turbo (def_cmd_setfnt + 3)
-#define def_cmd_updfntclr (def_cmd_turbo + 3)
-#define def_cmd_vramtoram (def_cmd_updfntclr + 3)
-#define def_cmd_wrtchr (def_cmd_vramtoram + 3)
-#define def_cmd_wrtclr (def_cmd_wrtchr + 3)
-#define def_cmd_wrtfnt (def_cmd_wrtclr + 3)
-#define def_cmd_wrtscr (def_cmd_wrtfnt + 3)
-#define def_cmd_wrtspr (def_cmd_wrtscr + 3)
-#define def_cmd_wrtspratr (def_cmd_wrtspr + 3)
-#define def_cmd_wrtsprclr (def_cmd_wrtspratr + 3)
-#define def_cmd_wrtsprpat (def_cmd_wrtsprclr + 3)
-#define def_cmd_wrtvram (def_cmd_wrtsprpat + 3)
-#define def_cmd_page (def_cmd_wrtvram + 3)
+#define DISP_floatNEG 40
+#define DISP_tileAddress 41
 
-#define def_floatNEG (def_cmd_page + 3)
-#define def_tileAddress (def_floatNEG + 3)
+#define DISP_intCompareAND 42
+#define DISP_intCompareEQ 43
+#define DISP_intCompareGE 44
+#define DISP_intCompareGT 45
+#define DISP_intCompareLE 46
+#define DISP_intCompareLT 47
+#define DISP_intCompareNE 48
+#define DISP_intCompareNOT 49
+#define DISP_intCompareOR 50
+#define DISP_intCompareXOR 51
+#define DISP_intNEG 52
+#define DISP_intSHL 53
+#define DISP_intSHR 54
 
-#define def_intCompareAND (def_tileAddress + 3)
-#define def_intCompareEQ (def_intCompareAND + 3)
-#define def_intCompareGE (def_intCompareEQ + 3)
-#define def_intCompareGT (def_intCompareGE + 3)
-#define def_intCompareLE (def_intCompareGT + 3)
-#define def_intCompareLT (def_intCompareLE + 3)
-#define def_intCompareNE (def_intCompareLT + 3)
-#define def_intCompareNOT (def_intCompareNE + 3)
-#define def_intCompareOR (def_intCompareNOT + 3)
-#define def_intCompareXOR (def_intCompareOR + 3)
-#define def_intNEG (def_intCompareXOR + 3)
-#define def_intSHL (def_intNEG + 3)
-#define def_intSHR (def_intSHL + 3)
+#define DISP_player_initialize 55
+#define DISP_player_unhook 56
 
-#define def_player_initialize (def_intSHR + 3)
-#define def_player_unhook (def_player_initialize + 3)
+#define DISP_set_tile_flip 57
+#define DISP_set_tile_rotate 58
+#define DISP_set_tile_color 59
+#define DISP_set_tile_pattern 60
+#define DISP_get_tile_color 61
+#define DISP_get_tile_pattern 62
+#define DISP_set_sprite_flip 63
+#define DISP_set_sprite_rotate 64
+#define DISP_set_sprite_color 65
+#define DISP_set_sprite_pattern 66
+#define DISP_get_sprite_color 67
+#define DISP_get_sprite_pattern 68
+#define DISP_set_tile_color_buf 69
+#define DISP_set_tile_pattern_buffer 70
 
-#define def_set_tile_flip (def_player_unhook + 3)
-#define def_set_tile_rotate (def_set_tile_flip + 3)
-#define def_set_tile_color (def_set_tile_rotate + 3)
-#define def_set_tile_pattern (def_set_tile_color + 3)
-#define def_get_tile_color (def_set_tile_pattern + 3)
-#define def_get_tile_pattern (def_get_tile_color + 3)
-#define def_set_sprite_flip (def_get_tile_pattern + 3)
-#define def_set_sprite_rotate (def_set_sprite_flip + 3)
-#define def_set_sprite_color (def_set_sprite_rotate + 3)
-#define def_set_sprite_pattern (def_set_sprite_color + 3)
-#define def_get_sprite_color (def_set_sprite_pattern + 3)
-#define def_get_sprite_pattern (def_get_sprite_color + 3)
-#define def_set_tile_color_buf (def_get_sprite_pattern + 3)
-#define def_set_tile_pattern_buffer (def_set_tile_color_buf + 3)
+#define DISP_usr0 71
+#define DISP_usr1 72
+#define DISP_usr2 73
+#define DISP_usr2_play 74
+#define DISP_usr2_player_status 75
+#define DISP_usr3 76
+#define DISP_usr3_COLLISION_ALL 77
+#define DISP_usr3_COLLISION_COUPLE 78
+#define DISP_usr3_COLLISION_ONE 79
+#define DISP_vdp_set 80
 
-#define def_usr0 (def_set_tile_pattern_buffer + 3)
-#define def_usr1 (def_usr0 + 3)
-#define def_usr2 (def_usr1 + 3)
-#define def_usr2_play (def_usr2 + 3)
-#define def_usr2_player_status (def_usr2_play + 3)
-#define def_usr3 (def_usr2_player_status + 3)
-#define def_usr3_COLLISION_ALL (def_usr3 + 3)
-#define def_usr3_COLLISION_COUPLE (def_usr3_COLLISION_ALL + 3)
-#define def_usr3_COLLISION_ONE (def_usr3_COLLISION_COUPLE + 3)
-#define def_vdp_set (def_usr3_COLLISION_ONE + 3)
+#define DISP_get_date 81
+#define DISP_get_time 82
+#define DISP_set_date 83
+#define DISP_set_time 84
 
-#define def_get_date (def_vdp_set + 3)
-#define def_get_time (def_get_date + 3)
-#define def_set_date (def_get_time + 3)
-#define def_set_time (def_set_date + 3)
+#define DISP_GET_NEXT_TEMP_STRING_ADDRESS 85
 
-#define def_GET_NEXT_TEMP_STRING_ADDRESS (def_set_time + 3)
+#define DISP_MR_CALL 86
+#define DISP_MR_CALL_TRAP 87
+#define DISP_MR_CHANGE_SGM 88
+#define DISP_MR_GET_BYTE 89
+#define DISP_MR_GET_DATA 90
+#define DISP_MR_JUMP 91
 
-#define def_MR_CALL (def_GET_NEXT_TEMP_STRING_ADDRESS + 3)
-#define def_MR_CALL_TRAP (def_MR_CALL + 3)
-#define def_MR_CHANGE_SGM (def_MR_CALL_TRAP + 3)
-#define def_MR_GET_BYTE (def_MR_CHANGE_SGM + 3)
-#define def_MR_GET_DATA (def_MR_GET_BYTE + 3)
-#define def_MR_JUMP (def_MR_GET_DATA + 3)
+#define DISP_XBASIC_BASE 92
+#define DISP_XBASIC_CLS 93
+#define DISP_XBASIC_COPY 94
+#define DISP_XBASIC_COPY_FROM 95
+#define DISP_XBASIC_COPY_TO 96
+#define DISP_XBASIC_END 97
+#define DISP_XBASIC_INIT 98
+#define DISP_XBASIC_INPUT_1 99
+#define DISP_XBASIC_INPUT_2 100
+#define DISP_XBASIC_IREAD 101
+#define DISP_XBASIC_LOCATE 102
+#define DISP_XBASIC_PLAY 103
+#define DISP_XBASIC_PRINT_STR 104
+#define DISP_XBASIC_PUT_SPRITE 105
+#define DISP_XBASIC_READ 106
+#define DISP_XBASIC_RESTORE 107
+#define DISP_XBASIC_SCREEN 108
+#define DISP_XBASIC_WIDTH 109
+#define DISP_XBASIC_SOUND 110
+#define DISP_XBASIC_TAB 111
+#define DISP_XBASIC_USING 112
+#define DISP_XBASIC_USING_DO 113
+#define DISP_XBASIC_USR 114
+#define DISP_cmd_preflight_disk 115
+#define DISP_cmd_fmaxfiles 116
+#define DISP_cmd_fdskf 117
+#define DISP_cmd_feof 118
+#define DISP_cmd_floc 119
+#define DISP_cmd_flof 120
+#define DISP_cmd_fpos 121
+#define DISP_cmd_fopen 122
+#define DISP_cmd_fclose 123
+#define DISP_cmd_finput 124
+#define DISP_cmd_fprint 125
 
-#define def_XBASIC_BASE (def_MR_JUMP + 3)
-#define def_XBASIC_CLS (def_XBASIC_BASE + 3)
-#define def_XBASIC_COPY (def_XBASIC_CLS + 3)
-#define def_XBASIC_COPY_FROM (def_XBASIC_COPY + 3)
-#define def_XBASIC_COPY_TO (def_XBASIC_COPY_FROM + 3)
-#define def_XBASIC_END (def_XBASIC_COPY_TO + 3)
-#define def_XBASIC_INIT (def_XBASIC_END + 3)
-#define def_XBASIC_INPUT_1 (def_XBASIC_INIT + 3)
-#define def_XBASIC_INPUT_2 (def_XBASIC_INPUT_1 + 3)
-#define def_XBASIC_IREAD (def_XBASIC_INPUT_2 + 3)
-#define def_XBASIC_LOCATE (def_XBASIC_IREAD + 3)
-#define def_XBASIC_PLAY (def_XBASIC_LOCATE + 3)
-#define def_XBASIC_PRINT_STR (def_XBASIC_PLAY + 3)
-#define def_XBASIC_PUT_SPRITE (def_XBASIC_PRINT_STR + 3)
-#define def_XBASIC_READ (def_XBASIC_PUT_SPRITE + 3)
-#define def_XBASIC_RESTORE (def_XBASIC_READ + 3)
-#define def_XBASIC_SCREEN (def_XBASIC_RESTORE + 3)
-#define def_XBASIC_WIDTH (def_XBASIC_SCREEN + 3)
-#define def_XBASIC_SOUND (def_XBASIC_WIDTH + 3)
-#define def_XBASIC_TAB (def_XBASIC_SOUND + 3)
-#define def_XBASIC_USING (def_XBASIC_TAB + 3)
-#define def_XBASIC_USING_DO (def_XBASIC_USING + 3)
-#define def_XBASIC_USR (def_XBASIC_USING_DO + 3)
-#define def_cmd_preflight_disk (def_XBASIC_USR + 3)
-#define def_cmd_fmaxfiles (def_cmd_preflight_disk + 3)
-#define def_cmd_fdskf (def_cmd_fmaxfiles + 3)
-#define def_cmd_feof (def_cmd_fdskf + 3)
-#define def_cmd_floc (def_cmd_feof + 3)
-#define def_cmd_flof (def_cmd_floc + 3)
-#define def_cmd_fpos (def_cmd_flof + 3)
-#define def_cmd_fopen (def_cmd_fpos + 3)
-#define def_cmd_fclose (def_cmd_fopen + 3)
-#define def_cmd_finput (def_cmd_fclose + 3)
-#define def_cmd_fprint (def_cmd_finput + 3)
+#define DISP_ENTRIES 126
 
 //! @remark end of header.symbols adjust
 //! @}

@@ -23,7 +23,7 @@ int TurboCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   // ld a, 5
   cpu.addLdA(5);
   // CALL USR2
-  cpu.addCall(optimizer.getKernelCallAddr(def_usr2) + 1);
+  cpu.addCall(optimizer.getKernelCallAddr(DISP_usr2) + 1);
 
   return Lexeme::subtype_numeric;
 }

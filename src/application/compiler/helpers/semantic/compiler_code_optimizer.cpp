@@ -8,6 +8,7 @@
 
 #include "build_options.h"
 #include "compiler_context.h"
+#include "compiler_hooks.h"
 #include "fix_node.h"
 
 extern unsigned char bin_header_bin[];
@@ -233,12 +234,21 @@ int CompilerCodeOptimizer::getKernelCallAddr(unsigned int address) {
 
   if (address >= 0x4000 && address < 0x8000) {
     i = address - 0x4000;
-    if (bin_header_bin[i] == 0xC3) {  // jp
+    if (address >= def_wrapper_routines_map_table &&
+        address < def_wrapper_routines_map_table + DISP_ENTRIES * 2) {
+      result = bin_header_bin[i] | (bin_header_bin[i + 1] << 8);
+    } else if (bin_header_bin[i] == 0xC3) {  // jp
       result = bin_header_bin[i + 1] | (bin_header_bin[i + 2] << 8);
     }
   }
 
   return result;
+}
+
+void CompilerCodeOptimizer::addKernelDispatch(unsigned char index) {
+  auto& cpu = *context->cpu;
+  cpu.addLdHL(def_wrapper_routines_map_table + index * 2);
+  cpu.addCall(def_wrapper_routines_map_start);
 }
 
 void CompilerCodeOptimizer::addLdHLmegarom() {

@@ -31,7 +31,7 @@ int EofCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   // hl = file number
   // call cmd_feof
-  cpu.addCall(def_cmd_feof);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_feof);
 
   return Lexeme::subtype_numeric;
 }

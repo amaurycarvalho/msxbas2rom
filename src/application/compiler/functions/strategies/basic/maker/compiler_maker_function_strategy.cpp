@@ -23,7 +23,7 @@ int MakerCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   // ld a, 6
   cpu.addLdA(6);
   // CALL USR2
-  cpu.addCall(optimizer.getKernelCallAddr(def_usr2) + 1);
+  cpu.addCall(optimizer.getKernelCallAddr(DISP_usr2) + 1);
 
   return Lexeme::subtype_numeric;
 }

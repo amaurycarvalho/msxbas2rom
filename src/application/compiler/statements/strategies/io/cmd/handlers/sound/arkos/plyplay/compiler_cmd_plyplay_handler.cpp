@@ -17,7 +17,7 @@ bool CompilerCmdPlyPlayHandler::execute(shared_ptr<CompilerContext> context,
   context->akm = true;
 
   // call cmd_plyplay
-  cpu.addCall(def_cmd_plyplay);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_plyplay);
 
   return context->compiled;
 }

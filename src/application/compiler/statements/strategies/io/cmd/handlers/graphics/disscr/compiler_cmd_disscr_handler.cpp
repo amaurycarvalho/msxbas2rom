@@ -9,7 +9,7 @@ bool CompilerCmdDisScrHandler::execute(shared_ptr<CompilerContext> context,
   auto& cpu = *context->cpu;
 
   // call cmd_disscr
-  cpu.addCall(def_cmd_disscr);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_disscr);
 
   return context->compiled;
 }

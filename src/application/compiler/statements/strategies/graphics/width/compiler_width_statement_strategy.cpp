@@ -21,7 +21,7 @@ void CompilerWidthStatementStrategy::cmd_width(
     expression.addCast(result_subtype, Lexeme::subtype_numeric);
 
     // call XBASIC WIDTH   ; xbasic WIDTH (in: l = size)
-    cpu.addCall(def_XBASIC_WIDTH);
+    context->codeOptimizer->addKernelDispatch(DISP_XBASIC_WIDTH);
 
   } else {
     context->syntaxError("WIDTH syntax error");

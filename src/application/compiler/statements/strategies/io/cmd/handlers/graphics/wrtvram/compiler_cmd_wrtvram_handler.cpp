@@ -31,7 +31,7 @@ bool CompilerCmdWrtVramHandler::execute(shared_ptr<CompilerContext> context,
   cpu.addLdiiHL(def_ARG);
 
   // call cmd_runasm
-  cpu.addCall(def_cmd_wrtvram);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_wrtvram);
 
   return context->compiled;
 }

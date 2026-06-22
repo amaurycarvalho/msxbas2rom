@@ -7,21 +7,22 @@ The parent change `wrapper-table-restructure` replaces the 126-entry `jp` jump t
 
 This change resolves both questions and establishes a hard kernel ROM size ceiling of `0x4000` bytes (16 KB) — the address space available between `0x4000` (ROM start) and `0x8000` (next page boundary).
 
-The current `getKernelCallAddr()` at `compiler_code_optimizer.cpp:231` checks the `header.bin` binary for the `0xC3` (`jp`) opcode byte to resolve targets. After the table restructure, this function must read `dw` word pointers instead.
+The current `getKernelCallAddr()` at `compiler_code_optimizer.cpp:231` checks the `header.bin` binary for the `0xC3` (`jp`) opcode byte to resolve targets. After the table restructure, this function must read `dw` word pointers instead. The wrapper_routines_map_start routine (20_runtime.asm) is not more necessary, so must be removed.
 
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Resolve Q1: All dispatch index constants use `DISP_` prefix, forcing compile-time errors on any missed migration site
-- Resolve Q2: Update `getKernelCallAddr()` to read 2-byte word pointers from the `dw` table, and funnel all C-side wrapper calls through the existing `addKernelCall()` optimization path — no separate `addKernelDispatch()` emitter needed
-- Establish a 0x4000-byte kernel ROM size limit with a build-time check
-- Preserve `def_wrapper_routines_map_start` at 0x4102
+- Resolve Q2: Update `getKernelCallAddr()` to read 2-byte word pointers from the `dw` table, and funnel all C-side wrapper calls through the existing `addKernelCall()` optimization path — no separate `addKernelDispatch()` emitter needed — and calculating the real call address at compile time instead of runtime
+- Establish a 0x4000-byte kernel ROM size limit with a build-time check and an unit test
+- Remove `wrapper_routines_map_start` routine (20_runtime.asm)
 
 **Non-Goals:**
+
 - Adding `addKernelDispatch()` emission method (unnecessary — `addKernelCall` handles all dispatch)
 - Reordering wrapper table entries
 - Changing the number of entries (126 preserved)
-- Modifying the dispatcher routine in ASM (already defined by parent change)
 
 ## Decisions
 
@@ -30,20 +31,23 @@ The current `getKernelCallAddr()` at `compiler_code_optimizer.cpp:231` checks th
 **Decision:** Rename all wrapper table `def_*` constants in `compiler_hooks.h` to use the `DISP_` prefix with sequential 0-based integer index values.
 
 Before:
+
 ```c
 #define def_castParamFloatInt def_wrapper_routines_map_start
 #define def_cmd_clrkey (def_castParamFloatInt + 3)
 ```
 
 After:
+
 ```c
 #define DISP_castParamFloatInt 0
 #define DISP_cmd_clrkey 1
 ```
 
 **Alternatives considered:**
-- *Keep `def_` names with new index values*: Silent behavioral change — old code expecting address values would compile but produce wrong calls.
-- *Keep `def_` names as deprecated aliases*: Migration completeness is unverifiable; stale address-based calls could persist.
+
+- _Keep `def_` names with new index values\_: Silent behavioral change — old code expecting address values would compile but produce wrong calls.
+- _Keep `def_` names as deprecated aliases\_: Migration completeness is unverifiable; stale address-based calls could persist.
 
 **Rationale:** The `DISP_` prefix makes the migration auditable and auditable. Any code still passing a `def_*` value to `cpu.addCall()` will fail at compile time once the old constants are removed. This is the safer, more explicit approach identified in the parent design's Q1 analysis.
 
@@ -52,6 +56,7 @@ After:
 **Decision:** Instead of adding a new `addKernelDispatch(uint8_t index)` method that emits `LD HL, index*2; CALL 0x4102`, update `getKernelCallAddr()` to resolve through the `dw` table. All wrapper calls go through the existing `addKernelCall(DISP_xxx)` path, which internally calls `getKernelCallAddr()` and emits a direct `CALL`.
 
 The updated `getKernelCallAddr()`:
+
 ```cpp
 int CompilerCodeOptimizer::getKernelCallAddr(unsigned int address) {
     if (address >= 0x4000 && address < 0x8000) {
@@ -64,6 +69,7 @@ int CompilerCodeOptimizer::getKernelCallAddr(unsigned int address) {
 ```
 
 This means call sites use:
+
 ```cpp
 optimizer.addKernelCall(DISP_cmd_clrscr);
 // getKernelCallAddr reads the dw table at offset DISP_cmd_clrscr*2
@@ -71,8 +77,9 @@ optimizer.addKernelCall(DISP_cmd_clrscr);
 ```
 
 **Alternatives considered:**
-- *Separate `addKernelDispatch()` + `addKernelCall()` paths*: Two code paths for wrapper calls, one emitting dispatch sequence and one resolving targets. Unnecessary duplication.
-- *Only `addKernelDispatch()` (emit dispatch sequence on every call):* Wastes user ROM space ($LD HL, nn$ + $CALL dispatcher$ = 6 bytes vs $CALL target$ = 3 bytes). `addKernelCall` saves 3 bytes per call site.
+
+- _Separate `addKernelDispatch()` + `addKernelCall()` paths_: Two code paths for wrapper calls, one emitting dispatch sequence and one resolving targets. Unnecessary duplication.
+- _Only `addKernelDispatch()` (emit dispatch sequence on every call):_ Wastes user ROM space ($LD HL, nn$ + $CALL dispatcher$ = 6 bytes vs $CALL target$ = 3 bytes). `addKernelCall` saves 3 bytes per call site.
 
 **Rationale:** `addKernelCall` already optimizes by resolving the target at compile time and emitting a direct `CALL`. The only change needed is teaching `getKernelCallAddr()` to read `dw` entries instead of `jp` entries. This eliminates ~3 bytes per call site in user ROM compared to emitting the dispatch sequence every time.
 

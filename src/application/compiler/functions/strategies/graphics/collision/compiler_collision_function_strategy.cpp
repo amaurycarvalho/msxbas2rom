@@ -19,7 +19,7 @@ int CollisionCompilerFunctionStrategy::execute(
   switch (parmCount) {
     case 0: {
       // CALL SUB_SPRCOL_ALL
-      cpu.addCall(def_usr3_COLLISION_ALL);
+      context->codeOptimizer->addKernelDispatch(DISP_usr3_COLLISION_ALL);
       return Lexeme::subtype_numeric;
     }
 
@@ -33,7 +33,7 @@ int CollisionCompilerFunctionStrategy::execute(
       result[0] = Lexeme::subtype_numeric;
 
       // call SUB_SPRCOL_ONE
-      cpu.addCall(def_usr3_COLLISION_ONE);
+      context->codeOptimizer->addKernelDispatch(DISP_usr3_COLLISION_ONE);
 
       return Lexeme::subtype_numeric;
     }
@@ -81,7 +81,7 @@ int CollisionCompilerFunctionStrategy::execute(
       if (result[1] == Lexeme::subtype_numeric &&
           result[0] == Lexeme::subtype_numeric) {
         // call SUB_SPRCOL_COUPLE
-        cpu.addCall(def_usr3_COLLISION_COUPLE);
+        context->codeOptimizer->addKernelDispatch(DISP_usr3_COLLISION_COUPLE);
         return Lexeme::subtype_numeric;
       }
 

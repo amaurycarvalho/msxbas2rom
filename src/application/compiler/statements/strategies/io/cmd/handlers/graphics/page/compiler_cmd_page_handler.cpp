@@ -75,7 +75,7 @@ bool CompilerCmdPageHandler::execute(shared_ptr<CompilerContext> context,
   }
 
   // call cmd_page (l = mode, e = delay #1, c = delay #2)
-  cpu.addCall(def_cmd_page);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_page);
 
   return context->compiled;
 }

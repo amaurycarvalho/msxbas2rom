@@ -18,7 +18,7 @@ int PlystatusCompilerFunctionStrategy::execute(
   auto& cpu = *context->cpu;
 
   // CALL usr2_player_status
-  cpu.addCall(def_usr2_player_status);
+  context->codeOptimizer->addKernelDispatch(DISP_usr2_player_status);
 
   return Lexeme::subtype_numeric;
 }

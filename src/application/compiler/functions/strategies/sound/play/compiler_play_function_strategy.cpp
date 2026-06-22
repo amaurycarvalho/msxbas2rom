@@ -26,7 +26,7 @@ int PlayCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (result[0] == Lexeme::subtype_numeric) {
     // call usr2_play
-    cpu.addCall(def_usr2_play);
+    context->codeOptimizer->addKernelDispatch(DISP_usr2_play);
   } else
     result[0] = Lexeme::subtype_unknown;
 

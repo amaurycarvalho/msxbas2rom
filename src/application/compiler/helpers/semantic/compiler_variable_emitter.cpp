@@ -287,12 +287,12 @@ void CompilerVariableEmitter::addTempStr(bool atHL) {
   auto& cpu = *context->cpu;
   if (atHL) {
     // call GET_NEXT_TEMP_STRING_ADDRESS
-    cpu.addCall(def_GET_NEXT_TEMP_STRING_ADDRESS);
+    context->codeOptimizer->addKernelDispatch(DISP_GET_NEXT_TEMP_STRING_ADDRESS);
   } else {
     // ex de, hl
     cpu.addExDEHL();
     // call GET_NEXT_TEMP_STRING_ADDRESS
-    cpu.addCall(def_GET_NEXT_TEMP_STRING_ADDRESS);
+    context->codeOptimizer->addKernelDispatch(DISP_GET_NEXT_TEMP_STRING_ADDRESS);
     // ex de, hl
     context->codeOptimizer->addByteOptimized(0xEB);
   }
@@ -318,8 +318,9 @@ bool CompilerVariableEmitter::addAssignment(shared_ptr<ActionNode> action) {
       cpu.addCpL();
       // ld a, l
       cpu.addLdAL();
-      // call nz, cmd_fmaxfiles
-      cpu.addCallNZ(def_cmd_fmaxfiles);
+      // dispatch to cmd_fmaxfiles if not zero
+      cpu.addLdHL(def_wrapper_routines_map_table + DISP_cmd_fmaxfiles * 2);
+      cpu.addCallNZ(def_wrapper_routines_map_start);
 
     } else {
       context->syntaxError("Invalid KEYWORD/FUNCTION assignment");

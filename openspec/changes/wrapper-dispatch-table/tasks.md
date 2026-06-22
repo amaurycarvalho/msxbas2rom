@@ -1,7 +1,7 @@
-## 1. C-Side: compiler_hooks.h — DISP_ Constants
+## 1. C-Side: compiler*hooks.h — DISP* Constants
 
 - [ ] 1.1 Replace the `+3` address chain with sequential `DISP_` prefixed index constants (e.g., `#define DISP_castParamFloatInt 0`, `#define DISP_cmd_clrkey 1`)
-- [ ] 1.2 Keep `def_wrapper_routines_map_start` at 0x4102 for backward reference
+- [ ] 1.2 Remove `def_wrapper_routines_map_start` routine (20_runtime.asm)
 - [ ] 1.3 Remove all old `def_*` wrapper constants (def_castParamFloatInt through def_cmd_fprint) — they are no longer valid addresses
 - [ ] 1.4 Verify constant count: exactly 126 `DISP_` entries matching the wrapper table order
 
@@ -9,7 +9,7 @@
 
 - [ ] 2.1 Update `getKernelCallAddr()` to read 2-byte word pointers from the `dw` table instead of checking for `0xC3` (`jp`) opcode
 - [ ] 2.2 Remove the `0xC3` check; directly return `bin_header_bin[offset] | (bin_header_bin[offset + 1] << 8)` for kernel-page addresses
-- [ ] 2.3 Verify the offset calculation: `offset = address - 0x4000` remains correct for the new `dw` table layout
+- [ ] 2.3 Verify the offset calculation: `offset = address - 0x4000` remains correct for the new `dw` table layout. Also, it must calculate the real call address at compile time instead of runtime
 
 ## 3. C-Side: Call Site Migration — cpu.addCall(def_xxx) → addKernelCall(DISP_xxx)
 
@@ -37,6 +37,7 @@
 - [ ] 5.1 Add a Makefile target or post-build step that checks `header.bin` size ≤ 16384 bytes
 - [ ] 5.2 On breach, emit alert: `WARNING: Kernel size <X> bytes exceeds 0x4000 limit by <Y> bytes`
 - [ ] 5.3 Verify the check runs as part of kernel build targets
+- [ ] 5.4 Add an unit test for kernel size check
 
 ## 6. Cleanup and Verification
 

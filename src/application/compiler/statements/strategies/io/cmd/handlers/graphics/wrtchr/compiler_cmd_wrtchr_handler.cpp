@@ -19,7 +19,7 @@ bool CompilerCmdWrtChrHandler::execute(shared_ptr<CompilerContext> context,
     // ld (DAC), hl
     cpu.addLdiiHL(def_DAC);
     // call cmd_wrtchr
-    cpu.addCall(def_cmd_wrtchr);
+    context->codeOptimizer->addKernelDispatch(DISP_cmd_wrtchr);
 
   } else {
     context->syntaxError("CMD WRTCHR syntax error");

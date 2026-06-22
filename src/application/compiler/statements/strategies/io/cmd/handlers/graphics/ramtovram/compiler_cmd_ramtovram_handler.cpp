@@ -34,7 +34,7 @@ bool CompilerCmdRamToVramHandler::execute(shared_ptr<CompilerContext> context,
     cpu.addLdiiHL(def_ARG2);
 
     // call cmd_ramtovram
-    cpu.addCall(def_cmd_ramtovram);
+    context->codeOptimizer->addKernelDispatch(DISP_cmd_ramtovram);
 
   } else {
     context->syntaxError("CMD RAMTOVRAM syntax error");

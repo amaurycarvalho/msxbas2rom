@@ -27,7 +27,7 @@ void CompilerIreadStatementStrategy::cmd_iread(
       }
 
       // call XBASIC_IREAD
-      cpu.addCall(def_XBASIC_IREAD);
+      context->codeOptimizer->addKernelDispatch(DISP_XBASIC_IREAD);
 
       expression.addCast(Lexeme::subtype_numeric, lexeme->subtype);
 

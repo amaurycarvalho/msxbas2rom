@@ -17,7 +17,7 @@ bool CompilerCmdPlyReplayHandler::execute(shared_ptr<CompilerContext> context,
   context->akm = true;
 
   // call cmd_plyreplay
-  cpu.addCall(def_cmd_plyreplay);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_plyreplay);
 
   return context->compiled;
 }

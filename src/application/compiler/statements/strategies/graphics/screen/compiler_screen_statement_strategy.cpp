@@ -63,7 +63,7 @@ void CompilerScreenStatementStrategy::cmd_screen(
         case 0: {
           // call XBASIC_SCREEN ; xbasic SCREEN change mode (in: a, l = screen
           // mode)
-          cpu.addCall(def_XBASIC_SCREEN);
+          context->codeOptimizer->addKernelDispatch(DISP_XBASIC_SCREEN);
         } break;
 
         // sprite size
@@ -210,7 +210,7 @@ void CompilerScreenStatementStrategy::cmd_screen_copy(
     }
 
     // call screen_copy
-    cpu.addCall(def_cmd_screen_copy);
+    context->codeOptimizer->addKernelDispatch(DISP_cmd_screen_copy);
 
   } else {
     context->syntaxError("SCREEN COPY with empty parameters");
@@ -249,7 +249,7 @@ void CompilerScreenStatementStrategy::cmd_screen_paste(
     }
 
     // call screen_paste
-    cpu.addCall(def_cmd_screen_paste);
+    context->codeOptimizer->addKernelDispatch(DISP_cmd_screen_paste);
 
   } else {
     context->syntaxError("SCREEN PASTE with empty parameters");
@@ -285,13 +285,13 @@ void CompilerScreenStatementStrategy::cmd_screen_scroll(
       cpu.addPushHL();
 
       // call screen_copy
-      cpu.addCall(def_cmd_screen_copy);
+      context->codeOptimizer->addKernelDispatch(DISP_cmd_screen_copy);
 
       // pop hl
       cpu.addPopHL();
 
       // call screen_paste
-      cpu.addCall(def_cmd_screen_paste);
+      context->codeOptimizer->addKernelDispatch(DISP_cmd_screen_paste);
     }
 
   } else {
@@ -317,7 +317,7 @@ void CompilerScreenStatementStrategy::cmd_screen_load(
       cpu.addLdiiHL(def_DAC);
 
       // call screen_load
-      cpu.addCall(def_cmd_screen_load);
+      context->codeOptimizer->addKernelDispatch(DISP_cmd_screen_load);
     }
 
   } else {
@@ -329,14 +329,14 @@ void CompilerScreenStatementStrategy::cmd_screen_on(
     shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   // call cmd_enascr
-  cpu.addCall(def_cmd_enascr);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_enascr);
 }
 
 void CompilerScreenStatementStrategy::cmd_screen_off(
     shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   // call cmd_disscr
-  cpu.addCall(def_cmd_disscr);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_disscr);
 }
 
 bool CompilerScreenStatementStrategy::execute(

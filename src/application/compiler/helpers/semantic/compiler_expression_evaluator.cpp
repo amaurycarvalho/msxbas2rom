@@ -180,8 +180,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
       if (lexeme->value == "NOT") {
         if (result == Lexeme::subtype_numeric) {
           // call intCompareNOT
-          // ctx.cpu->addCall(def_intCompareNOT);
-          optimizer.addKernelCall(def_intCompareNOT);
+          // ctx.cpu->addCall(DISP_intCompareNOT);
+          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareNOT * 2);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -189,14 +189,14 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
       } else if (lexeme->value == "-") {
         if (result == Lexeme::subtype_numeric) {
           // call intNEG
-          // ctx.cpu->addCall(def_intNEG);
-          optimizer.addKernelCall(def_intNEG);
+          // ctx.cpu->addCall(DISP_intNEG);
+          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intNEG * 2);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
           // call floatNeg
-          // ctx.cpu->addCall(def_floatNEG);
-          optimizer.addKernelCall(def_floatNEG);
+          // ctx.cpu->addCall(DISP_floatNEG);
+          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_floatNEG * 2);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -218,8 +218,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           optimizer.addByteOptimized(0xD1);
 
           // call intCompareAND
-          // ctx.cpu->addCall(def_intCompareAND);
-          optimizer.addKernelCall(def_intCompareAND);
+          // ctx.cpu->addCall(DISP_intCompareAND);
+          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareAND * 2);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -230,8 +230,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           optimizer.addByteOptimized(0xD1);
 
           // call intCompareOR
-          // ctx.cpu->addCall(def_intCompareOR);
-          optimizer.addKernelCall(def_intCompareOR);
+          // ctx.cpu->addCall(DISP_intCompareOR);
+          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareOR * 2);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -242,8 +242,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           optimizer.addByteOptimized(0xD1);
 
           // call intCompareXOR
-          // ctx.cpu->addCall(def_intCompareXOR);
-          optimizer.addKernelCall(def_intCompareXOR);
+          // ctx.cpu->addCall(DISP_intCompareXOR);
+          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareXOR * 2);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -308,8 +308,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           optimizer.addByteOptimized(0xD1);
 
           // call intCompareEQ
-          // ctx.cpu->addCall(def_intCompareEQ);
-          optimizer.addKernelCall(def_intCompareEQ);
+          // ctx.cpu->addCall(DISP_intCompareEQ);
+          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareEQ * 2);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -345,8 +345,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           optimizer.addByteOptimized(0xD1);
 
           // call intCompareNE
-          // ctx.cpu->addCall(def_intCompareNE);
-          optimizer.addKernelCall(def_intCompareNE);
+          // ctx.cpu->addCall(DISP_intCompareNE);
+          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareNE * 2);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -382,8 +382,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           optimizer.addByteOptimized(0xD1);
 
           // call intCompareLT
-          // ctx.cpu->addCall(def_intCompareLT);
-          optimizer.addKernelCall(def_intCompareLT);
+          // ctx.cpu->addCall(DISP_intCompareLT);
+          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareLT * 2);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -419,8 +419,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           optimizer.addByteOptimized(0xD1);
 
           // call intCompareLE
-          // ctx.cpu->addCall(def_intCompareLE);
-          optimizer.addKernelCall(def_intCompareLE);
+          // ctx.cpu->addCall(DISP_intCompareLE);
+          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareLE * 2);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -456,8 +456,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           optimizer.addByteOptimized(0xD1);
 
           // call intCompareGT
-          // ctx.cpu->addCall(def_intCompareGT);
-          optimizer.addKernelCall(def_intCompareGT);
+          // ctx.cpu->addCall(DISP_intCompareGT);
+          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareGT * 2);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -493,8 +493,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           optimizer.addByteOptimized(0xD1);
 
           // call intCompareGE
-          // ctx.cpu->addCall(def_intCompareGE);
-          optimizer.addKernelCall(def_intCompareGE);
+          // ctx.cpu->addCall(DISP_intCompareGE);
+          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareGE * 2);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -1095,8 +1095,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           optimizer.addByteOptimized(0xD1);
 
           // call intSHR
-          // ctx.cpu->addCall(def_intSHR);
-          optimizer.addKernelCall(def_intSHR);
+          // ctx.cpu->addCall(DISP_intSHR);
+          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intSHR * 2);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -1107,8 +1107,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           optimizer.addByteOptimized(0xD1);
 
           // call intSHL
-          // ctx.cpu->addCall(def_intSHL);
-          optimizer.addKernelCall(def_intSHL);
+          // ctx.cpu->addCall(DISP_intSHL);
+          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intSHL * 2);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -1175,7 +1175,7 @@ int CompilerExpressionEvaluator::evalOperatorCast(
     //     200.0 + 100
 
     // call castParamFloatInt
-    cpu.addCall(def_castParamFloatInt);
+    context->codeOptimizer->addKernelDispatch(DISP_castParamFloatInt);
 
     result = next_action1->subtype;
 

@@ -49,7 +49,7 @@ void CompilerStartStatementStrategy::cmd_start(
 
   // call XBASIC INIT                  ; hl=heap start address, de=temporary
   // string start address, bc=data address, ix=font address, a=data segment
-  cpu.addCall(def_XBASIC_INIT);
+  context->codeOptimizer->addKernelDispatch(DISP_XBASIC_INIT);
 
   if (parser.getHasTraps()) {
     if (opts.megaROM) {
@@ -68,7 +68,7 @@ void CompilerStartStatementStrategy::cmd_start(
     // ld a, 2
     cpu.addLdA(0x02);
     // call MR_CHANGE_SGM
-    cpu.addCall(def_MR_CHANGE_SGM);
+    context->codeOptimizer->addKernelDispatch(DISP_MR_CHANGE_SGM);
   }
 
   if (parser.getHasData() || parser.getHasIData()) {
@@ -77,12 +77,12 @@ void CompilerStartStatementStrategy::cmd_start(
     // ld (DAC), hl
     cpu.addLdiiHL(def_DAC);
     // call cmd_restore
-    cpu.addCall(def_cmd_restore);  // MSXBAS2ROM resource RESTORE statement
+    context->codeOptimizer->addKernelDispatch(DISP_cmd_restore);  // MSXBAS2ROM resource RESTORE statement
   }
 
   if (parser.getHasAkm()) {
     // initialize akm player
-    cpu.addCall(def_player_initialize);
+    context->codeOptimizer->addKernelDispatch(DISP_player_initialize);
   }
 
   // ei

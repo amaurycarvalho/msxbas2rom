@@ -31,7 +31,7 @@ int FposCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   // hl = file number
   // call cmd_fpos
-  cpu.addCall(def_cmd_fpos);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_fpos);
 
   return Lexeme::subtype_numeric;
 }

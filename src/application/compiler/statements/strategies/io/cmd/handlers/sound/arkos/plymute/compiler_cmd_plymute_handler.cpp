@@ -17,7 +17,7 @@ bool CompilerCmdPlyMuteHandler::execute(shared_ptr<CompilerContext> context,
   context->akm = true;
 
   // call cmd_akmmute
-  cpu.addCall(def_cmd_plymute);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_plymute);
 
   return context->compiled;
 }

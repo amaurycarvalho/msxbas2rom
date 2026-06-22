@@ -9,7 +9,7 @@ bool CompilerCmdKeyClkOffHandler::execute(shared_ptr<CompilerContext> context,
   auto& cpu = *context->cpu;
 
   // call cmd_keyclkoff
-  cpu.addCall(def_cmd_keyclkoff);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_keyclkoff);
 
   return context->compiled;
 }

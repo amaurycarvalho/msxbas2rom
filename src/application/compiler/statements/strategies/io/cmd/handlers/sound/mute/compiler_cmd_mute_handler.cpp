@@ -9,7 +9,7 @@ bool CompilerCmdMuteHandler::execute(shared_ptr<CompilerContext> context,
   auto& cpu = *context->cpu;
 
   // call cmd_mute
-  cpu.addCall(def_cmd_mute);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_mute);
 
   return context->compiled;
 }

@@ -210,8 +210,8 @@ void CompilerForStatementStrategy::cmd_for(
         // ;var > to? goto end for
 
         // call intCompareGT
-        // cpuOpcodeWriter->addCall(def_intCompareGT);
-        optimizer.addKernelCall(def_intCompareGT);
+        // cpuOpcodeWriter->addCall(DISP_intCompareGT);
+        optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareGT * 2);
 
         // jp nz, end_for
         forNext->forEndMark = fixup.addMark();

@@ -32,7 +32,7 @@ bool CompilerCmdPlySongHandler::execute(shared_ptr<CompilerContext> context,
   }
 
   // call cmd_plysong
-  cpu.addCall(def_cmd_plysong);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_plysong);
 
   return context->compiled;
 }

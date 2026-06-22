@@ -25,7 +25,7 @@ int TabCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (result[0] == Lexeme::subtype_numeric) {
     // call tab function
-    cpu.addCall(def_XBASIC_TAB);
+    context->codeOptimizer->addKernelDispatch(DISP_XBASIC_TAB);
 
     return Lexeme::subtype_string;
   }

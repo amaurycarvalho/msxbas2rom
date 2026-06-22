@@ -19,6 +19,7 @@ class CompilerCodeOptimizer {
  public:
   void addByteOptimized(unsigned char byte);
   void addKernelCall(unsigned int word);
+  void addKernelDispatch(unsigned char index);
   int getKernelCallAddr(unsigned int word);
   void addLdHLmegarom();
 

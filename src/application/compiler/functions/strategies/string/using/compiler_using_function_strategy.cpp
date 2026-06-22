@@ -61,7 +61,7 @@ int UsingCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
     // call XBASIC_USING    ; hl = item format string, c:de = float, out
     // hl=string
-    cpu.addCall(def_XBASIC_USING);
+    context->codeOptimizer->addKernelDispatch(DISP_XBASIC_USING);
     // ld de, temporary string
     variable.addTempStr(false);
     // push de
@@ -105,7 +105,7 @@ int UsingCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
     // call XBASIC_USING_DO    ; a=format, d=thousand digits, e=decimal digits,
     // b:hl=number, out hl=string
-    cpu.addCall(def_XBASIC_USING_DO);
+    context->codeOptimizer->addKernelDispatch(DISP_XBASIC_USING_DO);
     // ld de, temporary string
     variable.addTempStr(false);
     // push de

@@ -61,20 +61,20 @@ int UsrCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
     }
 
     // call XBASIC_USR
-    cpu.addCall(def_XBASIC_USR);
+    context->codeOptimizer->addKernelDispatch(DISP_XBASIC_USR);
   } else {
     if (keyword == "USR" || keyword == "USR0") {
       // call usr0
-      cpu.addCall(def_usr0);
+      context->codeOptimizer->addKernelDispatch(DISP_usr0);
     } else if (keyword == "USR1") {
       // call usr1
-      cpu.addCall(def_usr1);
+      context->codeOptimizer->addKernelDispatch(DISP_usr1);
     } else if (keyword == "USR2") {
       // call usr2
-      cpu.addCall(def_usr2);
+      context->codeOptimizer->addKernelDispatch(DISP_usr2);
     } else if (keyword == "USR3") {
       // call usr3
-      cpu.addCall(def_usr3);
+      context->codeOptimizer->addKernelDispatch(DISP_usr3);
     }
   }
 

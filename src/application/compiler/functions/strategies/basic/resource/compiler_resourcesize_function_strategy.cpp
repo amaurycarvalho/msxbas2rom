@@ -21,7 +21,7 @@ int ResourcesizeCompilerFunctionStrategy::execute(
   result[0] = Lexeme::subtype_numeric;
 
   // call usr1
-  cpu.addCall(def_usr1);
+  context->codeOptimizer->addKernelDispatch(DISP_usr1);
 
   return result[0];
 }

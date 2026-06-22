@@ -31,7 +31,7 @@ int LofCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   // hl = file number
   // call cmd_flof
-  cpu.addCall(def_cmd_flof);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_flof);
 
   return Lexeme::subtype_numeric;
 }

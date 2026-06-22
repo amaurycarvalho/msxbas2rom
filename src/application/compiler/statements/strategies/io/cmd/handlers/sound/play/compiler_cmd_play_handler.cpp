@@ -25,7 +25,7 @@ bool CompilerCmdPlayHandler::execute(shared_ptr<CompilerContext> context,
     cpu.addLdiiA(def_ARG);
 
     // call cmd_play
-    cpu.addCall(def_cmd_play);
+    context->codeOptimizer->addKernelDispatch(DISP_cmd_play);
 
   } else if (action->actions.size() == 2) {
     auto sub = action->actions[0];
@@ -43,7 +43,7 @@ bool CompilerCmdPlayHandler::execute(shared_ptr<CompilerContext> context,
     cpu.addLdiiHL(def_ARG);
 
     // call cmd_play
-    cpu.addCall(def_cmd_play);
+    context->codeOptimizer->addKernelDispatch(DISP_cmd_play);
 
   } else {
     context->syntaxError("CMD PLAY syntax error");

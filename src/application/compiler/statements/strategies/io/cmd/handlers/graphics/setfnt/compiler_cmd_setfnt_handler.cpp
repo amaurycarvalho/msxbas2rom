@@ -26,7 +26,7 @@ bool CompilerCmdSetFntHandler::execute(shared_ptr<CompilerContext> context,
     cpu.addLdiiA(def_ARG);
 
     // call cmd_setfnt
-    cpu.addCall(def_cmd_setfnt);
+    context->codeOptimizer->addKernelDispatch(DISP_cmd_setfnt);
 
   } else if (action->actions.size() == 2) {
     auto sub = action->actions[0];
@@ -44,7 +44,7 @@ bool CompilerCmdSetFntHandler::execute(shared_ptr<CompilerContext> context,
     cpu.addLdiiHL(def_ARG);
 
     // call cmd_setfnt
-    cpu.addCall(def_cmd_setfnt);
+    context->codeOptimizer->addKernelDispatch(DISP_cmd_setfnt);
 
   } else {
     context->syntaxError("CMD SETFNT syntax error");

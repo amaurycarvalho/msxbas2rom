@@ -408,7 +408,7 @@ void CompilerCopyStatementStrategy::cmd_copy(
       cpu.addPopHL();
 
       // call XBASIC_COPY_FROM
-      cpu.addCall(def_XBASIC_COPY_FROM);
+      context->codeOptimizer->addKernelDispatch(DISP_XBASIC_COPY_FROM);
 
     } else if (has_address_to) {
       // ex de,hl      ; address to (hl to de)
@@ -465,7 +465,7 @@ void CompilerCopyStatementStrategy::cmd_copy(
       cpu.addExDEHL();
 
       // call XBASIC_COPY_TO
-      cpu.addCall(def_XBASIC_COPY_TO);
+      context->codeOptimizer->addKernelDispatch(DISP_XBASIC_COPY_TO);
 
     } else {
       if (!has_operator) {
@@ -543,7 +543,7 @@ void CompilerCopyStatementStrategy::cmd_copy(
 
       // call COPY    ; in: de=x0, hl=y0, ix=x1, iy=y1, 0xFC18=srcpg, 0xFCB7=x2,
       // 0xFCB9=y2, 0xFC19=destpg, b=operator
-      cpu.addCall(def_XBASIC_COPY);
+      context->codeOptimizer->addKernelDispatch(DISP_XBASIC_COPY);
     }
 
   } else {

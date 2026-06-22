@@ -60,8 +60,8 @@ int TileCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
     // inc h     ; bios based coord system (home=1,1)
     cpu.addIncH();
 
-    // call def_tileAddress (in: hl=xy; out: hl=address)
-    cpu.addCall(def_tileAddress);
+    // call DISP_tileAddress (in: hl=xy; out: hl=address)
+    context->codeOptimizer->addKernelDispatch(DISP_tileAddress);
 
     // call 0x70a1    ; xbasic VPEEK (in:hl, out:hl)
     cpu.addCall(def_XBASIC_VPEEK);

@@ -27,7 +27,7 @@ bool CompilerCmdPlyLoopHandler::execute(shared_ptr<CompilerContext> context,
     // ld (DAC), hl
     cpu.addLdiiHL(def_DAC);
     // call cmd_plyloop
-    cpu.addCall(def_cmd_plyloop);
+    context->codeOptimizer->addKernelDispatch(DISP_cmd_plyloop);
 
   } else {
     context->syntaxError("CMD PLYLOOP syntax error");

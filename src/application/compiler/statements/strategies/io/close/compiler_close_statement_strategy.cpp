@@ -26,7 +26,7 @@ void CompilerCloseStatementStrategy::cmd_close(
       // ld a, l
       cpu.addLdAL();
       // call cmd_fclose
-      cpu.addCall(def_cmd_fclose);
+      context->codeOptimizer->addKernelDispatch(DISP_cmd_fclose);
     }
 
   } else {
@@ -34,7 +34,7 @@ void CompilerCloseStatementStrategy::cmd_close(
     // ld a, 0xFF
     cpu.addXorA();
     // call cmd_fclose
-    cpu.addCall(def_cmd_fclose);
+    context->codeOptimizer->addKernelDispatch(DISP_cmd_fclose);
   }
 }
 

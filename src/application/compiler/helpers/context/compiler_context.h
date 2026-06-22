@@ -6,6 +6,7 @@
 #include <stack>
 #include <string>
 
+#include "compiler_code_optimizer.h"
 #include "cpu_opcode_writer.h"
 #include "for_next_node.h"
 #include "symbol_node.h"

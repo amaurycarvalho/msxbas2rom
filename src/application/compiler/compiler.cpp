@@ -20,6 +20,7 @@
 #include "compiler_code_helper.h"
 #include "compiler_code_optimizer.h"
 #include "compiler_context.h"
+#include "compiler_hooks.h"
 #include "compiler_end_statement_strategy.h"
 #include "compiler_evaluator.h"
 #include "compiler_expression_evaluator.h"
@@ -31,6 +32,8 @@
 #include "compiler_variable_emitter.h"
 #include "lexeme.h"
 #include "lexer_line_context.h"
+
+extern unsigned char bin_header_bin[];
 #include "logger.h"
 #include "parser.h"
 #include "resources.h"
@@ -331,6 +334,14 @@ int Compiler::write(unsigned char* dest, int start_address) {
   vector<shared_ptr<FixNode>> skips;
   bool is_id, is_jump, is_load;
 
+  // Resolve MR wrapper target addresses from dw dispatch table
+  unsigned int mr_call_target = bin_header_bin[def_wrapper_routines_map_table - 0x4000 + DISP_MR_CALL * 2]
+                              | (bin_header_bin[def_wrapper_routines_map_table - 0x4000 + DISP_MR_CALL * 2 + 1] << 8);
+  unsigned int mr_jump_target = bin_header_bin[def_wrapper_routines_map_table - 0x4000 + DISP_MR_JUMP * 2]
+                              | (bin_header_bin[def_wrapper_routines_map_table - 0x4000 + DISP_MR_JUMP * 2 + 1] << 8);
+  unsigned int mr_get_data_target = bin_header_bin[def_wrapper_routines_map_table - 0x4000 + DISP_MR_GET_DATA * 2]
+                                  | (bin_header_bin[def_wrapper_routines_map_table - 0x4000 + DISP_MR_GET_DATA * 2 + 1] << 8);
+
   // copy compiled code to final destination
 
   t = context->symbolManager->context->codeList.size();
@@ -377,8 +388,8 @@ int Compiler::write(unsigned char* dest, int start_address) {
             d[4] = 0x80;
             // jp MR_JUMP
             d[5] = 0xC3;
-            d[6] = (def_MR_JUMP & 0xFF);
-            d[7] = ((def_MR_JUMP >> 8) & 0xFF);
+            d[6] = (mr_jump_target & 0xFF);
+            d[7] = ((mr_jump_target >> 8) & 0xFF);
 
           } else {
             // data mark to skip a segment to another
@@ -553,40 +564,40 @@ int Compiler::write(unsigned char* dest, int start_address) {
                   dest[address - 9] = 0x08;   // ex af, af'
                   dest[address - 8] = 0xD9;   // exx
                   dest[address - 7] = 0xF1;   // pop af
-                  dest[address] = def_MR_CALL & 0xFF;
-                  dest[address + 1] = (def_MR_CALL >> 8) & 0xFF;
+                  dest[address] = mr_call_target & 0xFF;
+                  dest[address + 1] = (mr_call_target >> 8) & 0xFF;
                 } break;
                 case 0xD4: {                  // call nc,
                   dest[address - 10] = 0x38;  // jr c, $+11
                   dest[address - 9] = 0x0A;
                   dest[address - 1] = 0xCD;  // change to call
-                  dest[address] = def_MR_CALL & 0xFF;
-                  dest[address + 1] = (def_MR_CALL >> 8) & 0xFF;
+                  dest[address] = mr_call_target & 0xFF;
+                  dest[address + 1] = (mr_call_target >> 8) & 0xFF;
                 } break;
                 case 0xC4: {                  // call nz,
                   dest[address - 10] = 0x28;  // jr z, $+11
                   dest[address - 9] = 0x0A;
                   dest[address - 1] = 0xCD;  // change to call
-                  dest[address] = def_MR_CALL & 0xFF;
-                  dest[address + 1] = (def_MR_CALL >> 8) & 0xFF;
+                  dest[address] = mr_call_target & 0xFF;
+                  dest[address + 1] = (mr_call_target >> 8) & 0xFF;
                 } break;
                 case 0xDC: {                  // call c,
                   dest[address - 10] = 0x30;  // jr nc, $+11
                   dest[address - 9] = 0x0A;
                   dest[address - 1] = 0xCD;  // change to call
-                  dest[address] = def_MR_CALL & 0xFF;
-                  dest[address + 1] = (def_MR_CALL >> 8) & 0xFF;
+                  dest[address] = mr_call_target & 0xFF;
+                  dest[address + 1] = (mr_call_target >> 8) & 0xFF;
                 } break;
                 case 0xCC: {                  // call z,
                   dest[address - 10] = 0x20;  // jr nz, $+11
                   dest[address - 9] = 0x0A;
                   dest[address - 1] = 0xCD;  // change to call
-                  dest[address] = def_MR_CALL & 0xFF;
-                  dest[address + 1] = (def_MR_CALL >> 8) & 0xFF;
+                  dest[address] = mr_call_target & 0xFF;
+                  dest[address + 1] = (mr_call_target >> 8) & 0xFF;
                 } break;
                 case 0xCD: {  // call
-                  dest[address] = def_MR_CALL & 0xFF;
-                  dest[address + 1] = (def_MR_CALL >> 8) & 0xFF;
+                  dest[address] = mr_call_target & 0xFF;
+                  dest[address + 1] = (mr_call_target >> 8) & 0xFF;
                 } break;
                 // JUMP
                 case 0xFA:                    // jp m,
@@ -597,40 +608,40 @@ int Compiler::write(unsigned char* dest, int start_address) {
                   dest[address - 9] = 0x08;   // ex af, af'
                   dest[address - 8] = 0xD9;   // exx
                   dest[address - 7] = 0xF1;   // pop af
-                  dest[address] = def_MR_JUMP & 0xFF;
-                  dest[address + 1] = (def_MR_JUMP >> 8) & 0xFF;
+                  dest[address] = mr_jump_target & 0xFF;
+                  dest[address + 1] = (mr_jump_target >> 8) & 0xFF;
                 } break;
                 case 0xD2: {                  // jp nc,
                   dest[address - 10] = 0x38;  // jr c, $+11
                   dest[address - 9] = 0x0A;
                   dest[address - 1] = 0xC3;  // change to jp
-                  dest[address] = def_MR_JUMP & 0xFF;
-                  dest[address + 1] = (def_MR_JUMP >> 8) & 0xFF;
+                  dest[address] = mr_jump_target & 0xFF;
+                  dest[address + 1] = (mr_jump_target >> 8) & 0xFF;
                 } break;
                 case 0xC2: {                  // jp nz,
                   dest[address - 10] = 0x28;  // jr z, $+11
                   dest[address - 9] = 0x0A;
                   dest[address - 1] = 0xC3;  // change to jp
-                  dest[address] = def_MR_JUMP & 0xFF;
-                  dest[address + 1] = (def_MR_JUMP >> 8) & 0xFF;
+                  dest[address] = mr_jump_target & 0xFF;
+                  dest[address + 1] = (mr_jump_target >> 8) & 0xFF;
                 } break;
                 case 0xDA: {                  // jp c,
                   dest[address - 10] = 0x30;  // jr nc, $+11
                   dest[address - 9] = 0x0A;
                   dest[address - 1] = 0xC3;  // change to jp
-                  dest[address] = def_MR_JUMP & 0xFF;
-                  dest[address + 1] = (def_MR_JUMP >> 8) & 0xFF;
+                  dest[address] = mr_jump_target & 0xFF;
+                  dest[address + 1] = (mr_jump_target >> 8) & 0xFF;
                 } break;
                 case 0xCA: {                  // jp z,
                   dest[address - 10] = 0x20;  // jr nz, $+11
                   dest[address - 9] = 0x0A;
                   dest[address - 1] = 0xC3;  // change to jp
-                  dest[address] = def_MR_JUMP & 0xFF;
-                  dest[address + 1] = (def_MR_JUMP >> 8) & 0xFF;
+                  dest[address] = mr_jump_target & 0xFF;
+                  dest[address + 1] = (mr_jump_target >> 8) & 0xFF;
                 } break;
                 case 0xC3: {  // jp
-                  dest[address] = def_MR_JUMP & 0xFF;
-                  dest[address + 1] = (def_MR_JUMP >> 8) & 0xFF;
+                  dest[address] = mr_jump_target & 0xFF;
+                  dest[address + 1] = (mr_jump_target >> 8) & 0xFF;
                 } break;
                 // special LOAD (segment address into a:hl)
                 case 0xFF: {
@@ -650,8 +661,8 @@ int Compiler::write(unsigned char* dest, int start_address) {
                 // LOAD
                 default: {
                   dest[address - 1] = 0xCD;
-                  dest[address] = def_MR_GET_DATA & 0xFF;
-                  dest[address + 1] = (def_MR_GET_DATA >> 8) & 0xFF;
+                  dest[address] = mr_get_data_target & 0xFF;
+                  dest[address + 1] = (mr_get_data_target >> 8) & 0xFF;
                 }
               }
             }

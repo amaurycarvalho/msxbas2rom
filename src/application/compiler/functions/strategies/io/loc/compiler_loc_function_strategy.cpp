@@ -31,7 +31,7 @@ int LocCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   // hl = file number
   // call cmd_floc
-  cpu.addCall(def_cmd_floc);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_floc);
 
   return Lexeme::subtype_numeric;
 }

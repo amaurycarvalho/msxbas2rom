@@ -26,7 +26,7 @@ int PadCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (result[0] == Lexeme::subtype_numeric) {
     // call cmd_pad
-    cpu.addCall(def_cmd_pad);
+    context->codeOptimizer->addKernelDispatch(DISP_cmd_pad);
   } else
     result[0] = Lexeme::subtype_unknown;
 

@@ -27,7 +27,7 @@ void CompilerReadStatementStrategy::cmd_read(
       }
 
       // call read
-      cpu.addCall(def_XBASIC_READ);
+      context->codeOptimizer->addKernelDispatch(DISP_XBASIC_READ);
 
       expression.addCast(Lexeme::subtype_string, lexeme->subtype);
 

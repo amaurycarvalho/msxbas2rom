@@ -9,7 +9,7 @@ bool CompilerCmdClrScrHandler::execute(shared_ptr<CompilerContext> context,
   auto& cpu = *context->cpu;
 
   // call cmd_clrscr
-  cpu.addCall(def_cmd_clrscr);
+  context->codeOptimizer->addKernelDispatch(DISP_cmd_clrscr);
 
   return context->compiled;
 }

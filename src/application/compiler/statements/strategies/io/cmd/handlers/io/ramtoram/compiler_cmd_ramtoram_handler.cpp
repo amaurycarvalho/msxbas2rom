@@ -34,7 +34,7 @@ bool CompilerCmdRamToRamHandler::execute(shared_ptr<CompilerContext> context,
     cpu.addLdiiHL(def_ARG2);
 
     // call cmd_ramtoram
-    cpu.addCall(def_cmd_ramtoram);
+    context->codeOptimizer->addKernelDispatch(DISP_cmd_ramtoram);
 
   } else {
     context->syntaxError("CMD RAMTORAM syntax error");
