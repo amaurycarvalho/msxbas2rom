@@ -9,11 +9,9 @@
 
 /***
  * @brief Compiler current version
- * @warning Before each release, sync CHANGELOG.md (Keep a Changelog format),
- * then update info_history below to mirror the current release entry,
- * add a summary of the last 2 releases, and the release URL.
- * Also update release version in debian/changelog and
- * rpmbuild/SPECS/msxbas2rom.spec.
+ * @warning Changelog documentation is automated by the openspec-changelog skill.
+ * Run /opsx-changelog after archiving changes to update all files.
+ * Do NOT manually edit CHANGELOG.md, debian/changelog, rpm spec, or info_history.
  * @remark Run the code below to create a new release on github:
  * git tag -a v0.0.0.0 -m "Release 0.0.0.0" && git push origin --tags
  * git checkout -b release/v0.0.0.0
@@ -72,10 +70,9 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 /***
  * @var
  * @brief History information (--ver parameter)
- * @warning info_history MUST mirror the current release entry from
- * CHANGELOG.md, include a summary of the last 2 releases, and the release URL.
- * CHANGELOG.md is the source of truth — keep it in sync before each release.
- * See openspec/specs/changelog-format/spec.md for the full rule.
+ * @warning info_history is updated by the openspec-changelog skill.
+ * Run /opsx-changelog to update. Do NOT edit manually.
+ * See openspec/specs/governance/spec.md for the full rule.
  */
 const char* info_history = R"(
 Version history

@@ -85,13 +85,26 @@ Archive a completed change in the experimental workflow.
    mv "<changeRoot>" "<planningHome.changesDir>/archive/YYYY-MM-DD-<name>"
    ```
 
-6. **Display summary**
+6. **Auto-run changelog documentation**
+
+   After a successful archive, automatically run the changelog skill to update all changelog-related files:
+
+   Use the Skill tool to invoke `openspec-changelog`. This will:
+   - Update CHANGELOG.md with the archived change under the correct release version
+   - Update CHANGELOG-ARCHIVE.md with previous releases
+   - Update debian/changelog, RPM spec, and info_history with a summary
+   - Update the Unreleased section for any remaining active changes
+
+   If the changelog update fails, display a warning but do NOT revert the archive — the archive is already complete.
+
+7. **Display summary**
 
    Show archive completion summary including:
    - Change name
    - Schema that was used
    - Archive location
    - Whether specs were synced (if applicable)
+   - Changelog update status (success / failed with warning)
    - Note about any warnings (incomplete artifacts/tasks)
 
 **Output On Success**
@@ -103,8 +116,28 @@ Archive a completed change in the experimental workflow.
 **Schema:** <schema-name>
 **Archived to:** the archive path derived from `planningHome.changesDir`/YYYY-MM-DD-<name>/
 **Specs:** ✓ Synced to main specs (or "No delta specs" or "Sync skipped")
+**Changelog:** ✓ Updated
 
 All artifacts complete. All tasks complete.
+```
+
+**Output On Success With Warnings**
+
+```
+## Archive Complete (with warnings)
+
+**Change:** <change-name>
+**Schema:** <schema-name>
+**Archived to:** the archive path derived from `planningHome.changesDir`/YYYY-MM-DD-<name>/
+**Specs:** Sync skipped (user chose to skip)
+**Changelog:** ⚠ Update failed — run /opsx-changelog manually
+
+**Warnings:**
+- Archived with 2 incomplete artifacts
+- Archived with 3 incomplete tasks
+- Delta spec sync was skipped (user chose to skip)
+
+Review the archive if this was not intentional.
 ```
 
 **Guardrails**

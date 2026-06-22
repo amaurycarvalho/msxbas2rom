@@ -5,7 +5,7 @@ As a command-line user, the system SHALL provide a CLI that validates options an
 
 The CLI SHALL validate arguments and return non-zero exit code for invalid parameter combinations. The CLI SHALL support informational commands (`--help`, `--doc`, `--history`, `--ver`) and exit without compilation. The CLI SHALL enforce input file existence and output overwrite behavior. The CLI SHALL execute stages in order: lexical, syntactic, semantic, ROM build. The CLI SHALL report stage-specific errors and success metrics depending on quiet/debug/settings.
 
-The `--history` flag SHALL display the `info_history` string, which contains only the current release entry, a summary of the last 2 releases, and a link to the current release on GitHub — not the full changelog.
+The `--history` flag SHALL display the `info_history` string, which contains the current release summary and a link to the current release on GitHub — not the full changelog. The `info_history` content is maintained by the `openspec-changelog` skill.
 
 #### Scenario: Show help and exit cleanly
 - **WHEN** the command `msxbas2rom -h` is executed
@@ -25,7 +25,5 @@ The `--history` flag SHALL display the `info_history` string, which contains onl
 
 #### Scenario: History shows current release only
 - **WHEN** the command `msxbas2rom --history` is executed
-- **THEN** the output SHALL contain the current release entry with categorized changes
-- **AND** a summary of the last 2 releases
-- **AND** a link to the current release on GitHub
+- **THEN** the output SHALL contain the current release summary and a link to the current release on GitHub
 - **AND** NOT contain the full changelog of all releases

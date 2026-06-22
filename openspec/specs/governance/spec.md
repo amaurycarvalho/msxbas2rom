@@ -58,24 +58,34 @@ The system SHALL consult `openspec/changes/` for the project roadmap and current
 - **THEN** active changes in `openspec/changes/` SHALL be consulted for current sprint items
 - **AND** archived changes in `openspec/changes/archive/` SHALL be consulted for completed work
 
-### Requirement: Every change must be associated with a release and registered in CHANGELOG
-Every change SHALL be associated with a target release version (e.g., `1.0.0.0`). The release MUST be captured during the explore or propose phase — if the user does not specify it, the agent SHALL ask. At archive time, the agent SHALL update `CHANGELOG.md` with the change's entries under the correct release section, categorized as Added, Changed, Fixed, Deprecated, Removed, or Security per the Keep a Changelog format. If the release affects the `info_history` string in `src/cli/appinfo.h`, that SHALL also be updated to reflect the current release.
+### Requirement: Every change must be associated with a release
+Every change SHALL be associated with a target release version (e.g., `1.0.0.0`). The release MUST be captured during the explore or propose phase — if the user does not specify it, the agent SHALL ask.
 
 #### Scenario: Release is captured during planning
 - **WHEN** exploring or proposing a new change
 - **THEN** the agent SHALL confirm the target release version with the user
 - **AND** if the user does not provide it, the agent SHALL ask before proceeding
 
-#### Scenario: CHANGELOG is updated at archive time
-- **WHEN** archiving a completed change
-- **THEN** the agent SHALL add the change's entries to `CHANGELOG.md` under the appropriate release section
-- **AND** SHALL use the Keep a Changelog categories (Added, Changed, Fixed, Deprecated, Removed, Security)
+### Requirement: Changelog documentation is automated by openspec-changelog skill
+The `openspec-changelog` skill (`.opencode/skills/openspec-changelog/SKILL.md`) is the SOLE mechanism for updating changelog-related files. It MUST be run automatically every time a change is archived, triggered by the `openspec-archive-change` skill. It handles all of the following:
 
-#### Scenario: info_history is synced from CHANGELOG at release time
-- **WHEN** preparing a release
-- **THEN** `src/cli/appinfo.h` `info_history` SHALL be synced to mirror the current release entry from `CHANGELOG.md`, a summary of the last 2 releases, and the release URL
-- **AND** `CHANGELOG.md` is the authoritative source — do NOT write to `info_history` first
-- **AND** the architecture spec (`openspec/specs/architecture/spec.md`) SHALL be consulted for the full syncing rule
+- `CHANGELOG.md` — structured release entries and Unreleased section in Keep a Changelog format
+- `CHANGELOG-ARCHIVE.md` — previous releases moved from CHANGELOG.md
+- `debian/changelog` — Debian packaging entry with ultra-simplified summary
+- `rpmbuild/SPECS/msxbas2rom.spec` — RPM spec %changelog with ultra-simplified summary
+- `src/cli/appinfo.h` (`info_history`) — ultra-simplified summary of current release only
+
+No agent SHALL manually edit any of these files for release history purposes. If the skill fails, the agent SHALL warn the user and offer to run it manually via `/opsx-changelog`.
+
+#### Scenario: Changelog is updated by skill on archive
+- **WHEN** a change is archived via `openspec-archive-change`
+- **THEN** the `openspec-changelog` skill SHALL be invoked automatically after the archive completes
+- **AND** if it fails, a warning SHALL be displayed but the archive SHALL NOT be reverted
+
+#### Scenario: Agent never manually edits changelog files
+- **WHEN** an agent needs to update CHANGELOG.md, CHANGELOG-ARCHIVE.md, debian/changelog, rpm spec, or info_history for release purposes
+- **THEN** the agent SHALL NOT edit these files directly
+- **AND** SHALL run the `/opsx-changelog` command instead
 
 ### Requirement: Run builds and tests asynchronously
 The project has **278 `.cpp` source files** and a full build (`make release` or `make debug`) can take **several minutes**. To avoid timeouts and blocking the agent, all compilation and test commands SHALL be run asynchronously via the Task tool or in background processes. Direct synchronous compilation of the full tree SHALL be avoided.

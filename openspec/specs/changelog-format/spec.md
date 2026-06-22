@@ -25,36 +25,17 @@ The project SHALL maintain `CHANGELOG.md` following the [Keep a Changelog](https
 - **THEN** they SHALL be added under `## [Unreleased]`
 - **AND** they SHALL use the same category sections as released entries
 
-### Requirement: info_history mirrors current release from CHANGELOG.md
-The `info_history` string in `src/cli/appinfo.h` SHALL contain:
-1. The complete entry for the current release (version, date, and all categorized changes)
-2. A brief summary (1-2 lines) of each of the last 2 releases
-3. A link to the current release on GitHub in the format `https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v[version]`
+### Requirement: Changelog files are updated by openspec-changelog skill
+All changelog-related files (`CHANGELOG.md`, `CHANGELOG-ARCHIVE.md`, `debian/changelog`, `rpmbuild/SPECS/msxbas2rom.spec`, `info_history` in `src/cli/appinfo.h`) are updated by the `openspec-changelog` skill. See `openspec/specs/governance/spec.md` for the authoritative rule. This spec defines only the format requirements.
 
-#### Scenario: info_history is updated for each release
-- **WHEN** a new release is created
-- **THEN** `info_history` in `src/cli/appinfo.h` SHALL be updated to reflect the current release entry from CHANGELOG.md
-- **AND** include a summary of the previous 2 releases
-- **AND** end with a link to the current release on GitHub
+#### Scenario: info_history is updated by skill
+- **WHEN** a release is created
+- **THEN** the `openspec-changelog` skill SHALL update `info_history` in `src/cli/appinfo.h`
+- **AND** `info_history` SHALL contain the current release summary and release URL only (NOT the full changelog)
 
-#### Scenario: info_history content differs from full changelog
-- **WHEN** a user runs `msxbas2rom --history`
-- **THEN** the output SHALL show the current release entry, last 2 releases summary, and release link
-- **AND** NOT show the full changelog history
-
-### Requirement: Version is synced across all release files
-When a new version is released, the version number SHALL be updated in all of the following files:
-- `src/cli/appinfo.h` — the `app_version` constant
-- `debian/changelog` — Debian packaging changelog entry
-- `rpmbuild/SPECS/msxbas2rom.spec` — RPM spec Version field and %changelog entry
-
-#### Scenario: Version update propagates to all files
+#### Scenario: Version is synced across all release files
 - **WHEN** a new release version is set in `src/cli/appinfo.h`
 - **THEN** `CHANGELOG.md`, `debian/changelog`, and `rpmbuild/SPECS/msxbas2rom.spec` SHALL have a matching version entry
-
-#### Scenario: Release checklist verifies sync
-- **WHEN** preparing a new release
-- **THEN** the version SHALL be verified as consistent across `appinfo.h`, `CHANGELOG.md`, `debian/changelog`, and `rpmbuild/SPECS/msxbas2rom.spec`
 
 ### Requirement: Version placeholder converted to Unreleased
 Entries in CHANGELOG.md with version `#.#.#.#` (placeholder for internal changes without a release tag) SHALL be stored under the `## [Unreleased]` section using the same categorization format.

@@ -78,13 +78,20 @@ Archive a completed change in the experimental workflow.
    mv "<changeRoot>" "<planningHome.changesDir>/archive/YYYY-MM-DD-<name>"
    ```
 
-6. **Display summary**
+6. **Auto-run changelog documentation**
+
+   After successful archive, automatically invoke `openspec-changelog` via the Skill tool to update all changelog-related files.
+
+   If the changelog update fails, display a warning but do NOT revert the archive.
+
+7. **Display summary**
 
    Show archive completion summary including:
    - Change name
    - Schema that was used
    - Archive location
    - Spec sync status (synced / sync skipped / no delta specs)
+   - Changelog update status (success / failed with warning)
    - Note about any warnings (incomplete artifacts/tasks)
 
 **Output On Success**
@@ -96,6 +103,7 @@ Archive a completed change in the experimental workflow.
 **Schema:** <schema-name>
 **Archived to:** the archive path derived from `planningHome.changesDir`/YYYY-MM-DD-<name>/
 **Specs:** ✓ Synced to main specs
+**Changelog:** ✓ Updated
 
 All artifacts complete. All tasks complete.
 ```
@@ -109,6 +117,7 @@ All artifacts complete. All tasks complete.
 **Schema:** <schema-name>
 **Archived to:** the archive path derived from `planningHome.changesDir`/YYYY-MM-DD-<name>/
 **Specs:** No delta specs
+**Changelog:** ✓ Updated
 
 All artifacts complete. All tasks complete.
 ```
@@ -122,6 +131,7 @@ All artifacts complete. All tasks complete.
 **Schema:** <schema-name>
 **Archived to:** the archive path derived from `planningHome.changesDir`/YYYY-MM-DD-<name>/
 **Specs:** Sync skipped (user chose to skip)
+**Changelog:** ⚠ Update failed — run /opsx-changelog manually
 
 **Warnings:**
 - Archived with 2 incomplete artifacts
