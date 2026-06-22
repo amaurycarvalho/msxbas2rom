@@ -19,7 +19,7 @@
  * git checkout -b release/v0.0.0.0 && git push origin release/v0.0.0.0
  * git switch master
  */
-#define app_version "1.0.0.0"
+#define app_version "1.0.1.0"
 
 //! @brief Header information
 const char* info_header = R"(MSXBAS2ROM - MSX-BASIC TO ROM COMPILER
@@ -78,12 +78,12 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char* info_history = R"(
 Version history
 
-## [1.0.0.0] - 2026-06-19
+## [1.0.1.0] - 2026-06-22
 
-Release 1.0.0.0: File handling support, tile command enhancements, cross-platform fixes, and OpenSpec migration.
+Release 1.0.1.0: Kernel space optimization, wrapper dispatch restructure, and bug fixes.
 
 See full changelog:
-https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.0.0.0
+https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.0.1.0
 )";
 
 /***

@@ -353,8 +353,11 @@ verify.slots.test.ram:
     ld a, 65
     ld (hl), a
     cp (hl)             ; test if value was changed in address
+    push af             ; save flags
     ld (hl), c          ; restore original value
+    xor a               ; A = 0
     out (0x8E), a       ; MegaROM mode 0 - block change on
+    pop af              ; restore flags
     ret
 
 verify.slots.test.program.on_page_2:
@@ -523,23 +526,6 @@ VDP_GetVersion:
     ret nz               ; return VDP ID for V9958 or higher
     inc a                ; return 1 for V9938
     ret
-
-; VDP wait
-;VDP_wait:
-;    ld a, 2
-;    call VDP_wait.1
-;    and 1
-;    jr nz, VDP_wait
-;    xor a
-;VDP_wait.1:
-;    di
-;      out (0x99), a
-;      ld a, 0x8F
-;      out (0x99), a
-;      in a, (0x99)
-;    ei
-;    ret
-
 
 ;
 ; Test if the VDP is a TMS9918A.

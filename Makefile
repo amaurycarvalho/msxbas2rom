@@ -3,7 +3,7 @@
 # by Amaury Carvalho (2022-2026)                                               #
 #------------------------------------------------------------------------------#
 
-.PHONY: all clean debug release test test-clean test-unit test-integration debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
+.PHONY: all clean debug release test test-clean test-unit test-integration test-kernel debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
 
 # ----------------------------
 # Variables
@@ -164,6 +164,9 @@ test-unit:
 
 test-integration:
 	@$(MAKE) -C tests/integration run
+
+test-kernel:
+	@$(MAKE) -C tests/kernel run
 
 test-clean:
 	@echo "🧹 Cleaning testing files..."

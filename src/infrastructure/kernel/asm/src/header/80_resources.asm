@@ -46,7 +46,6 @@ resource.address.next:
 
   add hl, de
 
-  xor a       ; clear carry
   ld e, (hl)  ; get resource address
   inc hl
   ld d, (hl)
@@ -74,7 +73,11 @@ resource.get_data:
     call resource.address    ; hl = resource start address, a = segment, bc = size
 
     ld de, BUF
-    ld bc, 255
+    ld a, b
+    or a                      ; resource size > 255?
+    jr z, resource.get_data.copy
+    ld bc, 255                ; cap at 255 bytes
+resource.get_data.copy:
     ldir
 
     call resource.close

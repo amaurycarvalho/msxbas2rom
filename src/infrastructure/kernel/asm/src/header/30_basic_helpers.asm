@@ -58,19 +58,19 @@ XBASIC_INIT:
   ld (USRTAB+6), hl
 
   ; --> function keys data 
-  call ERAFNK              ; disable function keys display
-  ld hl, FNKSTR            ; configure function keys codes from 245 to 246
+  call ERAFNK               ; disable function keys display
+  ld hl, FNKSTR             ; configure function keys codes from 246 to 255
   ld de, FNKSTR+1
   ld a, 246
   ld b, 0
 XBASIC_INIT.loop:
-    ld (hl), a
-    inc hl
-    inc de
-    ld (hl), b
-    ld c, 15
-    ldir
-    inc a
+    ld (hl), a              ; register key code (246 to 255)
+    inc hl                  ; go to the next source char...
+    ld (hl), b              ; ...and put a null terminator in it
+    inc de                  ; go to the next destination char
+    ld c, 15                
+    ldir                    ; copy the null terminator to the next 15 chars
+    inc a                   ; go to the next key code (246 to 255)
   jr nz, XBASIC_INIT.loop
 
   ; --> clear variables

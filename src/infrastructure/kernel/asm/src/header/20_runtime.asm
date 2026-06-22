@@ -74,10 +74,14 @@ clear_basic_environment:
   ld (LPTPOS), a             ; printer position
   ld (TRCFLG), a             ; disable trace
   ld (PRTFLG), a             ; output to screen
-  ld (ENDPRG+1),a            ; fake line
-  ld (ENDPRG+2),a            ; fake line
-  ld (ENDPRG+3),a            ; fake line
-  ld (ENDPRG+4),a            ; fake line
+  ld hl, ENDPRG+1
+  ld (hl), a                 ; fake line
+  inc hl
+  ld (hl), a                 ; fake line
+  inc hl
+  ld (hl), a                 ; fake line
+  inc hl
+  ld (hl), a                 ; fake line
   ld (TRGFLG), a             ; joysticks ports
   ld (SOMODE), a             ; default screen output mode = text
   ld (MAXFIL), a             ; reset max files
@@ -138,7 +142,6 @@ run_user_basic_code_on_rom.non_disk_himem:
 run_user_basic_code_on_rom.himem_done:
   ld (HIMEM),HL              ; highest BASIC RAM address
   ld (MEMSIZ),hl
-  ld a, (STARTUP_CFG_FILEIO)
   and a
   ld bc, 200                 ; default stack margin
   jr z, run_user_basic_code_on_rom.stack_margin_done
@@ -150,6 +153,12 @@ run_user_basic_code_on_rom.stack_margin_done:
   ld (STKTOP), hl
 
   jp 0x8010      	         ; Jump to above page (start code)
+
+  nop                           ; padding to keep wrapper_routines_map_start at 0x4102
+  nop
+  nop
+  nop
+  nop
 
 ;---------------------------------------------------------------------------------------------------------
 ; ROUTINES ENTRY MAP FOR EXTERNAL ACCESS

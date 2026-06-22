@@ -16,10 +16,12 @@ PLY_AKM_StopSoundEffectFromChannel: equ 0x64B6
 player.initialize:
   di
     xor a
-    ld (PLYSTS), a                   ; idle
-    ld (PLYCOUNT), a                 ; player frame count
-    ld a, %10000001
-    ld (PLYLOOP), a                  ; bit 0=loop on, bit 7=end song
+    ld hl, PLYSTS
+    ld (hl), a                       ; PLYSTS = 0 (idle)
+    inc hl
+    ld (hl), %10000001               ; PLYLOOP = 0x81 (loop on, end song)
+    inc hl
+    ld (hl), a                       ; PLYCOUNT = 0
   ei
 
   ; save old hook
@@ -178,12 +180,16 @@ cmd_plysong:
 ; CMD PLYREPLAY
 cmd_plyreplay:
   di
-    xor a                 ; 0 = idle
-    ld (PLYSTS), a
-    ld (PLYCOUNT), a
-    ld a, (PLYLOOP)
+    ld hl, PLYLOOP
+    ld a, (hl)
     and %00000001          ; clear all flags (except loop flag)
-    ld (PLYLOOP), a
+    ld (hl), a
+    dec hl                 ; hl = PLYSTS
+    xor a
+    ld (hl), a             ; PLYSTS = 0
+    inc hl
+    inc hl                 ; hl = PLYCOUNT
+    ld (hl), a             ; PLYCOUNT = 0
   ei
   halt
 

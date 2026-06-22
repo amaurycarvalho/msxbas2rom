@@ -1,5 +1,5 @@
 Name: msxbas2rom
-Version: 1.0.0.0
+Version: 1.0.1.0
 Release: 1%{?dist}
 Summary: MSX-BASIC to ROM compiler
 
@@ -32,5 +32,5 @@ install -m 0755 msxbas2rom %{buildroot}/usr/bin/msxbas2rom
 /usr/bin/msxbas2rom
 
 %changelog
-* Sun Jun 21 2026 Amaury Carvalho <amauryspires@gmail.com>
-- Release 1.0.0.0: File handling support, tile command enhancements, cross-platform fixes, and OpenSpec migration
+* Mon Jun 22 2026 Amaury Carvalho <amauryspires@gmail.com>
+- Release 1.0.1.0: Kernel space optimization, wrapper dispatch restructure, and bug fixes

@@ -32,12 +32,15 @@ cmd_play:
 
 ; mute PSG
 ; CMD MUTE
+; Calling GICINI twice as a workaround to fix the "envelope period reset bug" during PSG initialization.
+; Because of a race condition in the MSX BIOS, the first call triggers the envelope (initializes PSG and buffers), 
+; while the second resets the envelope period properly (ensures envelope period resets).
 cmd_mute:
   halt
   di
     call GICINI
   ei
-  jp GICINI
+  jp GICINI  ; "envelope period reset bug" fix
 
 ; draw resource with Basic standard statement
 ; CMD DRAW <resource number>

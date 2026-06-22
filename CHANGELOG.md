@@ -9,48 +9,41 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 ## [Unreleased]
 
 ### Added
-- add-konami4-mapper: Add Konami4 MegaROM mapper support with CLI flags and ROM building
-- mtf-enhancements: Add MTF window-copy and screen page support for tile-based games
-- optimize-kernel-space: Optimize Z80 kernel routines to free space and fix identified bugs
+- [add-konami4-mapper] Add Konami4 MegaROM mapper support with CLI flags and ROM building
+- [mtf-enhancements] Add MTF window-copy and screen page support for tile-based games
+- [set-page-screen4] Add SET PAGE support for screen 4 compatibility
+- [extend-kernel-optimizations] Extend kernel space optimizations for additional byte savings
+- [implement-double-via-float-float] Implement double precision operations via float emulation
+- [kernel-call-indirection] Add kernel call indirection support for cross-page dispatch
+- [disable-unused-90-support-code] Disable unused 90_support.asm code paths for kernel size reduction
+- [wishlist] Collect and track feature requests and future enhancements
 
-## [1.0.0.0] - 2026-06-19
+## [1.0.1.0] - 2026-06-22
 
 ### Added
-
-- File handling support implementation (US-007).
-- Spec migration to OpenSpec format.
-- Changelog standardized to Keep a Changelog format.
-- Windows Unicode argv support via `__wargv` to UTF-8 conversion on program startup.
-- `--` (end-of-options) support in CLI parser for filenames starting with `-`.
-- `SET TILE PATTERN` buffer form with 4-integer array and bank parameter.
-- `GET TILE PATTERN` with bank parameter (former stub now implemented).
-- Z80 kernel bulk LDIRVM/LDIRMV routines for `get_tile_pattern` / `set_tile_pattern_buffer`.
-- `SET TILE COLOR` all syntax variants: inline FC/BC, per-row FC array (with/without BC array), and buffer form (`SET TILE COLOR <n>, <4-int-array> [, <bank>]`), with bank parameter support (0-2 for individual banks, 3 or omitted for all banks).
-- `GET TILE COLOR` with bank parameter: `GET TILE COLOR <n>, <4-int-array> [, <bank>]` with LDIRMV read via `get_tile_color` (replaces stub).
-- Z80 kernel routines for `set_tile_color_buf` (3-pass LDIRVM for bank=all) and `get_tile_color` with screen mode validation.
-- Unit and integration tests for all SET/GET TILE COLOR syntax forms.
-- `SET TILE FLIP <n>, <dir>[, <bank>]` with 3 directions (0=horizontal, 1=vertical, 2=both) and optional bank parameter (0-2 specific, 3=all).
-- `SET TILE ROTATE <n>, <dir>[, <bank>]` with 3 directions (0=left, 1=right, 2=180) and optional bank parameter.
-- Screen 2 validation (returns early on screen >= 5).
-- Reuses existing sprite flip/rotate Z80 routines (`binaryReverseA`, `blockRotateL`, `blockRotateR`) for 8-byte tile blocks.
-- Unit parser, compiler, and integration tests for all flip/rotate syntax forms.
+- Kernel regression test infrastructure (`make test-kernel`) with ROM binary integrity validation
 
 ### Changed
-
-- Magic constants in RAM percentage calculation replaced with named constants.
-- Platform detection normalized from `#ifdef Win` to standard `#ifdef _WIN32`.
-- Removed dead includes (`<malloc.h>`, `<math.h>`) from `main.cpp`.
+- Compact player idle-state initialization with sequential HL writes in 33_player.asm
+- Consolidate 4 consecutive `ld (ENDPRG+n),a` zero-stores with inc-chain in 20_runtime.asm
+- Remove redundant `push de`/`pop de` guard in `cmd_preflight_disk`
+- Remove duplicate `ld a, (STARTUP_CFG_FILEIO)` load in `run_user_basic_code_on_rom`
+- Remove redundant `xor a` in `resource.address`
+- Restructure wrapper routine jump table from 126-entry `jp` to word-pointer dispatch (saves ~120 bytes)
 
 ### Fixed
+- Fix double-GICINI call in `cmd_mute` (replace `jp GICINI` with `ret`)
+- Fix MegaROM mode restore in `verify.slots.test.ram` (save flags, write 0 to port 0x8E)
+- Fix missing carry clear before `sbc hl,de` in `cmd_fmaxfiles.set_heap_size`
+- Fix hardcoded 255-byte copy in `resource.get_data` (cap at actual resource size)
 
-- Uninitialized `vscode` member causing "VSCode already initialized" error on Windows.
-- `pathExists()` on Windows: replaced stub with `GetFileAttributesA`.
-- `-?` help option removed due to glob expansion risk in POSIX shells.
-- `set_tile_flip` / `set_tile_rotate`: direction in HL was clobbered by VRAM address operations (`get_tile_vram_addr` + `set_tile.copy`), causing all directions to behave as direction=2 (both). Fixed by saving HL on stack before VRAM ops.
-- `SET TILE FLIP` / `SET TILE ROTATE` with 3 params: bank evaluation (`evalExpression`) overwrote HL (direction) before the call. Fixed by saving HL on stack before bank evaluation.
-- `set_tile_rotate` left/right: destination buffer was `STRBUF+32` (sprite size) causing rotation output to be written past the tile data while source data was shifted to zero. Fixed by backing up tile to `STRBUF+8` and rotating from backup.
+### Removed
+- Remove fully commented-out BDOS fallback block from 34_file_handling.asm
+- Remove commented-out `VDP_wait` routine from 60_bios_helpers.asm
+- Remove dead `inc de` in `XBASIC_INIT` function key loop
+- Remove dead `ld a, 2` in `cmd_finput` state machine
 
-[Unreleased]: https://github.com/amaurycarvalho/msxbas2rom/compare/v1.0.0.0...HEAD
-[1.0.0.0]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.0.0.0
+[Unreleased]: https://github.com/amaurycarvalho/msxbas2rom/compare/v1.0.1.0...HEAD
+[1.0.1.0]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.0.1.0
 
 See [CHANGELOG Archive](CHANGELOG-ARCHIVE.md) for older releases.
