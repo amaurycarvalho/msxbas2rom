@@ -32,8 +32,5 @@ install -m 0755 msxbas2rom %{buildroot}/usr/bin/msxbas2rom
 /usr/bin/msxbas2rom
 
 %changelog
-* Wed Apr 22 2026 Amaury Carvalho <amauryspires@gmail.com>
-- Release 1.0.0.0: File handling support implementation (US-007)
-
-* Mon Feb 11 2019 Amaury Carvalho <amauryspires@gmail.com>
-- Initial release
+* Sun Jun 21 2026 Amaury Carvalho <amauryspires@gmail.com>
+- Release 1.0.0.0: File handling support, tile command enhancements, cross-platform fixes, and OpenSpec migration

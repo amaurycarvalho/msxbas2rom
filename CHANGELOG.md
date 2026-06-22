@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 with a MAJOR.MINOR.PATCH.BUILD scheme.
 
+## [Unreleased]
+
+### Added
+- add-konami4-mapper: Add Konami4 MegaROM mapper support with CLI flags and ROM building
+- mtf-enhancements: Add MTF window-copy and screen page support for tile-based games
+- optimize-kernel-space: Optimize Z80 kernel routines to free space and fix identified bugs
+
 ## [1.0.0.0] - 2026-06-19
 
 ### Added

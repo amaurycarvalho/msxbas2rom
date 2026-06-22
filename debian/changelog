@@ -1,20 +1,5 @@
-msxbas2rom (1.0.0.0-2) bionic; urgency=low
-
-  * SET TILE FLIP and SET TILE ROTATE commands with optional bank parameter.
-  * Bug fix: direction parameter was clobbered by VRAM address operations.
-  * Bug fix: bank parameter was overwriting direction in 3-param compiler path.
-  * Bug fix: tile rotation used sprite destination offset (STRBUF+32) instead of tile offset (STRBUF).
-
- -- Amaury Carvalho <amauryspires@gmail.com>  Thu, 19 Jun 2026 18:00:00 -0300
-
-msxbas2rom (1.0.0.0-1) bionic; urgency=low
-
-  * SET/GET TILE COLOR with all syntax variants (inline FC/BC, arrays, buffer form, bank parameter support)
-
- -- Amaury Carvalho <amauryspires@gmail.com>  Thu, 19 Jun 2026 11:00:00 -0300
-
 msxbas2rom (1.0.0.0-0) bionic; urgency=low
 
-  * Release 1.0.0.0: File handling support implementation (US-007)
+  * Release 1.0.0.0: File handling support, tile command enhancements, cross-platform fixes, and OpenSpec migration
 
- -- Amaury Carvalho <amauryspires@gmail.com>  Wed, 22 Apr 2026 12:37:27 -0300
+ -- Amaury Carvalho <amauryspires@gmail.com>  Sun, 21 Jun 2026 18:00:00 -0300
