@@ -38,3 +38,4 @@ MSX BASIC's `subtype_double_decimal` currently occupies 3 bytes and uses the sam
 - **Z80 writer**: `src/infrastructure/kernel/z80.{h,cpp}` (new opcode helpers if needed for register shuffling)
 - **Tests**: `tests/unit/src/test_double.cpp` (unit), `tests/integration/MATH/` (new .bas integration tests)
 - **Build**: No kernel ASM modifications (inline code generation approach); incremental compilation preserved
+- Release 1.3.0.0

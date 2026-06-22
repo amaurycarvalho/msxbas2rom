@@ -27,4 +27,4 @@ The current CMD MTF implementation supports only full-screen map copies with rel
 - `src/infrastructure/kernel/asm/src/header.symbols.asm` — new workarea symbols
 - `tests/unit/src/test_compiler.cpp` — extended MTF parameter tests
 - `tests/integration/mtf/mtf5.bas` — window-copy integration test
-- Release 1.1.0.0
+- Release 1.2.0.0

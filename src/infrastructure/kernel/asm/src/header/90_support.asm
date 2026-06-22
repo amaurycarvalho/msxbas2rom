@@ -57,34 +57,9 @@ RG23SAV	EQU	0FFF6H
 RG25SAV	EQU	0FFFAH
 RG26SAV	EQU	0FFFBH
 
+; Desativado: jump table de erros BASIC + I4E28 erro de modo de tela (J4DFA-J4E25, I4E28: 13 labels)
 J4DFA:
-J4E07:	LD	E,4
-	DEFB	001H
-J4E0A:	LD	E,12
-	DEFB	001H
-J4E0D:	LD	E,5
-	DEFB	001H
-J4E10:	LD	E,13
-	DEFB	001H
-J4E13:	LD	E,16
-	DEFB	001H
-J4E16:	LD	E,2
-	DEFB	001H
-J4E19:	LD	E,8
-	DEFB	001H
-J4E1C:	LD	E,1
-	DEFB	001H
-J4E1F:	LD	E,7
-	DEFB	001H
-J4E22:	LD	E,10
-	DEFB	001H
-J4E25:	LD	E,9
-	DEFB	001H
-I4E28:	LD	E,3
-	LD	HL,MODE
-	RES	4,(HL)			; 212 lines mode
-	LD	IX,M406F
-	JP	CALBAS			; BASIC error
+	DEFS	47,0x00
 
 ;PAINT_FIX.1:              ; same as PNTINI on bios
 ;    LD	(BRDATR),A
@@ -1221,24 +1196,9 @@ J7169:	OUT	(C),A
 	DJNZ	J7169			; clear remainer of sprite defintion
 	RET
 
-;	  Subroutine get sprite definition handler
-;	     Inputs  ________________________
-;	     Outputs ________________________
-
-C716E:	CALL	CALPAT
-	CALL	C70AB			; setup VDP for VRAM read
-	CALL	GSPSIZ
-	LD	B,8
-	JR	NC,J717D
-	LD	B,32
-J717D:	LD	HL,BUF
-	PUSH	HL
-	LD	(HL),B			; string length
-	INC	HL
-J7183:	INI
-	JR	NZ,J7183
-	POP	HL
-	RET
+; Desativado: get sprite definition handler (C716E, J717D, J7183: 3 labels)
+C716E:
+	DEFS	27,0x00
 
 ;	  Subroutine change sprite color handler
 ;	     Inputs  ________________________
@@ -1892,190 +1852,9 @@ J7510:	CALL	XBASIC_PRINT_STR			; print string
 	RST	18H
 	RET
 
-;	  Subroutine print string and get numeric input
-;	     Inputs  ________________________
-;	     Outputs ________________________
-
-I7517:	CALL	XBASIC_PRINT_STR			; print string
-
-;	  Subroutine get numeric input
-;	     Inputs  ________________________
-;	     Outputs ________________________
-
-J751A:	CALL	QINLIN
-	JP	C,J4DFA			; abort, end program
-	EX	DE,HL
-	INC	DE
-	CALL	C7D18			; convert numeric string to float
-	LD	A,(DE)
-	AND	A			; at end of string ?
-	RET	Z			; yep, quit
-	LD	HL,I7530
-	CALL	XBASIC_PRINT_STR			; print string
-	JR	J751A			; try again
-
-I7530:	DEFB	18
-	DEFB	"?Redo from start",13,10
-
-;	  Subroutine print string and get string input
-;	     Inputs  ________________________
-;	     Outputs ________________________
-
-I7543:	CALL	XBASIC_PRINT_STR			; print string
-
-;	  Subroutine get string input
-;	     Inputs  ________________________
-;	     Outputs ________________________
-
-I7546:	CALL	QINLIN
-	JP	C,J4DFA			; abort, end program
-	INC	H
-	LD	E,L
-	LD	D,H
-	INC	DE
-	LD	BC,256
-	LDDR
-	INC	HL
-	LD	B,0FFH
-J7558:	INC	B
-	INC	DE
-	LD	A,(DE)
-	AND	A
-	JR	NZ,J7558
-	LD	(HL),B
-	RET
-
-; read string input handler
-
-I7560:	CALL	C75BE			; skip to the start of DATA
-J7563:	LD	A,(HL)
-	INC	HL
-	CP	" "
-	JR	Z,J7563			; skip spaces
-	LD	DE,BUF+1
-	LD	B,0			; current string length = 0
-	CP	'"'			; string indicator ?
-	JR	Z,J7593			; yep,
-	DEC	HL
-J7573:	LD	A,(HL)
-	AND	A			; end of line ?
-	JR	Z,J758B			; yep, end of input
-	CP	":"			; statement seperator ?
-	JR	Z,J758B			; yep, end of input
-	CP	","			; DATA item seperator ?
-	JR	Z,J758B			; yep, end of input
-	LD	(DE),A
-	INC	DE
-	INC	HL
-	INC	B
-	JR	J7573			; next character
-
-J7585:	INC	HL
-	LD	A,(HL)
-	CP	" "
-	JR	Z,J7585
-J758B:	LD	(DATPTR),HL		; update current DATA pointer
-	LD	HL,BUF
-	LD	(HL),B			; set string length
-	RET
-
-J7593:	LD	A,(HL)
-	AND	A			; end of line ?
-	JR	Z,J758B			; yep, end of input
-	CP	'"'			; string indicator ?
-	JR	Z,J7585			; yep, end of string
-	LD	(DE),A
-	INC	DE
-	INC	HL
-J759E:	INC	B
-	JR	J7593			; next character
-
-; read numeric input handler
-
-I75A1:	CALL	C75BE			; skip to the start of DATA
-	EX	DE,HL
-	CALL	C7D18			; convert numeric string to float
-	LD	(DATPTR),DE		; save DATA pointer
-	LD	A,(DE)
-	AND	A			; end of line ?
-	RET	Z			; yep, quit
-	CP	":"			; end of statement ?
-	RET	Z			; yep, quit
-	CP	","			; next data item ?
-	RET	Z			; yep, quit
-	LD	HL,(DATLIN)
-	LD	(CURLIN),HL		; update current BASIC line number (generated error contains the current line number)
-	JP	J4E16			; BASIC error: syntax error
-
-;	  Subroutine skip to the start of DATA
-;	     Inputs  ________________________
-;	     Outputs ________________________
-
-C75BE:	LD	HL,(DATPTR)		; current DATA pointer
-	LD	A,(HL)
-	CP	","
-	JR	NZ,J75DC
-	INC	HL
-	RET
-
-J75C8:	XOR	A
-	LD	B,0FFH
-	CPIR				; skip to end of line
-J75CD:	LD	A,(HL)
-	INC	HL
-	OR	(HL)			; end of program ?
-	JP	Z,J4E07			; yep, BASIC error: out of data
-	INC	HL
-	LD	E,(HL)
-	INC	HL
-	LD	D,(HL)			; line number
-	LD	(DATLIN),DE		; update current DATA line number
-	INC	HL
-
-J75DC:	LD	B,0			; reset in a string flag
-J75DE:	LD	A,(HL)
-	INC	HL
-	AND	A			; end of line ?
-	JR	Z,J75CD			; yep, to the next line
-	CP	84H			; DATA token ?
-	JR	NZ,J75EA		; nope,
-	INC	B
-	DEC	B			; string indicator ?
-	RET	Z			; nope, quit
-J75EA:	CP	'"'			; start of DATA string ?
-	JR	NZ,J75F2		; nope,
-	INC	B
-	DJNZ	J75DC			; in a string, continue to next character
-	INC	B			; B=1, set in a sting flag
-J75F2:	CP	0FFH			; function token ?
-	INC	HL
-	JR	Z,J75DE			; yep, continue to next character
-	DEC	HL
-	CP	8FH			; REM token ?
-	JR	Z,J75C8			; yep, skip line and continue
-	CP	1FH+1			; special number token ?
-	JR	NC,J75DE		; nope, continue to next character
-	CP	0BH			; unknown token ?
-	JR	C,J75DE			; yep, continue to next character
-	CP	0FH			; integer 11-255 ?
-	LD	C,1
-	JR	Z,J761C			; yep, skip next byte
-	INC	C
-	JR	C,J761C			; octal number, hexadecimal number, linepointer or linenumber, skip next 2 bytes
-	CP	1BH			; integer 0 - integer 9 ? (?? BUG: should be CP 1CH, because of integer 10)
-	JR	C,J75DE			; yep, continue to next character
-	SUB	1CH			; integer ?
-	JR	Z,J761C			; yep, skip next 2 bytes
-	DEC	A			; single real ?
-	LD	C,4
-	JR	Z,J761C			; yep, skip next 4 bytes
-	LD	C,8			; double real, skip next 8 bytes
-J761C:	LD	A,L
-	ADD	A,C
-	LD	L,A
-	JR	NC,J75DE
-	INC	H
-	JR	J75DE			; continue to next character
+; Desativado: rotinas de INPUT (I7517-C75BE + J761C: 22 labels de prompt numérico/string, busca de DATA, "?Redo from start")
+I7517:
+	DEFS	269,0x00
 
 ;	  Subroutine multiply
 ;	     Inputs  ________________________
@@ -2216,13 +1995,9 @@ J76C0:	BIT	7,H
 J76C9:	LD	HL,(SWPTMP+2)
 	JR	J76BA
 
-;	  Subroutine remainer of divide integer
-;	     Inputs  ________________________
-;	     Outputs ________________________
-
-C76CE:	CALL	C7643			; divide
-	EX	DE,HL
-	RET
+; Desativado: remainder de divisão inteira (C76CE: 1 label)
+C76CE:
+	DEFS	5,0x00
 
 ;	  Subroutine subtract floats
 ;	     Inputs  ________________________
@@ -2597,19 +2372,9 @@ I78BF:	PUSH	DE
 	CALL	C7748			; multipy floats
 	JP	J7AA8			; EXP handler
 
-;	  Subroutine convert unsigned integer to float
-;	     Inputs  HL = unsigned integer
-;	     Outputs B:HL = float
-
-C78CD:	BIT	7,H			; positive integer ?
-	PUSH	AF
-	RES	7,H			; to postive
-	CALL	C78DF			; convert integer to float
-	POP	AF
-	RET	Z			; positive, quit
-	LD	C,90H
-	LD	DE,0			; 3.277E+04
-	JP	C76D7			; add floats
+; Desativado: conversão unsigned int para float (C78CD: 1 label)
+C78CD:
+	DEFS	18,0x00
 
 ;	  Subroutine convert integer to float
 ;	     Inputs  HL = integer
@@ -2742,12 +2507,9 @@ C7958:	CALL	C7966			; compare floats
 	INC	HL			; bigger, return false
 	RET
 
-;	  Subroutine float <=>
-;	     Inputs  B:HL = float1, C:DE = float2
-;	     Outputs HL = result
-
-C7962:	LD	HL,-1			; return true
-	RET
+; Desativado: float <=> trivial (C7962: 1 label)
+C7962:
+	DEFS	4,0x00
 
 ;	  Subroutine compare floats
 ;	     Inputs  B:HL = float1, C:DE = float2
@@ -3887,7 +3649,7 @@ J7F37:	POP	DE
 ;	     Outputs ________________________
 
 C7F40:	LD	DE,(NULBUF)
-	LD	C,(HL)			; size of string
+C7F44:	LD	C,(HL)			; size of string
 	LD	B,0
 	INC	BC			; include size byte
 	LDIR
@@ -3992,88 +3754,9 @@ J7F84:	LD	A,C
 	JR	Z,J7F84			; equal, next character
 	RET
 
-;	  Subroutine concat strings
-;	     Inputs  NULBUF = string1, HL = string2
-;	     Outputs BUF = result string
-
-C7F99:	LD	DE,BUF
-	LD	BC,(NULBUF)
-	AND	A
-	PUSH	HL
-	SBC	HL,DE			; string2 in BUF ?
-	POP	HL
-	JR	Z,J7FD2			; yep,
-	LD	A,(BC)			; size of string1
-	ADD	A,(HL)			; size of string2
-	JR	NC,J7FAD
-	LD	A,255			; concat string to 255 characters
-J7FAD:	LD	(DE),A			; result string size
-	INC	DE
-	PUSH	HL
-	LD	A,(BC)			; size of string1
-	PUSH	AF
-	AND	A			; empty string1 ?
-	JR	Z,J7FBD			; yep, skip copy string1
-	INC	BC
-	LD	L,C
-	LD	H,B
-	LD	C,A
-	LD	B,0
-	LDIR				; copy string1
-J7FBD:	POP	AF			; size of string1
-	POP	HL			; string2
-	LD	B,A
-	LD	A,(HL)			; size string2
-	JR	NC,J7FC5		; string2 not limited
-	LD	A,B
-J7FC4:	CPL
-J7FC5:	AND	A			; empty string2 ?
-	JR	Z,J7FCE			; yep, skip copy string2
-	INC	HL
-	LD	C,A
-	LD	B,0
-	LDIR				; copy string2
-J7FCE:	LD	HL,BUF			; string in BUF
-	RET
-
-J7FD2:	PUSH	BC
-	PUSH	HL
-	LD	E,C
-	LD	D,B
-	LD	A,(DE)
-	CP	(HL)
-	JR	NC,J7FDB
-	LD	A,(HL)
-J7FDB:	LD	B,A
-	INC	B
-J7FDD:	LD	C,(HL)
-	LD	A,(DE)
-	LD	(HL),A
-	LD	A,C
-	LD	(DE),A
-	INC	DE
-	INC	HL
-	DJNZ	J7FDD
-	POP	BC
-	LD	A,(BC)
-	LD	L,A
-	LD	H,0
-	INC	HL
-	ADD	HL,BC
-	EX	DE,HL
-	POP	HL
-	ADD	A,(HL)
-	JR	C,J7FF6
-	LD	(BC),A
-	LD	A,(HL)
-	JR	J7FC5
-
-J7FF6:	LD	A,(BC)
-	PUSH	AF
-	LD	A,0FFH
-	LD	(BC),A
-	POP	AF
-	JR	J7FC4
+; Desativado: concatenação de strings (C7F99, J7FAD-J7FF6: 10 labels)
+C7F99:
+	DEFS	101,0x00
 
 BASIC_KUN_END_FILLER:
 	DEFS	08000H-$,0FFH

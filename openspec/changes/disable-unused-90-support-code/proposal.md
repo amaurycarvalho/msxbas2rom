@@ -36,3 +36,4 @@ Nenhuma — os requisitos de comportamento não mudam. Apenas código morto é d
 - **Símbolos exportados**: Inalterados (`header.symbols.asm` sem mudanças)
 - **Compilação**: `header.asm` compila normalmente (DEFS é suportado pelo Pasmo)
 - **Runtime**: Zero impacto funcional — código desativado nunca era executado
+- Release 1.0.1.0

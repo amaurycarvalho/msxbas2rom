@@ -30,3 +30,4 @@ msxbas2rom currently supports ASCII8 and KonamiSCC MegaROM mappers but lacks Kon
 - **CLI layer**: `src/cli/options/build_options_setup.cpp` (new flags), `src/cli/main.cpp` (status messages), `src/cli/appinfo.h` (help text)
 - **Tests**: `tests/unit/src/test_options.cpp` and `tests/unit/src/test_rom.cpp` (unit), `tests/integration/Makefile` (integration)
 - **No changes** to kernel assembly, Z80 opcodes, or ROM layout logic
+- Release 1.1.0.0

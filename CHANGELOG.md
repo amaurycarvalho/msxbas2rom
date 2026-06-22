@@ -14,6 +14,7 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - [mtf-enhancements] Add MTF window-copy and screen page support for tile-based games
 - [set-page-screen4] Add SET PAGE support for screen 4 compatibility
 - [implement-double-via-float-float] Implement double precision operations via float emulation
+- [extend-kernel-optimizations] Extend kernel optimizations with additional size and speed improvements
 - [wishlist] Collect and track feature requests and future enhancements
 
 ## [1.0.1.0] - 2026-06-22
@@ -41,6 +42,8 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - Update ROM builder to write only second half (`bin_header_bin + 0x4000`)
 - Update build size check from 16384 to 32768 byte limit
 - Disable 58 unreachable code labels in `90_support.asm` with `DEFS` fillers (preserving binary offsets)
+- Redirect 80 XBASIC_* EQUs from hardcoded hex addresses to native Z80 labels (`C`/`I`/`J` convention) in `00_constants_and_workarea.asm`
+- Add `C7F44` mid-routine entry point label for `XBASIC_COPY_STRING` in `90_support.asm`
 - Collapse `intCompareGT`/`intCompareGE` into delegated comparisons via operand swap (18 bytes saved)
 - Replace `sla a` sequences with `add a,a` in `cmd_setfnt`, `cmd_play`, `cmd_page`, `cmd_mtf` (14 bytes saved)
 - Replace `ld (MV_DPTR),hl`/`ld hl,(MV_DPTR)` with `push hl`/`pop hl` (4 bytes saved)
@@ -52,6 +55,7 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - Fix MegaROM mode restore in `verify.slots.test.ram` (save flags, write 0 to port 0x8E)
 - Fix missing carry clear before `sbc hl,de` in `cmd_fmaxfiles.set_heap_size`
 - Fix hardcoded 255-byte copy in `resource.get_data` (cap at actual resource size)
+- Fix duplicate `WriteParamBCD` EQU conflict with existing label causing compilation error
 
 ### Removed
 
