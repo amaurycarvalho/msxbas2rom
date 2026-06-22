@@ -33,4 +33,4 @@ install -m 0755 msxbas2rom %{buildroot}/usr/bin/msxbas2rom
 
 %changelog
 * Mon Jun 22 2026 Amaury Carvalho <amauryspires@gmail.com>
-- Release 1.0.1.0: Kernel space optimization, wrapper dispatch restructure, and bug fixes
+- Release 1.0.1.0: Full kernel call indirection, virtual dispatch table, extended kernel optimizations, dead code cleanup, wrapper dispatch restructure, and bug fixes

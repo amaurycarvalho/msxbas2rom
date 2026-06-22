@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Defines the word-pointer dispatch table mechanism in the Z80 kernel that replaces the linear `jp` jump table at `wrapper_routines_map_table` (0x4102). This enables index-based dispatch from C compiler code to kernel wrapper routines, saving ROM space for new kernel features.
+Defines the word-pointer dispatch table mechanism in the Z80 kernel that replaces the linear `jp` jump table at `wrapper_routines_map_table` (0x0000 in the virtual first half of header.bin). This enables index-based dispatch from C compiler code to kernel wrapper routines, saving ROM space for new kernel features.
 
 ## Requirements
 
 ### Requirement: Wrapper routines are dispatched via word-pointer table
 
-The Z80 kernel wrapper routine entry point at `wrapper_routines_map_table` (0x4102) SHALL use a word-pointer dispatch table instead of a linear `jp` jump table. A dispatcher routine SHALL accept an entry index in HL and jump to the corresponding routine address from the table.
+The Z80 kernel wrapper routine entry point at `wrapper_routines_map_table` (0x0000 in the virtual first half of header.bin) SHALL use a word-pointer dispatch table instead of a linear `jp` jump table. A dispatcher routine SHALL accept an entry index in HL and jump to the corresponding routine address from the table.
 
 #### Scenario: Dispatcher resolves entry by index
 
@@ -20,18 +20,52 @@ The Z80 kernel wrapper routine entry point at `wrapper_routines_map_table` (0x41
 - **WHEN** the kernel is compiled after the restructure
 - **THEN** the `wrapper_routines_map_table` region contains 126 word-pointer (`dw`) entries, each 2 bytes
 
-#### Scenario: Kernel ROM space is saved
+### Requirement: compiler_hooks.h SHALL define dispatch table at logical address 0x0000
 
-- **WHEN** the kernel is compiled after the restructure
-- **THEN** the total size of the wrapper dispatch region (126 word pointers) SHALL be less than 378 bytes (the size of the original 126-entry `jp` table)
+The `compiler_hooks.h` header SHALL define `def_wrapper_routines_map_table` as `0x0000` (previously `0x4102`), reflecting the table's new location in the virtual first half of `header.bin`.
+
+#### Scenario: Table base address is 0x0000
+
+- **WHEN** `def_wrapper_routines_map_table` is referenced in C++ code
+- **THEN** its value SHALL be `0x0000`
+
+### Requirement: getKernelCallAddr SHALL handle two distinct address ranges
+
+The `getKernelCallAddr()` function SHALL handle two separate ranges:
+
+- **0x0000-0x3FFF (virtual table range)**: When the address falls within the dispatch table bounds (`def_wrapper_routines_map_table` to `def_wrapper_routines_map_table + DISP_ENTRIES * 2`), the function SHALL read 2 bytes from `bin_header_bin[address]` (no `- 0x4000` offset) and return the resulting 16-bit kernel address.
+
+- **0x4000-0x7FFF (kernel range)**: When the address is within the kernel page, the function SHALL use `bin_header_bin[address]` directly (since the kernel starts at binary offset 0x4000, which equals its logical address). If the byte at that position is `0xC3` (JP opcode), the function SHALL follow the jump target.
+
+#### Scenario: Table entry resolved from 0x0000-0x3FFF range
+
+- **WHEN** `getKernelCallAddr()` receives an address in the range `0x0000` to `0x0000 + DISP_ENTRIES * 2 - 1`
+- **THEN** it SHALL compute `address` directly as the `bin_header_bin` index (no offset subtraction) and return `bin_header_bin[address] | (bin_header_bin[address + 1] << 8)`
+
+#### Scenario: Kernel address resolved from 0x4000-0x7FFF range
+
+- **WHEN** `getKernelCallAddr()` receives an address in the range `0x4000` to `0x7FFF`
+- **THEN** it SHALL use `bin_header_bin[address]` directly (no `- 0x4000` offset) to read kernel bytes
+
+#### Scenario: Non-table, non-kernel addresses pass through unchanged
+
+- **WHEN** `getKernelCallAddr()` receives an address outside both the table range and the kernel range
+- **THEN** it SHALL return the address unchanged
+
+### Requirement: MegaROM addresses SHALL resolve via direct index
+
+In `compiler.cpp`, the MR_CALL, MR_JUMP, and MR_GET_DATA target addresses SHALL be resolved directly from the dispatch table using `bin_header_bin[DISP_MR_xxx * 2]`, without the `def_wrapper_routines_map_table - 0x4000` offset prefix.
+
+#### Scenario: MR target resolved by index
+
+- **WHEN** `compiler.cpp` resolves an MR target address (e.g., `DISP_MR_CALL`)
+- **THEN** the expression SHALL be `bin_header_bin[DISP_MR_CALL * 2] | (bin_header_bin[DISP_MR_CALL * 2 + 1] << 8)` with no additional offset
 
 ### Requirement: C compiler emits dispatch sequence via unified addKernelCall
 
 The C++ compiler SHALL emit all wrapper routine calls through the unified `addKernelCall(DISP_xxx)` helper, which resolves the target address by calling `getKernelCallAddr()` to look up the `dw` dispatch table entry. There SHALL be no separate `addKernelDispatch()` emission method.
 
 For conditional calls (e.g., `CALL NZ`), the compiler SHALL provide `addKernelCallNZ(uint8_t index)` and equivalent variants (`addKernelCallZ`, `addKernelCallC`, `addKernelCallNC`) that resolve the target through the `dw` table and emit the corresponding conditional `CALL` instruction.
-
-For MegaROM inline byte-patching in `compiler.cpp` (MR_CALL, MR_JUMP, MR_GET_DATA), the target addresses SHALL be resolved directly from the `dw` table via `bin_header_bin` lookup at compile time — no dedicated `addMRKernelCall` helper is needed because the byte-patching code writes raw address values, not opcodes.
 
 #### Scenario: Unified dispatch call
 
@@ -42,16 +76,6 @@ For MegaROM inline byte-patching in `compiler.cpp` (MR_CALL, MR_JUMP, MR_GET_DAT
 
 - **WHEN** the compiler emits a conditional call to a wrapper routine via `addKernelCallNZ(DISP_xxx)`
 - **THEN** `getKernelCallAddr()` SHALL resolve the target from the `dw` table and the compiler SHALL emit `CALL NZ, <resolved_target>`
-
-#### Scenario: getKernelCallAddr resolves through dw table
-
-- **WHEN** `compiler_code_optimizer.getKernelCallAddr()` resolves a wrapper dispatch address
-- **THEN** it SHALL read the 2-byte word pointer from the `dw` table entry at the given offset (instead of checking for the `0xC3` `jp` opcode), compute `offset = address - 0x4000`, and return `bin_header_bin[offset] | (bin_header_bin[offset + 1] << 8)`
-
-#### Scenario: MegaROM addresses resolved inline
-
-- **WHEN** `compiler.cpp` needs the target address of MR_CALL, MR_JUMP, or MR_GET_DATA for binary patching
-- **THEN** the address SHALL be resolved directly from `bin_header_bin[def_wrapper_routines_map_table - 0x4000 + DISP_MR_xxx * 2]` without a dedicated helper method
 
 ### Requirement: compiler_hooks.h defines DISP_ prefix dispatch indexes
 

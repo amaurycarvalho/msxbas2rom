@@ -1,5 +1,5 @@
 msxbas2rom (1.0.1.0-0) bionic; urgency=low
 
-  * Release 1.0.1.0: Kernel space optimization, wrapper dispatch restructure, and bug fixes
+  * Release 1.0.1.0: Full kernel call indirection, virtual dispatch table, extended kernel optimizations, dead code cleanup, wrapper dispatch restructure, and bug fixes
 
  -- Amaury Carvalho <amauryspires@gmail.com>  Mon, 22 Jun 2026 09:00:00 -0300

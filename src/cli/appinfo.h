@@ -80,7 +80,7 @@ Version history
 
 ## [1.0.1.0] - 2026-06-22
 
-Release 1.0.1.0: Kernel space optimization, wrapper dispatch restructure, and bug fixes.
+Release 1.0.1.0: Full kernel call indirection, virtual dispatch table, extended kernel optimizations, dead code cleanup, wrapper dispatch restructure, and bug fixes.
 
 See full changelog:
 https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.0.1.0
