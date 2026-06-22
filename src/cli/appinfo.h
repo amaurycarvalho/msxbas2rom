@@ -9,13 +9,14 @@
 
 /***
  * @brief Compiler current version
- * @warning Changelog documentation is automated by the openspec-changelog skill.
- * Run /opsx-changelog after archiving changes to update all files.
- * Do NOT manually edit CHANGELOG.md, debian/changelog, rpm spec, or info_history.
- * @remark Run the code below to create a new release on github:
+ * @warning Changelog documentation is automated by the openspec-changelog
+ * skill. Run /opsx-changelog after archiving changes to update all files. Do
+ * NOT manually edit CHANGELOG.md, debian/changelog, rpm spec, or info_history.
+ * @remark Use /release-version skill to update app_version.
+ * When it's ready for publishing, use manually /release-push skill to create a
+ * new release on github or, alternatively, run the code below on terminal:
  * git tag -a v0.0.0.0 -m "Release 0.0.0.0" && git push origin --tags
- * git checkout -b release/v0.0.0.0
- * git push origin release/v0.0.0.0
+ * git checkout -b release/v0.0.0.0 && git push origin release/v0.0.0.0
  * git switch master
  */
 #define app_version "1.0.0.0"
