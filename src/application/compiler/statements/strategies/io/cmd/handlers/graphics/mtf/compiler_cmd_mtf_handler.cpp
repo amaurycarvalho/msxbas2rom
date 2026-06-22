@@ -85,7 +85,7 @@ bool CompilerCmdMtfHandler::execute(shared_ptr<CompilerContext> context,
     // bc = row/y position
     // a = map operation
     // call cmd_mtf
-    context->codeOptimizer->addKernelDispatch(DISP_cmd_mtf);
+    context->codeOptimizer->addKernelCall(DISP_cmd_mtf);
   }
 
   return context->compiled;

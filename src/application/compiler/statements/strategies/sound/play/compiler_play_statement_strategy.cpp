@@ -44,7 +44,7 @@ void CompilerPlayStatementStrategy::cmd_play(
     // pop hl
     cpu.addPopHL();
 
-    context->codeOptimizer->addKernelDispatch(DISP_XBASIC_PLAY);
+    context->codeOptimizer->addKernelCall(DISP_XBASIC_PLAY);
 
   } else {
     context->syntaxError("Invalid PLAY parameters");

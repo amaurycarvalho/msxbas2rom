@@ -14,7 +14,6 @@ int PadCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (action->lexeme->value != "PAD") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
 
   if (result[0] == Lexeme::subtype_single_decimal ||
@@ -26,7 +25,7 @@ int PadCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (result[0] == Lexeme::subtype_numeric) {
     // call cmd_pad
-    context->codeOptimizer->addKernelDispatch(DISP_cmd_pad);
+    context->codeOptimizer->addKernelCall(DISP_cmd_pad);
   } else
     result[0] = Lexeme::subtype_unknown;
 

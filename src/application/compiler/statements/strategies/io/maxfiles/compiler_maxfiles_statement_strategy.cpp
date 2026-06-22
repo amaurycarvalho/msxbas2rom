@@ -29,8 +29,7 @@ void CompilerMaxfilesStatementStrategy::cmd_fmaxfiles(
     // ld a, l
     cpu.addLdAL();
     // dispatch to cmd_fmaxfiles if not zero
-    cpu.addLdHL(def_wrapper_routines_map_table + DISP_cmd_fmaxfiles * 2);
-    cpu.addCallNZ(def_wrapper_routines_map_start);
+    context->codeOptimizer->addKernelCallNZ(DISP_cmd_fmaxfiles);
 
   } else {
     context->syntaxError("Empty MAXFILES assignment");

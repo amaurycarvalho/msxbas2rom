@@ -19,7 +19,7 @@ bool CompilerCmdWrtSprClrHandler::execute(shared_ptr<CompilerContext> context,
     // ld (DAC), hl
     cpu.addLdiiHL(def_DAC);
     // call cmd_wrtsprclr
-    context->codeOptimizer->addKernelDispatch(DISP_cmd_wrtsprclr);
+    context->codeOptimizer->addKernelCall(DISP_cmd_wrtsprclr);
 
   } else {
     context->syntaxError("CMD WRTSPRCLR syntax error");

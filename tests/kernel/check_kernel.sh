@@ -63,7 +63,7 @@ check_symbol() {
 check_symbol "ARKOS_PLAYER" "ARKOS_PLAYER"
 check_symbol "BASIC_KUN_START_FILLER" "BASIC_KUN_START_FILLER"
 check_symbol "BASIC_KUN_END_FILLER" "BASIC_KUN_END_FILLER"
-check_symbol "wrapper_routines_map_start" "wrapper_routines_map_start"
+check_symbol "wrapper_routines_map_table" "wrapper_routines_map_table"
 
 # 5. Check that BASIC_KUN_START_FILLER < ARKOS_PLAYER (there should be filler)
 echo ""

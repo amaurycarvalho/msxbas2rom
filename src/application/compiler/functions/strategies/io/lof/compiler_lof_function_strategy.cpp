@@ -16,7 +16,6 @@ int LofCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "LOF") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
 
   if (result[0] == Lexeme::subtype_single_decimal ||
@@ -31,7 +30,7 @@ int LofCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   // hl = file number
   // call cmd_flof
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_flof);
+  context->codeOptimizer->addKernelCall(DISP_cmd_flof);
 
   return Lexeme::subtype_numeric;
 }

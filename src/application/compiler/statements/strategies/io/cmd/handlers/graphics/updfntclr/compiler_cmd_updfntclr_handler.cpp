@@ -6,10 +6,8 @@
 
 bool CompilerCmdUpdFntClrHandler::execute(shared_ptr<CompilerContext> context,
                                           shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-
   // call cmd_updfntclr
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_updfntclr);
+  context->codeOptimizer->addKernelCall(DISP_cmd_updfntclr);
 
   return context->compiled;
 }

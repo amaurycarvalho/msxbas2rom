@@ -226,7 +226,18 @@ void CompilerCodeOptimizer::addByteOptimized(unsigned char byte) {
  */
 void CompilerCodeOptimizer::addKernelCall(unsigned int address) {
   auto& cpu = *context->cpu;
-  cpu.addCall(getKernelCallAddr(address));
+  if (address < DISP_ENTRIES) {
+    address = def_wrapper_routines_map_table + address * 2;
+    cpu.addCall(getKernelCallAddr(address));
+  } else
+    __throw_range_error("Invalid kernel call");
+}
+
+void CompilerCodeOptimizer::addKernelCallNZ(unsigned char index) {
+  auto& cpu = *context->cpu;
+  unsigned int target =
+      getKernelCallAddr(def_wrapper_routines_map_table + index * 2);
+  cpu.addCallNZ(target);
 }
 
 int CompilerCodeOptimizer::getKernelCallAddr(unsigned int address) {
@@ -243,12 +254,6 @@ int CompilerCodeOptimizer::getKernelCallAddr(unsigned int address) {
   }
 
   return result;
-}
-
-void CompilerCodeOptimizer::addKernelDispatch(unsigned char index) {
-  auto& cpu = *context->cpu;
-  cpu.addLdHL(def_wrapper_routines_map_table + index * 2);
-  cpu.addCall(def_wrapper_routines_map_start);
 }
 
 void CompilerCodeOptimizer::addLdHLmegarom() {

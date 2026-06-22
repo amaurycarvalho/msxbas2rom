@@ -238,7 +238,7 @@ void CompilerPutStatementStrategy::cmd_put_sprite(
 
     // call xbasic PUT SPRITE (in: ix=x, iy=y, d=color, a=sprite number,
     // h=pattern number, b=parameters flag (b11100000)
-    context->codeOptimizer->addKernelDispatch(DISP_XBASIC_PUT_SPRITE);
+    context->codeOptimizer->addKernelCall(DISP_XBASIC_PUT_SPRITE);
 
   } else {
     context->syntaxError("PUT SPRITE with empty parameters");
@@ -396,7 +396,7 @@ void CompilerPutStatementStrategy::cmd_put_tile(
     }
 
     //   call TileAddress   ; in hl=xy, out: hl
-    context->codeOptimizer->addKernelDispatch(DISP_tileAddress);
+    context->codeOptimizer->addKernelCall(DISP_tileAddress);
 
     if (has_tile) {
       // pop af

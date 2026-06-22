@@ -163,7 +163,7 @@ void CompilerLetStatementStrategy::cmd_let(
     cpu.addPopBC();
 
     // call VDP.set     ; VDP assignment (in: bc=data, hl=register)
-    context->codeOptimizer->addKernelDispatch(DISP_vdp_set);
+    context->codeOptimizer->addKernelCall(DISP_vdp_set);
 
   } else if (lexeme->value == "SPRITE$") {
     // cast

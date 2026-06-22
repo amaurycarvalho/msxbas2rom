@@ -8,7 +8,6 @@
 
 void CompilerWidthStatementStrategy::cmd_width(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<ActionNode> action;
   unsigned int t = context->current_action->actions.size();
@@ -21,7 +20,7 @@ void CompilerWidthStatementStrategy::cmd_width(
     expression.addCast(result_subtype, Lexeme::subtype_numeric);
 
     // call XBASIC WIDTH   ; xbasic WIDTH (in: l = size)
-    context->codeOptimizer->addKernelDispatch(DISP_XBASIC_WIDTH);
+    context->codeOptimizer->addKernelCall(DISP_XBASIC_WIDTH);
 
   } else {
     context->syntaxError("WIDTH syntax error");

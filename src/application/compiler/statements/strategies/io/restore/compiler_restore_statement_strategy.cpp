@@ -19,7 +19,7 @@ void CompilerRestoreStatementStrategy::cmd_restore(
     // ld hl, 0
     cpu.addLdHL(0x0000);
     // call xbasic_restore
-    context->codeOptimizer->addKernelDispatch(DISP_XBASIC_RESTORE);  // standard BASIC RESTORE statement
+    context->codeOptimizer->addKernelCall(DISP_XBASIC_RESTORE);  // standard BASIC RESTORE statement
 
   } else if (t == 1) {
     action = context->current_action->actions[0];
@@ -32,7 +32,7 @@ void CompilerRestoreStatementStrategy::cmd_restore(
       expression.addCast(result_subtype, Lexeme::subtype_numeric);
 
       // call restore
-      context->codeOptimizer->addKernelDispatch(DISP_XBASIC_RESTORE);  // standard BASIC RESTORE statement
+      context->codeOptimizer->addKernelCall(DISP_XBASIC_RESTORE);  // standard BASIC RESTORE statement
     }
 
   } else {

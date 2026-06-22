@@ -41,7 +41,7 @@ bool CompilerCmdPlyLoadHandler::execute(shared_ptr<CompilerContext> context,
   }
 
   // call cmd_plyload
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_plyload);
+  context->codeOptimizer->addKernelCall(DISP_cmd_plyload);
 
   return context->compiled;
 }

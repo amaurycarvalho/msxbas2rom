@@ -56,7 +56,7 @@ bool CompilerCmdPlySoundHandler::execute(shared_ptr<CompilerContext> context,
   }
 
   // call cmd_plysound
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_plysound);
+  context->codeOptimizer->addKernelCall(DISP_cmd_plysound);
 
   return context->compiled;
 }

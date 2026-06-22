@@ -12,12 +12,10 @@
 
 bool CompilerCmdPlyPlayHandler::execute(shared_ptr<CompilerContext> context,
                                         shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-
   context->akm = true;
 
   // call cmd_plyplay
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_plyplay);
+  context->codeOptimizer->addKernelCall(DISP_cmd_plyplay);
 
   return context->compiled;
 }

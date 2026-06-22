@@ -164,13 +164,6 @@ run_user_basic_code_on_rom.stack_margin_done:
 ; ROUTINES ENTRY MAP FOR EXTERNAL ACCESS (word-pointer dispatch table)
 ;---------------------------------------------------------------------------------------------------------
 
-wrapper_routines_map_start:
-  ld a, (hl)
-  inc hl
-  ld h, (hl)
-  ld l, a
-  jp (hl)
-
 wrapper_routines_map_table:
   dw castParamFloatInt
   dw cmd_clrkey

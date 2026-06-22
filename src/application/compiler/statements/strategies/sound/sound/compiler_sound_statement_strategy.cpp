@@ -37,7 +37,7 @@ void CompilerSoundStatementStrategy::cmd_sound(
           cpu.addPopAF();
 
           // call sound function
-          context->codeOptimizer->addKernelDispatch(DISP_XBASIC_SOUND);
+          context->codeOptimizer->addKernelCall(DISP_XBASIC_SOUND);
         }
       }
     }

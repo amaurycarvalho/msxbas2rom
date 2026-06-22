@@ -88,7 +88,7 @@ void CompilerOpenStatementStrategy::cmd_open(
   // bc = record length
   // a = file number
   // call cmd_fopen
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_fopen);
+  context->codeOptimizer->addKernelCall(DISP_cmd_fopen);
 }
 
 bool CompilerOpenStatementStrategy::execute(

@@ -13,7 +13,6 @@ int ResourceCompilerFunctionStrategy::execute(
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "RESOURCE") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
 
   // cast
@@ -21,7 +20,7 @@ int ResourceCompilerFunctionStrategy::execute(
   result[0] = Lexeme::subtype_numeric;
 
   // call usr0
-  context->codeOptimizer->addKernelDispatch(DISP_usr0);
+  context->codeOptimizer->addKernelCall(DISP_usr0);
 
   return result[0];
 }

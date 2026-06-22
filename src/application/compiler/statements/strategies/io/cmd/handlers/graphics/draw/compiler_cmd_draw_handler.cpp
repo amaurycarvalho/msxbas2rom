@@ -19,7 +19,7 @@ bool CompilerCmdDrawHandler::execute(shared_ptr<CompilerContext> context,
     // ld (DAC), hl
     cpu.addLdiiHL(def_DAC);
     // call cmd_draw
-    context->codeOptimizer->addKernelDispatch(DISP_cmd_draw);
+    context->codeOptimizer->addKernelCall(DISP_cmd_draw);
 
   } else {
     context->syntaxError("CMD DRAW syntax error");

@@ -6,10 +6,8 @@
 
 bool CompilerCmdMuteHandler::execute(shared_ptr<CompilerContext> context,
                                      shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-
   // call cmd_mute
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_mute);
+  context->codeOptimizer->addKernelCall(DISP_cmd_mute);
 
   return context->compiled;
 }

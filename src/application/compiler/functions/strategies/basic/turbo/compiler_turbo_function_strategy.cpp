@@ -18,12 +18,11 @@ int TurboCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   if (action->lexeme->value != "TURBO") return Lexeme::subtype_unknown;
 
   auto& cpu = *context->cpu;
-  auto& optimizer = *context->codeOptimizer;
 
   // ld a, 5
   cpu.addLdA(5);
   // CALL USR2
-  cpu.addCall(optimizer.getKernelCallAddr(DISP_usr2) + 1);
+  cpu.addCall(context->codeOptimizer->getKernelCallAddr(DISP_usr2) + 1);
 
   return Lexeme::subtype_numeric;
 }

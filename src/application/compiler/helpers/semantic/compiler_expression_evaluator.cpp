@@ -181,7 +181,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
         if (result == Lexeme::subtype_numeric) {
           // call intCompareNOT
           // ctx.cpu->addCall(DISP_intCompareNOT);
-          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareNOT * 2);
+          context->codeOptimizer->addKernelCall(DISP_intCompareNOT);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -190,13 +190,13 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
         if (result == Lexeme::subtype_numeric) {
           // call intNEG
           // ctx.cpu->addCall(DISP_intNEG);
-          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intNEG * 2);
+          context->codeOptimizer->addKernelCall(DISP_intNEG);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
           // call floatNeg
           // ctx.cpu->addCall(DISP_floatNEG);
-          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_floatNEG * 2);
+          context->codeOptimizer->addKernelCall(DISP_floatNEG);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -219,7 +219,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareAND
           // ctx.cpu->addCall(DISP_intCompareAND);
-          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareAND * 2);
+          context->codeOptimizer->addKernelCall(DISP_intCompareAND);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -231,7 +231,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareOR
           // ctx.cpu->addCall(DISP_intCompareOR);
-          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareOR * 2);
+          context->codeOptimizer->addKernelCall(DISP_intCompareOR);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -243,7 +243,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareXOR
           // ctx.cpu->addCall(DISP_intCompareXOR);
-          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareXOR * 2);
+          context->codeOptimizer->addKernelCall(DISP_intCompareXOR);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -309,7 +309,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareEQ
           // ctx.cpu->addCall(DISP_intCompareEQ);
-          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareEQ * 2);
+          context->codeOptimizer->addKernelCall(DISP_intCompareEQ);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -346,7 +346,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareNE
           // ctx.cpu->addCall(DISP_intCompareNE);
-          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareNE * 2);
+          context->codeOptimizer->addKernelCall(DISP_intCompareNE);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -383,7 +383,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareLT
           // ctx.cpu->addCall(DISP_intCompareLT);
-          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareLT * 2);
+          context->codeOptimizer->addKernelCall(DISP_intCompareLT);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -420,7 +420,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareLE
           // ctx.cpu->addCall(DISP_intCompareLE);
-          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareLE * 2);
+          context->codeOptimizer->addKernelCall(DISP_intCompareLE);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -457,7 +457,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareGT
           // ctx.cpu->addCall(DISP_intCompareGT);
-          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareGT * 2);
+          context->codeOptimizer->addKernelCall(DISP_intCompareGT);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -494,7 +494,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareGE
           // ctx.cpu->addCall(DISP_intCompareGE);
-          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareGE * 2);
+          context->codeOptimizer->addKernelCall(DISP_intCompareGE);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -1096,7 +1096,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intSHR
           // ctx.cpu->addCall(DISP_intSHR);
-          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intSHR * 2);
+          context->codeOptimizer->addKernelCall(DISP_intSHR);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -1108,7 +1108,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intSHL
           // ctx.cpu->addCall(DISP_intSHL);
-          optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intSHL * 2);
+          context->codeOptimizer->addKernelCall(DISP_intSHL);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -1175,7 +1175,7 @@ int CompilerExpressionEvaluator::evalOperatorCast(
     //     200.0 + 100
 
     // call castParamFloatInt
-    context->codeOptimizer->addKernelDispatch(DISP_castParamFloatInt);
+    context->codeOptimizer->addKernelCall(DISP_castParamFloatInt);
 
     result = next_action1->subtype;
 

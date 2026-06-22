@@ -20,7 +20,7 @@ bool CompilerCmdRestoreHandler::execute(shared_ptr<CompilerContext> context,
     cpu.addLdiiHL(def_DAC);
 
     // call cmd_restore
-    context->codeOptimizer->addKernelDispatch(DISP_cmd_restore);  // MSXBAS2ROM resource RESTORE statement
+    context->codeOptimizer->addKernelCall(DISP_cmd_restore);  // MSXBAS2ROM resource RESTORE statement
 
   } else {
     context->syntaxError("CMD RESTORE syntax error");

@@ -61,7 +61,7 @@ int TileCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
     cpu.addIncH();
 
     // call DISP_tileAddress (in: hl=xy; out: hl=address)
-    context->codeOptimizer->addKernelDispatch(DISP_tileAddress);
+    context->codeOptimizer->addKernelCall(DISP_tileAddress);
 
     // call 0x70a1    ; xbasic VPEEK (in:hl, out:hl)
     cpu.addCall(def_XBASIC_VPEEK);

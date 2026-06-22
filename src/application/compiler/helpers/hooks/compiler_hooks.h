@@ -115,10 +115,9 @@
 //! @{
 
 //! @warning
-//! see "wrapper_routines_map_start" correct address in
+//! see "wrapper_routines_map_table" correct address in
 //! "header.symbols.asm" if Z80 kernel was recompiled
-#define def_wrapper_routines_map_start 0x4102
-#define def_wrapper_routines_map_table (def_wrapper_routines_map_start + 6)  // 0x4108
+#define def_wrapper_routines_map_table 0x4102
 
 // Dispatch indexes for wrapper routine word-pointer table
 // (0-indexed, matching order in wrapper_routines_map_table)

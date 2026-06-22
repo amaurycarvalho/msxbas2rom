@@ -34,7 +34,7 @@ bool CompilerCmdVramToRamHandler::execute(shared_ptr<CompilerContext> context,
     cpu.addLdiiHL(def_ARG2);
 
     // call cmd_vramtoram
-    context->codeOptimizer->addKernelDispatch(DISP_cmd_vramtoram);
+    context->codeOptimizer->addKernelCall(DISP_cmd_vramtoram);
 
   } else {
     context->syntaxError("CMD VRAMTORAM syntax error");

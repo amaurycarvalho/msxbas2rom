@@ -5,8 +5,7 @@
 
 void CompilerClsStatementStrategy::cmd_cls(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  context->codeOptimizer->addKernelDispatch(DISP_XBASIC_CLS);  // call cls
+  context->codeOptimizer->addKernelCall(DISP_XBASIC_CLS);  // call cls
 }
 
 bool CompilerClsStatementStrategy::execute(

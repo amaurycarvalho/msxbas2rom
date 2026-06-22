@@ -12,12 +12,10 @@
 
 bool CompilerCmdPlyReplayHandler::execute(shared_ptr<CompilerContext> context,
                                           shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-
   context->akm = true;
 
   // call cmd_plyreplay
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_plyreplay);
+  context->codeOptimizer->addKernelCall(DISP_cmd_plyreplay);
 
   return context->compiled;
 }

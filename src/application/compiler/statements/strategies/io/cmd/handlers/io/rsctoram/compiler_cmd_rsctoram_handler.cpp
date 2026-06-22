@@ -47,7 +47,7 @@ bool CompilerCmdRscToRamHandler::execute(shared_ptr<CompilerContext> context,
     cpu.addPopHL();
 
     // call cmd_rsctoram
-    context->codeOptimizer->addKernelDispatch(DISP_cmd_rsctoram);
+    context->codeOptimizer->addKernelCall(DISP_cmd_rsctoram);
 
   } else {
     context->syntaxError("CMD RSCTORAM syntax error");

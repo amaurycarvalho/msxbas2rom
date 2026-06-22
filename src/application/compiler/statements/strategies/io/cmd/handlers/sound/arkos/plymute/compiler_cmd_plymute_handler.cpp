@@ -12,12 +12,10 @@
 
 bool CompilerCmdPlyMuteHandler::execute(shared_ptr<CompilerContext> context,
                                         shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-
   context->akm = true;
 
   // call cmd_akmmute
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_plymute);
+  context->codeOptimizer->addKernelCall(DISP_cmd_plymute);
 
   return context->compiled;
 }

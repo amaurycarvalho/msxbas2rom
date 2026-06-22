@@ -9,7 +9,6 @@
 
 void CompilerReadStatementStrategy::cmd_read(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   auto& variable = *context->variableEmitter;
   shared_ptr<ActionNode> action;
@@ -27,7 +26,7 @@ void CompilerReadStatementStrategy::cmd_read(
       }
 
       // call read
-      context->codeOptimizer->addKernelDispatch(DISP_XBASIC_READ);
+      context->codeOptimizer->addKernelCall(DISP_XBASIC_READ);
 
       expression.addCast(Lexeme::subtype_string, lexeme->subtype);
 

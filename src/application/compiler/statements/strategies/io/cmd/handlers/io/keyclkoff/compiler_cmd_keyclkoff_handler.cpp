@@ -6,10 +6,8 @@
 
 bool CompilerCmdKeyClkOffHandler::execute(shared_ptr<CompilerContext> context,
                                           shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-
   // call cmd_keyclkoff
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_keyclkoff);
+  context->codeOptimizer->addKernelCall(DISP_cmd_keyclkoff);
 
   return context->compiled;
 }

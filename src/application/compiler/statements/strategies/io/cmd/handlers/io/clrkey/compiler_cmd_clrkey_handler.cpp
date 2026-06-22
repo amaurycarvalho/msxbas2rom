@@ -6,10 +6,8 @@
 
 bool CompilerCmdClrKeyHandler::execute(shared_ptr<CompilerContext> context,
                                        shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-
   // call cmd_clrkey
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_clrkey);
+  context->codeOptimizer->addKernelCall(DISP_cmd_clrkey);
 
   return context->compiled;
 }

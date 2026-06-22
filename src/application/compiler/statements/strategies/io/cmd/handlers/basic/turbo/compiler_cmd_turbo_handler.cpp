@@ -19,7 +19,7 @@ bool CompilerCmdTurboHandler::execute(shared_ptr<CompilerContext> context,
     // ld (DAC), hl
     cpu.addLdiiHL(def_DAC);
     // call cmd_turbo
-    context->codeOptimizer->addKernelDispatch(DISP_cmd_turbo);
+    context->codeOptimizer->addKernelCall(DISP_cmd_turbo);
 
   } else {
     context->syntaxError("CMD TURBO syntax error");

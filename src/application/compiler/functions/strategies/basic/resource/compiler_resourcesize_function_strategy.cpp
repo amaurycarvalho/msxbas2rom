@@ -13,7 +13,6 @@ int ResourcesizeCompilerFunctionStrategy::execute(
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "RESOURCESIZE") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
 
   // cast
@@ -21,7 +20,7 @@ int ResourcesizeCompilerFunctionStrategy::execute(
   result[0] = Lexeme::subtype_numeric;
 
   // call usr1
-  context->codeOptimizer->addKernelDispatch(DISP_usr1);
+  context->codeOptimizer->addKernelCall(DISP_usr1);
 
   return result[0];
 }

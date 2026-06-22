@@ -19,7 +19,7 @@ bool CompilerCmdWrtSprHandler::execute(shared_ptr<CompilerContext> context,
     // ld (DAC), hl
     cpu.addLdiiHL(def_DAC);
     // call cmd_wrtspr                    ; tiny sprite loader
-    context->codeOptimizer->addKernelDispatch(DISP_cmd_wrtspr);
+    context->codeOptimizer->addKernelCall(DISP_cmd_wrtspr);
 
   } else {
     context->syntaxError("CMD WRTSPR syntax error");

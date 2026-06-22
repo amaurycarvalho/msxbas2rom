@@ -21,7 +21,6 @@ void CompilerForStatementStrategy::cmd_for(
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
-  auto& optimizer = *context->codeOptimizer;
   auto& evaluator = *context->evaluator;
   shared_ptr<Lexeme> lexeme, lex_var = nullptr;
   shared_ptr<ActionNode> action, var_action;
@@ -211,7 +210,7 @@ void CompilerForStatementStrategy::cmd_for(
 
         // call intCompareGT
         // cpuOpcodeWriter->addCall(DISP_intCompareGT);
-        optimizer.addKernelCall(def_wrapper_routines_map_table + DISP_intCompareGT * 2);
+        context->codeOptimizer->addKernelCall(DISP_intCompareGT);
 
         // jp nz, end_for
         forNext->forEndMark = fixup.addMark();

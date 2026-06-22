@@ -33,7 +33,7 @@ int DskfCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   // ld a, l
   cpu.addLdAL();
   // call cmd_fdskf
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_fdskf);
+  context->codeOptimizer->addKernelCall(DISP_cmd_fdskf);
 
   return Lexeme::subtype_numeric;
 }

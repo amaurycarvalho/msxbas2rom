@@ -568,13 +568,13 @@ void CompilerSetStatementStrategy::cmd_set_tile(
       // ld e, l
       cpu.addLdEL();
       // call XBASIC_LOCATE    ; hl = y, de = x
-      context->codeOptimizer->addKernelDispatch(DISP_XBASIC_LOCATE);
+      context->codeOptimizer->addKernelCall(DISP_XBASIC_LOCATE);
       // ld a, 0xff                ; it means all screen banks
       cpu.addLdA(0xFF);
       // ld (ARG), a
       cpu.addLdiiA(def_ARG);
       // call cmd_setfnt
-      context->codeOptimizer->addKernelDispatch(DISP_cmd_setfnt);
+      context->codeOptimizer->addKernelCall(DISP_cmd_setfnt);
 
     } else if (lexeme->value == "OFF") {
       // ld a, 1      ; graphical mode
@@ -616,7 +616,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
           cpu.addLdB(0x03);
         }
 
-        context->codeOptimizer->addKernelDispatch(DISP_set_tile_flip);
+        context->codeOptimizer->addKernelCall(DISP_set_tile_flip);
 
       } else {
         context->syntaxError(
@@ -657,7 +657,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
           cpu.addLdB(0x03);
         }
 
-        context->codeOptimizer->addKernelDispatch(DISP_set_tile_rotate);
+        context->codeOptimizer->addKernelCall(DISP_set_tile_rotate);
 
       } else {
         context->syntaxError(
@@ -726,7 +726,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
           //   a = tile number
           //   hl = pointer to an 8 bytes buffer
           //   b = bank (0-2 specific, 3=all)
-          context->codeOptimizer->addKernelDispatch(DISP_set_tile_pattern_buffer);
+          context->codeOptimizer->addKernelCall(DISP_set_tile_pattern_buffer);
           } else {
           context->syntaxError(
               "Wrong parameters count on SET TILE PATTERN statement");
@@ -781,7 +781,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
 
               // call set_tile_pattern ; hl = tile number, de = line number, b
               // = bank number (3=all), c = pattern data
-              context->codeOptimizer->addKernelDispatch(DISP_set_tile_pattern);
+              context->codeOptimizer->addKernelCall(DISP_set_tile_pattern);
             }
           }
           }
@@ -843,7 +843,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
               cpu.addPopAF();
             }
 
-            context->codeOptimizer->addKernelDispatch(DISP_set_tile_color_buf);
+            context->codeOptimizer->addKernelCall(DISP_set_tile_color_buf);
 
           } else {
             context->syntaxError(
@@ -943,7 +943,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
 
               // call set_tile_color ; hl = tile number, de = line number
               // (15=all), b = bank number (3=all), c = color data (FC,BC)
-              context->codeOptimizer->addKernelDispatch(DISP_set_tile_color);
+              context->codeOptimizer->addKernelCall(DISP_set_tile_color);
             }
           }
 
@@ -995,7 +995,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
 
           // call set_tile_color ; hl = tile number, de = line number
           // (15=all), b = bank number (3=all), c = color data (FC,BC)
-          context->codeOptimizer->addKernelDispatch(DISP_set_tile_color);
+          context->codeOptimizer->addKernelCall(DISP_set_tile_color);
         }
 
       } else {
@@ -1040,7 +1040,7 @@ void CompilerSetStatementStrategy::cmd_set_font(
       cpu.addLdiiA(def_ARG);
 
       // call cmd_setfnt
-      context->codeOptimizer->addKernelDispatch(DISP_cmd_setfnt);
+      context->codeOptimizer->addKernelCall(DISP_cmd_setfnt);
 
     } else if (t == 2) {
       sub_action1 = action->actions[0];
@@ -1058,7 +1058,7 @@ void CompilerSetStatementStrategy::cmd_set_font(
       cpu.addLdiiHL(def_ARG);
 
       // call cmd_setfnt
-      context->codeOptimizer->addKernelDispatch(DISP_cmd_setfnt);
+      context->codeOptimizer->addKernelCall(DISP_cmd_setfnt);
 
     } else {
       context->syntaxError("Wrong number of parameters on SET FONT");
@@ -1104,7 +1104,7 @@ void CompilerSetStatementStrategy::cmd_set_sprite(
         // pop de
         cpu.addPopDE();
 
-        context->codeOptimizer->addKernelDispatch(DISP_set_sprite_flip);
+        context->codeOptimizer->addKernelCall(DISP_set_sprite_flip);
 
       } else {
         context->syntaxError(
@@ -1130,7 +1130,7 @@ void CompilerSetStatementStrategy::cmd_set_sprite(
         // pop de
         cpu.addPopDE();
 
-        context->codeOptimizer->addKernelDispatch(DISP_set_sprite_rotate);
+        context->codeOptimizer->addKernelCall(DISP_set_sprite_rotate);
 
       } else {
         context->syntaxError(
@@ -1164,7 +1164,7 @@ void CompilerSetStatementStrategy::cmd_set_sprite(
         // call set_sprite_pattern
         //   a = sprite number
         //   hl = pointer to a 32 bytes buffer
-        context->codeOptimizer->addKernelDispatch(DISP_set_sprite_pattern);
+        context->codeOptimizer->addKernelCall(DISP_set_sprite_pattern);
 
       } else {
         context->syntaxError(
@@ -1198,7 +1198,7 @@ void CompilerSetStatementStrategy::cmd_set_sprite(
         // call set_sprite_color
         //   a = sprite number
         //   hl = pointer to a 16 bytes buffer
-        context->codeOptimizer->addKernelDispatch(DISP_set_sprite_color);
+        context->codeOptimizer->addKernelCall(DISP_set_sprite_color);
 
       } else {
         context->syntaxError(
@@ -1248,7 +1248,7 @@ void CompilerSetStatementStrategy::cmd_set_date(
       }
     }
 
-    context->codeOptimizer->addKernelDispatch(DISP_set_date);
+    context->codeOptimizer->addKernelCall(DISP_set_date);
 
   } else {
     context->syntaxError(
@@ -1293,7 +1293,7 @@ void CompilerSetStatementStrategy::cmd_set_time(
       }
     }
 
-    context->codeOptimizer->addKernelDispatch(DISP_set_time);
+    context->codeOptimizer->addKernelCall(DISP_set_time);
 
   } else {
     context->syntaxError(

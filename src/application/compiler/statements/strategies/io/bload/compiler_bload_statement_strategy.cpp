@@ -52,10 +52,10 @@ void CompilerBloadStatementStrategy::cmd_bload(
 
             if (isTinySprite) {
               // call cmd_wrtspr                    ; tiny sprite loader
-              context->codeOptimizer->addKernelDispatch(DISP_cmd_wrtspr);
+              context->codeOptimizer->addKernelCall(DISP_cmd_wrtspr);
             } else {
               // call screen_load
-              context->codeOptimizer->addKernelDispatch(DISP_cmd_screen_load);
+              context->codeOptimizer->addKernelCall(DISP_cmd_screen_load);
             }
 
           } else {

@@ -16,7 +16,6 @@ int EofCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "EOF") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
 
   if (result[0] == Lexeme::subtype_single_decimal ||
@@ -31,7 +30,7 @@ int EofCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   // hl = file number
   // call cmd_feof
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_feof);
+  context->codeOptimizer->addKernelCall(DISP_cmd_feof);
 
   return Lexeme::subtype_numeric;
 }

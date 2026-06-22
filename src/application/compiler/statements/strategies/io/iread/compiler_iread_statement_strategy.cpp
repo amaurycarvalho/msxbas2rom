@@ -9,7 +9,6 @@
 
 void CompilerIreadStatementStrategy::cmd_iread(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   auto& variable = *context->variableEmitter;
   shared_ptr<ActionNode> action;
@@ -27,7 +26,7 @@ void CompilerIreadStatementStrategy::cmd_iread(
       }
 
       // call XBASIC_IREAD
-      context->codeOptimizer->addKernelDispatch(DISP_XBASIC_IREAD);
+      context->codeOptimizer->addKernelCall(DISP_XBASIC_IREAD);
 
       expression.addCast(Lexeme::subtype_numeric, lexeme->subtype);
 

@@ -23,7 +23,7 @@ bool CompilerCmdWrtFntHandler::execute(shared_ptr<CompilerContext> context,
   // ld (DAC), hl
   cpu.addLdiiHL(def_DAC);
   // call cmd_wrtfnt
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_wrtfnt);
+  context->codeOptimizer->addKernelCall(DISP_cmd_wrtfnt);
 
   return context->compiled;
 }

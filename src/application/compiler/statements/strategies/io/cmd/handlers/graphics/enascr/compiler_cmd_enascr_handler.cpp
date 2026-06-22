@@ -6,10 +6,8 @@
 
 bool CompilerCmdEnaScrHandler::execute(shared_ptr<CompilerContext> context,
                                        shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-
   // call cmd_enascr
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_enascr);
+  context->codeOptimizer->addKernelCall(DISP_cmd_enascr);
 
   return context->compiled;
 }

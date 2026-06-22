@@ -48,7 +48,7 @@ void CompilerGetStatementStrategy::cmd_get_date(
   unsigned int i, t = action->actions.size();
 
   if (t >= 3 && t <= 5) {
-    context->codeOptimizer->addKernelDispatch(DISP_get_date);
+    context->codeOptimizer->addKernelCall(DISP_get_date);
     cpu.addLdB(0);
     if (t > 4) {
       cpu.addExAF();
@@ -112,7 +112,7 @@ void CompilerGetStatementStrategy::cmd_get_time(
   unsigned int i, t = action->actions.size();
 
   if (t == 3) {
-    context->codeOptimizer->addKernelDispatch(DISP_get_time);
+    context->codeOptimizer->addKernelCall(DISP_get_time);
     cpu.addLdB(0);
     cpu.addLdCA();
     cpu.addPushBC();  // seconds
@@ -217,7 +217,7 @@ void CompilerGetStatementStrategy::cmd_get_tile(
         //   a = tile number
         //   hl = pointer to an 8 bytes buffer
         //   b = bank (0-2)
-        context->codeOptimizer->addKernelDispatch(DISP_get_tile_pattern);
+        context->codeOptimizer->addKernelCall(DISP_get_tile_pattern);
 
       } else {
         context->syntaxError(
@@ -258,7 +258,7 @@ void CompilerGetStatementStrategy::cmd_get_tile(
           cpu.addPopAF();
         }
 
-        context->codeOptimizer->addKernelDispatch(DISP_get_tile_color);
+        context->codeOptimizer->addKernelCall(DISP_get_tile_color);
 
       } else {
         context->syntaxError(
@@ -317,7 +317,7 @@ void CompilerGetStatementStrategy::cmd_get_sprite(
         // call get_sprite_pattern
         //   a = sprite number
         //   hl = pointer to a 32 bytes buffer
-        context->codeOptimizer->addKernelDispatch(DISP_get_sprite_pattern);
+        context->codeOptimizer->addKernelCall(DISP_get_sprite_pattern);
 
       } else {
         context->syntaxError(
@@ -351,7 +351,7 @@ void CompilerGetStatementStrategy::cmd_get_sprite(
         // call get_sprite_color
         //   a = sprite number
         //   hl = pointer to a 16 bytes buffer
-        context->codeOptimizer->addKernelDispatch(DISP_get_sprite_color);
+        context->codeOptimizer->addKernelCall(DISP_get_sprite_color);
 
       } else {
         context->syntaxError(

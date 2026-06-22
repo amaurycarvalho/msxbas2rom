@@ -48,7 +48,7 @@ void CompilerInputStatementStrategy::cmd_file_input(
 
   context->file_support = true;
   cpu.addLdA(0x00);                     // drive A:
-  context->codeOptimizer->addKernelDispatch(DISP_cmd_preflight_disk);  // check disk support
+  context->codeOptimizer->addKernelCall(DISP_cmd_preflight_disk);  // check disk support
   cpu.addAndA();
   skipInputMark = fixup.addMark();
   cpu.addJpNZ(0x0000);  // skip INPUT# when disk is unavailable
@@ -95,11 +95,11 @@ void CompilerInputStatementStrategy::cmd_file_input(
 
   for (i = 0; i < values.size(); i++) {
     lexeme = values[i]->lexeme;
-    context->codeOptimizer->addKernelDispatch(DISP_GET_NEXT_TEMP_STRING_ADDRESS);
+    context->codeOptimizer->addKernelCall(DISP_GET_NEXT_TEMP_STRING_ADDRESS);
     cpu.addLdDE(lineMode ? 0x0001 : 0x0000);  // e=read mode for cmd_finput
     cpu.addPopAF();
     cpu.addPushAF();
-    context->codeOptimizer->addKernelDispatch(DISP_cmd_finput);
+    context->codeOptimizer->addKernelCall(DISP_cmd_finput);
 
     expression.addCast(Lexeme::subtype_string, lexeme->subtype);
     if (!variable.addAssignment(values[i])) return;
@@ -137,9 +137,9 @@ void CompilerInputStatementStrategy::cmd_normal_input(
             // choose between INPUT or LINE INPUT
 
             if (questionMark) {
-              context->codeOptimizer->addKernelDispatch(DISP_XBASIC_INPUT_1);
+              context->codeOptimizer->addKernelCall(DISP_XBASIC_INPUT_1);
             } else {
-              context->codeOptimizer->addKernelDispatch(DISP_XBASIC_INPUT_2);
+              context->codeOptimizer->addKernelCall(DISP_XBASIC_INPUT_2);
             }
 
             // do assignment
@@ -152,7 +152,7 @@ void CompilerInputStatementStrategy::cmd_normal_input(
             result_subtype = expression.evalExpression(action);
 
             if (result_subtype == Lexeme::subtype_string) {
-              context->codeOptimizer->addKernelDispatch(DISP_XBASIC_PRINT_STR);  // call print_str
+              context->codeOptimizer->addKernelCall(DISP_XBASIC_PRINT_STR);  // call print_str
 
             } else if (result_subtype == Lexeme::subtype_numeric) {
               cpu.addCall(def_XBASIC_PRINT_INT);  // call print_int

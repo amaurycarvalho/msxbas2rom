@@ -13,7 +13,6 @@ int TabCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "TAB") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
 
   if (result[0] == Lexeme::subtype_single_decimal ||
@@ -25,7 +24,7 @@ int TabCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (result[0] == Lexeme::subtype_numeric) {
     // call tab function
-    context->codeOptimizer->addKernelDispatch(DISP_XBASIC_TAB);
+    context->codeOptimizer->addKernelCall(DISP_XBASIC_TAB);
 
     return Lexeme::subtype_string;
   }

@@ -22,6 +22,7 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 
 ### Added
 - Kernel regression test infrastructure (`make test-kernel`) with ROM binary integrity validation
+- Kernel ROM size build-time check (max 0x4000 bytes) with Makefile alert and doctest unit test
 
 ### Changed
 - Compact player idle-state initialization with sequential HL writes in 33_player.asm
@@ -29,7 +30,8 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - Remove redundant `push de`/`pop de` guard in `cmd_preflight_disk`
 - Remove duplicate `ld a, (STARTUP_CFG_FILEIO)` load in `run_user_basic_code_on_rom`
 - Remove redundant `xor a` in `resource.address`
-- Restructure wrapper routine jump table from 126-entry `jp` to word-pointer dispatch (saves ~120 bytes)
+- Restructure wrapper routine jump table from 126-entry `jp` to word-pointer dispatch (saves ~125 bytes)
+- Unify wrapper dispatch through single `addKernelCall` path with index auto-detection, remove `addKernelDispatch` and dispatcher ASM routine
 
 ### Fixed
 - Fix double-GICINI call in `cmd_mute` (replace `jp GICINI` with `ret`)
