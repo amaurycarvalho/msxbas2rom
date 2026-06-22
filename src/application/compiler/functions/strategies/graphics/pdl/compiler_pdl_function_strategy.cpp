@@ -3,6 +3,7 @@
 #include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
+#include "compiler_hooks.h"
 #include "lexeme.h"
 
 int PdlCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
@@ -27,7 +28,7 @@ int PdlCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
     // ld a, l
     cpu.addLdAL();
     // call 0x00DE      ; GTPDL
-    cpu.addCall(0x00DE);
+    cpu.addCall(def_GTPDL);
     // ld h, 0
     cpu.addLdH(0x00);
     // ld l, a

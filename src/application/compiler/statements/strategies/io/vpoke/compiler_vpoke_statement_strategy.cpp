@@ -34,7 +34,7 @@ void CompilerVpokeStatementStrategy::cmd_vpoke(
           // pop hl
           cpu.addPopHL();
           // call 0x70b5    ; xbasic VPOKE (in: hl=address, a=byte)
-          cpu.addCall(def_XBASIC_VPOKE);
+          context->codeOptimizer->addKernelCall(DISP_XBASIC_VPOKE);
         }
       }
     }

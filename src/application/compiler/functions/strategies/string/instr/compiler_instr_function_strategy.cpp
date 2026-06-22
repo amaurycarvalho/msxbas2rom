@@ -3,13 +3,15 @@
 #include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
+#include "compiler_code_optimizer.h"
 #include "compiler_hooks.h"
 #include "lexeme.h"
 
 int InstrCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                            shared_ptr<ActionNode> action,
                                            int* result,
-                                           unsigned int parmCount) {
+                                            unsigned int parmCount) {
+  auto& optimizer = *context->codeOptimizer;
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "INSTR") return Lexeme::subtype_unknown;
 
@@ -30,7 +32,7 @@ int InstrCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
         // call 0x7e6c     ; xbasic INSTR (in: a=start, hl=source,
         // de=search; out: hl=position)
-        cpu.addCall(def_XBASIC_INSTR);
+        optimizer.addKernelCall(DISP_XBASIC_INSTR);
 
         return Lexeme::subtype_numeric;
       }
@@ -71,7 +73,7 @@ int InstrCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
           result[2] == Lexeme::subtype_numeric) {
         // call 0x7e6c     ; xbasic INSTR (in: a=start, hl=source,
         // de=search; out: hl=position)
-        cpu.addCall(def_XBASIC_INSTR);
+        optimizer.addKernelCall(DISP_XBASIC_INSTR);
 
         return Lexeme::subtype_numeric;
       }

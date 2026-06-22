@@ -4,10 +4,12 @@
 #include "compiler_context.h"
 #include "compiler_hooks.h"
 #include "lexeme.h"
+#include "compiler_code_optimizer.h"
 
 int AbsCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                          shared_ptr<ActionNode> action,
                                          int* result, unsigned int parmCount) {
+  auto& optimizer = *context->codeOptimizer;
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "ABS") return Lexeme::subtype_unknown;
@@ -16,7 +18,7 @@ int AbsCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (result[0] == Lexeme::subtype_numeric) {
     // call 0x5b36         ; xbasic ABS (in hl, out hl)
-    cpu.addCall(def_XBASIC_ABS_INT);
+    optimizer.addKernelCall(DISP_XBASIC_ABS_INT);
 
   } else if (result[0] == Lexeme::subtype_single_decimal ||
              result[0] == Lexeme::subtype_double_decimal) {

@@ -3,6 +3,7 @@
 #include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
+#include "compiler_code_optimizer.h"
 #include "compiler_hooks.h"
 #include "compiler_variable_emitter.h"
 #include "lexeme.h"
@@ -10,6 +11,7 @@
 int OctCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                          shared_ptr<ActionNode> action,
                                          int* result, unsigned int parmCount) {
+  auto& optimizer = *context->codeOptimizer;
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "OCT$") return Lexeme::subtype_unknown;
@@ -30,14 +32,14 @@ int OctCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
     cpu.addLdC(0x03);
     // call 0x7e22    ; xbasic OCT$/HEX$/BIN$ (in: hl=integer, de=BUF,
     // c=mode [1=bin, 3=oct, 4=hex]; out: hl destination corrected)
-    cpu.addCall(def_XBASIC_OCT_HEX_BIN);
+    optimizer.addKernelCall(DISP_XBASIC_OCT_HEX_BIN);
     // ld de, temporary string
     variable.addTempStr(false);
     // push de
     cpu.addPushDE();
     //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
     //   out: hl end of string)
-    cpu.addCall(def_XBASIC_COPY_STRING);
+    optimizer.addKernelCall(DISP_XBASIC_COPY_STRING);
     // pop hl
     cpu.addPopHL();
 

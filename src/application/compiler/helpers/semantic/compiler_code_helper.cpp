@@ -14,11 +14,10 @@
 #include "parser.h"
 
 bool CompilerCodeHelper::addCheckTraps() {
-  auto& cpu = *context->cpu;
   auto& parser = *context->parser;
   if (parser.getHasTraps()) {
     // call 0x6c25   ; xbasic check traps
-    cpu.addCall(def_XBASIC_TRAP_CHECK);
+    context->codeOptimizer->addKernelCall(DISP_XBASIC_TRAP_CHECK);
   }
 
   return context->parser->getHasTraps();

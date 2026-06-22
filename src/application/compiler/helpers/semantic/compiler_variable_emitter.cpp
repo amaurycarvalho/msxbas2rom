@@ -88,7 +88,7 @@ bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
             cpu.addLdDE(lexeme->x_factor);
 
             // call 0x761b    ; integer multiplication (hl = hl * de)
-            cpu.addCall(def_XBASIC_MULTIPLY_INTEGERS);
+            context->codeOptimizer->addKernelCall(DISP_XBASIC_MULTIPLY_INTEGERS);
           }
 
           // ld de, variable
@@ -174,7 +174,7 @@ bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
             cpu.addLdDE(lexeme->x_factor);
 
             // call 0x761b    ; integer multiplication (hl = hl * de)
-            cpu.addCall(def_XBASIC_MULTIPLY_INTEGERS);
+            context->codeOptimizer->addKernelCall(DISP_XBASIC_MULTIPLY_INTEGERS);
           }
 
           // push hl
@@ -347,7 +347,7 @@ bool CompilerVariableEmitter::addAssignment(shared_ptr<ActionNode> action) {
 
         // call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest; out: hl
         // end of string)
-        cpu.addCall(def_XBASIC_COPY_STRING);
+        context->codeOptimizer->addKernelCall(DISP_XBASIC_COPY_STRING);
 
       } else if (action->lexeme->subtype == Lexeme::subtype_numeric) {
         // pop de

@@ -3,6 +3,7 @@
 #include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
+#include "compiler_hooks.h"
 #include "lexeme.h"
 
 int PsgCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
@@ -31,7 +32,7 @@ int PsgCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
     // jr nc, $+4
     cpu.addJrNC(0x03);
     //   call 0x0096         ; RDPSG (in: a = PSG register)
-    cpu.addCall(0x0096);
+    cpu.addCall(def_RDPSG);
     //   ld l, a
     cpu.addLdLA();
     //   ld h, 0

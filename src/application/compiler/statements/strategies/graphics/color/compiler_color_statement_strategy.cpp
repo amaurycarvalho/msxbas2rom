@@ -1,6 +1,7 @@
 #include "compiler_color_statement_strategy.h"
 
 #include "action_node.h"
+#include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
@@ -10,6 +11,7 @@ void CompilerColorStatementStrategy::cmd_color(
     shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
+  auto& optimizer = *context->codeOptimizer;
   shared_ptr<ActionNode> action, subaction;
   shared_ptr<Lexeme> lexeme;
   unsigned int i, t = context->current_action->actions.size();
@@ -78,7 +80,7 @@ void CompilerColorStatementStrategy::cmd_color(
         // pop bc
         cpu.addPopBC();
         // call COLOR_SPRITE   ; in: b, a
-        cpu.addCall(def_XBASIC_COLOR_SPRITE);
+        optimizer.addKernelCall(DISP_XBASIC_COLOR_SPRITE);
 
       } else if (lexeme->value == "SPRITE$") {
         t = action->actions.size();
@@ -105,7 +107,7 @@ void CompilerColorStatementStrategy::cmd_color(
         // pop bc
         cpu.addPopBC();
         // call COLOR_SPRSTR   ; in: b, hl
-        cpu.addCall(def_XBASIC_COLOR_SPRSTR);
+        optimizer.addKernelCall(DISP_XBASIC_COLOR_SPRSTR);
 
       } else if (lexeme->value == "RGB") {
         t = action->actions.size();
@@ -153,7 +155,7 @@ void CompilerColorStatementStrategy::cmd_color(
         cpu.addPopAF();
 
         // call COLOR_RGB   ; in: a, d, h, b
-        cpu.addCall(def_XBASIC_COLOR_RGB);
+        optimizer.addKernelCall(DISP_XBASIC_COLOR_RGB);
 
       } else {
         context->syntaxError("Invalid COLOR parameters");
@@ -200,7 +202,7 @@ void CompilerColorStatementStrategy::cmd_color(
       cpu.addLdAii(def_SCRMOD);
 
       // call 0x0062   ; CHGCLR
-      cpu.addCall(0x0062);
+      cpu.addCall(def_CHGCLR);
     }
 
   } else {

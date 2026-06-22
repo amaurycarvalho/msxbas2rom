@@ -208,7 +208,7 @@ void CompilerCircleStatementStrategy::cmd_circle(
           optimizer.addByteOptimized(0xD1);
 
           // call WriteParamBCD             ; b:hl, de -> hl
-          cpu.addCall(def_WriteParamBCD);
+          optimizer.addKernelCall(DISP_WriteParamBCD);
 
           has_trace1 = true;
 
@@ -238,7 +238,7 @@ void CompilerCircleStatementStrategy::cmd_circle(
           optimizer.addByteOptimized(0xD1);
 
           // call WriteParamBCD             ; b:hl, de -> hl
-          cpu.addCall(def_WriteParamBCD);
+          optimizer.addKernelCall(DISP_WriteParamBCD);
 
           has_trace2 = true;
         } break;
@@ -267,7 +267,7 @@ void CompilerCircleStatementStrategy::cmd_circle(
           optimizer.addByteOptimized(0xD1);
 
           // call WriteParamBCD             ; b:hl, de -> hl
-          cpu.addCall(def_WriteParamBCD);
+          optimizer.addKernelCall(DISP_WriteParamBCD);
 
           has_aspect = true;
         } break;
@@ -293,7 +293,7 @@ void CompilerCircleStatementStrategy::cmd_circle(
       // ld ix, M5B16       ; rom basic circle without coords
       cpu.addLdIX(0x5B16);
       // call xbasic CIRCLE2 (in: hl = basic line starting on radius parameter)
-      cpu.addCall(def_XBASIC_CIRCLE2);
+      optimizer.addKernelCall(DISP_XBASIC_CIRCLE2);
 
     } else {
       if (has_color && has_radius) {
@@ -316,7 +316,7 @@ void CompilerCircleStatementStrategy::cmd_circle(
       }
 
       // call xbasic CIRCLE (in: GRPACX/GRPACY, hl=radius, a=color)
-      cpu.addCall(def_XBASIC_CIRCLE);
+      optimizer.addKernelCall(DISP_XBASIC_CIRCLE);
     }
 
   } else {

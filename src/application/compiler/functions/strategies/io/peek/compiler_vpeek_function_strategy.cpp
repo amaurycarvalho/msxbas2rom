@@ -1,6 +1,7 @@
 #include "compiler_vpeek_function_strategy.h"
 
 #include "action_node.h"
+#include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
@@ -15,7 +16,7 @@ int VpeekCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (action->lexeme->value != "VPEEK") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
+  auto& optimizer = *context->codeOptimizer;
   auto& expression = *context->expressionEvaluator;
 
   if (result[0] == Lexeme::subtype_single_decimal ||
@@ -27,7 +28,7 @@ int VpeekCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (result[0] == Lexeme::subtype_numeric) {
     // call 0x70a1    ; xbasic VPEEK (in:hl, out:hl)
-    cpu.addCall(def_XBASIC_VPEEK);
+    optimizer.addKernelCall(DISP_XBASIC_VPEEK);
 
   } else
     result[0] = Lexeme::subtype_unknown;

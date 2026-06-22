@@ -3,6 +3,7 @@
 #include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
+#include "compiler_code_optimizer.h"
 #include "compiler_hooks.h"
 #include "compiler_variable_emitter.h"
 #include "lexeme.h"
@@ -10,7 +11,8 @@
 int SpaceCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                            shared_ptr<ActionNode> action,
                                            int* result,
-                                           unsigned int parmCount) {
+                                            unsigned int parmCount) {
+  auto& optimizer = *context->codeOptimizer;
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "SPACE$" && action->lexeme->value != "SPC")
@@ -35,7 +37,7 @@ int SpaceCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
     // ld hl, temporary string
     variable.addTempStr(true);
     // call 0x7e4c    ; STRING$ (hl=destination, b=number of chars, a=char)
-    cpu.addCall(def_XBASIC_STRING);
+    optimizer.addKernelCall(DISP_XBASIC_STRING);
 
     return Lexeme::subtype_string;
   }

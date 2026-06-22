@@ -1,6 +1,7 @@
 #include "compiler_strig_statement_strategy.h"
 
 #include "action_node.h"
+#include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
@@ -10,6 +11,7 @@ void CompilerStrigStatementStrategy::cmd_strig(
     shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
+  auto& optimizer = *context->codeOptimizer;
   shared_ptr<ActionNode> action1, action2;
   shared_ptr<Lexeme> next_lexeme;
   unsigned int t = context->current_action->actions.size();
@@ -45,15 +47,15 @@ void CompilerStrigStatementStrategy::cmd_strig(
     if (next_lexeme->type == Lexeme::type_keyword &&
         next_lexeme->value == "ON") {
       // call 0x6c89   ; xbasic turn on trap (hl=trap state address)
-      cpu.addCall(def_XBASIC_TRAP_ON);
+      optimizer.addKernelCall(DISP_XBASIC_TRAP_ON);
     } else if (next_lexeme->type == Lexeme::type_keyword &&
                next_lexeme->value == "OFF") {
       // call 0x6c9c   ; xbasic turn off trap (hl=trap state address)
-      cpu.addCall(def_XBASIC_TRAP_OFF);
+      optimizer.addKernelCall(DISP_XBASIC_TRAP_OFF);
     } else if (next_lexeme->type == Lexeme::type_keyword &&
                next_lexeme->value == "STOP") {
       // call 0x6ca5   ; xbasic turn stop trap (hl=trap state address)
-      cpu.addCall(def_XBASIC_TRAP_STOP);
+      optimizer.addKernelCall(DISP_XBASIC_TRAP_STOP);
     } else {
       context->syntaxError("Invalid STRIG statement");
     }

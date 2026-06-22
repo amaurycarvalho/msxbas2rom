@@ -47,8 +47,9 @@ void CompilerInputStatementStrategy::cmd_file_input(
   cpu.addPushAF();
 
   context->file_support = true;
-  cpu.addLdA(0x00);                     // drive A:
-  context->codeOptimizer->addKernelCall(DISP_cmd_preflight_disk);  // check disk support
+  cpu.addLdA(0x00);  // drive A:
+  context->codeOptimizer->addKernelCall(
+      DISP_cmd_preflight_disk);  // check disk support
   cpu.addAndA();
   skipInputMark = fixup.addMark();
   cpu.addJpNZ(0x0000);  // skip INPUT# when disk is unavailable
@@ -111,7 +112,6 @@ void CompilerInputStatementStrategy::cmd_file_input(
 
 void CompilerInputStatementStrategy::cmd_normal_input(
     shared_ptr<CompilerContext> context, bool questionMark) {
-  auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> action;
@@ -125,7 +125,8 @@ void CompilerInputStatementStrategy::cmd_normal_input(
       if (lexeme) {
         if (lexeme->type == Lexeme::type_separator) {
           if (lexeme->value == ",") {
-            cpu.addCall(def_XBASIC_PRINT_TAB);  // call print_tab
+            context->codeOptimizer->addKernelCall(
+                DISP_XBASIC_PRINT_TAB);  // call print_tab
           } else if (lexeme->value == ";") {
             continue;
           } else {
@@ -152,14 +153,17 @@ void CompilerInputStatementStrategy::cmd_normal_input(
             result_subtype = expression.evalExpression(action);
 
             if (result_subtype == Lexeme::subtype_string) {
-              context->codeOptimizer->addKernelCall(DISP_XBASIC_PRINT_STR);  // call print_str
+              context->codeOptimizer->addKernelCall(
+                  DISP_XBASIC_PRINT_STR);  // call print_str
 
             } else if (result_subtype == Lexeme::subtype_numeric) {
-              cpu.addCall(def_XBASIC_PRINT_INT);  // call print_int
+              context->codeOptimizer->addKernelCall(
+                  DISP_XBASIC_PRINT_INT);  // call print_int
 
             } else if (result_subtype == Lexeme::subtype_single_decimal ||
                        result_subtype == Lexeme::subtype_double_decimal) {
-              cpu.addCall(def_XBASIC_PRINT_FLOAT);  // call print_float
+              context->codeOptimizer->addKernelCall(
+                  DISP_XBASIC_PRINT_FLOAT);  // call print_float
 
             } else {
               context->syntaxError("Invalid INPUT parameter");

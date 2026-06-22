@@ -1,6 +1,7 @@
 #include "compiler_paint_statement_strategy.h"
 
 #include "action_node.h"
+#include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
@@ -10,6 +11,7 @@ void CompilerPaintStatementStrategy::cmd_paint(
     shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
+  auto& optimizer = *context->codeOptimizer;
   shared_ptr<ActionNode> action, sub_action;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
@@ -185,7 +187,7 @@ void CompilerPaintStatementStrategy::cmd_paint(
 
     // call 0x74B3   ; xbasic PAINT (in: hl=y, de=x, b=filling color, a=border
     // color)
-    cpu.addCall(def_XBASIC_PAINT);
+    optimizer.addKernelCall(DISP_XBASIC_PAINT);
 
   } else {
     context->syntaxError("PAINT with empty parameters");

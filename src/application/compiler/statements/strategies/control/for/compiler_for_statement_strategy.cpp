@@ -18,6 +18,7 @@ using namespace std;
 
 void CompilerForStatementStrategy::cmd_for(
     shared_ptr<CompilerContext> context) {
+  auto& optimizer = *context->codeOptimizer;
   auto& cpu = *context->cpu;
   auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
@@ -245,7 +246,7 @@ void CompilerForStatementStrategy::cmd_for(
         fixup.addFix(forNext->for_step)->step = 1;
         cpu.addCmd(0x5B, 0x0000);
         // call 0x76c1     ; add floats (b:hl + c:de = b:hl)
-        cpu.addCall(def_XBASIC_ADD_FLOATS);
+        optimizer.addKernelCall(DISP_XBASIC_ADD_FLOATS);
 
         // ld a, b
         cpu.addLdAB();
@@ -297,7 +298,7 @@ void CompilerForStatementStrategy::cmd_for(
         // ;var > to? goto end for
 
         // 78a4 xbasic compare floats (<=)
-        cpu.addCall(def_XBASIC_COMPARE_FLOATS_LE);
+        optimizer.addKernelCall(DISP_XBASIC_COMPARE_FLOATS_LE);
 
         // ld a, l
         cpu.addLdAL();

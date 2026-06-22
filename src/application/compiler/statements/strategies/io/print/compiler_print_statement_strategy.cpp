@@ -45,8 +45,9 @@ void CompilerPrintStatementStrategy::cmd_file_print(
   cpu.addPushAF();
 
   context->file_support = true;
-  cpu.addLdA(0x00);                     // drive A:
-  context->codeOptimizer->addKernelCall(DISP_cmd_preflight_disk);  // check disk support
+  cpu.addLdA(0x00);  // drive A:
+  context->codeOptimizer->addKernelCall(
+      DISP_cmd_preflight_disk);  // check disk support
   cpu.addAndA();
   skipPrintMark = fixup.addMark();
   cpu.addJpNZ(0x0000);  // skip PRINT# when disk is unavailable
@@ -126,7 +127,6 @@ void CompilerPrintStatementStrategy::cmd_file_print(
 
 void CompilerPrintStatementStrategy::cmd_normal_print(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
   // auto& fixup = *context->fixupResolver;
   auto& expression = *context->expressionEvaluator;
   shared_ptr<Lexeme> lexeme, last_lexeme = 0;
@@ -145,7 +145,8 @@ void CompilerPrintStatementStrategy::cmd_normal_print(
       if (lexeme) {
         if (lexeme->type == Lexeme::type_separator) {
           if (lexeme->value == ",") {
-            cpu.addCall(def_XBASIC_PRINT_TAB);  // call print_tab
+            context->codeOptimizer->addKernelCall(
+                DISP_XBASIC_PRINT_TAB);  // call print_tab
           } else if (lexeme->value == ";") {
             continue;
             /*
@@ -185,14 +186,17 @@ void CompilerPrintStatementStrategy::cmd_normal_print(
           result_subtype = expression.evalExpression(action);
 
           if (result_subtype == Lexeme::subtype_string) {
-            context->codeOptimizer->addKernelCall(DISP_XBASIC_PRINT_STR);  // call print_str
+            context->codeOptimizer->addKernelCall(
+                DISP_XBASIC_PRINT_STR);  // call print_str
 
           } else if (result_subtype == Lexeme::subtype_numeric) {
-            cpu.addCall(def_XBASIC_PRINT_INT);  // call print_int
+            context->codeOptimizer->addKernelCall(
+                DISP_XBASIC_PRINT_INT);  // call print_int
 
           } else if (result_subtype == Lexeme::subtype_single_decimal ||
                      result_subtype == Lexeme::subtype_double_decimal) {
-            cpu.addCall(def_XBASIC_PRINT_FLOAT);  // call print_float
+            context->codeOptimizer->addKernelCall(
+                DISP_XBASIC_PRINT_FLOAT);  // call print_float
 
           } else {
             context->syntaxError("Invalid PRINT parameter");
@@ -203,13 +207,15 @@ void CompilerPrintStatementStrategy::cmd_normal_print(
     }
 
   } else {
-    cpu.addCall(def_XBASIC_PRINT_CRLF);  // call print_crlf
+    context->codeOptimizer->addKernelCall(
+        DISP_XBASIC_PRINT_CRLF);  // call print_crlf
   }
 
   if (last_lexeme) {
     if (last_lexeme->type != Lexeme::type_separator ||
         (last_lexeme->value != ";" && last_lexeme->value != ",")) {
-      cpu.addCall(def_XBASIC_PRINT_CRLF);  // call print_crlf
+      context->codeOptimizer->addKernelCall(
+          DISP_XBASIC_PRINT_CRLF);  // call print_crlf
     }
   }
 

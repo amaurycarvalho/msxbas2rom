@@ -55,7 +55,7 @@ int PointCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   if (result[1] == Lexeme::subtype_numeric &&
       result[0] == Lexeme::subtype_numeric) {
     // call 0x6fa7     ; xbasic POINT (in: de=x, hl=y; out: hl=color)
-    cpu.addCall(def_XBASIC_POINT);
+    optimizer.addKernelCall(DISP_XBASIC_POINT);
 
     return Lexeme::subtype_numeric;
   }

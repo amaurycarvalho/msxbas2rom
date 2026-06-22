@@ -1,6 +1,7 @@
 #include "compiler_screen_statement_strategy.h"
 
 #include "action_node.h"
+#include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
@@ -11,6 +12,7 @@ void CompilerScreenStatementStrategy::cmd_screen(
     shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
+  auto& optimizer = *context->codeOptimizer;
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> lexeme;
   unsigned int i, t = context->current_action->actions.size();
@@ -69,7 +71,7 @@ void CompilerScreenStatementStrategy::cmd_screen(
         // sprite size
         case 1: {
           // call 0x70bc    ; xbasic SCREEN sprite (in: a = sprite mode)
-          cpu.addCall(def_XBASIC_SCREEN_SPRITE);
+          optimizer.addKernelCall(DISP_XBASIC_SCREEN_SPRITE);
         } break;
 
         // key click

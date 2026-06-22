@@ -14,7 +14,7 @@ int VdpCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   if (action->lexeme->value != "VDP") return Lexeme::subtype_unknown;
 
   auto& cpu = *context->cpu;
-  // auto& optimizer = *context->codeOptimizer;
+  auto& optimizer = *context->codeOptimizer;
 
   switch (parmCount) {
     case 0: {
@@ -38,7 +38,7 @@ int VdpCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
       if (result[0] == Lexeme::subtype_numeric) {
         // call 0x7337         ; xbasic VDP (in: hl, out: hl)
-        cpu.addCall(def_XBASIC_VDP);
+        optimizer.addKernelCall(DISP_XBASIC_VDP);
       } else
         result[0] = Lexeme::subtype_unknown;
 

@@ -321,18 +321,18 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           cpu.addLdCA();
 
           // 7876 xbasic compare floats (=)
-          cpu.addCall(def_XBASIC_COMPARE_FLOATS_EQ);
+          optimizer.addKernelCall(DISP_XBASIC_COMPARE_FLOATS_EQ);
 
           result = Lexeme::subtype_numeric;
 
         } else if (result == Lexeme::subtype_string) {
           // 7e99 xbasic copy string to NULBUF
-          cpu.addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
+          optimizer.addKernelCall(DISP_XBASIC_COPY_STRING_TO_NULBUF);
           // pop hl
           cpu.addPopHL();
 
           // 7eae xbasic compare string (NULBUF = string)
-          cpu.addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_EQ);
+          optimizer.addKernelCall(DISP_XBASIC_COMPARE_STRING_WITH_NULBUF_EQ);
 
           result = Lexeme::subtype_numeric;
 
@@ -358,18 +358,18 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           cpu.addLdCA();
 
           // 787f xbasic compare floats (<>)
-          cpu.addCall(def_XBASIC_COMPARE_FLOATS_NE);
+          optimizer.addKernelCall(DISP_XBASIC_COMPARE_FLOATS_NE);
 
           result = Lexeme::subtype_numeric;
 
         } else if (result == Lexeme::subtype_string) {
           // 7e99 xbasic copy string to NULBUF
-          cpu.addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
+          optimizer.addKernelCall(DISP_XBASIC_COPY_STRING_TO_NULBUF);
           // pop hl
           cpu.addPopHL();
 
           // 7ec9 xbasic compare string (NULBUF <> string)
-          cpu.addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_NE);
+          optimizer.addKernelCall(DISP_XBASIC_COMPARE_STRING_WITH_NULBUF_NE);
 
           result = Lexeme::subtype_numeric;
 
@@ -395,18 +395,18 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           cpu.addLdCA();
 
           // 7888 xbasic compare floats (>)
-          cpu.addCall(def_XBASIC_COMPARE_FLOATS_GT);
+          optimizer.addKernelCall(DISP_XBASIC_COMPARE_FLOATS_GT);
 
           result = Lexeme::subtype_numeric;
 
         } else if (result == Lexeme::subtype_string) {
           // 7e99 xbasic copy string to NULBUF
-          cpu.addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
+          optimizer.addKernelCall(DISP_XBASIC_COPY_STRING_TO_NULBUF);
           // pop hl
           cpu.addPopHL();
 
           // 7ea4 xbasic compare string (NULBUF > string)
-          cpu.addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_GT);
+          optimizer.addKernelCall(DISP_XBASIC_COMPARE_STRING_WITH_NULBUF_GT);
 
           result = Lexeme::subtype_numeric;
 
@@ -432,18 +432,18 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           cpu.addLdCA();
 
           // 7892 xbasic compare floats (>=)
-          cpu.addCall(def_XBASIC_COMPARE_FLOATS_GE);
+          optimizer.addKernelCall(DISP_XBASIC_COMPARE_FLOATS_GE);
 
           result = Lexeme::subtype_numeric;
 
         } else if (result == Lexeme::subtype_string) {
           // 7e99 xbasic copy string to NULBUF
-          cpu.addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
+          optimizer.addKernelCall(DISP_XBASIC_COPY_STRING_TO_NULBUF);
           // pop hl
           cpu.addPopHL();
 
           // 7eb7 xbasic compare string (NULBUF >= string)
-          cpu.addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_GE);
+          optimizer.addKernelCall(DISP_XBASIC_COMPARE_STRING_WITH_NULBUF_GE);
 
           result = Lexeme::subtype_numeric;
 
@@ -469,18 +469,18 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           cpu.addLdCA();
 
           // 789b xbasic compare floats (<)
-          cpu.addCall(def_XBASIC_COMPARE_FLOATS_LT);
+          optimizer.addKernelCall(DISP_XBASIC_COMPARE_FLOATS_LT);
 
           result = Lexeme::subtype_numeric;
 
         } else if (result == Lexeme::subtype_string) {
           // 7e99 xbasic copy string to NULBUF
-          cpu.addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
+          optimizer.addKernelCall(DISP_XBASIC_COPY_STRING_TO_NULBUF);
           // pop hl
           cpu.addPopHL();
 
           // 7ec0 xbasic compare string (NULBUF < string)
-          cpu.addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_LT);
+          optimizer.addKernelCall(DISP_XBASIC_COMPARE_STRING_WITH_NULBUF_LT);
 
           result = Lexeme::subtype_numeric;
 
@@ -506,18 +506,18 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           cpu.addLdCA();
 
           // 78a4 xbasic compare floats (<=)
-          cpu.addCall(def_XBASIC_COMPARE_FLOATS_LE);
+          optimizer.addKernelCall(DISP_XBASIC_COMPARE_FLOATS_LE);
 
           result = Lexeme::subtype_numeric;
 
         } else if (result == Lexeme::subtype_string) {
           // 7e99 xbasic copy string to NULBUF
-          cpu.addCall(def_XBASIC_COPY_STRING_TO_NULBUF);
+          optimizer.addKernelCall(DISP_XBASIC_COPY_STRING_TO_NULBUF);
           // pop hl
           cpu.addPopHL();
 
           // 7ed2 xbasic compare string (NULBUF <= string)
-          cpu.addCall(def_XBASIC_COMPARE_STRING_WITH_NULBUF_LE);
+          optimizer.addKernelCall(DISP_XBASIC_COMPARE_STRING_WITH_NULBUF_LE);
 
           result = Lexeme::subtype_numeric;
 
@@ -540,7 +540,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           // ld c, a
           cpu.addLdCA();
           // call 0x76c1     ; add floats (b:hl + c:de = b:hl)
-          cpu.addCall(def_XBASIC_ADD_FLOATS);
+          optimizer.addKernelCall(DISP_XBASIC_ADD_FLOATS);
 
         } else if (result == Lexeme::subtype_string) {
           // pop bc                      ; bc=string 1, hl=string 2
@@ -551,7 +551,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           cpu.addPushDE();
           //   call 0x7f05               ; xbasic concat strings (in: bc=str1,
           //   hl=str2, de=strdest; out: hl fake)
-          cpu.addCall(def_XBASIC_CONCAT_STRINGS);
+          optimizer.addKernelCall(DISP_XBASIC_CONCAT_STRINGS);
           // pop hl                      ; correct destination
           cpu.addPopHL();
 
@@ -595,7 +595,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           // ld b, a
           cpu.addLdBA();
           // call 0x76bd     ; subtract floats (b:hl - c:de = b:hl)
-          cpu.addCall(def_XBASIC_SUBTRACT_FLOATS);
+          optimizer.addKernelCall(DISP_XBASIC_SUBTRACT_FLOATS);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -678,7 +678,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           } else {
             // call 0x761b     ; multiply integers (hl = hl * de)
-            cpu.addCall(def_XBASIC_MULTIPLY_INTEGERS);
+            optimizer.addKernelCall(DISP_XBASIC_MULTIPLY_INTEGERS);
           }
 
         } else if (result == Lexeme::subtype_single_decimal ||
@@ -690,7 +690,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           // ld c, a
           cpu.addLdCA();
           // call 0x7732     ; multiply floats
-          cpu.addCall(def_XBASIC_MULTIPLY_FLOATS);
+          optimizer.addKernelCall(DISP_XBASIC_MULTIPLY_FLOATS);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -949,13 +949,13 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
               default: {
                 // call divide integers
-                cpu.addCall(def_XBASIC_DIVIDE_INTEGERS);
+                optimizer.addKernelCall(DISP_XBASIC_DIVIDE_INTEGERS);
               } break;
             }
 
           } else {
             // call divide integers
-            cpu.addCall(def_XBASIC_DIVIDE_INTEGERS);
+            optimizer.addKernelCall(DISP_XBASIC_DIVIDE_INTEGERS);
           }
 
         } else if (result == Lexeme::subtype_single_decimal ||
@@ -971,7 +971,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           // ld b, a
           cpu.addLdBA();
           // call 0x7775     ; divide floats
-          cpu.addCall(def_XBASIC_DIVIDE_FLOATS);
+          optimizer.addKernelCall(DISP_XBASIC_DIVIDE_FLOATS);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -983,7 +983,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           // ex de,hl
           optimizer.addByteOptimized(0xEB);
           // call 0x762d     ; divide integers
-          cpu.addCall(def_XBASIC_DIVIDE_INTEGERS);
+          optimizer.addKernelCall(DISP_XBASIC_DIVIDE_INTEGERS);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -1006,7 +1006,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           cpu.addPopDE();
 
           // call 0x762d     ; divide integers
-          cpu.addCall(def_XBASIC_DIVIDE_INTEGERS);
+          optimizer.addKernelCall(DISP_XBASIC_DIVIDE_INTEGERS);
 
           result = Lexeme::subtype_numeric;
 
@@ -1022,10 +1022,10 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           cpu.addPopHL();
 
           //   call 0x782D     ; integer to float
-          cpu.addCall(def_XBASIC_CAST_INTEGER_TO_FLOAT);
+          optimizer.addKernelCall(DISP_XBASIC_CAST_INTEGER_TO_FLOAT);
 
           // call 0x77C1       ; power float ^ integer
-          cpu.addCall(def_XBASIC_POWER_FLOAT_TO_INTEGER);
+          optimizer.addKernelCall(DISP_XBASIC_POWER_FLOAT_TO_INTEGER);
 
           result = Lexeme::subtype_single_decimal;
 
@@ -1042,7 +1042,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           // ld b, a
           cpu.addLdBA();
           // call 0x780d      ; power float ^ float
-          cpu.addCall(def_XBASIC_POWER_FLOAT_TO_FLOAT);
+          optimizer.addKernelCall(DISP_XBASIC_POWER_FLOAT_TO_FLOAT);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -1054,7 +1054,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           // ex de,hl
           optimizer.addByteOptimized(0xEB);
           // call 0x762d     ; divide integers
-          cpu.addCall(def_XBASIC_DIVIDE_INTEGERS);
+          optimizer.addKernelCall(DISP_XBASIC_DIVIDE_INTEGERS);
           // ex de, hl       ; remainder
           cpu.addExDEHL();
 
@@ -1079,7 +1079,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           cpu.addPopDE();
 
           // call 0x762d     ; divide integers
-          cpu.addCall(def_XBASIC_DIVIDE_INTEGERS);
+          optimizer.addKernelCall(DISP_XBASIC_DIVIDE_INTEGERS);
 
           // ex de, hl       ; remainder
           cpu.addExDEHL();
@@ -1244,44 +1244,44 @@ int CompilerExpressionEvaluator::evalOperatorCast(
 }
 
 void CompilerExpressionEvaluator::addCast(int from, int to) {
-  auto& cpu = *context->cpu;
+  auto& optimizer = *context->codeOptimizer;
   if (from != to) {
     if (from == Lexeme::subtype_numeric) {
       if (to == Lexeme::subtype_numeric) {
         return;
       } else if (to == Lexeme::subtype_string) {
         // call 0x7b26   ; xbasic int to string (in hl, out hl)
-        cpu.addCall(def_XBASIC_CAST_INTEGER_TO_STRING);
+        optimizer.addKernelCall(DISP_XBASIC_CAST_INTEGER_TO_STRING);
       } else if (to == Lexeme::subtype_single_decimal ||
                  to == Lexeme::subtype_double_decimal) {
         // call 0x782d   ; xbasic int to float (in hl, out b:hl)
-        cpu.addCall(def_XBASIC_CAST_INTEGER_TO_FLOAT);
+        optimizer.addKernelCall(DISP_XBASIC_CAST_INTEGER_TO_FLOAT);
       }
 
     } else if (from == Lexeme::subtype_string) {
       if (to == Lexeme::subtype_numeric) {
         // call 0x7e07   ; VAL function - xbasic string to float (in hl, out
         // b:hl)
-        cpu.addCall(def_XBASIC_CAST_STRING_TO_FLOAT);
+        optimizer.addKernelCall(DISP_XBASIC_CAST_STRING_TO_FLOAT);
         // call 0x784f   ; xbasic float to integer (in b:hl, out hl)
-        cpu.addCall(def_XBASIC_CAST_FLOAT_TO_INTEGER);
+        optimizer.addKernelCall(DISP_XBASIC_CAST_FLOAT_TO_INTEGER);
       } else if (to == Lexeme::subtype_string) {
         return;
       } else if (to == Lexeme::subtype_single_decimal ||
                  to == Lexeme::subtype_double_decimal) {
         // call 0x7e07   ; VAL function - xbasic string to float (in hl, out
         // b:hl)
-        cpu.addCall(def_XBASIC_CAST_STRING_TO_FLOAT);
+        optimizer.addKernelCall(DISP_XBASIC_CAST_STRING_TO_FLOAT);
       }
 
     } else if (from == Lexeme::subtype_single_decimal ||
                from == Lexeme::subtype_double_decimal) {
       if (to == Lexeme::subtype_numeric) {
         // call 0x784f   ; xbasic float to integer (in b:hl, out hl)
-        cpu.addCall(def_XBASIC_CAST_FLOAT_TO_INTEGER);
+        optimizer.addKernelCall(DISP_XBASIC_CAST_FLOAT_TO_INTEGER);
       } else if (to == Lexeme::subtype_string) {
         // call 0x7b80   ; xbasic float to string (in b:hl, out hl)
-        cpu.addCall(def_XBASIC_CAST_FLOAT_TO_STRING);
+        optimizer.addKernelCall(DISP_XBASIC_CAST_FLOAT_TO_STRING);
       } else if (to == Lexeme::subtype_single_decimal ||
                  to == Lexeme::subtype_double_decimal) {
         return;

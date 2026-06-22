@@ -3,6 +3,7 @@
 #include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
+#include "compiler_hooks.h"
 #include "lexeme.h"
 
 int StrigCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
@@ -28,7 +29,7 @@ int StrigCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
     // ld a, l
     cpu.addLdAL();
     // call 0x00D8      ; GTTRIG
-    cpu.addCall(0x00D8);
+    cpu.addCall(def_GTTRIG);
     // ld h, a
     cpu.addLdHA();
     // ld l, a

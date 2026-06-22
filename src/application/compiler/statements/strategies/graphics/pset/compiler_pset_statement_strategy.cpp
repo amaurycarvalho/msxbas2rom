@@ -1,6 +1,7 @@
 #include "compiler_pset_statement_strategy.h"
 
 #include "action_node.h"
+#include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
@@ -10,6 +11,7 @@ void CompilerPsetStatementStrategy::cmd_pset(
     shared_ptr<CompilerContext> context, bool forecolor) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
+  auto& optimizer = *context->codeOptimizer;
   shared_ptr<ActionNode> action, sub_action;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
@@ -194,7 +196,7 @@ void CompilerPsetStatementStrategy::cmd_pset(
     }
 
     // call 0x6F71   ; xbasic PSET (in: hl=y, de=x, a=color, b=operator)
-    cpu.addCall(def_XBASIC_PSET);
+    optimizer.addKernelCall(DISP_XBASIC_PSET);
 
   } else {
     if (forecolor)

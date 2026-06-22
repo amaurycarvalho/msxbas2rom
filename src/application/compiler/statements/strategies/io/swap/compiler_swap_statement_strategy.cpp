@@ -43,13 +43,13 @@ void CompilerSwapStatementStrategy::cmd_swap(
 
       if (lexeme1->subtype == Lexeme::subtype_numeric) {
         // call 0x6bf5    ; xbasic SWAP integers (in: hl=var1, de=var2)
-        cpu.addCall(def_XBASIC_SWAP_INTEGER);
+        optimizer.addKernelCall(DISP_XBASIC_SWAP_INTEGER);
       } else if (lexeme1->subtype == Lexeme::subtype_string) {
         // call 0x6bf9    ; xbasic SWAP strings (in: hl=var1, de=var2)
-        cpu.addCall(def_XBASIC_SWAP_STRING);
+        optimizer.addKernelCall(DISP_XBASIC_SWAP_STRING);
       } else {
         // call 0x6bfd    ; xbasic SWAP floats (in: hl=var1, de=var2)
-        cpu.addCall(def_XBASIC_SWAP_FLOAT);
+        optimizer.addKernelCall(DISP_XBASIC_SWAP_FLOAT);
       }
 
     } else {

@@ -3,6 +3,7 @@
 #include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
+#include "compiler_hooks.h"
 #include "lexeme.h"
 
 int StickCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
@@ -28,7 +29,7 @@ int StickCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
     // ld a, l
     cpu.addLdAL();
     // call 0x00D5      ; GTSTCK
-    cpu.addCall(0x00D5);
+    cpu.addCall(def_GTSTCK);
     // ld h, 0
     cpu.addLdH(0x00);
     // ld l, a

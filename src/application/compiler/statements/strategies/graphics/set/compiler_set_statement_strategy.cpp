@@ -1,6 +1,7 @@
 #include "compiler_set_statement_strategy.h"
 
 #include "action_node.h"
+#include "compiler_code_optimizer.h"
 #include "compiler_cls_statement_strategy.h"
 #include "compiler_code_helper.h"
 #include "compiler_context.h"
@@ -426,6 +427,7 @@ void CompilerSetStatementStrategy::cmd_set_page(
     shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
+  auto& optimizer = *context->codeOptimizer;
   shared_ptr<ActionNode> action = context->current_action->actions[0];
   shared_ptr<ActionNode> sub_action;
   shared_ptr<Lexeme> lexeme;
@@ -446,7 +448,7 @@ void CompilerSetStatementStrategy::cmd_set_page(
       cpu.addLdAL();
 
       // call SET_PAGE       ; in: a = display page
-      cpu.addCall(def_XBASIC_SET_PAGE);
+      optimizer.addKernelCall(DISP_XBASIC_SET_PAGE);
     }
 
     if (t == 2) {
@@ -469,6 +471,7 @@ void CompilerSetStatementStrategy::cmd_set_scroll(
     shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
+  auto& optimizer = *context->codeOptimizer;
   shared_ptr<ActionNode> action = context->current_action->actions[0];
   shared_ptr<ActionNode> sub_action;
   shared_ptr<Lexeme> lexeme;
@@ -527,7 +530,7 @@ void CompilerSetStatementStrategy::cmd_set_scroll(
     cpu.addPopDE();
 
     // call SET_SCROLL      ; in: de=x, hl=y, b=mask mode, a=page mode
-    cpu.addCall(def_XBASIC_SET_SCROLL);
+    optimizer.addKernelCall(DISP_XBASIC_SET_SCROLL);
 
   } else {
     context->syntaxError("Wrong parameters count on SET SCROLL statement");

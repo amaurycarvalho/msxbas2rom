@@ -4,6 +4,7 @@
 #include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
+#include "compiler_hooks.h"
 #include "compiler_variable_emitter.h"
 #include "lexeme.h"
 
@@ -38,7 +39,7 @@ int InputStringCompilerFunctionStrategy::execute(
     //   inc hl
     cpu.addIncHL();
     //     call 0x009F        ; CHGET
-    cpu.addCall(0x009F);
+    cpu.addCall(def_CHGET);
     //     ld (hl), a
     cpu.addLdiHLA();
     //     inc hl

@@ -3,13 +3,15 @@
 #include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
+#include "compiler_code_optimizer.h"
 #include "compiler_hooks.h"
 #include "compiler_variable_emitter.h"
 #include "lexeme.h"
 
 int LeftCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                           shared_ptr<ActionNode> action,
-                                          int* result, unsigned int parmCount) {
+                                           int* result, unsigned int parmCount) {
+  auto& optimizer = *context->codeOptimizer;
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (parmCount != 2) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "LEFT$") return Lexeme::subtype_unknown;
@@ -33,14 +35,14 @@ int LeftCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
     cpu.addPopHL();
 
     // call 0x7d99     ; xbasic left string (in: a=size, hl=source; out: hl=BUF)
-    cpu.addCall(def_XBASIC_LEFT);
+    optimizer.addKernelCall(DISP_XBASIC_LEFT);
     // ld de, temporary string
     variable.addTempStr(false);
     // push de
     cpu.addPushDE();
     //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
     //   out: hl end of string)
-    cpu.addCall(def_XBASIC_COPY_STRING);
+    optimizer.addKernelCall(DISP_XBASIC_COPY_STRING);
     // pop hl
     cpu.addPopHL();
 

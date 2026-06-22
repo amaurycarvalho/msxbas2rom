@@ -1,6 +1,7 @@
 #include "compiler_line_statement_strategy.h"
 
 #include "action_node.h"
+#include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
@@ -12,6 +13,7 @@ void CompilerLineStatementStrategy::cmd_line(
     shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
+  auto& optimizer = *context->codeOptimizer;
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> action, sub_action;
   unsigned int i, t = context->current_action->actions.size();
@@ -350,15 +352,15 @@ void CompilerLineStatementStrategy::cmd_line(
     if (line_type == 0 || !has_line_type) {
       // call 0x6DA7   ; xbasic LINE (in: ix=x0, iy=y0, de=x1, hl=y1, a=color,
       // b=operator)
-      cpu.addCall(def_XBASIC_LINE);
+      optimizer.addKernelCall(DISP_XBASIC_LINE);
     } else if (line_type == 1) {
       // call 0x6D49   ; xbasic BOX (in: ix=x0, iy=y0, de=x1, hl=y1, a=color,
       // b=operator)
-      cpu.addCall(def_XBASIC_BOX);
+      optimizer.addKernelCall(DISP_XBASIC_BOX);
     } else {
       // call 0x6E27   ; xbasic BOX FILLED (in: ix=x0, iy=y0, de=x1, hl=y1,
       // a=color, b=operator)
-      cpu.addCall(def_XBASIC_BOXF);
+      optimizer.addKernelCall(DISP_XBASIC_BOXF);
     }
 
   } else {

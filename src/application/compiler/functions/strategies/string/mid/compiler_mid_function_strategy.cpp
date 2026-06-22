@@ -3,13 +3,15 @@
 #include "action_node.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
+#include "compiler_code_optimizer.h"
 #include "compiler_hooks.h"
 #include "compiler_variable_emitter.h"
 #include "lexeme.h"
 
 int MidCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                          shared_ptr<ActionNode> action,
-                                         int* result, unsigned int parmCount) {
+                                          int* result, unsigned int parmCount) {
+  auto& optimizer = *context->codeOptimizer;
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "MID$") return Lexeme::subtype_unknown;
 
@@ -38,7 +40,7 @@ int MidCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
         // call 0x7db1     ; xbasic mid string (in: b=start, a=size,
         // hl=source; out: hl=BUF)
-        cpu.addCall(def_XBASIC_MID);
+        optimizer.addKernelCall(DISP_XBASIC_MID);
 
         // ld de, temporary string
         variable.addTempStr(false);
@@ -46,7 +48,7 @@ int MidCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
         cpu.addPushDE();
         //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
         //   out: hl end of string)
-        cpu.addCall(def_XBASIC_COPY_STRING);
+        optimizer.addKernelCall(DISP_XBASIC_COPY_STRING);
         // pop hl
         cpu.addPopHL();
 
@@ -95,7 +97,7 @@ int MidCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
         // call 0x7db1     ; xbasic mid string (in: b=start, a=size,
         // hl=source; out: hl=BUF)
-        cpu.addCall(def_XBASIC_MID);
+        optimizer.addKernelCall(DISP_XBASIC_MID);
 
         // ld de, temporary string
         variable.addTempStr(false);
@@ -103,7 +105,7 @@ int MidCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
         cpu.addPushDE();
         //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
         //   out: hl end of string)
-        cpu.addCall(def_XBASIC_COPY_STRING);
+        optimizer.addKernelCall(DISP_XBASIC_COPY_STRING);
         // pop hl
         cpu.addPopHL();
 

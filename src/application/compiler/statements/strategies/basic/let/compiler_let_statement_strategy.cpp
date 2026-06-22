@@ -75,7 +75,7 @@ void CompilerLetStatementStrategy::cmd_let(
 
         // call 0x7dd8    ; mid assignment (in: hl=source string, b=size,
         // a=start, de=destination string)
-        cpu.addCall(def_XBASIC_MID_ASSIGN);
+        context->codeOptimizer->addKernelCall(DISP_XBASIC_MID_ASSIGN);
 
         return;
       }
@@ -126,7 +126,7 @@ void CompilerLetStatementStrategy::cmd_let(
 
         // call 0x7dd8    ; mid assignment (in: hl=source string, b=size,
         // a=start, de=destination string)
-        cpu.addCall(def_XBASIC_MID_ASSIGN);
+        context->codeOptimizer->addKernelCall(DISP_XBASIC_MID_ASSIGN);
 
         return;
       }
@@ -197,7 +197,7 @@ void CompilerLetStatementStrategy::cmd_let(
 
     // call 0x7143     ; xbasic SPRITE assignment (in: a=sprite pattern,
     // hl=string)
-    cpu.addCall(def_XBASIC_SPRITE_ASSIGN);
+    context->codeOptimizer->addKernelCall(DISP_XBASIC_SPRITE_ASSIGN);
 
   } else {
     // cast

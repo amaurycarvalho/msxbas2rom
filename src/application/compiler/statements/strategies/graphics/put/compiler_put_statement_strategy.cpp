@@ -1,6 +1,7 @@
 #include "compiler_put_statement_strategy.h"
 
 #include "action_node.h"
+#include "compiler_code_optimizer.h"
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
@@ -249,6 +250,7 @@ void CompilerPutStatementStrategy::cmd_put_tile(
     shared_ptr<CompilerContext> context) {
   auto& cpu = *context->cpu;
   auto& expression = *context->expressionEvaluator;
+  auto& optimizer = *context->codeOptimizer;
   shared_ptr<ActionNode> action, sub_action;
   unsigned int i, t = context->current_action->actions.size();
   int result_subtype;
@@ -407,7 +409,7 @@ void CompilerPutStatementStrategy::cmd_put_tile(
     }
 
     // call 0x70b5                  ; xbasic VPOKE (in: hl=address, a=byte)
-    cpu.addCall(def_XBASIC_VPOKE);
+    optimizer.addKernelCall(DISP_XBASIC_VPOKE);
 
   } else {
     context->syntaxError("PUT TILE with empty parameters");

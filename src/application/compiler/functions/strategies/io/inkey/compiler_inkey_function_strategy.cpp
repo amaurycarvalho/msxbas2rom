@@ -22,11 +22,11 @@ int InkeyCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   // ld hl, 0
   cpu.addLdHL(0x0000);
   // call 0x009C        ; CHSNS
-  cpu.addCall(0x009C);
+  cpu.addCall(def_CHSNS);
   // jr z,$+5
   cpu.addJrZ(0x04);
   //   call 0x009F        ; CHGET
-  cpu.addCall(0x009F);
+  cpu.addCall(def_CHGET);
   //   ld l, a
   cpu.addLdLA();
 
