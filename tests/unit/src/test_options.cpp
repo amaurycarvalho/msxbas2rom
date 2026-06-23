@@ -22,6 +22,32 @@ TEST_SUITE("Options") {
     CHECK(opts.megaROM == false);
   }
 
+  TEST_CASE("Parses -4 flag for Konami4 compile mode") {
+    BuildOptionsSetup opts;
+    char arg0[] = "msxbas2rom";
+    char arg1[] = "-4";
+    char arg2[] = "program.bas";
+    char* argv[] = {arg0, arg1, arg2};
+
+    REQUIRE(opts.parse(3, argv) == true);
+    CHECK(opts.compileMode == BuildOptions::CompileMode::Konami4);
+    CHECK(opts.megaROM == true);
+    CHECK(opts.outputFilename.find("[Konami].rom") != std::string::npos);
+  }
+
+  TEST_CASE("Parses --konami flag for Konami4 compile mode") {
+    BuildOptionsSetup opts;
+    char arg0[] = "msxbas2rom";
+    char arg1[] = "--konami";
+    char arg2[] = "program.bas";
+    char* argv[] = {arg0, arg1, arg2};
+
+    REQUIRE(opts.parse(3, argv) == true);
+    CHECK(opts.compileMode == BuildOptions::CompileMode::Konami4);
+    CHECK(opts.megaROM == true);
+    CHECK(opts.outputFilename.find("[Konami].rom") != std::string::npos);
+  }
+
   TEST_CASE("Keeps explicit megarom selection when auto mode is present") {
     BuildOptionsSetup opts;
     char arg0[] = "msxbas2rom";

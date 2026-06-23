@@ -16,6 +16,7 @@
 
 #include "build_options.h"
 #include "compiler.h"
+#include "compiler_hooks.h"
 #include "header.h"
 #include "logger.h"
 #include "parser.h"
@@ -119,7 +120,7 @@ bool Rom::addKernel() {
                      : 0x00;
 
   if (opts->megaROM)
-    if (!fixIfKonamiSCC()) return false;
+    if (!fixKonamiMapper()) return false;
 
   return true;
 }
@@ -202,30 +203,64 @@ void Rom::setResourceMapStartAddress() {
  *       8000h~9FFFh (mirror: 0000h~1FFFh)       7000h (mirrors:
  *       7001h~77FFh) A000h~BFFFh (mirror: 2000h~3FFFh)       7800h
  *       (mirrors: 7801h~7FFFh)
- *   Konami MegaROMs with SCC
- *       8000h~9FFFh (mirror: 0000h~1FFFh)	    9000h (mirrors:
- *       9001h~97FFh) A000h~BFFFh (mirror: 2000h~3FFFh)	    B000h
- *       (mirrors: B001h~B7FFh)
+ *   Konami MegaROMs (with/without SCC)
+ *       8000h~9FFFh (mirror: 0000h~1FFFh)	    8000h (base)
+ *       A000h~BFFFh (mirror: 2000h~3FFFh)	    A000h (base)
+ *
+ * Uses dispatch table entries (DISP_KONAMI_PATCH_*) to locate exact
+ * instruction addresses for targeted patching instead of byte scanning.
  */
-bool Rom::fixIfKonamiSCC() {
-  if (opts->compileMode == BuildOptions::CompileMode::KonamiSCC) {
-    char* p = (char*)pages[0].data() + 0xDB;
-    int mapperCount = 0;
-    for (int i = 0xDB; i < (0x4000 - 3); i++) {
-      if (p[1] == 0 && (p[0] == 0x32 || p[0] == 0x3A) &&
-          (p[2] == 0x70 || p[2] == 0x78)) {
-        if (p[2] == 0x70) {
-          p[2] = 0x90;
-        } else
-          p[2] = 0xB0;
-        mapperCount++;
-        p += 3;
-      } else
-        p++;
+bool Rom::fixKonamiMapper() {
+  if (opts->compileMode == BuildOptions::CompileMode::KonamiSCC ||
+      opts->compileMode == BuildOptions::CompileMode::Konami4) {
+    struct KonamiPatch {
+      int dispIndex;
+      unsigned char newByte;
+    };
+    static const KonamiPatch patches[] = {
+        {DISP_KONAMI_PATCH_SGM_8000, 0x80},
+        {DISP_KONAMI_PATCH_SGM_A000, 0xA0},
+        {DISP_KONAMI_PATCH_OMSX_0, 0x80},
+        {DISP_KONAMI_PATCH_OMSX_1, 0x80},
+        {DISP_KONAMI_PATCH_OMSX_2, 0x80},
+        {DISP_KONAMI_PATCH_OMSX_3, 0x80},
+        {DISP_KONAMI_PATCH_OMSX_4, 0x80},
+        {DISP_KONAMI_PATCH_BUGFIX_6800, 0x70},
+        {DISP_KONAMI_PATCH_BUGFIX_8000, 0x80},
+        {DISP_KONAMI_PATCH_BUGFIX_A000, 0xA0},
+        {DISP_KONAMI_PATCH_VERIFY_READ, 0x80},
+        {DISP_KONAMI_PATCH_VERIFY_WR0, 0x80},
+        {DISP_KONAMI_PATCH_VERIFY_WR2, 0x80},
+        {DISP_KONAMI_PATCH_VERIFY_RESTORE, 0x80},
+    };
+    static const int patchCount =
+        sizeof(patches) / sizeof(patches[0]);
+
+    unsigned char* page = pages[0].data();
+    int patched = 0;
+
+    for (int i = 0; i < patchCount; i++) {
+      int tableAddr =
+          def_wrapper_routines_map_table + patches[i].dispIndex * 2;
+      int kernelAddr =
+          bin_header_bin[tableAddr] | (bin_header_bin[tableAddr + 1] << 8);
+      int offset = kernelAddr - 0x4000;
+
+      if (offset < 0 || offset > 0x3FFF - 2) {
+        logger->error("ERROR: Konami ROM format adjust failed (invalid offset " +
+                      to_string(offset) + " for patch " + to_string(i) + ")");
+        errorFound = true;
+        return false;
+      }
+
+      page[offset + 2] = patches[i].newByte;
+      patched++;
     }
-    if (mapperCount != 11) {
-      logger->error("ERROR: Konami SCC ROM format adjust failed (" +
-                    to_string(mapperCount) + " locations)");
+
+    if (patched != patchCount) {
+      logger->error("ERROR: Konami ROM format adjust failed (" +
+                    to_string(patched) + " of " + to_string(patchCount) +
+                    " locations)");
       errorFound = true;
       return false;
     }

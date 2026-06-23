@@ -21,8 +21,10 @@ MR_JUMP:
   push hl
 MR_CHANGE_SGM:
   ld (SGMADR), a
+konami_patch_sgm_8000:
   ld (Seg_P8000_SW), a
   inc a
+konami_patch_sgm_A000:
   ld (Seg_PA000_SW), a
   dec a
   ret                       ; indirect jump
@@ -30,10 +32,15 @@ MR_CHANGE_SGM:
 ; OpenMSX MegaROM detection bug fix
 ; http://github.com/openMSX/openMSX/blob/master/src/memory/RomFactory.cc
 OPENMSX_EMULATOR_AUTODETECTION:
+konami_patch_omsx_0:
   ld (Seg_P8000_SW), a
+konami_patch_omsx_1:
   ld (Seg_P8000_SW), a
+konami_patch_omsx_2:
   ld (Seg_P8000_SW), a
+konami_patch_omsx_3:
   ld (Seg_P8000_SW), a
+konami_patch_omsx_4:
   ld (Seg_P8000_SW), a
 
 MR_CALL:

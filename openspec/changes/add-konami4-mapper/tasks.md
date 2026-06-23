@@ -15,13 +15,16 @@
 ## 3. Application Layer — ROM Builder Patch
 
 - [ ] 3.1 Rename method declaration and comment in `src/application/builder/rom.h:51-52`: `fixIfKonamiSCC` → `fixKonamiMapper`, update comment to `//! @brief Fix kernel if Konami format`
-- [ ] 3.2 Rename method definition in `src/application/builder/rom.cpp:210-234`: `fixIfKonamiSCC` → `fixKonamiMapper`, extend condition from `KonamiSCC` to `KonamiSCC || Konami4`, change error message from `"Konami SCC ROM format adjust"` to `"Konami ROM format adjust"`
+- [ ] 3.2 Rename method definition in `src/application/builder/rom.cpp:210-250`: `fixIfKonamiSCC` → `fixKonamiMapper`, extend condition from `KonamiSCC` to `KonamiSCC || Konami4`, change error message from `"Konami SCC ROM format adjust"` to `"Konami ROM format adjust"`, replace byte-scanning with dispatch-table-based patching using DISP_KONAMI_PATCH_* entries
 - [ ] 3.3 Update call site in `Rom::addKernel()` (`src/application/builder/rom.cpp:122`): `fixIfKonamiSCC()` → `fixKonamiMapper()`
+- [ ] 3.4 Add `konami_patch_*` labels at exact segment-switch write points in kernel ASM files (`61_megarom.asm`, `20_runtime.asm`, `60_bios_helpers.asm`)
+- [ ] 3.5 Add `dw konami_patch_*` entries in `wrapper_routines_map_table` (`20_runtime.asm`) and corresponding `DISP_KONAMI_PATCH_*` constants in `compiler_hooks.h`
+- [ ] 3.6 Update `DISP_ENTRIES` from 207 to 221
 
 ## 4. Unit Tests
 
 - [ ] 4.1 Add test cases for `-4` and `--konami` CLI flags in `tests/unit/src/test_options.cpp` (verify compileMode = Konami4, megaROM = true, output filename contains `[Konami]`)
-- [ ] 4.2 Add test case for Konami4 ROM build with patched kernel addresses (verify `fixKonamiMapper` patches 11 locations, addresses at 0x9000 and 0xB000) in `tests/unit/src/test_rom.cpp`
+- [ ] 4.2 Add test case for Konami4 ROM build with patched kernel addresses (verify `fixKonamiMapper` patches all 14 locations via dispatch table, addresses at 0x8000 and 0xA000) in `tests/unit/src/test_rom.cpp`
 
 ## 5. Integration Tests
 

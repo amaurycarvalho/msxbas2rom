@@ -129,6 +129,44 @@ TEST_SUITE("Rom") {
     std::remove(opts->outputFilename.c_str());
   }
 
+  TEST_CASE("Builds Konami4 ROM with patched kernel addresses") {
+    const std::string filename =
+        createTempBas("rom_konami4.bas", "10 PRINT \"HI\"\n20 END\n");
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->compileMode = BuildOptions::CompileMode::Konami4;
+    opts->megaROM = true;
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+
+    REQUIRE(compileWithOpts(filename, compiler, opts) == true);
+
+    shared_ptr<Rom> rom = make_shared<Rom>();
+    REQUIRE(rom->build(compiler) == true);
+
+    std::ifstream out(opts->outputFilename, std::ios::binary);
+    REQUIRE(out.good());
+
+    int addrCount8000 = 0, addrCountA000 = 0;
+    for (int i = 0; i < 0x4000 - 3; i++) {
+      unsigned char buf[3];
+      out.seekg(i, std::ios::beg);
+      out.read(reinterpret_cast<char*>(buf), 3);
+      if (buf[1] == 0 && buf[0] == 0x32 && buf[2] == 0x80) addrCount8000++;
+      if (buf[1] == 0 && buf[0] == 0x3A && buf[2] == 0x80) addrCount8000++;
+      if (buf[1] == 0 && buf[0] == 0x32 && buf[2] == 0xA0) addrCountA000++;
+      if (buf[1] == 0 && buf[0] == 0x3A && buf[2] == 0xA0) addrCountA000++;
+    }
+    CHECK(addrCount8000 > 0);
+    CHECK(addrCountA000 > 0);
+    CHECK((addrCount8000 + addrCountA000) >= 14);
+    out.close();
+
+    std::remove(filename.c_str());
+    std::remove(opts->outputFilename.c_str());
+  }
+
   TEST_CASE("Fails when output file cannot be created") {
     const std::string filename =
         createTempBas("rom_invalid_output.bas", "10 PRINT \"HI\"\n20 END\n");

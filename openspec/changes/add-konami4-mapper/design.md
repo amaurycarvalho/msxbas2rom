@@ -1,8 +1,8 @@
 ## Context
 
-msxbas2rom currently supports three ROM formats: Plain ROM, ASCII8 MegaROM, and KonamiSCC MegaROM. The ASCII8 and KonamiSCC mappers share a common kernel (`61_megarom.asm`) with two segment-switch addresses (`Seg_P8000_SW` and `Seg_PA000_SW`). The difference between ASCII8 and KonamiSCC is handled by a binary patch (`fixIfKonamiSCC()`) that replaces 0x7000/0x7800 with 0x9000/0xB000 in the compiled kernel.
+msxbas2rom currently supports three ROM formats: Plain ROM, ASCII8 MegaROM, and KonamiSCC MegaROM. The ASCII8 and KonamiSCC mappers share a common kernel (`61_megarom.asm`) with two segment-switch addresses (`Seg_P8000_SW` and `Seg_PA000_SW`). The difference between ASCII8 and KonamiSCC is handled by a binary patch (`fixIfKonamiSCC()`) that replaces 0x7000/0x7800 with 0x8000/0xA000 in the compiled kernel.
 
-The Konami4 mapper (Konami without SCC) uses the SAME upper-bank switch addresses as KonamiSCC (0x9000 for Bank 3 at 0x8000-0x9FFF, 0xB000 for Bank 4 at 0xA000-0xBFFF). This means the existing kernel patch is directly reusable.
+The Konami4 mapper (Konami without SCC) uses the SAME upper-bank switch addresses as KonamiSCC (0x8000 for Bank 3 at 0x8000-0x9FFF, 0xA000 for Bank 4 at 0xA000-0xBFFF). This means the existing kernel patch is directly reusable.
 
 The project follows Clean Architecture with 4 layers: `domain/`, `application/`, `infrastructure/`, `cli/`. Dependencies flow inward. The `fixIfKonamiSCC()` method lives in `src/application/builder/rom.cpp`.
 
@@ -27,7 +27,7 @@ The project follows Clean Architecture with 4 layers: `domain/`, `application/`,
 
 ### Decision 1: Reuse `fixIfKonamiSCC()` patch, rename to `fixKonamiMapper()`
 
-Both KonamiSCC and Konami4 use identical segment-switch addresses for the upper two banks (0x9000 and 0xB000). The existing binary patch logic is the same for both. The rename is mechanical — method name, declaration comment in rom.h, error message string in rom.cpp, and the call site in `addKernel()` all change.
+Both KonamiSCC and Konami4 use identical segment-switch addresses for the upper two banks (0x8000 and 0xA000). The existing binary patch logic is the same for both. The patch is applied via dispatch table entries (DISP_KONAMI_PATCH_*) that resolve to exact instruction addresses in the kernel, covering all 14 segment-switch points. The rename is mechanical — method name, declaration comment in rom.h, error message string in rom.cpp, and the call site in `addKernel()` all change.
 
 **Alternatives considered:**
 - *Duplicate the method as `fixIfKonami4()`*: Rejected — causes code duplication without benefit.
@@ -54,7 +54,16 @@ Rather than creating new test programs, reuse existing programs in `tests/integr
 
 ### Decision 5: No kernel OpenMSX autodetection changes
 
-The kernel's `OPENMSX_EMULATOR_AUTODETECTION` section writes to the segment switch address to help openMSX identify the mapper. For ASCII8, the original writes go to 0x7000; after the Konami patch, they go to 0x9000. Both KonamiSCC and Konami4 use 0x9000, so no kernel change is needed. OpenMSX may detect the mapper as KonamiSCC rather than Konami4, but this is acceptable — both mappers function identically for the generated ROM.
+The kernel's `OPENMSX_EMULATOR_AUTODETECTION` section writes to the segment switch address to help openMSX identify the mapper. For ASCII8, the original writes go to 0x7000; after the Konami patch, they go to 0x8000. Both KonamiSCC and Konami4 use 0x8000, so no kernel change is needed. OpenMSX may detect the mapper as KonamiSCC rather than Konami4, but this is acceptable — both mappers function identically for the generated ROM.
+
+### Decision 6: Dispatch table-based patching instead of byte scanning
+
+Instead of scanning the binary kernel for byte patterns (`LD (0x7000),A` / `LD A,(0x7000)`), the patch uses wrapper_routines_map_table entries. Each segment-switch write instruction has a label (e.g., `konami_patch_sgm_8000`) in the kernel ASM, a `dw` entry in the dispatch table, and a `DISP_KONAMI_PATCH_*` constant in compiler_hooks.h. The `fixKonamiMapper()` function iterates over these constants, resolves each label's kernel address from the dispatch table, and patches the high byte of the address operand directly.
+
+**Advantages:**
+- No fragile byte-pattern scanning; patch locations are explicit and compile-time verified
+- Catches all 14 segment-switch points including `megarom_ascii8_bug_fix` (previously outside the scanner's start offset 0xDB)
+- Patch locations are maintained alongside the kernel code, not derived from binary layout
 
 ## Risks / Trade-offs
 

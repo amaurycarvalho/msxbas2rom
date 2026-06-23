@@ -304,6 +304,7 @@ verify.slots.test.megaram:      ; test megaram on page 2
     ld h, 0x80
     call SUB_ENASLT
 
+konami_patch_verify_read:
     ld a, (Seg_P8000_SW)     ; save original byte there
     ld (TEMP), a
 
@@ -314,6 +315,7 @@ verify.slots.test.megaram:      ; test megaram on page 2
 
     ; change page 2 block to 0 (presume megarom mode 0 - block change on)
     xor a
+konami_patch_verify_wr0:
     ld (Seg_P8000_SW), a     ; change block
 
     ; get data value on block
@@ -328,6 +330,7 @@ verify.slots.test.megaram:      ; test megaram on page 2
     jr nz, verify.slots.test.megaram.nope
         ; else, change page 2 to block 2
         ld a, 2
+konami_patch_verify_wr2:
         ld (Seg_P8000_SW), a
         ; set page 2 slot to same slot of page 1 and return
         ld a, (SLTAD1)
@@ -340,6 +343,7 @@ verify.slots.test.megaram.nope:
     call SUB_ENASLT
 
     ld a, (TEMP)
+konami_patch_verify_restore:
     ld (Seg_P8000_SW), a        ; restore original byte in RAM
 
     ld a, 0xFF

@@ -48,8 +48,8 @@ class Rom {
   /// @brief Add kernel code
   bool addKernel();
 
-  /// @brief Fix kernel if Konami SCC format
-  bool fixIfKonamiSCC();
+  //! @brief Fix kernel if Konami format
+  bool fixKonamiMapper();
 
   /// @brief Add compiled code
   bool addCompiledCode();

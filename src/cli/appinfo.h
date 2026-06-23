@@ -19,7 +19,7 @@
  * git checkout -b release/v0.0.0.0 && git push origin release/v0.0.0.0
  * git switch master
  */
-#define app_version "1.0.1.0"
+#define app_version "1.1.0.0"
 
 //! @brief Header information
 const char* info_header = R"(MSXBAS2ROM - MSX-BASIC TO ROM COMPILER
@@ -47,6 +47,7 @@ Compile options (optional):
     -c  = plain ROM compile mode (default)
     -a or --auto = auto mode (fallback to ASCII8 when plain ROM overflows)
     -x or -8 or --ascii8 = ASCII8 MegaROM compile mode
+    -4 or --konami = Konami MegaROM compile mode
     -k or --scc = Konami SCC MegaROM compile mode
 
 Path options (optional)
@@ -78,12 +79,12 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char* info_history = R"(
 Version history
 
-## [1.0.1.0] - 2026-06-23
+## [1.1.0.0] - 2026-06-23
 
-Release 1.0.1.0: Full kernel call indirection, virtual dispatch table, extended kernel optimizations, dead code cleanup, XBASIC EQU refactoring, wrapper dispatch restructure, and bug fixes.
+Release 1.1.0.0: Konami4 MegaROM mapper support with CLI flags, kernel patching, and tests.
 
 See full changelog:
-https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.0.1.0
+https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.1.0.0
 )";
 
 /***

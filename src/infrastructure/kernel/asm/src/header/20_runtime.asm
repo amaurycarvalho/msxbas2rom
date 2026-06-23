@@ -227,6 +227,21 @@ wrapper_routines_map_table:
   dw XBASIC_PRINT_FLOAT
   dw XBASIC_PRINT_CRLF
   dw XBASIC_DUMMY_RET
+  
+  dw konami_patch_sgm_8000
+  dw konami_patch_sgm_A000
+  dw konami_patch_omsx_0
+  dw konami_patch_omsx_1
+  dw konami_patch_omsx_2
+  dw konami_patch_omsx_3
+  dw konami_patch_omsx_4
+  dw konami_patch_bugfix_6800
+  dw konami_patch_bugfix_8000
+  dw konami_patch_bugfix_A000
+  dw konami_patch_verify_read
+  dw konami_patch_verify_wr0
+  dw konami_patch_verify_wr2
+  dw konami_patch_verify_restore
 
 	DEFS 0x4000 - $
 
@@ -282,10 +297,13 @@ megarom_ascii8_bug_fix:
     cp 0x42
     jr nz, clear_basic_environment
       ld a, 1
+konami_patch_bugfix_6800:
       ld (0x6800), a
       inc a
+konami_patch_bugfix_8000:
       ld (0x7000), a
       inc a
+konami_patch_bugfix_A000:
       ld (0x7800), a
 
 clear_basic_environment:

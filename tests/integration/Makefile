@@ -19,10 +19,15 @@ setup:
 	@find . -type f -name "*.rom" -delete
 
 build:
-	@echo "📦 Building ROM files..."
+	@echo "📦 Building ROM files (ASCII8)..."
 	@for file in $(BAS_FILES); do \
 		echo "Compiling $$file"; \
 		$(APP_PATH) -q -a $$file || exit 1; \
+	done
+	@echo "📦 Building ROM files (Konami4)..."
+	@for file in $(BAS_FILES); do \
+		echo "Compiling $$file with --konami"; \
+		$(APP_PATH) -q --konami $$file || exit 1; \
 	done
 
 clean: 

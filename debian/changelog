@@ -1,5 +1,5 @@
-msxbas2rom (1.0.1.0-0) bionic; urgency=low
+msxbas2rom (1.1.0.0-0) bionic; urgency=low
 
-  * Release 1.0.1.0: Full kernel call indirection, virtual dispatch table, extended kernel optimizations, dead code cleanup, XBASIC EQU refactoring, wrapper dispatch restructure, and bug fixes
+  * Release 1.1.0.0: Konami4 MegaROM mapper support with CLI flags, kernel patching, and tests
 
- -- Amaury Carvalho <amauryspires@gmail.com>  Tue, 23 Jun 2026 10:09:27 -0300
+ -- Amaury Carvalho <amauryspires@gmail.com>  Tue, 23 Jun 2026 12:00:00 -0300
