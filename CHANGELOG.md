@@ -55,6 +55,8 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - Fix missing carry clear before `sbc hl,de` in `cmd_fmaxfiles.set_heap_size`
 - Fix hardcoded 255-byte copy in `resource.get_data` (cap at actual resource size)
 - Fix duplicate `WriteParamBCD` EQU conflict with existing label causing compilation error
+- Fix compiler error messages reporting tag index instead of physical file line number (use `tag->lexerLine->lineNumber`)
+- Fix integration test Makefile not stopping on compilation error (`|| exit 1` in for loop)
 
 ### Removed
 

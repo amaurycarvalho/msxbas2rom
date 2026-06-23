@@ -186,7 +186,7 @@ bool Compiler::build(shared_ptr<Parser> parser) {
     tag = parser->getTags()[i];
 
     if (tag) {
-      context->logger->setLineNumber(i + 1);
+      context->logger->setLineNumber(tag->lexerLine ? tag->lexerLine->lineNumber : i + 1);
 
       if (i)
         compiledCodeInfo += ", " + tag->name;  /// code line

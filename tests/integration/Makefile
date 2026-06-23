@@ -22,7 +22,7 @@ build:
 	@echo "📦 Building ROM files..."
 	@for file in $(BAS_FILES); do \
 		echo "Compiling $$file"; \
-		$(APP_PATH) -q -a $$file; \
+		$(APP_PATH) -q -a $$file || exit 1; \
 	done
 
 clean: 

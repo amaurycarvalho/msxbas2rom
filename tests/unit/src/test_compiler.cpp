@@ -225,6 +225,33 @@ TEST_SUITE("Compiler") {
 
     std::remove(filename.c_str());
   }
+
+  TEST_CASE("Error line number matches physical file line") {
+    const std::string content =
+        "\n"                       // line 1 (blank)
+        "10 PRINT \"A\"\n"         // line 2
+        "\n"                       // line 3 (blank)
+        "20 PRINT \"B\"\n"         // line 4
+        "\n"                       // line 5 (blank)
+        "10 PRINT \"C\"\n";        // line 6 - duplicated line 10
+
+    const std::string filename =
+        createTempBas("compiler_phys_line.bas", content);
+
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    CHECK(compileProgram(filename, compiler) == false);
+
+    auto errors = compiler->getLogger()->errors();
+    auto& entries = errors.getAll();
+    REQUIRE(entries.size() >= 1);
+    CHECK(entries[0].line == 6);
+    CHECK(entries[0].message.find("Line number already declared") !=
+          std::string::npos);
+
+    std::remove(filename.c_str());
+  }
 }
 
 TEST_SUITE("CompilerCmdHandlerFactory") {
