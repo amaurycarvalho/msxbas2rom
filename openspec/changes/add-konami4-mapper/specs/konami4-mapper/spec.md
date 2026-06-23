@@ -27,4 +27,4 @@ ROM alignment SHALL pad to multiples of 8 pages (128KB), same as other MegaROM m
 #### Scenario: Konami4 ROM size is valid
 - **WHEN** a Konami4 ROM is generated
 - **THEN** the ROM size SHALL be a multiple of 8KB segments
-- **AND** the ROM size SHALL be between 64KB and 2MB
+- **AND** the ROM size SHALL be between 128KB and 2MB (after MegaROM filler padding)

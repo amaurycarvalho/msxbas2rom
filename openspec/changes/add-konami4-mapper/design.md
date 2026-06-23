@@ -39,7 +39,7 @@ Both KonamiSCC and Konami4 use identical segment-switch addresses for the upper 
 Add `Konami4` before `KonamiSCC` in the enum, maintaining alphabetical order ('4' < 'S' in ASCII).
 
 ```cpp
-enum class CompileMode { Plain, ASCII8, Konami4, KonamiSCC, Pcoded };
+enum class CompileMode { Plain, ASCII8, ASCII16, ASCII16X, Konami4, KonamiSCC, Pcoded };
 ```
 
 ### Decision 3: CLI flag design

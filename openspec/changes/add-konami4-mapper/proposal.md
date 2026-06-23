@@ -6,7 +6,7 @@ msxbas2rom currently supports ASCII8 and KonamiSCC MegaROM mappers but lacks Kon
 
 - Add `Konami4` compile mode to the `CompileMode` enum
 - Add CLI flags `-4` and `--konami` for Konami4 MegaROM selection
-- Reuse existing kernel segment-switch patching (Konami4 uses identical upper-bank switch addresses as KonamiSCC: 0x9000 and 0xB000)
+- Reuse existing kernel segment-switch patching (Konami4 uses 0x8000/0xA000 upper-bank switch addresses, patched via dispatch table)
 - Rename `fixIfKonamiSCC()` to `fixKonamiMapper()` with updated method comment and error message text; extend condition to include `Konami4`
 - Update output filename suffix to `[Konami]`
 - Update status messages in `main.cpp` to distinguish Konami4 from KonamiSCC
