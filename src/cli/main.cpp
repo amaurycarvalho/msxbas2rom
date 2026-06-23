@@ -254,6 +254,9 @@ int main(int argc, char* argv[]) {
       } else if (opts->compileMode == BuildOptions::CompileMode::Konami4) {
         logger->info(
             "    Compiling for MegaROM format (Konami4 without SCC)");
+      } else if (opts->compileMode == BuildOptions::CompileMode::ASCII16) {
+        logger->info(
+            "    Compiling for MegaROM format (ASCII16 mapper)");
       } else
         logger->info("    Compiling for MegaROM format (ASCII8 mapper)");
     }
@@ -320,6 +323,9 @@ int main(int argc, char* argv[]) {
         printf(
             "    MegaROM mode activated (Konami4 without SCC "
             "mapper).\n");
+      } else if (opts->compileMode == BuildOptions::CompileMode::ASCII16) {
+        printf(
+            "    MegaROM mode activated (ASCII16 mapper).\n");
       } else
         printf("    MegaROM mode activated (ASCII8 mapper).\n");
     } else {

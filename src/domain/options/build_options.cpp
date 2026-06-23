@@ -48,6 +48,7 @@ void BuildOptions::setInputFilename(string filename) {
         pathJoin(outputPath, getFileNameWithoutExtension(inputFilename));
 
     if (compileMode == CompileMode::ASCII8 ||
+        compileMode == CompileMode::ASCII16 ||
         compileMode == CompileMode::Konami4 ||
         compileMode == CompileMode::KonamiSCC) {
       baseFilename += "[" + getCompileModeShortName() + "]";
@@ -64,6 +65,8 @@ string BuildOptions::getCompileModeShortName() {
       return "Plain";
     case BuildOptions::CompileMode::ASCII8:
       return "ASCII8";
+    case BuildOptions::CompileMode::ASCII16:
+      return "ASCII16";
     case BuildOptions::CompileMode::Konami4:
       return "Konami";
     case BuildOptions::CompileMode::KonamiSCC:
@@ -80,6 +83,8 @@ string BuildOptions::getCompileModeLongName() {
       return "Plain ROM";
     case BuildOptions::CompileMode::ASCII8:
       return "ASCII8 MegaROM";
+    case BuildOptions::CompileMode::ASCII16:
+      return "ASCII16 MegaROM";
     case BuildOptions::CompileMode::Konami4:
       return "Konami MegaROM";
     case BuildOptions::CompileMode::KonamiSCC:

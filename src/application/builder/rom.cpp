@@ -119,8 +119,10 @@ bool Rom::addKernel() {
                      ? 0x01
                      : 0x00;
 
-  if (opts->megaROM)
+  if (opts->megaROM) {
     if (!fixKonamiMapper()) return false;
+    if (!fixAscii16Mapper()) return false;
+  }
 
   return true;
 }
@@ -259,6 +261,80 @@ bool Rom::fixKonamiMapper() {
 
     if (patched != patchCount) {
       logger->error("ERROR: Konami ROM format adjust failed (" +
+                    to_string(patched) + " of " + to_string(patchCount) +
+                    " locations)");
+      errorFound = true;
+      return false;
+    }
+  }
+  return true;
+}
+
+//----------------------------------------------------------------------------------------------
+
+bool Rom::fixAscii16Mapper() {
+  if (opts->compileMode == BuildOptions::CompileMode::ASCII16) {
+    struct Ascii16Patch {
+      int dispIndex;
+      unsigned char replaceByte;
+      int seqLen;
+      const unsigned char* seqBytes;
+    };
+    static const unsigned char seq_mr_change_sgm[] = {
+        0xF5,                    // push af
+        0xCB, 0x3F,              // srl a   (8KB seg / 2 = 16KB page)
+        0x32, 0x00, 0x70,        // ld (0x7000), a
+        0xF1,                    // pop af
+        0xC9,                    // ret
+        0x00                     // padding
+    };
+    static const unsigned char seq_omsx_77ff[] = {0x32, 0xFF, 0x77};
+    static const Ascii16Patch patches[] = {
+        {DISP_KONAMI_PATCH_SGM_8000, 0, (int)sizeof(seq_mr_change_sgm), seq_mr_change_sgm},
+        {DISP_KONAMI_PATCH_BUGFIX_6800, 0x70, 0, nullptr},
+        {DISP_KONAMI_PATCH_BUGFIX_8000, 0, 3, nullptr},
+        {DISP_ASCII16_PATCH_BUGFIX_INC1, 0, 1, nullptr},
+        {DISP_ASCII16_PATCH_BUGFIX_NOPSEQ, 0, 4, nullptr},
+        {DISP_KONAMI_PATCH_OMSX_3, 0, (int)sizeof(seq_omsx_77ff), seq_omsx_77ff},
+        {DISP_KONAMI_PATCH_OMSX_4, 0, (int)sizeof(seq_omsx_77ff), seq_omsx_77ff},
+    };
+    static const int patchCount =
+        sizeof(patches) / sizeof(patches[0]);
+
+    unsigned char* page = pages[0].data();
+    int patched = 0;
+
+    for (int i = 0; i < patchCount; i++) {
+      int tableAddr =
+          def_wrapper_routines_map_table + patches[i].dispIndex * 2;
+      int kernelAddr =
+          bin_header_bin[tableAddr] | (bin_header_bin[tableAddr + 1] << 8);
+      int offset = kernelAddr - 0x4000;
+
+      if (offset < 0 || offset > 0x3FFF) {
+        logger->error("ERROR: ASCII16 ROM format adjust failed (invalid offset " +
+                      to_string(offset) + " for patch " + to_string(i) + ")");
+        errorFound = true;
+        return false;
+      }
+
+      if (patches[i].seqBytes) {
+        for (int j = 0; j < patches[i].seqLen; j++) {
+          page[offset + j] = patches[i].seqBytes[j];
+        }
+      } else if (patches[i].replaceByte) {
+        page[offset + 2] = patches[i].replaceByte;
+      } else {
+        for (int j = 0; j < patches[i].seqLen; j++) {
+          page[offset + j] = 0x00;
+        }
+        // seqLen controls NOP count when seqBytes is nullptr
+      }
+      patched++;
+    }
+
+    if (patched != patchCount) {
+      logger->error("ERROR: ASCII16 ROM format adjust failed (" +
                     to_string(patched) + " of " + to_string(patchCount) +
                     " locations)");
       errorFound = true;

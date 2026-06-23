@@ -51,6 +51,9 @@ class Rom {
   //! @brief Fix kernel if Konami format
   bool fixKonamiMapper();
 
+  //! @brief Fix kernel if ASCII16 format
+  bool fixAscii16Mapper();
+
   /// @brief Add compiled code
   bool addCompiledCode();
 

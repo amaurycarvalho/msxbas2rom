@@ -62,6 +62,10 @@ void BuildOptionsSetup::setupParser() {
                    [&](const std::string&) {
                      compileMode = CompileMode::Konami4;
                    });
+  parser.addOption("-6", "--ascii16", "ASCII16 MegaROM type", false, false,
+                   [&](const std::string&) {
+                     compileMode = CompileMode::ASCII16;
+                   });
   parser.addOption("-a", "--auto",
                    "Auto ROM mode (fallback from Plain ROM to ASCII8 MegaROM)",
                    false, false, [&](const std::string&) { autoROM = true; });

@@ -242,6 +242,9 @@ wrapper_routines_map_table:
   dw konami_patch_verify_wr0
   dw konami_patch_verify_wr2
   dw konami_patch_verify_restore
+  
+  dw ascii16_patch_bugfix_inc1
+  dw ascii16_patch_bugfix_nopseq
 
 	DEFS 0x4000 - $
 
@@ -299,9 +302,11 @@ megarom_ascii8_bug_fix:
       ld a, 1
 konami_patch_bugfix_6800:
       ld (0x6800), a
+ascii16_patch_bugfix_inc1:
       inc a
 konami_patch_bugfix_8000:
       ld (0x7000), a
+ascii16_patch_bugfix_nopseq:
       inc a
 konami_patch_bugfix_A000:
       ld (0x7800), a

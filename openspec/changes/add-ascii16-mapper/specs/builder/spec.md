@@ -8,11 +8,11 @@ ROM build SHALL run only when compiler output is marked as compiled. Kernel/star
 For MegaROM modes, the kernel SHALL be patched to use the appropriate segment-switch behavior:
 - **ASCII8**: Uses 0x7000/0x7800 switch addresses; `MR_CHANGE_SGM` writes two consecutive 8KB segments
 - **KonamiSCC/Konami4**: Uses 0x8000/0xA000 switch addresses; `fixKonamiMapper()` patches via dispatch table entries (DISP_KONAMI_PATCH_*)
-- **ASCII16**: Uses only 0x7000 switch address; `fixAscii16Mapper()` patches via dispatch table entries (DISP_ASCII16_PATCH_*) to NOP out the second segment-switch write (0x7800) and surrounding `inc a`/`dec a` in `MR_CHANGE_SGM`, NOP invalid ASCII8-only writes in the boot bugfix, and convert invalid port writes to 0x7000 where appropriate
+- **ASCII16**: Uses only 0x7000 switch address for normal operation; `fixAscii16Mapper()` patches via dispatch table entries to rewrite `MR_CHANGE_SGM` with `push af; srl a; ld (0x7000),a; pop af; ret` (SeqReplace, 9 bytes), patch the boot bugfix to a single `ld (0x7000),a` write (1 ByteReplace + 3 NOPs), and patch the 4th/5th OPENMSX autodetection writes to 0x77FF (2× SeqReplace, 3 bytes each) for mapper identification. Total: 7 patch points.
 
-The `fixAscii16Mapper()` method SHALL use dispatch table entries to locate exact instruction addresses in the kernel binary for patching. Patch operations SHALL include both byte-replace (changing port address operands) and NOP-sequence replacement (replacing instruction sequences with 0x00).
+The `fixAscii16Mapper()` method SHALL use dispatch table entries to locate exact instruction addresses in the kernel binary for patching. Patch operations SHALL include SeqReplace (writing an explicit byte sequence), ByteReplace (changing a single port address operand byte), and NOP (writing `0x00` for N bytes). The MR_CHANGE_SGM patch SHALL reuse the existing `konami_patch_sgm_8000` dispatch entry and label.
 
-For ASCII16 mode, the `resourceSegment` SHALL be calculated as `pages.size()` (1:1 page-to-segment mapping) instead of `pages.size() * 2`.
+For all MegaROM modes including ASCII16, `resourceSegment` SHALL use the 8KB-pair convention: `pages.size() * 2`. The kernel's `srl a` handles the 8KB→16KB conversion at runtime, so no builder-level adjustment is needed.
 
 #### Scenario: Build ROM from valid compiled program
 - **WHEN** a successful compilation result with non-empty code is used for ROM build
@@ -22,15 +22,16 @@ For ASCII16 mode, the `resourceSegment` SHALL be calculated as `pages.size()` (1
 
 #### Scenario: Build ASCII16 MegaROM with patched kernel
 - **WHEN** a compilation result is built in ASCII16 mode
-- **THEN** the kernel binary is patched via dispatch table entries to NOP the second segment-switch in MR_CHANGE_SGM
-- **AND** the ASCII8 boot bugfix is patched to use only 0x7000 writes
-- **AND** `resourceSegment` equals `pages.size()` (not `pages.size() * 2`)
+- **THEN** `MR_CHANGE_SGM` SHALL be rewritten with `push af; srl a; ld (0x7000),a; pop af; ret` via dispatch-table SeqReplace
+  - **AND** the ASCII8 boot bugfix SHALL be patched to a single `ld (0x7000),1` via ByteReplace + NOP operations
+  - **AND** the 4th and 5th OPENMSX autodetection writes SHALL be patched to 0x77FF for mapper identification
+  - **AND** `resourceSegment` SHALL equal `pages.size() * 2` (8KB-pair convention, same as other MegaROM modes)
 - **AND** ROM is padded to a multiple of 128KB
 
 #### Scenario: Verify ASCII16 kernel patch point count
 - **WHEN** an ASCII16 ROM is built
-- **THEN** all ASCII16 patch points defined via DISP_ASCII16_PATCH_* SHALL be applied
-- **AND** the patched kernel SHALL contain NOPs (0x00) at the expected locations in MR_CHANGE_SGM and the boot bugfix
+- **THEN** all 7 ASCII16 patch points SHALL be applied (1 SeqReplace MR_CHANGE_SGM + 2 SeqReplace OMSX + 1 ByteReplace + 3 NOP)
+- **AND** the patched kernel SHALL contain the `srl a` sequence in MR_CHANGE_SGM, 0x7000 writes from omsx_0-2, 0x77FF writes from omsx_3-4, and NOPs at the expected boot bugfix locations
 
 #### Scenario: Reject plain ROM with resources above 16K page limit
 - **WHEN** plain ROM mode is used and resource pages exceed one 16K page

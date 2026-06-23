@@ -22,7 +22,7 @@ class BuildOptions {
  public:
   //! @brief Compile modes: Plain ROM, ASCII8 MegaROM, Konami4 MegaROM and KonamiSCC MegaROM
   //! @deprecated Pcoded
-  enum class CompileMode { Plain, ASCII8, Konami4, KonamiSCC, Pcoded } compileMode;
+  enum class CompileMode { Plain, ASCII8, ASCII16, Konami4, KonamiSCC, Pcoded } compileMode;
 
   //! @brief Symbols output format
   enum class SymbolsMode { None, NoICE, Omds, Symbol, Cdb, Elf } symbols;

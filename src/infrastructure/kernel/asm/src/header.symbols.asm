@@ -1028,6 +1028,8 @@ XBASIC_WIDTH	EQU 0423BH
 XFER		EQU 0F36EH
 XSAVE		EQU 0FAFEH
 YSAVE		EQU 0FB00H
+ascii16_patch_bugfix_inc1 EQU 0404DH
+ascii16_patch_bugfix_nopseq EQU 04051H
 binaryReverseA	EQU 04D65H
 binaryReverseA.loop EQU 04D69H
 blockRotateL	EQU 04DCFH

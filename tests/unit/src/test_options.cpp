@@ -48,6 +48,32 @@ TEST_SUITE("Options") {
     CHECK(opts.outputFilename.find("[Konami].rom") != std::string::npos);
   }
 
+  TEST_CASE("Parses -6 flag for ASCII16 compile mode") {
+    BuildOptionsSetup opts;
+    char arg0[] = "msxbas2rom";
+    char arg1[] = "-6";
+    char arg2[] = "program.bas";
+    char* argv[] = {arg0, arg1, arg2};
+
+    REQUIRE(opts.parse(3, argv) == true);
+    CHECK(opts.compileMode == BuildOptions::CompileMode::ASCII16);
+    CHECK(opts.megaROM == true);
+    CHECK(opts.outputFilename.find("[ASCII16].rom") != std::string::npos);
+  }
+
+  TEST_CASE("Parses --ascii16 flag for ASCII16 compile mode") {
+    BuildOptionsSetup opts;
+    char arg0[] = "msxbas2rom";
+    char arg1[] = "--ascii16";
+    char arg2[] = "program.bas";
+    char* argv[] = {arg0, arg1, arg2};
+
+    REQUIRE(opts.parse(3, argv) == true);
+    CHECK(opts.compileMode == BuildOptions::CompileMode::ASCII16);
+    CHECK(opts.megaROM == true);
+    CHECK(opts.outputFilename.find("[ASCII16].rom") != std::string::npos);
+  }
+
   TEST_CASE("Keeps explicit megarom selection when auto mode is present") {
     BuildOptionsSetup opts;
     char arg0[] = "msxbas2rom";
