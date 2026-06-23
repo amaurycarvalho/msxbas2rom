@@ -1,0 +1,40 @@
+## Why
+
+msxbas2rom now supports ASCII16 (implemented in release 1.1.0.0) but lacks ASCII16-X, the extended variant that adds mirror address decoding and 12-bit bank number support via address lines A8-A11. ASCII16-X is defined by the openMSX/grauw project and includes an autodetection signature at ROM offset 0x0010. Adding ASCII16-X with minimal code changes is feasible because for ROMs ≤4MB (the typical msxbas2rom output range), the upper 4 bank bits are always 0, making the kernel behavior identical to ASCII16's base-address-only writes (0x6000/0x7000).
+
+## What Changes
+
+- Add `ASCII16X` compile mode to the `CompileMode` enum
+- Add CLI flags `-7` and `--ascii16x` for ASCII16-X MegaROM selection
+- Reserve 8 bytes in the kernel ROM header (via `ds 8` between `db 'MSXB2R'` and `INIT1:`) shifting the entry point from 0x4010 to 0x4018; the `KERNEL_END_FILLER` absorbs the size delta keeping `BIN_HEADER_BIN_LEN` at 32768
+- Write the ASCII16-X autodetection signature `ASCII16X` at ROM offset 0x0010 in `fixAscii16Mapper()` for `ASCII16X` mode only
+- Update the hardcoded `"LOADER"` kernel symbol address from `"4010"` to `"4018"` in `symbol_export_context.cpp`
+- Extend `fixAscii16Mapper()` guard to also apply kernel patching for `ASCII16X` mode (7 identical patch points: 1 SeqReplace + 3 NOP + 1 ByteReplace + 2 OMSX SeqReplace)
+- Update output filename suffix to `[ASCII16X]`
+- Update status messages and help text in CLI
+- Regenerate `header.h` and `header.symbols.asm` via `make header`
+- Add unit tests for ASCII16X CLI parsing, ROM building, and signature byte verification
+- The compiler requires zero changes — kernel-side `srl a` conversion handles all MegaROM modes uniformly
+
+## Capabilities
+
+### New Capabilities
+
+- `ascii16x-mapper`: ASCII16-X MegaROM mapper support. Provides compilation of MSX-BASIC programs into ROM images targeting ASCII16-X hardware. The kernel is based on ASCII16 (same dispatch-table-guided patches in `fixAscii16Mapper()`) since ROMs ≤4MB use only base addresses (0x6000/0x7000) where upper bank bits A8-A11 are 0. The ASCII16-X autodetection signature `ASCII16X` is written at ROM offset 0x0010 (MSX 0x4018–0x401F, with INIT1 shifted to 0x4018). The `KERNEL_END_FILLER` absorbs the 8-byte displacement, keeping the binary size unchanged.
+
+### Modified Capabilities
+
+- `cli`: New `-7`/`--ascii16x` flags for ASCII16-X compile mode selection. The `--help` output SHALL list the new flags. The `setInputFilename()` method SHALL append `[ASCII16X]` suffix for ASCII16-X mode.
+- `builder`: ROM builder SHALL extend the `fixAscii16Mapper()` guard to also run for `ASCII16X` mode (the same 7 kernel patch points apply). For `ASCII16X` mode only, the builder SHALL write the 8-byte signature `ASCII16X` at ROM offset 0x0010 in page[0].
+
+## Impact
+
+- **Domain layer**: `src/domain/options/build_options.h` (enum value), `src/domain/options/build_options.cpp` (short name, long name, suffix, megaROM flag trigger)
+- **Application/Builder layer**: `src/application/builder/rom.cpp` (extend `fixAscii16Mapper()` guard `ASCII16` → `ASCII16 || ASCII16X`; write `"ASCII16X"` at offset 0x0010 for ASCII16X mode)
+- **Application/Symbols layer**: `src/application/symbols/strategies/context/symbol_export_context.cpp` (hardcoded `"LOADER"` address `"4010"` → `"4018"`)
+- **CLI layer**: `src/cli/options/build_options_setup.cpp` (new flags), `src/cli/main.cpp` (status/summary messages), `src/cli/appinfo.h` (help text)
+- **Kernel assembly**: `src/infrastructure/kernel/asm/src/header/20_runtime.asm` (add `ds 8` between `db 'MSXB2R'` and `INIT1:`); `src/infrastructure/kernel/header.h` and `header.symbols.asm` auto-regenerated via `make header`
+- **Dispatch table**: No changes (identical DISP\_ constants to ASCII16)
+- **Compiler**: No changes (zero — kernel handles 8KB→16KB conversion)
+- **Tests**: Unit tests for CLI parsing, ROM building, and signature byte verification
+- Release 1.2.0.0
