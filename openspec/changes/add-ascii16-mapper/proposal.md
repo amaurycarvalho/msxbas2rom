@@ -6,34 +6,32 @@ msxbas2rom currently supports ASCII8 and KonamiSCC/Konami4 MegaROM mappers but l
 
 - Add `ASCII16` compile mode to the `CompileMode` enum
 - Add CLI flags `-6` and `--ascii16` for ASCII16 MegaROM selection
-- Add dispatch-table-guided kernel binary patching via new `fixAscii16Mapper()` method: NOP out the second segment-switch write (`ld (0x7800),a`) and surrounding `inc a`/`dec a` in `MR_CHANGE_SGM`; NOP out invalid ASCII8-only writes in the boot bugfix and verify routines
-- Adjust compiler segment math for 16KB pages (Option B: inline conditionals at each site): `segm_last` starts at 1 instead of 2, increments by 1 instead of 2, segment-to-page mapping uses 1:1 ratio instead of 2:1
-- Adjust `resourceSegment` calculation in ROM builder from `pages.size() * 2` to `pages.size()` for ASCII16
-- Add dispatch table entries for new kernel patch-point labels
+- Add dispatch-table-guided kernel binary patching via new `fixAscii16Mapper()` method: rewrites `MR_CHANGE_SGM` with `push af; srl a; ld (0x7000),a; pop af; ret` (SeqReplace, 9 bytes), patches boot bugfix to single `ld (0x7000),1` write (1 ByteReplace + 3 NOPs), patches 4th/5th OPENMSX autodetection writes to 0x77FF (2× SeqReplace, 3 bytes each). Total: 7 patch points.
+- The compiler is unchanged — the kernel converts 8KB segment numbers to 16KB page numbers via `srl a` at runtime
+- `resourceSegment` stays at `pages.size() * 2` (8KB-pair convention unchanged across all MegaROM modes)
+- Add dispatch table entries for new kernel patch-point labels (`ascii16_patch_bugfix_inc1`, `ascii16_patch_bugfix_nopseq`)
 - Update output filename suffix to `[ASCII16]`
 - Update status messages and help text in CLI
-- Add unit tests for ASCII16 CLI parsing, ROM building, and kernel patching
+- Add unit tests for ASCII16 CLI parsing and ROM building
 - Add integration test coverage using existing MEGAROM test programs compiled with `--ascii16`
 
 ## Capabilities
 
 ### New Capabilities
 
-- `ascii16-mapper`: ASCII16 MegaROM mapper support. Provides compilation of MSX-BASIC programs into ROM images targeting ASCII16 hardware (16KB pages, 2-bank switching at 0x6000 and 0x7000, up to 2048KB ROM). The kernel SHALL be reused from the existing MegaROM kernel binary and patched via dispatch table to adapt the segment-switching model from 8KB pairs to single 16KB pages.
+- `ascii16-mapper`: ASCII16 MegaROM mapper support. Provides compilation of MSX-BASIC programs into ROM images targeting ASCII16 hardware (16KB pages, 2-bank switching at 0x6000 and 0x7000, up to 2048KB ROM). The kernel SHALL be reused from the existing MegaROM kernel binary and patched via dispatch table to insert `srl a` in `MR_CHANGE_SGM`, converting 8KB segment numbers to 16KB page numbers at runtime. The compiler SHALL remain unchanged.
 
 ### Modified Capabilities
 
 - `cli`: New `-6`/`--ascii16` flags for ASCII16 compile mode selection. The `--history` and `--help` output SHALL list the new flags. The `setInputFilename()` method SHALL append `[ASCII16]` suffix for ASCII16 mode.
-- `builder`: ROM builder SHALL handle `ASCII16` compile mode with a new `fixAscii16Mapper()` method that patches the kernel binary via dispatch table. The `resourceSegment` calculation SHALL use `pages.size()` (1:1 mapping) instead of `pages.size() * 2` for ASCII16. ROM padding SHALL remain at 128KB aligned.
-- `compiler`: The compiler SHALL support 16KB segment pages for ASCII16. Segment layout logic SHALL branch on `compileMode == ASCII16` to use single-segment increments (`segm_last += 1`, start at 1) and 1:1 segment-to-page mapping. Cross-segment fixup math SHALL use `*1+1` factors instead of `*2+2`. Segment-skip preamble SHALL emit a 4-byte sequence (`ld a,seg; jp MR_JUMP`) instead of the 8-byte ASCII8 sequence.
+- `builder`: ROM builder SHALL handle `ASCII16` compile mode with a new `fixAscii16Mapper()` method that patches the kernel binary via dispatch table (7 patch points: 1 SeqReplace + 3 NOP + 1 ByteReplace + 2 OMSX SeqReplace). `resourceSegment` stays at `pages.size() * 2` for all MegaROM modes including ASCII16. ROM padding SHALL remain at 128KB aligned.
 
 ## Impact
 
 - **Domain layer**: `src/domain/options/build_options.h` (enum value), `src/domain/options/build_options.cpp` (short name, suffix, megaROM flag trigger)
-- **Application/Builder layer**: `src/application/builder/rom.h` and `rom.cpp` (new `fixAscii16Mapper()`, conditional `resourceSegment` math)
-- **Application/Compiler layer**: `src/application/compiler/compiler.cpp` (~8 sites with mode-branching for segment math, skip preamble, fixup resolution)
+- **Application/Builder layer**: `src/application/builder/rom.h` and `rom.cpp` (new `fixAscii16Mapper()` method)
 - **CLI layer**: `src/cli/options/build_options_setup.cpp` (new flags), `src/cli/main.cpp` (status messages), `src/cli/appinfo.h` (help text)
-- **Kernel assembly**: `src/infrastructure/kernel/asm/src/header/61_megarom.asm` (new patch-point labels), `src/infrastructure/kernel/asm/src/header/20_runtime.asm` (new dispatch table entries)
-- **Dispatch table**: `src/application/compiler/helpers/hooks/compiler_hooks.h` (new `DISP_ASCII16_PATCH_*` constants)
-- **Tests**: Unit tests for CLI parsing, ROM builder patching, compiler segment math; integration tests with MEGAROM test programs
+- **Kernel assembly**: `src/infrastructure/kernel/asm/src/header/20_runtime.asm` (new labels `ascii16_patch_bugfix_inc1`, `ascii16_patch_bugfix_nopseq` and dispatch table entries)
+- **Dispatch table**: `src/application/compiler/helpers/hooks/compiler_hooks.h` (new `DISP_ASCII16_PATCH_BUGFIX_INC1`, `DISP_ASCII16_PATCH_BUGFIX_NOPSEQ` constants; `DISP_ENTRIES` 221→223)
+- **Tests**: Unit tests for CLI parsing and ROM building; integration tests with MEGAROM test programs
 - Release 1.1.0.0

@@ -61,7 +61,7 @@ The `fixAscii16Mapper()` method uses a unified `Ascii16Patch` struct supporting 
 | **ByteReplace** | `replaceByte != 0` | Change byte at `offset+2` (port address operand) |
 | **NOP** | `replaceByte == 0, seqBytes == nullptr, seqLen = N` | Write N bytes of `0x00` |
 
-5 patches are applied:
+7 patches are applied:
 
 | # | Dispatch Index | Label | Patch | Effect |
 |---|---------------|-------|-------|--------|
@@ -70,14 +70,16 @@ The `fixAscii16Mapper()` method uses a unified `Ascii16Patch` struct supporting 
 | 3 | `DISP_KONAMI_PATCH_BUGFIX_8000` (215) | `konami_patch_bugfix_8000` | NOP 3B | Removes redundant second write |
 | 4 | `DISP_ASCII16_PATCH_BUGFIX_INC1` (221) | `ascii16_patch_bugfix_inc1` | NOP 1B | Removes `inc a` after first write |
 | 5 | `DISP_ASCII16_PATCH_BUGFIX_NOPSEQ` (222) | `ascii16_patch_bugfix_nopseq` | NOP 4B | Removes `inc a + ld (0x7800),a` |
+| 6 | `DISP_KONAMI_PATCH_OMSX_3` (212) | `konami_patch_omsx_3` | SeqReplace 3B: `{0x32, 0xFF, 0x77}` | Rewrites 4th OpenMSX write to 0x77FF |
+| 7 | `DISP_KONAMI_PATCH_OMSX_4` (213) | `konami_patch_omsx_4` | SeqReplace 3B: `{0x32, 0xFF, 0x77}` | Rewrites 5th OpenMSX write to 0x77FF |
 
-After patching, the boot bugfix reduces to a single `ld (0x7000), 1` followed by 8 NOPs.
+After patching, the boot bugfix reduces to a single `ld (0x7000), 1` followed by 8 NOPs. The OPENMSX autodetection pattern becomes: 3× `ld (0x7000),a` + 2× `ld (0x77FF),a`.
 
 ### Decision 3: No lower bank (0x6000) switching; base addresses only
 
 ASCII16 has two switch addresses: 0x6000 for 0x4000-0x7FFF and 0x7000 for 0x8000-0xBFFF. The kernel code lives at 0x4000-0x7FFF and must always be accessible. The design keeps 0x6000 unused — the kernel page is never switched. Only 0x7000 switches are used.
 
-All segment-switch writes SHALL target the **base addresses** (0x6000 and 0x7000) exclusively. Mirror addresses (0x6001-0x67FF, 0x7001-0x77FF) SHALL NOT be used.
+All segment-switch writes for normal operation SHALL target the **base addresses** (0x6000 and 0x7000) exclusively. The only exception is the OPENMSX autodetection sequence (Decision 4), which uses two writes at 0x77FF for mapper identification. Mirror addresses (0x6001-0x67FF, 0x7001-0x77FF) SHALL NOT be used for any other purpose.
 
 ### Decision 4: OPENMSX autodetection — mirror writes at 0x77FF
 

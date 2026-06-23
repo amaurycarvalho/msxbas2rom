@@ -23,9 +23,9 @@ For all MegaROM modes including ASCII16, `resourceSegment` SHALL use the 8KB-pai
 #### Scenario: Build ASCII16 MegaROM with patched kernel
 - **WHEN** a compilation result is built in ASCII16 mode
 - **THEN** `MR_CHANGE_SGM` SHALL be rewritten with `push af; srl a; ld (0x7000),a; pop af; ret` via dispatch-table SeqReplace
-  - **AND** the ASCII8 boot bugfix SHALL be patched to a single `ld (0x7000),1` via ByteReplace + NOP operations
-  - **AND** the 4th and 5th OPENMSX autodetection writes SHALL be patched to 0x77FF for mapper identification
-  - **AND** `resourceSegment` SHALL equal `pages.size() * 2` (8KB-pair convention, same as other MegaROM modes)
+- **AND** the ASCII8 boot bugfix SHALL be patched to a single `ld (0x7000),1` via ByteReplace + NOP operations
+- **AND** the 4th and 5th OPENMSX autodetection writes SHALL be patched to 0x77FF for mapper identification
+- **AND** `resourceSegment` SHALL equal `pages.size() * 2` (8KB-pair convention, same as other MegaROM modes)
 - **AND** ROM is padded to a multiple of 128KB
 
 #### Scenario: Verify ASCII16 kernel patch point count
