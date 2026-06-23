@@ -13,7 +13,7 @@ The project follows Clean Architecture with 4 layers: `domain/`, `application/`,
 - Reuse the existing binary kernel patch (no new kernel code needed)
 - Rename `fixIfKonamiSCC()` to `fixKonamiMapper()` to reflect generic Konami support
 - Provide CLI flags `-4` and `--konami`
-- Produce ROMs with `[Konami4]` filename suffix
+- Produce ROMs with `[Konami]` filename suffix
 - Unit and integration test coverage
 
 **Non-Goals:**
@@ -27,7 +27,7 @@ The project follows Clean Architecture with 4 layers: `domain/`, `application/`,
 
 ### Decision 1: Reuse `fixIfKonamiSCC()` patch, rename to `fixKonamiMapper()`
 
-Both KonamiSCC and Konami4 use identical segment-switch addresses for the upper two banks (0x9000 and 0xB000). The existing binary patch logic is the same for both.
+Both KonamiSCC and Konami4 use identical segment-switch addresses for the upper two banks (0x9000 and 0xB000). The existing binary patch logic is the same for both. The rename is mechanical — method name, declaration comment in rom.h, error message string in rom.cpp, and the call site in `addKernel()` all change.
 
 **Alternatives considered:**
 - *Duplicate the method as `fixIfKonami4()`*: Rejected — causes code duplication without benefit.
@@ -36,10 +36,10 @@ Both KonamiSCC and Konami4 use identical segment-switch addresses for the upper 
 
 ### Decision 2: Where to add Konami4 in the `CompileMode` enum
 
-Add `Konami4` after `KonamiSCC` in the enum, maintaining alphabetical order within the Konami group.
+Add `Konami4` before `KonamiSCC` in the enum, maintaining alphabetical order ('4' < 'S' in ASCII).
 
 ```cpp
-enum class CompileMode { Plain, ASCII8, KonamiSCC, Konami4, Pcoded };
+enum class CompileMode { Plain, ASCII8, Konami4, KonamiSCC, Pcoded };
 ```
 
 ### Decision 3: CLI flag design

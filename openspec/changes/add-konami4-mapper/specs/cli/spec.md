@@ -20,13 +20,13 @@ The `--help` flag SHALL list all compile mode flags including `-4`/`--konami`.
 #### Scenario: Select Konami4 compile mode
 - **WHEN** the command `msxbas2rom -4 program.bas` is executed
 - **THEN** `compileMode` is set to `Konami4`
-- **AND** output filename contains `[Konami4]`
+- **AND** output filename contains `[Konami]`
 - **AND** `megaROM` flag is set to true
 
 #### Scenario: Select Konami4 via long flag
 - **WHEN** the command `msxbas2rom --konami program.bas` is executed
 - **THEN** `compileMode` is set to `Konami4`
-- **AND** output filename contains `[Konami4]`
+- **AND** output filename contains `[Konami]`
 - **AND** `megaROM` flag is set to true
 
 #### Scenario: Reject missing input file

@@ -15,7 +15,7 @@ ROM alignment SHALL pad to multiples of 8 pages (128KB), same as other MegaROM m
 
 #### Scenario: Compile a program in Konami4 mode
 - **WHEN** a valid MSX-BASIC program is compiled with `--konami` flag
-- **THEN** the output ROM file is generated with `[Konami4]` suffix
+- **THEN** the output ROM file is generated with `[Konami]` suffix
 - **AND** the kernel segment-switch addresses for the upper banks are patched to 0x9000 and 0xB000
 - **AND** the ROM is padded to a multiple of 128KB (8 pages)
 
