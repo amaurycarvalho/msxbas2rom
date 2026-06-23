@@ -42,14 +42,22 @@ if (opts->compileMode == BuildOptions::CompileMode::ASCII16 ||
     opts->compileMode == BuildOptions::CompileMode::ASCII16X) {
 ```
 
-For ASCII16X mode, additionally write the 8-byte signature `"ASCII16X"` at fixed offset 0x0010 in `pages[0]`:
+For ASCII16X mode, additionally write the 8-byte signature `"ASCII16X"` at fixed offset 0x0010 in `pages[0]`, and NOP out the 14-byte `AB` signature check in the boot bugfix via the dispatch table:
+
 ```cpp
 if (opts->compileMode == BuildOptions::CompileMode::ASCII16X) {
     memcpy(pages[0].data() + 0x0010, "ASCII16X", 8);
+
+    int tableAddr = def_wrapper_routines_map_table + DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK * 2;
+    int kernelAddr = bin_header_bin[tableAddr] | (bin_header_bin[tableAddr + 1] << 8);
+    int offset = kernelAddr - 0x4000;
+    for (int j = 0; j < 14; j++) {
+      pages[0].data()[offset + j] = 0x00;
+    }
 }
 ```
 
-No new dispatch table entry is needed — the signature is at a fixed known offset.
+This adds a new dispatch table entry at index 223 (`DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK`) and bumps `DISP_ENTRIES` to 224. The 14-byte NOP removes the `ld a,(0x8000); cp 0x41; jr nz; ld a,(0x8001); cp 0x42; jr nz` comparison block so the ASCII8 bugfix always executes on ASCII16-X hardware.
 
 **Alternatives considered:**
 - *Separate `fixAscii16xMapper()` method*: Rejected — duplicates logic with no benefit. The 7 patch points are identical.

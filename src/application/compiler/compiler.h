@@ -20,7 +20,7 @@
 
 #include <memory>
 
-#define COMPILE_MAX_PAGES (16 * 4)
+#define COMPILE_MAX_PAGES (16 * 8)
 #define COMPILE_CODE_SIZE (COMPILE_MAX_PAGES * 0x4000)
 #define COMPILE_RAM_SIZE (0xFFFF)
 

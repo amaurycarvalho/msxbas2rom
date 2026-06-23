@@ -34,7 +34,9 @@ msxbas2rom now supports ASCII16 (implemented in release 1.1.0.0) but lacks ASCII
 - **Application/Symbols layer**: `src/application/symbols/strategies/context/symbol_export_context.cpp` (hardcoded `"LOADER"` address `"4010"` → `"4018"`)
 - **CLI layer**: `src/cli/options/build_options_setup.cpp` (new flags), `src/cli/main.cpp` (status/summary messages), `src/cli/appinfo.h` (help text)
 - **Kernel assembly**: `src/infrastructure/kernel/asm/src/header/20_runtime.asm` (add `ds 8` between `db 'MSXB2R'` and `INIT1:`); `src/infrastructure/kernel/header.h` and `header.symbols.asm` auto-regenerated via `make header`
-- **Dispatch table**: No changes (identical DISP\_ constants to ASCII16)
+- **Dispatch table**: `src/application/compiler/helpers/hooks/compiler_hooks.h` (new `DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK` constant; `DISP_ENTRIES` 223→224)
 - **Compiler**: No changes (zero — kernel handles 8KB→16KB conversion)
 - **Tests**: Unit tests for CLI parsing, ROM building, and signature byte verification
 - Release 1.1.0.0
+
+> **Note**: This is a partial implementation of the ASCII16-X format. The mapper hardware specification supports 12-bit bank numbers (D0-D7 + A8-A11) with 4-bit upper bank encoding via the write address, mirror page decoding, and ROM sizes up to 8MB (512 banks on XL cartridge). This implementation targets ROMs ≤4MB (≤256 banks) where the upper 4 bank bits (A8-A11) are always 0. All bank writes target base addresses 0x6000 and 0x7000 exclusively — no address-line encoding is used. Mirror addresses (0x2000-0x2FFF, 0xA000-0xAFFF, etc.) are never used for bank switching. The 12-bit bank number, full mirror decoding, and ROM sizes >4MB are not supported.

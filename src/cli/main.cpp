@@ -362,6 +362,9 @@ int main(int argc, char* argv[]) {
     printf("    RAM usage will be %.1f%% of avaliable capacity\n",
            compiler->getRamMemoryPerc());
 
+    if (opts->symbols != BuildOptions::SymbolsMode::None)
+      printf("    Symbols file created for debugger support\n");
+
     printf("Compilation finished with success.\n");
 
     printf("\nIncluded into this ROM:\n");

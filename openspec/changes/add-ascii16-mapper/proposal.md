@@ -35,3 +35,5 @@ msxbas2rom currently supports ASCII8 and KonamiSCC/Konami4 MegaROM mappers but l
 - **Dispatch table**: `src/application/compiler/helpers/hooks/compiler_hooks.h` (new `DISP_ASCII16_PATCH_BUGFIX_INC1`, `DISP_ASCII16_PATCH_BUGFIX_NOPSEQ` constants; `DISP_ENTRIES` 221→223)
 - **Tests**: Unit tests for CLI parsing and ROM building; integration tests with MEGAROM test programs
 - Release 1.1.0.0
+
+> **Note**: This is a partial implementation of the ASCII16 format. The mapper hardware specification supports 8-bit bank registers at addresses 0x6000 and 0x7000 with mirror ranges (0x6001-0x6FFF and 0x7001-0x77FF) and up to 256 banks (2048KB). This implementation uses only the base addresses 0x6000 and 0x7000, never mirror addresses. All bank writes target the base address 0x7000 exclusively for segment switching. The compiler emits 8KB segment pairs; the kernel converts to 16KB pages via `srl a`.

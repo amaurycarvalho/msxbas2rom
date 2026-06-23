@@ -8,7 +8,9 @@
 ## 2. Kernel Assembly — Signature Space Reservation
 
 - [x] 2.1 Insert `ds 8, 0x00` between `db 'MSXB2R'` and `INIT1:` in `src/infrastructure/kernel/asm/src/header/20_runtime.asm` to reserve 8 bytes at ROM offset 0x0010; this shifts INIT1 from 0x4010 to 0x4018
-- [x] 2.2 Regenerate kernel binary and symbols by running `make header` (pasmo + xxd -i); `header.h` and `header.symbols.asm` auto-update with shifted addresses; `BIN_HEADER_BIN_LEN` remains at 32768 (KERNEL_END_FILLER absorbs the 8-byte delta)
+- [x] 2.2 Add `ascii16x_patch_bugfix_ab_check:` label at `megarom_ascii8_bug_fix` in `20_runtime.asm` and add `dw ascii16x_patch_bugfix_ab_check` entry to the dispatch table
+- [x] 2.3 Add `#define DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK 223` and bump `DISP_ENTRIES` to 224 in `src/application/compiler/helpers/hooks/compiler_hooks.h`
+- [x] 2.4 Regenerate kernel binary and symbols by running `make header` (pasmo + xxd -i); `header.h` and `header.symbols.asm` auto-update with shifted addresses; `BIN_HEADER_BIN_LEN` remains at 32768 (KERNEL_END_FILLER absorbs the 8-byte delta)
 
 ## 3. CLI Layer — Flags, Help Text, and Status Messages
 
@@ -20,7 +22,7 @@
 ## 4. Application Layer — ROM Builder (fixAscii16Mapper guard + signature write)
 
 - [x] 4.1 Extend `fixAscii16Mapper()` condition in `src/application/builder/rom.cpp` from `compileMode == CompileMode::ASCII16` to `compileMode == CompileMode::ASCII16 || compileMode == CompileMode::ASCII16X`
-- [x] 4.2 Add signature write for ASCII16X mode in `fixAscii16Mapper()`: `if (compileMode == ASCII16X) memcpy(pages[0].data() + 0x0010, "ASCII16X", 8);` — writes the 8-byte signature at ROM offset 0x0010
+- [x] 4.2 Add signature write + bugfix AB-check NOP for ASCII16X mode in `fixAscii16Mapper()`: `memcpy(pages[0]+0x0010, "ASCII16X", 8)` + 14-byte NOP at `DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK` (NOPs out the `ld a,(0x8000); cp 0x41; jr nz; ld a,(0x8001); cp 0x42; jr nz` comparison block so the ASCII8 bugfix always runs)
 
 ## 5. Application Layer — Symbols (LOADER address update)
 

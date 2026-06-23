@@ -9,7 +9,7 @@ The ASCII16-X mapper SHALL use the following memory layout:
 - Page 1 (0x4000-0x7FFF, mirrored at 0xC000-0xFFFF): bank register at 0x6000-0x6FFF (base), initial segment 0, kernel fixed
 - Page 2 (0x8000-0xBFFF, mirrored at 0x0000-0x3FFF): bank register at 0x7000-0x7FFF (base), initial segment 0
 
-The kernel SHALL reuse the ASCII16 `fixAscii16Mapper()` patches exactly (7 patch points: 1 SeqReplace for MR_CHANGE_SGM with `push af; srl a; ld (0x7000),a; pop af; ret`, 1 ByteReplace + 3 NOPs for boot bugfix, 2 SeqReplace for OMSX autodetection at 0x77FF). The compiler SHALL remain unchanged.
+The kernel SHALL reuse the ASCII16 `fixAscii16Mapper()` patches exactly (7 patch points: 1 SeqReplace for MR_CHANGE_SGM with `push af; srl a; ld (0x7000),a; pop af; ret`, 1 ByteReplace + 3 NOPs for boot bugfix, 2 SeqReplace for OMSX autodetection at 0x77FF). Additionally, for ASCII16X mode only, the 14-byte `AB` signature check at `megarom_ascii8_bug_fix` SHALL be NOPped via dispatch table entry `DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK` (index 223). The compiler SHALL remain unchanged.
 
 The ASCII16-X autodetection signature `ASCII16X` SHALL be written at ROM offset 0x0010 for ASCII16X mode only. For this, the kernel header SHALL reserve 8 bytes (via `ds 8, 0x00`) between the `MSXB2R` custom signature and `INIT1`, shifting the entry point from 0x4010 to 0x4018. The `KERNEL_END_FILLER` SHALL absorb the size delta. The hardcoded `"LOADER"` kernel symbol address in `symbol_export_context.cpp` SHALL be updated from `"4010"` to `"4018"`.
 
@@ -29,6 +29,7 @@ ROM alignment SHALL pad to multiples of 8 pages (128KB). Maximum ROM size SHALL 
 - **AND** 7 patch points SHALL be applied (same as ASCII16)
 - **AND** the boot bugfix `ld (0x6800),a` SHALL be patched to `ld (0x7000),a`
 - **AND** redundant bugfix writes SHALL be NOPped
+- **AND** the 14-byte `AB` signature check SHALL be NOPped (`ld a,(0x8000); cp 0x41; jr nz; ld a,(0x8001); cp 0x42; jr nz` replaced with 0x00)
 - **AND** the 4th and 5th OPENMSX writes SHALL target 0x77FF for mapper identification
 
 #### Scenario: ASCII16-X signature present at ROM offset 0x0010

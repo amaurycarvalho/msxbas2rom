@@ -9,7 +9,7 @@ For MegaROM modes, the kernel SHALL be patched to use the appropriate segment-sw
 - **ASCII8**: Uses 0x7000/0x7800 switch addresses; `MR_CHANGE_SGM` writes two consecutive 8KB segments
 - **KonamiSCC/Konami4**: Uses 0x8000/0xA000 switch addresses; `fixKonamiMapper()` patches via dispatch table entries (DISP_KONAMI_PATCH_*)
 - **ASCII16**: Uses only 0x7000 switch address for normal operation; `fixAscii16Mapper()` patches via dispatch table entries to rewrite `MR_CHANGE_SGM` with `push af; srl a; ld (0x7000),a; pop af; ret` (SeqReplace, 9 bytes), patch the boot bugfix to a single `ld (0x7000),a` write (1 ByteReplace + 3 NOPs), and patch the 4th/5th OPENMSX autodetection writes to 0x77FF (2× SeqReplace, 3 bytes each). Total: 7 patch points.
-- **ASCII16-X**: Uses the identical kernel patches as ASCII16. The `fixAscii16Mapper()` method SHALL apply the same 7 dispatch-table patches when `compileMode` is `ASCII16X`. Additionally, for `ASCII16X` mode only, the builder SHALL write the 8-byte signature `"ASCII16X"` (`41 53 43 49 49 31 36 58`) at ROM offset 0x0010 in `pages[0]`. The 8-byte reservation in the kernel header is unconditional (via ASM `ds 8`); only the fill value differs by mode (0x00 for non-ASCII16X, signature bytes for ASCII16X).
+- **ASCII16-X**: Uses the identical kernel patches as ASCII16. The `fixAscii16Mapper()` method SHALL apply the same 7 dispatch-table patches when `compileMode` is `ASCII16X`. Additionally, for `ASCII16X` mode only, the builder SHALL: (1) write the 8-byte signature `"ASCII16X"` (`41 53 43 49 49 31 36 58`) at ROM offset 0x0010 in `pages[0]`; (2) NOP out the 14-byte `AB` signature check at `megarom_ascii8_bug_fix` (`ld a,(0x8000); cp 0x41; jr nz; ld a,(0x8001); cp 0x42; jr nz`) via dispatch table entry `DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK` (index 223), ensuring the bugfix always runs. The 8-byte reservation in the kernel header is unconditional (via ASM `ds 8`); only the fill value differs by mode (0x00 for non-ASCII16X, signature bytes for ASCII16X).
 
 The `fixAscii16Mapper()` method SHALL use dispatch table entries to locate exact instruction addresses in the kernel binary for patching. Patch operations SHALL include SeqReplace (writing an explicit byte sequence), ByteReplace (changing a single port address operand byte), and NOP (writing `0x00` for N bytes). The signature write is a fixed-offset operation at ROM offset 0x0010 and does not use the dispatch table.
 
@@ -25,6 +25,7 @@ For all MegaROM modes, `resourceSegment` SHALL use the 8KB-pair convention: `pag
 - **WHEN** a compilation result is built in ASCII16-X mode
 - **THEN** `MR_CHANGE_SGM` SHALL be rewritten with `push af; srl a; ld (0x7000),a; pop af; ret` via dispatch-table SeqReplace
 - **AND** the ASCII8 boot bugfix SHALL be patched to a single `ld (0x7000),1` via ByteReplace + NOP operations
+- **AND** the 14-byte bugfix `AB` check SHALL be NOPped via dispatch table entry `DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK`
 - **AND** all 7 ASCII16 patch points SHALL be applied
 - **AND** `resourceSegment` SHALL equal `pages.size() * 2` (8KB-pair convention, same as other MegaROM modes)
 - **AND** ROM is padded to a multiple of 128KB

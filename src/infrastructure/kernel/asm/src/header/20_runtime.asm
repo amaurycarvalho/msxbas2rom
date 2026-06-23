@@ -245,6 +245,7 @@ wrapper_routines_map_table:
   
   dw ascii16_patch_bugfix_inc1
   dw ascii16_patch_bugfix_nopseq
+  dw ascii16x_patch_bugfix_ab_check
 
 	DEFS 0x4000 - $
 
@@ -294,6 +295,7 @@ start:
   call select_rom_on_page_2
 
 megarom_ascii8_bug_fix:
+ascii16x_patch_bugfix_ab_check:
   ld a, (0x8000)            ; ASCII8 MegaROM loading bug fix
   cp 0x41
   jr nz, clear_basic_environment

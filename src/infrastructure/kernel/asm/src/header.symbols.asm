@@ -1030,6 +1030,7 @@ XSAVE		EQU 0FAFEH
 YSAVE		EQU 0FB00H
 ascii16_patch_bugfix_inc1 EQU 04055H
 ascii16_patch_bugfix_nopseq EQU 04059H
+ascii16x_patch_bugfix_ab_check EQU 04042H
 binaryReverseA	EQU 04D6DH
 binaryReverseA.loop EQU 04D71H
 blockRotateL	EQU 04DD7H

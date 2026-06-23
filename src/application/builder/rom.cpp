@@ -344,6 +344,16 @@ bool Rom::fixAscii16Mapper() {
 
     if (opts->compileMode == BuildOptions::CompileMode::ASCII16X) {
       memcpy(pages[0].data() + 0x0010, "ASCII16X", 8);
+
+      int tableAddr =
+          def_wrapper_routines_map_table + DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK * 2;
+      int kernelAddr =
+          bin_header_bin[tableAddr] | (bin_header_bin[tableAddr + 1] << 8);
+      int offset = kernelAddr - 0x4000;
+
+      for (int j = 0; j < 14; j++) {
+        pages[0].data()[offset + j] = 0x00;
+      }
     }
   }
   return true;
