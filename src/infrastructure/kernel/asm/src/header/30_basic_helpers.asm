@@ -150,14 +150,10 @@ XBASIC_END.1:
   ld (FLGINP), a
   ld (DORES), a
   ld (CONSAV), a
-  ;ld (MAXFIL), a              ; MAXFIL - reset max files
-  ;ld (NLONLY), a              ; NLONLY - reset io buffers (warning: commented because it halts the system)
   ld (ONEFLG), a              ; error flag (0=not in ERROR handler routine)
   ld (ERRFLG), a              ; error number
-  cpl
-  ld (CURLIN), a              ; CURLIN = 0xFFFF
-  ld (CURLIN+1), a
-  ;ld (DSKDIS), a              ; disable disks
+  ld hl, 0xFFFF
+  ld (CURLIN), hl             ; CURLIN = 0xFFFF
   ld hl, (HEAPSTR)            ; heap start address
   ld (VARTAB), hl		          ; start variable area
   ld (ARYTAB), hl             ; start arrayvariable area = start variable area (no variables)
@@ -198,8 +194,6 @@ XBASIC_WIDTH:
   inc a
   add a, e
   ld (CLMLST), a
-  ; ld a, 0x0C                  ; new page (clear the screen)
-  ; rst 0x18                    ; OUTDO - output to screen
   ld a, (SCRMOD)              ; SCRMOD (current screen mode), OLDSCR (last text screen mode)
   ld l, a
   call XBASIC_SCREEN          ; xbasic SCREEN mode (in: a, l = screen mode)
@@ -438,7 +432,7 @@ XBASIC_COPY_FROM.TILED.loop:
 
 ; sx=x, sy=y, hl=dest address, nx=width, ny=height, argt=expansion/direction (0000DDEE)
 XBASIC_COPY_TO:
-  ld (MV_DPTR), hl
+  push hl
   ld hl, (NX)
   xor a
   sbc hl, de                    ; x1 must be >= x0
@@ -455,7 +449,7 @@ XBASIC_COPY_TO.1:
     call intNeg
 XBASIC_COPY_TO.2:
   ld (NY), hl
-  ld hl, (MV_DPTR)
+  pop hl
 
   ld a, (RAMAD3)
   and 0xF0                      ; keep just expansion
@@ -632,8 +626,7 @@ XBASIC_TAB:
   ld de, (TTYPOS)
   xor a
   sbc hl, de
-  bit 7, h
-  jr z, XBASIC_TAB.1
+  jp p, XBASIC_TAB.1
     ld l, a
 XBASIC_TAB.1:
   ld a, 0x20   ; space

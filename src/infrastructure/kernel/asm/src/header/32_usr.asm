@@ -105,9 +105,6 @@ usr2_vdp:
   jp usr_def.ok
 
 usr2_turbo:
-  ;in a, (64)
-  ;cp 247            ; 8 - panasonic
-  ;jp nz, usr_def    ; turbo works only on panasonic machines
   ld a, (VERSION)
   cp 2              ; msx2+ or turbo R
   jp c, usr_def     ; not a turbo capable machine

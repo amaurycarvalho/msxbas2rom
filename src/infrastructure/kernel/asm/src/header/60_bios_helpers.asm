@@ -910,9 +910,3 @@ gfxVDP.set:
   ld c, a
   jp WRTVDP
 
-  ;ld a, (VERSION)
-  ;or a
-  ;jp z, WRTVDP      ; b = data, c = register
-  ;ld ix, NWRVDP
-  ;jp SUB_EXTROM
-

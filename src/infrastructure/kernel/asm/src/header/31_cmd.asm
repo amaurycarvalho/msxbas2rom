@@ -11,8 +11,8 @@ cmd_play:
 
   ld a, (ARG)
   and 1
-  sla a
-  sla a
+  add a, a
+  add a, a
   ld c, a
   push bc
     ld ix, (PLAY)
@@ -87,13 +87,8 @@ cmd_wrtvram.ram_on_page_2:
 cmd_wrtfnt:
   call resource.copy_to_ram_on_page_3   ; out: hl = resource data, bc = size
 
-  inc hl
-  inc hl
-  inc hl
-  inc hl
-  inc hl
-  inc hl
-  inc hl
+  ld de, 7
+  add hl, de
   dec bc
   dec bc
   dec bc
@@ -496,10 +491,10 @@ cmd_setfnt.default_colors.0:
           add hl, de
 cmd_setfnt.default_colors.1:
       ld a, (FORCLR)
-      sla a ; x2
-      sla a ; x4
-      sla a ; x8
-      sla a ; x16
+      add a, a ; x2
+      add a, a ; x4
+      add a, a ; x8
+      add a, a ; x16
       ex de, hl
         ld hl, BAKCLR
         or (hl)
@@ -531,9 +526,6 @@ cmd_clrscr:
 
 ; DAC = 0 (off), 1 (on)
 cmd_turbo:
-  ;in a, (64)
-  ;cp 247            ; 8 - panasonic
-  ;ret nz            ; turbo works only on panasonic machines
   ld a, (VERSION)
   cp 2              ; msx2+ or turbo R
   ret c             ; not a turbo capable machine
@@ -1281,10 +1273,10 @@ cmd_page.mode:
   call WRTVDP           ; b = data, c = register
 cmd_page.delay:
   ld a, d
-  sla a
-  sla a
-  sla a
-  sla a
+  add a, a
+  add a, a
+  add a, a
+  add a, a
   or e
   ld b, a               ; b = delay #1 (low nibble) and #2 (high nibble)
   ld c, 13              ; vdp(14)
@@ -1713,10 +1705,10 @@ cmd_mtf.palette.copy.to_vram:
 cmd_mtf.palette.copy.to_vram.loop:
   push de
     ld a, (hl)                                ; red 
-    sla a 
-    sla a
-    sla a
-    sla a
+    add a, a
+    add a, a
+    add a, a
+    add a, a
     inc hl
     ld e, (hl)                                ; green
     inc hl

@@ -78,7 +78,7 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char* info_history = R"(
 Version history
 
-## [1.0.1.0] - 2026-06-22
+## [1.0.1.0] - 2026-06-23
 
 Release 1.0.1.0: Full kernel call indirection, virtual dispatch table, extended kernel optimizations, dead code cleanup, XBASIC EQU refactoring, wrapper dispatch restructure, and bug fixes.
 

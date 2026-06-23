@@ -17,7 +17,7 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - [extend-kernel-optimizations] Extend kernel optimizations with additional size and speed improvements
 - [wishlist] Collect and track feature requests and future enhancements
 
-## [1.0.1.0] - 2026-06-22
+## [1.0.1.0] - 2026-06-23
 
 ### Added
 

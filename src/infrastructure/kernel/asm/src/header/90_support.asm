@@ -79,7 +79,7 @@ ARKOS_PLAYER:
     INCBIN "assets/arkos/arkosplayer.bin"
 
 ;---------------------------------------------------------------------------------------------------------
-; DINAMIC ADDRESS ROUTINES
+; DYNAMIC ADDRESS ROUTINES
 ;---------------------------------------------------------------------------------------------------------
 
 ; Desativado: jump table de erros BASIC + I4E28 erro de modo de tela (J4DFA-J4E25, I4E28: 13 labels)

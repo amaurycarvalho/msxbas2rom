@@ -43,28 +43,12 @@ intCompareLE:
   ret
 
 intCompareGT:
-  ld a, h
-  xor 0x80
-  ld h, a
-  ld a, d
-  xor 0x80
-  ld d, a
-  sbc hl,de
-  sbc hl,hl
-  ret
+  ex de, hl          ; GT(a,b) = LT(b,a)
+  jp intCompareLT
 
 intCompareGE:
-  ex de,hl
-  ld a, h
-  xor 0x80
-  ld h, a
-  ld a, d
-  xor 0x80
-  ld d, a
-  sbc hl,de
-  ccf
-  sbc hl,hl
-  ret
+  ex de, hl          ; GE(a,b) = LE(b,a)
+  jp intCompareLE
 
 intCompareNOT:
   ld a, l
@@ -108,7 +92,6 @@ intSHR:
   or d
   jr z, intSHR.2
 intSHR.1:
-    xor a
     sra h
     rr l
     dec e
@@ -172,9 +155,7 @@ FloatToBCD:
     and 0x80
     or 0x4C
     ld (DAC), a       ; bcd exponent = 12 digits
-    ld a, h
-    res 7, a
-    ld h, a           ; reset sign bit
+    res 7, h           ; reset sign bit
     ld de, DAC+1
     ld (TEMP), de     ; save next DAC pointer
     ld c, 0x9b
@@ -243,8 +224,10 @@ FloatToBCD.add.1:
     ret
 FloatToBCD.add.2:
     call FloatToBCD.add.0
-    sla e
-    sla e
-    sla e
-    sla e
+    ld a, e
+    add a, a
+    add a, a
+    add a, a
+    add a, a
+    ld e, a
     ret
