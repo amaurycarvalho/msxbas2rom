@@ -3,7 +3,7 @@
 #include "code_node.h"
 
 SymbolExportContext::SymbolExportContext() {
-  kernelSymbolAddresses = {{"LOADER", "4010", "jump"},
+  kernelSymbolAddresses = {{"LOADER", "4018", "jump"},
                            {"VAR_CURSEGM", "C023", "variable,byte,1"}};
 }
 

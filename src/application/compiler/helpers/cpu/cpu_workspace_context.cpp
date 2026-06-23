@@ -16,6 +16,8 @@ CpuWorkspaceContext::CpuWorkspaceContext(int codeSizeLimit, int ramSizeLimit,
 };
 
 void CpuWorkspaceContext::clear() {
+  error = false;
+
   code_start = 0;
   code_pointer = code_start;
   code_size = 0;

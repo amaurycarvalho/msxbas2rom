@@ -37,4 +37,4 @@ msxbas2rom now supports ASCII16 (implemented in release 1.1.0.0) but lacks ASCII
 - **Dispatch table**: No changes (identical DISP\_ constants to ASCII16)
 - **Compiler**: No changes (zero — kernel handles 8KB→16KB conversion)
 - **Tests**: Unit tests for CLI parsing, ROM building, and signature byte verification
-- Release 1.2.0.0
+- Release 1.1.0.0

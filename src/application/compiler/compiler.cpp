@@ -357,6 +357,14 @@ int Compiler::write(unsigned char* dest, int start_address) {
     context->cpu->context->code_size = 0;
     d = dest;
 
+    if (context->cpu->context->error) {
+      context->logger->error(
+          "Compiled code exceeds maximum limit of " +
+          to_string(COMPILE_CODE_SIZE) + " bytes (" +
+          to_string(COMPILE_MAX_PAGES) + " pages)");
+      return 0;
+    }
+
     for (i = 0; i < t; i++) {
       codeItem = context->symbolManager->context->codeList[i];
 

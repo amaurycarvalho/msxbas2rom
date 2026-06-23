@@ -66,6 +66,10 @@ void BuildOptionsSetup::setupParser() {
                    [&](const std::string&) {
                      compileMode = CompileMode::ASCII16;
                    });
+  parser.addOption("-7", "--ascii16x", "ASCII16-X MegaROM type", false, false,
+                   [&](const std::string&) {
+                     compileMode = CompileMode::ASCII16X;
+                   });
   parser.addOption("-a", "--auto",
                    "Auto ROM mode (fallback from Plain ROM to ASCII8 MegaROM)",
                    false, false, [&](const std::string&) { autoROM = true; });

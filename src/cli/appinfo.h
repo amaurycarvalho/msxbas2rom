@@ -48,6 +48,7 @@ Compile options (optional):
     -a or --auto = auto mode (fallback to ASCII8 when plain ROM overflows)
     -x or -8 or --ascii8 = ASCII8 MegaROM compile mode
     -6 or --ascii16 = ASCII16 MegaROM compile mode
+    -7 or --ascii16x = ASCII16-X MegaROM compile mode
     -4 or --konami = Konami MegaROM compile mode
     -k or --scc = Konami SCC MegaROM compile mode
 

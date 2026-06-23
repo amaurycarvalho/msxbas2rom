@@ -261,6 +261,7 @@ wrapper_routines_map_table:
 	dw 0		      ; TEXT
   db 'MSXB2R'   ; MSXBAS2ROM signature
 	;dw 0,0,0	    ; Reserved
+	ds 8, 0x00      ; ASCII16X autodetection signature space (filled at build time for ASCII16X mode)
 
 INIT1:	                    ; Program code entry point label - 'c' has rom slot id
 

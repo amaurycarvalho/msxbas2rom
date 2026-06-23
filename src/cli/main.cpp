@@ -32,6 +32,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+
 #include <vector>
 #endif
 
@@ -53,8 +54,8 @@ int main(int argc, char* argv[]) {
     wchar_t* warg = __wargv[i];
     int len = WideCharToMultiByte(CP_UTF8, 0, warg, -1, NULL, 0, NULL, NULL);
     utf8Storage.emplace_back(len - 1, '\0');
-    WideCharToMultiByte(CP_UTF8, 0, warg, -1, &utf8Storage.back()[0], len,
-                        NULL, NULL);
+    WideCharToMultiByte(CP_UTF8, 0, warg, -1, &utf8Storage.back()[0], len, NULL,
+                        NULL);
     utf8Argv.push_back(&utf8Storage.back()[0]);
   }
   argv = utf8Argv.data();
@@ -252,11 +253,11 @@ int main(int argc, char* argv[]) {
         logger->info(
             "    Compiling for MegaROM format (Konami with SCC mapper)");
       } else if (opts->compileMode == BuildOptions::CompileMode::Konami4) {
-        logger->info(
-            "    Compiling for MegaROM format (Konami4 without SCC)");
+        logger->info("    Compiling for MegaROM format (Konami4 without SCC)");
       } else if (opts->compileMode == BuildOptions::CompileMode::ASCII16) {
-        logger->info(
-            "    Compiling for MegaROM format (ASCII16 mapper)");
+        logger->info("    Compiling for MegaROM format (ASCII16 mapper)");
+      } else if (opts->compileMode == BuildOptions::CompileMode::ASCII16X) {
+        logger->info("    Compiling for MegaROM format (ASCII16-X mapper)");
       } else
         logger->info("    Compiling for MegaROM format (ASCII8 mapper)");
     }
@@ -324,8 +325,9 @@ int main(int argc, char* argv[]) {
             "    MegaROM mode activated (Konami4 without SCC "
             "mapper).\n");
       } else if (opts->compileMode == BuildOptions::CompileMode::ASCII16) {
-        printf(
-            "    MegaROM mode activated (ASCII16 mapper).\n");
+        printf("    MegaROM mode activated (ASCII16 mapper).\n");
+      } else if (opts->compileMode == BuildOptions::CompileMode::ASCII16X) {
+        printf("    MegaROM mode activated (ASCII16-X mapper).\n");
       } else
         printf("    MegaROM mode activated (ASCII8 mapper).\n");
     } else {
@@ -359,8 +361,6 @@ int main(int argc, char* argv[]) {
 
     printf("    RAM usage will be %.1f%% of avaliable capacity\n",
            compiler->getRamMemoryPerc());
-
-    printf("    Symbols file created for debugger support\n");
 
     printf("Compilation finished with success.\n");
 

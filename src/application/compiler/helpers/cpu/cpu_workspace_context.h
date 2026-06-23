@@ -21,6 +21,8 @@ class CpuWorkspaceContext {
   int ram_size_limit;
   int ram_start_address;
 
+  bool error;
+
   vector<unsigned char> code;
   int code_start;
   int code_pointer;

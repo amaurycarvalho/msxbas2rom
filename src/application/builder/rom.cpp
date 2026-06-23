@@ -273,7 +273,8 @@ bool Rom::fixKonamiMapper() {
 //----------------------------------------------------------------------------------------------
 
 bool Rom::fixAscii16Mapper() {
-  if (opts->compileMode == BuildOptions::CompileMode::ASCII16) {
+  if (opts->compileMode == BuildOptions::CompileMode::ASCII16 ||
+      opts->compileMode == BuildOptions::CompileMode::ASCII16X) {
     struct Ascii16Patch {
       int dispIndex;
       unsigned char replaceByte;
@@ -339,6 +340,10 @@ bool Rom::fixAscii16Mapper() {
                     " locations)");
       errorFound = true;
       return false;
+    }
+
+    if (opts->compileMode == BuildOptions::CompileMode::ASCII16X) {
+      memcpy(pages[0].data() + 0x0010, "ASCII16X", 8);
     }
   }
   return true;

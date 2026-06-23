@@ -193,6 +193,65 @@ TEST_SUITE("Rom") {
     std::remove(opts->outputFilename.c_str());
   }
 
+  TEST_CASE("Builds ASCII16X ROM with patched kernel and signature") {
+    const std::string filename =
+        createTempBas("rom_ascii16x.bas", "10 PRINT \"HI\"\n20 END\n");
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->compileMode = BuildOptions::CompileMode::ASCII16X;
+    opts->megaROM = true;
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+
+    REQUIRE(compileWithOpts(filename, compiler, opts) == true);
+
+    shared_ptr<Rom> rom = make_shared<Rom>();
+    REQUIRE(rom->build(compiler) == true);
+
+    std::ifstream out(opts->outputFilename, std::ios::binary);
+    REQUIRE(out.good());
+    out.seekg(0, std::ios::end);
+    CHECK(out.tellg() > 0);
+
+    out.seekg(0x0010);
+    char sig[9] = {};
+    out.read(sig, 8);
+    CHECK(std::string(sig) == std::string("ASCII16X"));
+    out.close();
+
+    std::remove(filename.c_str());
+    std::remove(opts->outputFilename.c_str());
+  }
+
+  TEST_CASE("ASCII8 ROM does NOT have ASCII16X signature") {
+    const std::string filename =
+        createTempBas("rom_ascii8_nosig.bas", "10 PRINT \"HI\"\n20 END\n");
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->compileMode = BuildOptions::CompileMode::ASCII8;
+    opts->megaROM = true;
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+
+    REQUIRE(compileWithOpts(filename, compiler, opts) == true);
+
+    shared_ptr<Rom> rom = make_shared<Rom>();
+    REQUIRE(rom->build(compiler) == true);
+
+    std::ifstream out(opts->outputFilename, std::ios::binary);
+    REQUIRE(out.good());
+    out.seekg(0x0010);
+    char buf[8] = {};
+    out.read(buf, 8);
+    CHECK(std::string(buf) != std::string("ASCII16X"));
+    out.close();
+
+    std::remove(filename.c_str());
+    std::remove(opts->outputFilename.c_str());
+  }
+
   TEST_CASE("Fails when output file cannot be created") {
     const std::string filename =
         createTempBas("rom_invalid_output.bas", "10 PRINT \"HI\"\n20 END\n");

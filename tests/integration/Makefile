@@ -29,6 +29,11 @@ build:
 		echo "Compiling $$file with --ascii16"; \
 		$(APP_PATH) -q --ascii16 $$file || exit 1; \
 	done
+	@echo "📦 Building ROM files (ASCII16-X)..."
+	@for file in $(BAS_FILES); do \
+		echo "Compiling $$file with --ascii16x"; \
+		$(APP_PATH) -q --ascii16x $$file || exit 1; \
+	done
 	@echo "📦 Building ROM files (Konami4)..."
 	@for file in $(BAS_FILES); do \
 		echo "Compiling $$file with --konami"; \

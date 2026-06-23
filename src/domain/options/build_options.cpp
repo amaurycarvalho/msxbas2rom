@@ -49,6 +49,7 @@ void BuildOptions::setInputFilename(string filename) {
 
     if (compileMode == CompileMode::ASCII8 ||
         compileMode == CompileMode::ASCII16 ||
+        compileMode == CompileMode::ASCII16X ||
         compileMode == CompileMode::Konami4 ||
         compileMode == CompileMode::KonamiSCC) {
       baseFilename += "[" + getCompileModeShortName() + "]";
@@ -67,6 +68,8 @@ string BuildOptions::getCompileModeShortName() {
       return "ASCII8";
     case BuildOptions::CompileMode::ASCII16:
       return "ASCII16";
+    case BuildOptions::CompileMode::ASCII16X:
+      return "ASCII16X";
     case BuildOptions::CompileMode::Konami4:
       return "Konami";
     case BuildOptions::CompileMode::KonamiSCC:
@@ -85,6 +88,8 @@ string BuildOptions::getCompileModeLongName() {
       return "ASCII8 MegaROM";
     case BuildOptions::CompileMode::ASCII16:
       return "ASCII16 MegaROM";
+    case BuildOptions::CompileMode::ASCII16X:
+      return "ASCII16X MegaROM";
     case BuildOptions::CompileMode::Konami4:
       return "Konami MegaROM";
     case BuildOptions::CompileMode::KonamiSCC:

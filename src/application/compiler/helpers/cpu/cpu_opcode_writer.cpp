@@ -27,6 +27,12 @@ void ICpuOpcodeWriter::popLastCode() {
 void ICpuOpcodeWriter::addCodeByte(unsigned char byte) {
   if (context)
     if (!context->code.empty()) {
+      if (context->code_pointer >= context->code_size_limit) {
+        if (!context->error) {
+          context->error = true;
+        }
+        return;
+      }
       context->code[context->code_pointer++] = byte;
       context->code_size++;
     }
