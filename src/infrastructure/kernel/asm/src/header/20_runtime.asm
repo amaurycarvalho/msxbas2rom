@@ -226,6 +226,7 @@ wrapper_routines_map_table:
   dw XBASIC_PRINT_INT
   dw XBASIC_PRINT_FLOAT
   dw XBASIC_PRINT_CRLF
+  dw XBASIC_DUMMY_RET
 
 	DEFS 0x4000 - $
 

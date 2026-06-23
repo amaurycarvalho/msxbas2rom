@@ -208,7 +208,7 @@ void CompilerOnStatementStrategy::cmd_on_key(
 
       } else {
         // ld hl, 0x368D   ; dummy bios RET address
-        cpu.addLdHL(def_XBASIC_DUMMY_RET);
+        cpu.addLdHL(optimizer.getKernelCallAddr(DISP_XBASIC_DUMMY_RET));
       }
 
       // ld (hl), e
@@ -281,7 +281,7 @@ void CompilerOnStatementStrategy::cmd_on_sprite(
 
     } else {
       // ld hl, 0x368D   ; dummy bios RET address
-      cpu.addLdHL(def_XBASIC_DUMMY_RET);
+      cpu.addLdHL(optimizer.getKernelCallAddr(DISP_XBASIC_DUMMY_RET));
     }
 
     // ld (0xFC6E), hl     ; STOP GOSUB position = 0xFC6D+1
@@ -345,7 +345,7 @@ void CompilerOnStatementStrategy::cmd_on_stop(
 
     } else {
       // ld hl, 0x368D   ; dummy bios RET address
-      cpu.addLdHL(def_XBASIC_DUMMY_RET);
+      cpu.addLdHL(optimizer.getKernelCallAddr(DISP_XBASIC_DUMMY_RET));
     }
 
     // ld (0xFC6B), hl     ; STOP GOSUB position = 0xFC6A+1
@@ -413,7 +413,7 @@ void CompilerOnStatementStrategy::cmd_on_strig(
 
       } else {
         // ld de, 0x368D   ; dummy bios RET address
-        cpu.addLdDE(def_XBASIC_DUMMY_RET);
+        cpu.addLdDE(optimizer.getKernelCallAddr(DISP_XBASIC_DUMMY_RET));
       }
 
       // ld (hl), e

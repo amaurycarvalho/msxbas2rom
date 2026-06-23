@@ -1,6 +1,10 @@
-;----------------------------------------------------------------------------------
+;=========================================================================================================
 ; BASIC KUN (version 2.1) SUPPORT ROUTINES
-;----------------------------------------------------------------------------------
+;=========================================================================================================
+
+;---------------------------------------------------------------------------------------------------------
+; DECLARATIONS
+;---------------------------------------------------------------------------------------------------------
 
 VDP.DR	EQU	0006H
 VDP.DW	EQU	0007H
@@ -57,9 +61,30 @@ RG23SAV	EQU	0FFF6H
 RG25SAV	EQU	0FFFAH
 RG26SAV	EQU	0FFFBH
 
+;---------------------------------------------------------------------------------------------------------
+; FIXED ADDRESS ROUTINES
+; To do: 
+;   Move ARKOS_PLAYER to the kernel's end (0x8000 - size of arkosplayer.bin)
+;   removing BASIC_KUN_START_FILLER and BASIC_KUN_END_FILLER and
+;   adding another one (BEFORE_ARKOS_PLAYER_FILLER: DEFS 08000H - size of arkosplayer.bin - $, 000H) 
+;   to release more free space to the kernel.
+; Note:
+;   arkosplayer.bin needs to be recompiled to the new address (org statement).
+;---------------------------------------------------------------------------------------------------------
+
+BASIC_KUN_START_FILLER:
+    DEFS	06BF7H-34-1876-$,000H     ; 34 = J_* functions size, 1876 = arkosplayer.bin size
+
+ARKOS_PLAYER:
+    INCBIN "assets/arkos/arkosplayer.bin"
+
+;---------------------------------------------------------------------------------------------------------
+; DINAMIC ADDRESS ROUTINES
+;---------------------------------------------------------------------------------------------------------
+
 ; Desativado: jump table de erros BASIC + I4E28 erro de modo de tela (J4DFA-J4E25, I4E28: 13 labels)
-J4DFA:
-	DEFS	47,0x00
+;J4DFA:
+;	DEFS	47,0x00
 
 ;PAINT_FIX.1:              ; same as PNTINI on bios
 ;    LD	(BRDATR),A
@@ -106,16 +131,6 @@ SUB_PUFOUT:
   call CALBAS
   ei
   ret
-
-;---------------------------------------------------------------------------------------------------------
-; FIXED ADDRESS ROUTINES
-;---------------------------------------------------------------------------------------------------------
-
-BASIC_KUN_START_FILLER:
-    DEFS	06BF7H-34-1876-$,000H     ; 34 = J_* functions size, 1876 = arkosplayer.bin size
-
-ARKOS_PLAYER:
-    INCBIN "assets/arkos/arkosplayer.bin"
 
 J_SGN_INT:
     ld a, l
@@ -211,7 +226,7 @@ WriteParamBCD:
 ;	     Outputs ________________________
 
 C6C25:	PUSH	DE
-	RET
+C6C26:	RET
 
 ;	  Subroutine check for traps handler
 ;	     Inputs  ________________________
@@ -1197,8 +1212,8 @@ J7169:	OUT	(C),A
 	RET
 
 ; Desativado: get sprite definition handler (C716E, J717D, J7183: 3 labels)
-C716E:
-	DEFS	27,0x00
+;C716E:
+;	DEFS	27,0x00
 
 ;	  Subroutine change sprite color handler
 ;	     Inputs  ________________________
@@ -1853,8 +1868,8 @@ J7510:	CALL	XBASIC_PRINT_STR			; print string
 	RET
 
 ; Desativado: rotinas de INPUT (I7517-C75BE + J761C: 22 labels de prompt numérico/string, busca de DATA, "?Redo from start")
-I7517:
-	DEFS	269,0x00
+;I7517:
+;	DEFS	269,0x00
 
 ;	  Subroutine multiply
 ;	     Inputs  ________________________
@@ -1996,8 +2011,8 @@ J76C9:	LD	HL,(SWPTMP+2)
 	JR	J76BA
 
 ; Desativado: remainder de divisão inteira (C76CE: 1 label)
-C76CE:
-	DEFS	5,0x00
+;C76CE:
+;	DEFS	5,0x00
 
 ;	  Subroutine subtract floats
 ;	     Inputs  ________________________
@@ -2373,8 +2388,8 @@ I78BF:	PUSH	DE
 	JP	J7AA8			; EXP handler
 
 ; Desativado: conversão unsigned int para float (C78CD: 1 label)
-C78CD:
-	DEFS	18,0x00
+;C78CD:
+;	DEFS	18,0x00
 
 ;	  Subroutine convert integer to float
 ;	     Inputs  HL = integer
@@ -2508,8 +2523,8 @@ C7958:	CALL	C7966			; compare floats
 	RET
 
 ; Desativado: float <=> trivial (C7962: 1 label)
-C7962:
-	DEFS	4,0x00
+;C7962:
+;	DEFS	4,0x00
 
 ;	  Subroutine compare floats
 ;	     Inputs  B:HL = float1, C:DE = float2
@@ -3754,11 +3769,91 @@ J7F84:	LD	A,C
 	JR	Z,J7F84			; equal, next character
 	RET
 
-; Desativado: concatenação de strings (C7F99, J7FAD-J7FF6: 10 labels)
-C7F99:
-	DEFS	101,0x00
+;	  Subroutine concat strings
+;	     Inputs  NULBUF = string1, HL = string2
+;	     Outputs BUF = result string
+
+C7F99:	LD	DE,BUF
+	LD	BC,(NULBUF)
+	AND	A
+C7FA0:
+	PUSH	HL
+	SBC	HL,DE			; string2 in BUF ?
+	POP	HL
+	JR	Z,J7FD2			; yep,
+	LD	A,(BC)			; size of string1
+	ADD	A,(HL)			; size of string2
+	JR	NC,J7FAD
+	LD	A,255			; concat string to 255 characters
+J7FAD:	LD	(DE),A			; result string size
+	INC	DE
+	PUSH	HL
+	LD	A,(BC)			; size of string1
+	PUSH	AF
+	AND	A			; empty string1 ?
+	JR	Z,J7FBD			; yep, skip copy string1
+	INC	BC
+	LD	L,C
+	LD	H,B
+	LD	C,A
+	LD	B,0
+	LDIR				; copy string1
+J7FBD:	POP	AF			; size of string1
+	POP	HL			; string2
+	LD	B,A
+	LD	A,(HL)			; size string2
+	JR	NC,J7FC5		; string2 not limited
+	LD	A,B
+J7FC4:	CPL
+J7FC5:	AND	A			; empty string2 ?
+	JR	Z,J7FCE			; yep, skip copy string2
+	INC	HL
+	LD	C,A
+	LD	B,0
+	LDIR				; copy string2
+J7FCE:	LD	HL,BUF			; string in BUF
+	RET
+
+J7FD2:	PUSH	BC
+	PUSH	HL
+	LD	E,C
+	LD	D,B
+	LD	A,(DE)
+	CP	(HL)
+	JR	NC,J7FDB
+	LD	A,(HL)
+J7FDB:	LD	B,A
+	INC	B
+J7FDD:	LD	C,(HL)
+	LD	A,(DE)
+	LD	(HL),A
+	LD	A,C
+	LD	(DE),A
+	INC	DE
+	INC	HL
+	DJNZ	J7FDD
+	POP	BC
+	LD	A,(BC)
+	LD	L,A
+	LD	H,0
+	INC	HL
+	ADD	HL,BC
+	EX	DE,HL
+	POP	HL
+	ADD	A,(HL)
+	JR	C,J7FF6
+	LD	(BC),A
+	LD	A,(HL)
+	JR	J7FC5
+
+J7FF6:	LD	A,(BC)
+	PUSH	AF
+	LD	A,0FFH
+	LD	(BC),A
+	POP	AF
+	JR	J7FC4
 
 BASIC_KUN_END_FILLER:
-	DEFS	08000H-$,0FFH
+	DEFS	08000H-$,000H
 
 

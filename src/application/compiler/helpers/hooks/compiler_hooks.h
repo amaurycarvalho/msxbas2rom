@@ -344,8 +344,9 @@
 #define DISP_XBASIC_PRINT_INT 203
 #define DISP_XBASIC_PRINT_FLOAT 204
 #define DISP_XBASIC_PRINT_CRLF 205
+#define DISP_XBASIC_DUMMY_RET 206
 
-#define DISP_ENTRIES 206
+#define DISP_ENTRIES 207
 
 //! @remark end of header.symbols adjust
 //! @}
@@ -471,6 +472,7 @@
  * @brief XBASIC internal addresses
  */
 
+/*
 #define def_XBASIC_MULTIPLY_INTEGERS 0x7631                             // 761b
 #define def_XBASIC_DIVIDE_INTEGERS 0x7643                               // 762d
 #define def_XBASIC_ADD_FLOATS 0x76D7                                    // 76C1
@@ -554,5 +556,6 @@
 #define def_XBASIC_SGN_FLOAT 0x6BE1  //-
 #define def_XBASIC_ABS_INT 0x6BED    //-
 #define def_XBASIC_DUMMY_RET 0x6C26  // 368D
+*/
 
 #endif  // COMPILER_HOOKS_H_INCLUDED
