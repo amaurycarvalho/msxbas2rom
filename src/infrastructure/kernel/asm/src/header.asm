@@ -12,7 +12,8 @@
 include "src/header/00_constants_and_workarea.asm"
 include "src/header/10_macros.asm"
 include "src/header/20_runtime.asm"
-include "src/header/21_logic_pack.asm"
+; note: 21_logic_pack included into 90_support
+; include "src/header/21_logic_pack.asm"
 include "src/header/30_basic_helpers.asm"
 include "src/header/31_cmd.asm"
 include "src/header/32_usr.asm"

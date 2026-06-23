@@ -65,7 +65,7 @@ RG26SAV	EQU	0FFFBH
 ; FIXED ADDRESS ROUTINES
 ; To do: 
 ;   Move ARKOS_PLAYER to the kernel's end (0x8000 - size of arkosplayer.bin)
-;   removing BASIC_KUN_START_FILLER and BASIC_KUN_END_FILLER and
+;   removing BASIC_KUN_START_FILLER and KERNEL_END_FILLER and
 ;   adding another one (BEFORE_ARKOS_PLAYER_FILLER: DEFS 08000H - size of arkosplayer.bin - $, 000H) 
 ;   to release more free space to the kernel.
 ; Note:
@@ -3853,7 +3853,17 @@ J7FF6:	LD	A,(BC)
 	POP	AF
 	JR	J7FC4
 
-BASIC_KUN_END_FILLER:
+;---------------------------------------------------------------------------------------------------------
+; LOGICAL / MATH INTEGER ROUTINES
+;---------------------------------------------------------------------------------------------------------
+
+include "src/header/21_logic_pack.asm"
+
+;---------------------------------------------------------------------------------------------------------
+; KERNEL END FILLER (0x8000 size completion)
+;---------------------------------------------------------------------------------------------------------
+
+KERNEL_END_FILLER:
 	DEFS	08000H-$,000H
 
 

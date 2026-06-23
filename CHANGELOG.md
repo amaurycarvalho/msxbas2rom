@@ -14,7 +14,6 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - [mtf-enhancements] Add MTF window-copy and screen page support for tile-based games
 - [set-page-screen4] Add SET PAGE support for screen 4 compatibility
 - [implement-double-via-float-float] Implement double precision operations via float emulation
-- [extend-kernel-optimizations] Extend kernel optimizations with additional size and speed improvements
 - [wishlist] Collect and track feature requests and future enhancements
 
 ## [1.0.1.0] - 2026-06-23
