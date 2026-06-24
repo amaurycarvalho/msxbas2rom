@@ -19,7 +19,7 @@ msxbas2rom currently supports ASCII8 and KonamiSCC/Konami4 MegaROM mappers but l
 
 ### New Capabilities
 
-- `ascii16-mapper`: ASCII16 MegaROM mapper support. Provides compilation of MSX-BASIC programs into ROM images targeting ASCII16 hardware (16KB pages, 2-bank switching at 0x6000 and 0x7000, up to 2048KB ROM). The kernel SHALL be reused from the existing MegaROM kernel binary and patched via dispatch table to insert `srl a` in `MR_CHANGE_SGM`, converting 8KB segment numbers to 16KB page numbers at runtime. The compiler SHALL remain unchanged.
+- `ascii16-mapper`: ASCII16 MegaROM mapper support. Provides compilation of MSX-BASIC programs into ROM images targeting ASCII16 hardware (16KB pages, upper bank switched via 0x7000, lower bank fixed to segment 0, up to 2048KB ROM). The kernel SHALL be reused from the existing MegaROM kernel binary and patched via dispatch table to insert `srl a` in `MR_CHANGE_SGM`, converting 8KB segment numbers to 16KB page numbers at runtime. The compiler SHALL remain unchanged.
 
 ### Modified Capabilities
 

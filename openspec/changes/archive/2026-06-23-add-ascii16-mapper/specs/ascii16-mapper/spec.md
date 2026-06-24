@@ -1,13 +1,13 @@
 ## ADDED Requirements
 
 ### Requirement: ASCII16 MegaROM mapper with 16KB pages
-The system SHALL support compilation of MSX-BASIC programs into ROM images targeting the ASCII16 MegaROM mapper, using 16KB pages with 2-bank switching (0x6000 for 0x4000-0x7FFF, 0x7000 for 0x8000-0xBFFF), up to 2048KB ROM size. The kernel SHALL be reused from the existing MegaROM kernel binary and patched at build time via dispatch table entries.
+The system SHALL support compilation of MSX-BASIC programs into ROM images targeting the ASCII16 MegaROM mapper, using 16KB pages with single-bank switching (upper bank at 0x8000-0xBFFF switched via 0x7000; lower bank at 0x4000-0x7FFF fixed to segment 0), up to 2048KB ROM size. The kernel SHALL be reused from the existing MegaROM kernel binary and patched at build time via dispatch table entries.
 
 The ASCII16 mapper SHALL use the following memory layout:
-- Page 0x4000-0x7FFF (16KB): base switch address 0x6000, initial segment 0, kernel fixed (never switched)
-- Page 0x8000-0xBFFF (16KB): base switch address 0x7000, initial segment 0
+- Page 0x4000-0x7FFF (16KB): lower bank, permanently fixed to segment 0 (kernel code). No switch writes target this page — 0x6000 is the hardware switch address but is never written.
+- Page 0x8000-0xBFFF (16KB): upper bank, switched via base address 0x7000, initial segment 0.
 
-All segment-switch writes SHALL target the base addresses (0x6000, 0x7000) exclusively for normal operation. The OPENMSX autodetection section SHALL use two mirror writes at 0x77FF (within the 0x7000-0x77FF decoding range) to allow openMSX to distinguish ASCII16 from ASCII8 mappers. Mirror addresses (0x6001-0x67FF, 0x7001-0x77FF) SHALL NOT be used for any other purpose.
+All normal segment-switch writes SHALL target the base address 0x7000 exclusively. The lower bank SHALL remain permanently fixed — 0x6000 is never written. The OPENMSX autodetection section SHALL use two mirror writes at 0x77FF (within the 0x7000-0x77FF decoding range) to allow openMSX to distinguish ASCII16 from ASCII8 mappers. Mirror addresses (0x6001-0x67FF, 0x7001-0x77FF) SHALL NOT be used for any other purpose.
 
 The kernel SHALL convert 8KB segment numbers emitted by the compiler to 16KB page numbers via `srl a` (logical shift right by 1) inside `MR_CHANGE_SGM`. The compiler SHALL remain unchanged, continuing to emit 8KB-pair segment numbers. The `MR_CHANGE_SGM` routine SHALL preserve the `AF` register via `push af`/`pop af` to maintain compatibility with `MR_JUMP` and other callers.
 
@@ -32,7 +32,7 @@ ROM alignment SHALL pad to multiples of 8 pages (128KB), same as other MegaROM m
 #### Scenario: ASCII16 ROM size is valid
 - **WHEN** an ASCII16 ROM is generated
 - **THEN** the ROM size SHALL be a multiple of 16KB pages
-- **AND** the ROM size SHALL be between 64KB and 2048KB
+- **AND** the ROM size SHALL be between 128KB and 2048KB (after MegaROM filler padding)
 
 #### Scenario: ASCII8 bugfix is patched for ASCII16
 - **WHEN** an ASCII16 ROM is built

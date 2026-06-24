@@ -83,7 +83,7 @@ Version history
 
 ## [1.1.0.0] - 2026-06-23
 
-Release 1.1.0.0: Konami4 MegaROM mapper support with CLI flags, kernel patching, and tests.
+Release 1.1.0.0: MegaROM mapper expansion with Konami4, ASCII16, and ASCII16-X support plus 2MB compile limit.
 
 See full changelog:
 https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.1.0.0

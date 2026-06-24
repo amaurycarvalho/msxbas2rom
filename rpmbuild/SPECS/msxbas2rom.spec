@@ -33,4 +33,4 @@ install -m 0755 msxbas2rom %{buildroot}/usr/bin/msxbas2rom
 
 %changelog
 * Tue Jun 23 2026 Amaury Carvalho <amauryspires@gmail.com>
-- Release 1.1.0.0: Konami4 MegaROM mapper support with CLI flags, kernel patching, and tests
+- Release 1.1.0.0: MegaROM mapper expansion with Konami4, ASCII16, and ASCII16-X support plus 2MB compile limit

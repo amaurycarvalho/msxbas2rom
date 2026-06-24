@@ -14,7 +14,7 @@ msxbas2rom now supports ASCII16 (implemented in release 1.1.0.0) but lacks ASCII
 - Update status messages and help text in CLI
 - Regenerate `header.h` and `header.symbols.asm` via `make header`
 - Add unit tests for ASCII16X CLI parsing, ROM building, and signature byte verification
-- The compiler requires zero changes — kernel-side `srl a` conversion handles all MegaROM modes uniformly
+- The compiler's segment math requires zero changes — kernel-side `srl a` conversion handles all MegaROM modes uniformly (only a code size overflow guard was added to `ICpuOpcodeWriter::addCodeByte()`)
 
 ## Capabilities
 
