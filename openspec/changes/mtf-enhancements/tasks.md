@@ -8,11 +8,11 @@
 - [ ] 2.1 Remove register-to-RAM store instructions at `cmd_mtf` entry (`ld (MTF_*), hl/de/bc/a`) — kernel now reads directly from DAC
 - [ ] 2.2 Read `MTF_RESN_PARM`, `MTF_COLX_PARM`, `MTF_ROWY_PARM`, `MTF_OPER_PARM` from RAM at point of use in palette/tileset/map dispatch
 
-## 3. Kernel Runtime — Page Offset
+## 3. Kernel Runtime — Page Parameter Scaffolding (Dummy)
 
-- [ ] 3.1 Add MSX2 detection (`ld a,(VERSION); or a; jr z,.msx1`) before VRAM write
-- [ ] 3.2 Compute page VRAM address: page=0 → 0x1800; page≥1 → 0x3800 + (page-1)*0x400 on MSX2; always 0x1800 on MSX1
-- [ ] 3.3 Apply page offset in `cmd_mtf.map_xy.copy_to_vram` and tileset copy routines
+- [ ] 3.1 Kernel ignores `MTF_PAGE_PARM` — all name table writes continue to use hardcoded `0x1800`
+- [ ] 3.2 Add comment in `cmd_mtf.map_xy.copy_to_vram` noting real page support is deferred to `set-page-screen4` (will replace `0x1800` with `(GRPNAM)`)
+- [ ] 3.3 Verify tileset copy routines also remain unchanged (use hardcoded `0x0000`/`0x0800`/`0x1000` for patterns, `0x2000`/`0x2800`/`0x3000` for colors — these will be replaced by `set-page-screen4` with `(GRPCGP)`/`(GRPCOL)` offsets)
 
 ## 4. Kernel Runtime — Window Copy (Operation 2)
 
@@ -22,7 +22,7 @@
 - [ ] 4.4 Zero-fill output buffer (FONTADDR, 768 bytes) before window copy
 - [ ] 4.5 For each destination row (0 to height-1): compute source map row, navigate row-table linked list, copy `width` bytes from `map_x` offset
 - [ ] 4.6 Place copied bytes at `(screen_y * 32 + screen_x)` offset in output buffer
-- [ ] 4.7 Copy output buffer to VRAM at computed page address via LDIRVM
+- [ ] 4.7 Copy output buffer to VRAM at 0x1800 via LDIRVM (dummy — page param ignored; real page support deferred to `set-page-screen4`)
 
 ## 5. Compiler Handler — Parameter Count Extension
 

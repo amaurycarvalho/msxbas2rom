@@ -5,7 +5,7 @@ The current CMD MTF implementation supports only full-screen map copies with rel
 ## What Changes
 
 - Add MTF operation 2: window-copy (partial map copy with configurable source rectangle and screen destination)
-- Add screen page parameter to all map operations (0, 1, 2) — MSX2 only, ignored on MSX1
+- Add screen page parameter scaffolding to all map operations (0, 1, 2) — compiler accepts and stores the parameter, kernel uses dummy/placeholder (always page 0 at 0x1800). Real page offset support is deferred to the `set-page-screen4` change, which will replace hardcoded VRAM addresses with BIOS variable reads (GRPNAM, GRPCGP, GRPCOL)
 - Migrate parameter passing from Z80 registers to RAM workarea block (DAC) for all operations, enabling up to 9 parameters
 - Extend compiler handler to accept 1–9 parameters (was 1–4)
 - Add unit tests for all parameter combinations and an integration test (`tests/integration/mtf/mtf5.bas`)
@@ -23,8 +23,9 @@ The current CMD MTF implementation supports only full-screen map copies with rel
 
 - `src/application/compiler/statements/strategies/io/cmd/handlers/graphics/mtf/` — compiler handler: parameter count, RAM-block emit
 - `src/application/compiler/helpers/hooks/compiler_hooks.h` — kernel address constants
-- `src/infrastructure/kernel/asm/src/header/31_cmd.asm` — kernel runtime: window-copy, page offset, unified RAM reading
+- `src/infrastructure/kernel/asm/src/header/31_cmd.asm` — kernel runtime: window-copy, page parameter scaffolding (dummy), unified RAM reading
 - `src/infrastructure/kernel/asm/src/header.symbols.asm` — new workarea symbols
 - `tests/unit/src/test_compiler.cpp` — extended MTF parameter tests
 - `tests/integration/mtf/mtf5.bas` — window-copy integration test
 - Release 1.2.0.0
+- **Depends on**: `set-page-screen4` for real page offset support (kernel reads `(GRPNAM)` instead of hardcoded addresses)

@@ -4,6 +4,8 @@ The MTF (MSX Tile Forge) runtime currently handles palette/tileset loading and f
 
 Screen pages are unsupported in MTF — the name table is always written to VRAM `0x1800`. On MSX2 with 128KB VRAM, free space above `0x3800` is available for additional name tables.
 
+**Cross-change dependency**: Real page offset support (computing VRAM addresses from page number) will be implemented by the `set-page-screen4` change, which replaces hardcoded VRAM addresses in `cmd_mtf` with reads from BIOS variables (`GRPNAM`, `GRPCGP`, `GRPCOL`). This change only provides the scaffolding: the `MTF_PAGE_PARM` workarea slot and compiler parameter emission. The kernel dummy ignores the page value and always targets `0x1800`.
+
 ## Goals / Non-Goals
 
 **Goals:**
@@ -18,7 +20,7 @@ Screen pages are unsupported in MTF — the name table is always written to VRAM
 - New palette/tileset operations (0 stays as palette/tileset load)
 - CMD PAGE integration or VDP register manipulation by MTF
 - `.mtf.json` project file reader (ResourceMtfReader stub)
-- SCREEN 4 page support (only SCREEN 2 on MSX2 in this change)
+- Real page offset computation — deferred to `set-page-screen4` (this change only provides the `MTF_PAGE_PARM` slot and compiler scaffolding; kernel uses dummy page=0 always)
 
 ## Decisions
 
@@ -32,11 +34,11 @@ Screen pages are unsupported in MTF — the name table is always written to VRAM
 - Hybrid registers+RAM: backward compat but two code paths in kernel, harder to maintain
 - Stack passing: would need custom pop sequences, less readable
 
-### Decision 2: MSX2-only page offset, MSX1 ignored
+### Decision 2: Page parameter scaffolding — kernel dummy
 
-**Choice:** On MSX2 (`VERSION != 0`), page multiplies the name table VRAM address offset. Page 0 = 0x1800 (default). Page >= 1 = 0x3800 + (page - 1) × 0x400. On MSX1, the page parameter is read but the VRAM address stays 0x1800.
+**Choice:** The compiler accepts the page parameter (position 9) and emits `ld (MTF_PAGE_PARM), a` to the DAC workarea. The kernel defines the `MTF_PAGE_PARM` equate but **ignores the value** — the name table VRAM address remains hardcoded `0x1800` for all page values. This is intentional scaffolding: the `set-page-screen4` change will implement real page support by replacing hardcoded VRAM addresses with BIOS variable reads (`GRPNAM`, `GRPCGP`, `GRPCOL`), at which point the page mechanism becomes dynamic.
 
-**Rationale:** MSX1 has only 16KB VRAM — no room for extra name tables. MSX2 has 128KB VRAM with ~10KB free above the color table (0x2000–0x37FF). The 0x400 alignment is required by VDP register 2 for name table base addressing. The user is responsible for VDP register reconfiguration to display the target page.
+**Rationale:** Real page offset computation would involve hardcoded address arithmetic (e.g., `0x1800 + page*0x400`) that would be entirely rewritten by `set-page-screen4`. Providing the parameter slot and compiler pipeline now avoids a two-phase compiler change later. The kernel dummy ensures backward-compatible behavior (all output goes to page 0 at `0x1800`) while the compiler can already generate the full parameter sequence.
 
 ### Decision 3: Compiler emits direct RAM stores
 
@@ -70,5 +72,6 @@ Screen pages are unsupported in MTF — the name table is always written to VRAM
 
 - [RAM block change breaks inline ASM] → No known inline ASM depends on MTF register conventions; all usage goes through `CMD MTF` BASIC statement
 - [Page parameter on MSX1 silently ignored] → Acceptable: MSX1 has no free VRAM for extra pages. Users targeting MSX1 should use page=0 (the default)
+- [Page parameter is dummy in kernel] → All MTF output goes to 0x1800 regardless of page value. Real page support requires `set-page-screen4` to be implemented. Documented in proposal.
 - [Window bounds validation in kernel] → If width/height exceed map bounds or screen bounds, the kernel will clip (silently) rather than error. BASIC-level validation could be added later via the compiler
 - [Kernel size increase] → New window-copy routine adds ~200 bytes. Acceptable within available ROM space

@@ -37,9 +37,10 @@ The system SHALL copy a full 32x24-tile screen from the map resource using scree
 - **WHEN** `CMD MTF 2, 0, 3, 2` is executed
 - **THEN** the map area starting at column 3 (x = 3 × 32 = 96), row 2 (y = 2 × 24 = 48) is copied to the screen name table
 
-#### Scenario: Full map copy with page parameter on MSX2
+#### Scenario: Full map copy with page parameter (page scaffolding)
 - **WHEN** `CMD MTF 2, 0, 1, 0, 2` is executed on MSX2
-- **THEN** the map area at column 1, row 0 is copied to VRAM at page 2 address (0x4000)
+- **THEN** the page parameter (2) is stored in `MTF_PAGE_PARM` at DAC+16
+- **AND** the map area at column 1, row 0 is copied to the screen name table at 0x1800 (dummy — kernel ignores page value; real page support deferred to `set-page-screen4`)
 
 ### Requirement: MTF copies full map using absolute tile coordinates (operation 1)
 The system SHALL copy a full 32x24-tile screen from the map resource using absolute map pixel coordinates when operation 1 is specified.
@@ -56,9 +57,10 @@ The system SHALL copy a full 32x24-tile screen from the map resource using absol
 - **WHEN** `CMD MTF 2, 1, 300, 250` is executed on a map of width 256 and height 192
 - **THEN** x wraps to 44 (300 mod 256) and y wraps to 58 (250 mod 192) before the copy
 
-#### Scenario: Absolute copy with page parameter on MSX2
+#### Scenario: Absolute copy with page parameter (page scaffolding)
 - **WHEN** `CMD MTF 2, 1, 64, 48, 1` is executed on MSX2
-- **THEN** the map area at x=64, y=48 is copied to VRAM at page 1 address (0x3800)
+- **THEN** the page parameter (1) is stored in `MTF_PAGE_PARM`
+- **AND** the map area at x=64, y=48 is copied to the screen name table at 0x1800 (dummy — kernel ignores page value)
 
 ### Requirement: MTF copies partial map window (operation 2)
 The system SHALL copy a rectangular window from the map resource to a specific screen position when operation 2 is specified.
@@ -71,24 +73,27 @@ The system SHALL copy a rectangular window from the map resource to a specific s
 - **WHEN** `CMD MTF 2, 2, 40, 20, 8, 4, 0, 0` is executed
 - **THEN** an 8×4 tile rectangle from map position (40, 20) is copied to screen position (0, 0)
 
-#### Scenario: Window copy with page parameter on MSX2
+#### Scenario: Window copy with page parameter (page scaffolding)
 - **WHEN** `CMD MTF 2, 2, 0, 32, 16, 10, 8, 4, 1` is executed on MSX2
-- **THEN** a 16×10 tile window is copied to page 1 VRAM address (0x3800) at screen position (8, 4)
+- **THEN** the page parameter (1) is stored in `MTF_PAGE_PARM`
+- **AND** a 16×10 tile window is copied to 0x1800 (dummy) at screen position (8, 4)
 
 #### Scenario: Window copy defaults page to 0 when omitted
 - **WHEN** `CMD MTF 2, 2, 10, 10, 4, 4, 0, 0` is executed without a page parameter
 - **THEN** the window is copied to page 0 (VRAM 0x1800)
 
-### Requirement: Page parameter is ignored on MSX1
-The system SHALL silently use page 0 (VRAM 0x1800) on MSX1 regardless of the page parameter value.
+### Requirement: Page parameter scaffolding — kernel ignores page value
+The system SHALL accept and store the page parameter in the DAC workarea (`MTF_PAGE_PARM` at DAC+16), but SHALL NOT compute page-based VRAM addresses. The kernel SHALL always target `0x1800` for the name table regardless of the page value. Real page offset support is deferred to the `set-page-screen4` change.
 
-#### Scenario: Page parameter on MSX1
-- **WHEN** `CMD MTF 2, 0, 0, 0, 3` is executed on MSX1
-- **THEN** the map is copied to VRAM 0x1800 (page 0) ignoring the page=3 parameter
+#### Scenario: Page parameter stored but ignored on MSX2
+- **WHEN** `CMD MTF 2, 0, 0, 0, 3` is executed on MSX2
+- **THEN** the page parameter (3) is stored in `MTF_PAGE_PARM` at DAC+16
+- **AND** the map is copied to VRAM 0x1800 (kernel ignores page value)
 
-#### Scenario: Window copy page on MSX1
-- **WHEN** `CMD MTF 2, 2, 0, 0, 8, 8, 0, 0, 2` is executed on MSX1
-- **THEN** the window is copied to VRAM 0x1800 (page 0) ignoring page=2
+#### Scenario: Window copy page parameter stored but ignored
+- **WHEN** `CMD MTF 2, 2, 0, 0, 8, 8, 0, 0, 2` is executed on MSX2
+- **THEN** the page parameter (2) is stored in `MTF_PAGE_PARM`
+- **AND** the window is copied to VRAM 0x1800 (kernel ignores page value)
 
 ### Requirement: Compiler validates MTF parameter count
 The system SHALL accept 1 to 9 parameters for CMD MTF and report a syntax error for other counts.
