@@ -1,5 +1,5 @@
-msxbas2rom (1.1.0.0-0) bionic; urgency=low
+msxbas2rom (1.2.0.0-0) bionic; urgency=low
 
-  * Release 1.1.0.0: MegaROM mapper expansion with Konami4, ASCII16, and ASCII16-X support plus 2MB compile limit
+  * Release 1.2.0.0: MTF window-copy support with extended parameter handling
 
- -- Amaury Carvalho <amauryspires@gmail.com>  Tue, 23 Jun 2026 12:00:00 -0300
+ -- Amaury Carvalho <amauryspires@gmail.com>  Wed, 24 Jun 2026 12:00:00 -0300

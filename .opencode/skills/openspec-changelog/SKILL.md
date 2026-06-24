@@ -1,178 +1,227 @@
 ---
 name: openspec-changelog
-description: Update CHANGELOG.md, CHANGELOG-ARCHIVE.md, debian/changelog, RPM spec, and info_history from archived changes. Run automatically after every archive.
+description: Update CHANGELOG.md, CHANGELOG-ARCHIVE.md, debian/changelog, RPM spec, and info_history from a specific change. Asks for change name if not provided.
 license: MIT
 compatibility: Requires openspec CLI.
 metadata:
   author: openspec
-  version: "1.0"
+  version: "1.1"
   generatedBy: "1.4.1"
 ---
 
-Update all changelog-related files from archived and active changes.
+Update all changelog-related files from a specific change.
 
-**Input**: None. Always reads current version from `appinfo.h` and scans all changes automatically.
+**Input**: Optional change name (directory name under `openspec/changes/` or `openspec/changes/archive/`). If not provided, the skill will ask the user.
 
 **Steps**
 
-1. **Get current release version**
+### 1. Resolve change name and release version
 
-   Read `src/cli/appinfo.h` and extract the value of `app_version` (e.g., `"1.0.0.0"`). This is the latest release version.
+1.1. **If a change name was provided as input**, use it directly. Otherwise:
+   - Find the most recently archived change by running `ls -t openspec/changes/archive/ | head -1`.
+   - List all unarchived changes: `ls openspec/changes/` (filtering out `archive/`).
+   - Ask the user to pick a change name, presenting the last archived change and all unarchived changes as suggestions.
 
-2. **Scan all changes — both archived and active**
+1.2. **Read the change's proposal.md** at `openspec/changes/<change-name>/proposal.md` (or `openspec/changes/archive/<change-name>/proposal.md`). Search for the target release in the Impact section by looking for a line matching `- **Target**: Release <version>` or `- **Release**: <version>`. Extract the version string (e.g., `1.5.0.0`).
 
-   List all subdirectories of `openspec/changes/archive/` and `openspec/changes/` (excluding `archive/`, `.`, `..`).
+1.3. **If no release is specified** in the proposal, default to the **current release** from `src/cli/appinfo.h` (extract the value of `app_version`, e.g., `"1.1.0.0"`).
 
-   For each change, read `proposal.md` and find the target release version by searching for a line matching `- Release <version>` in the Impact section. If the proposal does not specify a release, skip it.
+1.4. **Ask the user to confirm the release version** and allow them to edit it. Present the detected release as the default suggestion.
 
-3. **Classify changes**
+1.5. **Compare the confirmed release** with the release recorded in the change's proposal.md. If they differ, **update the proposal.md** by replacing the old `- **Target**: Release <old>` line with `- **Target**: Release <confirmed>`. If no Target line exists, add `- **Target**: Release <confirmed>` to the Impact section.
 
-   - **Archived changes matching latest version**: Their content goes into the release section of CHANGELOG.md.
-   - **Active changes matching latest version**: Their content also goes into the same release section (these are completed or in-progress changes that target the current release).
-   - **Active changes targeting a NEWER version**: Their content goes into `## [Unreleased]`.
-   - **Archived changes for older versions**: Ignored (already recorded).
+### 2. Determine change classification and CHANGELOG strategy
 
-4. **Build the release entry for CHANGELOG.md**
+2.1. **Read `src/cli/appinfo.h`** to get the current release version from `app_version`. This is the **latest published release**.
 
-   Collect the "What Changes" bullet list from `proposal.md` of all changes classified for the latest release. Use these rules:
+2.2. **Check if the confirmed release matches the current release** in `appinfo.h`:
+   - **Same version**: The change targets the current release.
+   - **Newer version**: The change targets a future release.
 
-   - If a bullet mentions a new feature, add it under `### Added`.
-   - If a bullet mentions a change in existing behavior, add it under `### Changed`.
-   - If a bullet mentions a bug fix, add it under `### Fixed`.
-   - If a bullet mentions deprecation, add it under `### Deprecated`.
-   - If a bullet mentions removals, add it under `### Removed`.
-   - If a bullet mentions security, add it under `### Security`.
+2.3. **Read `CHANGELOG.md`** and check if an entry for the confirmed release already exists. Look for a heading matching `## [<version>] -`.
 
-   Deduplicate items that appear across multiple changes. Format the date as `YYYY-MM-DD` (if not known, use today's date).
+### 3. Update CHANGELOG.md — release entry exists
 
-   Use this template for the release entry:
+If an entry for the confirmed release **already exists** in `CHANGELOG.md`:
 
-   ```markdown
-   ## [version] - YYYY-MM-DD
+3.1. **Build the change's content** as a sub-section with Keep a Changelog categories. Use the following structure:
 
-   ### Added
-   - item 1
-   - item 2
+    ```markdown
+    ### <change-name> <ultra-condensed summary>
 
-   ### Changed
-   - item 1
+    #### Added
+    - item 1
 
-   ### Fixed
-   - item 1
-   ```
+    #### Changed
+    - item 1
 
-5. **Build the Unreleased section**
-
-   For each active change classified for Unreleased (targets a newer version), add a single ultra-simplified summary line under `## [Unreleased]` using this pattern:
-
-   ```markdown
-   ## [Unreleased]
-
-   ### Added
-   - [change-name] Ultra-simplified summary of the change
-   ```
-
-   The summary should be 1 sentence maximum, extracted from the proposal's "Why" or "What Changes" section title.
-
-6. **Update CHANGELOG.md**
-
-   - Read the current `CHANGELOG.md`.
-   - Move all existing release entries (everything between `## [version] - ...` sections) into `CHANGELOG-ARCHIVE.md`, appending them before the existing archive content (after the header).
-   - Prepend the new release entry (from step 4) and the new Unreleased section (from step 5) to `CHANGELOG.md`, preserving the file's header and links structure.
-   - Update the version compare links at the bottom of `CHANGELOG.md`:
-     - `[Unreleased]: ...compare/v<new-version>...HEAD`
-     - `[<version>]: ...releases/tag/v<version>`
-
-   The updated `CHANGELOG.md` should have this structure:
-
-   ```markdown
-   # Changelog
-   ...
-   ## [Unreleased]
-   ...
-   ## [<version>] - YYYY-MM-DD
-   ...
-   [Unreleased]: https://github.com/amaurycarvalho/msxbas2rom/compare/v<version>...HEAD
-   [<version>]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v<version>
-   
-   See [CHANGELOG Archive](CHANGELOG-ARCHIVE.md) for older releases.
-   ```
-
-7. **Build the ultra-simplified summary**
-
-   Create a 1-2 line summary of the entire latest release that captures its essence. For example:
-
-   ```
-   Release 1.0.0.0: File handling support implementation (US-007)
-   ```
-
-   Use the most prominent feature of the release as the summary.
-
-8. **Update debian/changelog**
-
-   Write the debian changelog entry. Use the current date and author info from the git log or from existing entries. The format:
-
-   ```
-   msxbas2rom (<version>-0) bionic; urgency=low
-
-     * <ultra-simplified summary>
-
-    -- Amaury Carvalho <amauryspires@gmail.com>  <date>
-   ```
-
-   Where `<date>` follows Debian format: `Day, DD Mon YYYY HH:MM:SS ±TZ` (e.g., `Thu, 19 Jun 2026 18:00:00 -0300`).
-
-   **Replace the entire debian/changelog content** — remove any previous release entries.
-
-9. **Update rpmbuild/SPECS/msxbas2rom.spec**
-
-   Update the `%changelog` section. The format:
-
-   ```
-   %changelog
-   * <Day Mon DD YYYY> Amaury Carvalho <amauryspires@gmail.com>
-   - <ultra-simplified summary>
-   ```
-
-   **Replace the entire %changelog section** — remove any previous entries.
-
-   Also update the `Version:` field at the top of the spec file to match `app_version`.
-
-10. **Update info_history in appinfo.h**
-
-    Replace the `info_history` string content so it contains:
-
+    #### Fixed
+    - item 1
     ```
-    Version history
 
+    Where:
+    - `<change-name>` is the change directory name.
+    - `<ultra-condensed summary>` is a 1-sentence summary extracted from the proposal's "Why" or "What Changes" section title.
+    - Items come from the "What Changes" bullet list in `proposal.md`, categorized as:
+      - `#### Added` — items starting with "Implement", "Add", "Create", "Write", or describing new features
+      - `#### Changed` — items starting with "Change", "Migrate", "Update", "Rename", "Expand", "Reuse", "Convert", or describing behavior changes
+      - `#### Fixed` — items starting with "Fix", "Correct", or describing bug fixes
+      - `#### Removed` — items starting with "Remove", "Delete"
+      - `#### Deprecated` — items starting with "Deprecate"
+      - `#### Security` — items starting with "Security" or describing security improvements
+
+3.2. **Insert or update the change's sub-section** within the existing release entry in `CHANGELOG.md`. If a sub-section for this change name already exists, replace it entirely. If not, append it after the release heading and any existing change sub-sections.
+
+3.3. **Review the release entry's other information** (other change sub-sections that already existed). Verify that every change listed there still has an archived or active proposal at its path. If a change sub-section references a change that no longer exists, remove it. Update any outdated summary text to match the current proposal.
+
+### 4. Update CHANGELOG.md — release entry does NOT exist
+
+If an entry for the confirmed release **does NOT exist** in `CHANGELOG.md`:
+
+4.1. **Find the current release entry** in `CHANGELOG.md` (the entry matching `app_version` from `appinfo.h`). Move its entire content (from `## [<current-version>] -` to the next `## [` heading or end of file) into `CHANGELOG-ARCHIVE.md`:
+   - Read `CHANGELOG-ARCHIVE.md`.
+   - Insert the moved content right after the header (after the intro paragraph and before the first `## [` entry), preserving archive ordering.
+   - Write the updated `CHANGELOG-ARCHIVE.md`.
+
+4.2. **Build the new release entry** for the confirmed release using the change sub-section structure:
+
+    ```markdown
     ## [<version>] - YYYY-MM-DD
 
-    <ultra-simplified summary>
+    ### <change-name> <ultra-condensed summary>
 
-    See full changelog:
-    https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v<version>
+    #### Added
+    - item 1
+
+    #### Changed
+    - item 1
     ```
 
-    **Replace the entire `info_history` string** — remove any previous release entries.
+    Use today's date as `YYYY-MM-DD`.
 
-11. **Verify consistency**
+4.3. **Rebuild `CHANGELOG.md`**:
+   - Keep the header (everything from the top until the first `## [` heading).
+   - Add the new Unreleased section (see step 5).
+   - Add the new release entry (from 4.2).
+   - Add/update version compare links at the bottom:
+     - `[Unreleased]: ...compare/v<new-version>...HEAD`
+     - `[<version>]: ...releases/tag/v<version>`
+   - Add the link to the archive: `See [CHANGELOG Archive](CHANGELOG-ARCHIVE.md) for older releases.`
 
-    Read back all modified files and verify:
-    - `CHANGELOG.md` has the release entry for the latest version
-    - `CHANGELOG.md` has the Unreleased section (if there are active unarchived changes)
-    - `CHANGELOG-ARCHIVE.md` has the previous releases appended
-    - `debian/changelog` has only the latest release entry
-    - `rpmbuild/SPECS/msxbas2rom.spec` has only the latest release entry in %changelog
-    - `src/cli/appinfo.h` info_history has only the latest release summary
+    The structure should be:
+
+    ```markdown
+    # Changelog
+    ...
+    ## [Unreleased]
+    ...
+    ## [<version>] - YYYY-MM-DD
+    ...
+    [Unreleased]: https://github.com/amaurycarvalho/msxbas2rom/compare/v<version>...HEAD
+    [<version>]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v<version>
+    
+    See [CHANGELOG Archive](CHANGELOG-ARCHIVE.md) for older releases.
+    ```
+
+### 5. Update the Unreleased section
+
+5.1. **Scan all unarchived changes** in `openspec/changes/` (excluding `archive/`):
+   - If the change being processed in this skill run is **not archived**, skip it (do not include it in Unreleased, since it was already placed in the release section).
+   - Include all other unarchived changes.
+
+5.2. **For each unarchived change**, read its `proposal.md` and extract an ultra-condensed 1-sentence summary. Build an Unreleased entry:
+
+    ```markdown
+    ## [Unreleased]
+
+    ### Added
+
+    - [<change-name>] <ultra-condensed summary>
+    ```
+
+5.3. **Replace the existing Unreleased section** in `CHANGELOG.md` with the newly built content from 5.2. If there are no unarchived changes, set the Unreleased section to:
+
+    ```markdown
+    ## [Unreleased]
+    ```
+
+    (with no items).
+
+### 6. Build the ultra-simplified summary
+
+Create a 1-2 line summary of the change that captures its essence. For example:
+
+```
+Release 1.5.0.0: 16-bit segment support for ASCII16 up to 4MB and ASCII16X up to 8MB
+```
+
+Use the most prominent feature of the change as the summary.
+
+### 7. Update debian/changelog
+
+Write the debian changelog entry. Use the current date and author info from the git log or from existing entries. The format:
+
+```
+msxbas2rom (<version>-0) bionic; urgency=low
+
+  * <ultra-simplified summary>
+
+ -- Amaury Carvalho <amauryspires@gmail.com>  <date>
+```
+
+Where `<date>` follows Debian format: `Day, DD Mon YYYY HH:MM:SS ±TZ` (e.g., `Thu, 19 Jun 2026 18:00:00 -0300`).
+
+**Replace the entire debian/changelog content** — remove any previous release entries.
+
+### 8. Update rpmbuild/SPECS/msxbas2rom.spec
+
+Update the `%changelog` section. The format:
+
+```
+%changelog
+* <Day Mon DD YYYY> Amaury Carvalho <amauryspires@gmail.com>
+- <ultra-simplified summary>
+```
+
+**Replace the entire %changelog section** — remove any previous entries.
+
+Also update the `Version:` field at the top of the spec file to match the confirmed release version.
+
+### 9. Update info_history in appinfo.h
+
+Replace the `info_history` string content so it contains:
+
+```
+Version history
+
+## [<version>] - YYYY-MM-DD
+
+<ultra-simplified summary>
+
+See full changelog:
+https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v<version>
+```
+
+**Replace the entire `info_history` string** — remove any previous release entries.
+
+### 10. Verify consistency
+
+Read back all modified files and verify:
+- `CHANGELOG.md` has the release entry for the change's version
+- `CHANGELOG.md` has the Unreleased section (if there are active unarchived changes)
+- `CHANGELOG-ARCHIVE.md` has the previous releases appended
+- `debian/changelog` has only the latest release entry
+- `rpmbuild/SPECS/msxbas2rom.spec` has only the latest release entry in %changelog and the correct Version:
+- `src/cli/appinfo.h` info_history has only the change's release summary
 
 **Heuristics for categorization**
 
 - Read the "What Changes" bullets from `proposal.md`. The bullet text often starts with verbs like "Implement", "Add", "Fix", "Remove", "Change", "Deprecate".
-- If a bullet starts with "Implement" or "Add" → `### Added`
-- If a bullet starts with "Change" or "Migrate" or "Update" → `### Changed`
-- If a bullet starts with "Fix" → `### Fixed`
-- If a bullet starts with "Remove" → `### Removed`
-- If a bullet starts with "Deprecate" → `### Deprecated`
+- If a bullet starts with "Implement" or "Add" or "Create" or "Write" → `#### Added`
+- If a bullet starts with "Change" or "Migrate" or "Update" or "Rename" or "Expand" or "Reuse" or "Convert" → `#### Changed`
+- If a bullet starts with "Fix" or "Correct" → `#### Fixed`
+- If a bullet starts with "Remove" or "Delete" → `#### Removed`
+- If a bullet starts with "Deprecate" → `#### Deprecated`
 - If in doubt, read the `tasks.md` for that change — task descriptions provide more context.
 
 **Graceful Degradation**
@@ -186,6 +235,7 @@ Update all changelog-related files from archived and active changes.
 ```markdown
 ## Changelog Update Complete
 
+**Change:** <change-name>
 **Version:** <version>
 **Release date:** YYYY-MM-DD
 **Changes archived:** N changes

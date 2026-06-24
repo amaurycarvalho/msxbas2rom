@@ -19,7 +19,7 @@
  * git checkout -b release/v0.0.0.0 && git push origin release/v0.0.0.0
  * git switch master
  */
-#define app_version "1.1.0.0"
+#define app_version "1.2.0.0"
 
 //! @brief Header information
 const char* info_header = R"(MSXBAS2ROM - MSX-BASIC TO ROM COMPILER
@@ -81,12 +81,12 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char* info_history = R"(
 Version history
 
-## [1.1.0.0] - 2026-06-23
+## [1.2.0.0] - 2026-06-24
 
-Release 1.1.0.0: MegaROM mapper expansion with Konami4, ASCII16, and ASCII16-X support plus 2MB compile limit.
+Release 1.2.0.0: MTF window-copy support with extended parameter handling
 
 See full changelog:
-https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.1.0.0
+https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.2.0.0
 )";
 
 /***
