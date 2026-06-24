@@ -63,15 +63,39 @@ The system SHALL copy a full 32x24-tile screen from the map resource using absol
 - **AND** the map area at x=64, y=48 is copied to the screen name table at 0x1800 (dummy — kernel ignores page value)
 
 ### Requirement: MTF copies partial map window (operation 2)
-The system SHALL copy a rectangular window from the map resource to a specific screen position when operation 2 is specified.
+The system SHALL copy a rectangular window from the map resource to a specific screen position when operation 2 is specified, preserving all tiles outside the window area unchanged in VRAM.
 
 #### Scenario: Window copy with all parameters
 - **WHEN** `CMD MTF 2, 2, 20, 12, 10, 6, 5, 8` is executed
 - **THEN** a 10×6 tile rectangle from map position (20, 12) is copied to screen position (5, 8)
+- **AND** tiles outside the 10×6 window area remain unchanged in VRAM
+
+#### Scenario: Window copy preserves tiles above and below the window
+- **WHEN** `CMD MTF 2, 2, 0, 0, 16, 10, 8, 4` is executed and the screen already has tiles displayed
+- **THEN** rows 0..3 (above the window) and rows 14..23 (below the window) are not modified in VRAM
+
+#### Scenario: Window copy preserves tiles left and right of the window
+- **WHEN** `CMD MTF 2, 2, 10, 10, 4, 4, 10, 10` is executed and the screen already has tiles displayed
+- **THEN** columns 0..9 and 14..31 on each affected row remain unchanged in VRAM
+
+#### Scenario: Window copy performs exactly 2 VDP transfers
+- **WHEN** `CMD MTF 2, 2, 0, 0, 10, 6, 5, 8` is executed
+- **THEN** the kernel performs 1 LDIRMV read and 1 LDIRVM write (2 VDP transactions total)
+- **AND** the number of VDP transactions does not vary with window height
 
 #### Scenario: Window copy to top-left corner
 - **WHEN** `CMD MTF 2, 2, 40, 20, 8, 4, 0, 0` is executed
 - **THEN** an 8×4 tile rectangle from map position (40, 20) is copied to screen position (0, 0)
+
+#### Scenario: Window copy clips width and height to screen bounds
+- **WHEN** `CMD MTF 2, 2, 0, 0, 40, 30, 20, 20` is executed (width=40 exceeds screen width, height=30 exceeds screen height)
+- **THEN** width is clipped to 12 (32 - 20) and height is clipped to 4 (24 - 20)
+- **AND** only the clipped 12×4 window is copied to VRAM
+
+#### Scenario: Window copy clipped to zero size performs no VDP operations
+- **WHEN** `CMD MTF 2, 2, 0, 0, 10, 6, 32, 0` is executed (screen_x=32 is off-screen, clipping yields width=0)
+- **THEN** no LDIRMV or LDIRVM operations are performed
+- **AND** VRAM is not modified
 
 #### Scenario: Window copy with page parameter (page scaffolding)
 - **WHEN** `CMD MTF 2, 2, 0, 32, 16, 10, 8, 4, 1` is executed on MSX2
@@ -81,6 +105,25 @@ The system SHALL copy a rectangular window from the map resource to a specific s
 #### Scenario: Window copy defaults page to 0 when omitted
 - **WHEN** `CMD MTF 2, 2, 10, 10, 4, 4, 0, 0` is executed without a page parameter
 - **THEN** the window is copied to page 0 (VRAM 0x1800)
+
+### Requirement: Window-copy preserves VRAM tiles outside the window
+The system SHALL read the VRAM region surrounding the window before overwriting it with map data, ensuring tiles outside the window remain unchanged.
+
+#### Scenario: Surrounding tiles preserved after window copy
+- **WHEN** `CMD MTF 2, 2, 10, 10, 4, 4, 5, 5` is executed on a screen that already displays tiles
+- **THEN** the tiles at screen positions (4, 5) and (9, 5) on the same rows as the window are unchanged
+- **AND** the tiles at screen positions (5, 4) and (5, 9) on the same columns as the window are unchanged
+- **AND** rows completely outside the window range (0..4 and 10..23) are unchanged
+
+#### Scenario: Window at screen edge preserves adjacent tiles
+- **WHEN** `CMD MTF 2, 2, 0, 0, 8, 8, 0, 0` is executed
+- **THEN** tiles at column 8 on rows 0..7 (to the right of the window) are unchanged
+- **AND** tiles on rows 8..23 (below the window) are unchanged
+
+#### Scenario: Full-screen window is equivalent to full map copy
+- **WHEN** `CMD MTF 2, 2, 0, 0, 32, 24, 0, 0` is executed
+- **THEN** the entire 32×24 screen is overwritten with map data (no tiles preserved, result is identical to operation 0/1)
+- **AND** 2 VDP transactions are performed (1 LDIRMV + 1 LDIRVM)
 
 ### Requirement: Page parameter scaffolding — kernel ignores page value
 The system SHALL accept and store the page parameter in the DAC workarea (`MTF_PAGE_PARM` at DAC+16), but SHALL NOT compute page-based VRAM addresses. The kernel SHALL always target `0x1800` for the name table regardless of the page value. Real page offset support is deferred to the `set-page-screen4` change.

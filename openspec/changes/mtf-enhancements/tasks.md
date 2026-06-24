@@ -16,13 +16,22 @@
 
 ## 4. Kernel Runtime — Window Copy (Operation 2)
 
-- [ ] 4.1 Add `cmd_mtf.window_copy` label and dispatch from operation value (A=2)
-- [ ] 4.2 Read `MTF_WIN_W_PARM`, `MTF_WIN_H_PARM`, `MTF_SCR_X_PARM`, `MTF_SCR_Y_PARM`, `MTF_PAGE_PARM` from workarea
-- [ ] 4.3 Validate window bounds against map dimensions (clip or skip out-of-bounds)
-- [ ] 4.4 Zero-fill output buffer (FONTADDR, 768 bytes) before window copy
-- [ ] 4.5 For each destination row (0 to height-1): compute source map row, navigate row-table linked list, copy `width` bytes from `map_x` offset
-- [ ] 4.6 Place copied bytes at `(screen_y * 32 + screen_x)` offset in output buffer
-- [ ] 4.7 Copy output buffer to VRAM at 0x1800 via LDIRVM (dummy — page param ignored; real page support deferred to `set-page-screen4`)
+- [ ] 4.1 Add `cmd_mtf.window_copy` label and dispatch from operation value (`cp 2` / `jr z, window_copy`)
+- [ ] 4.2 Read `MTF_WIN_W_PARM`, `MTF_WIN_H_PARM`, `MTF_SCR_X_PARM`, `MTF_SCR_Y_PARM`, `MTF_COLX_PARM` (map_x), `MTF_ROWY_PARM` (map_y) from workarea into registers
+- [ ] 4.3 Clip screen coordinates: `screen_x = max(0, min(screen_x, 31))`, `screen_y = max(0, min(screen_y, 23))`. Clip window: `width = min(width, 32 - screen_x)`, `height = min(height, 24 - screen_y)`. Write clipped values back to workarea
+- [ ] 4.4 Early return if clipped width ≤ 0 or height ≤ 0 — no VDP operations, just close resource and `ret`
+- [ ] 4.5 Compute VRAM buffer: `vram_start = 0x1800 + screen_y * 32 + screen_x`, `buffer_size = (height - 1) * 32 + width`. Store `buffer_size` in BC for LDIRMV/LDIRVM
+- [ ] 4.6 **LDIRMV**: read `buffer_size` bytes from VRAM at `vram_start` into FONTADDR — this captures surrounding tiles on window rows (left/right gutters preserved)
+- [ ] 4.7 Navigate to first source map row: `hl = MTF_MAP_1ST_ROW + map_y * 3`, then `call go_to_next_row`
+- [ ] 4.8 Loop r = 0 to height-1:
+  - Skip 3-byte linked-list header (`inc hl` × 3)
+  - Advance `map_x` bytes into row data (`add hl, de` with de=map_x)
+  - Copy `width` bytes via `ldir` to `FONTADDR + 32 * r`
+  - Restore destination pointer: `de = FONTADDR + 32 * (r + 1)` (or `ex de,hl` / `ld de, 32` / `add hl, de` equivalent)
+  - `call go_to_next_row` to advance to next source map row
+- [ ] 4.9 **LDIRVM**: write `buffer_size` bytes from FONTADDR back to VRAM at `vram_start`
+- [ ] 4.10 Close resource (`call resource.close`), `ei`, and `ret`
+- [ ] 4.11 Add `; real page support deferred to set-page-screen4 — will replace 0x1800 with (GRPNAM)` comment at the VRAM address usage points
 
 ## 5. Compiler Handler — Parameter Count Extension
 

@@ -52,15 +52,48 @@ Screen pages are unsupported in MTF — the name table is always written to VRAM
 
 **Rationale:** This is the necessary counterpart to Decision 1. The existing code already writes registers to RAM as its first action — switching to pure RAM reads removes that step and is cleaner.
 
-### Decision 5: Window-copy uses row-table traversal per output row
+### Decision 5: Window-copy preserves surrounding VRAM via LDIRMV+LDIRVM
 
-**Choice:** For operation 2, for each destination row (0 to height-1):
-1. Calculate source map row = map_y + current_row
-2. Navigate the linked-list row table to find that row
-3. Copy `width` bytes starting at `map_x` offset from that row
-4. Place at `screen_x + screen_y * 32` offset in the output buffer
+**Choice:** For operation 2, the kernel preserves tiles outside the window area using a minimal VDP read-modify-write approach with bulk transfers:
 
-**Rationale:** Reuses the existing `cmd_mtf.map_xy.go_to_next_row` linked-list traversal. The output buffer (FONTADDR) holds one complete screen (768 bytes) with only the window region filled; blank areas are zeroed.
+1. Compute VRAM buffer parameters:
+   - `VRAM_start = 0x1800 + screen_y * 32 + screen_x`
+   - `buffer_size = (height - 1) * 32 + width`
+2. **LDIRMV**: read `buffer_size` bytes from VRAM at `VRAM_start` into FONTADDR — captures all tiles within and around the window bounding rectangle (left/right gutters on each row)
+3. For each destination row `r` (0 to height-1):
+   - Navigate the linked-list row table to source map row `map_y + r` (one `go_to_next_row` per iteration)
+   - Skip the 3-byte linked-list header, advance `map_x` bytes into the row data
+   - Copy `width` bytes via `ldir` to FONTADDR at offset `32 * r` — window data is always 32-byte aligned in the buffer regardless of `screen_x`, because the buffer starts mid-row at column `screen_x`
+   - Advance to next map row via `go_to_next_row`
+4. **LDIRVM**: write the modified `buffer_size` bytes from FONTADDR back to VRAM at `VRAM_start`
+
+**VDP transactions: 1 LDIRMV + 1 LDIRVM = 2 total**, independent of window height.
+
+**Buffer layout rationale:** Because the buffer starts at column `screen_x` of the first window row and VRAM rows are contiguous (32 bytes each), the window data for row `r` always lands at offset `32 * r`:
+```
+FONTADDR layout (screen_x=5, width=10, height=6, buffer_size=170):
+  offset 0..9:    row 0 window cols 5..14           ← overwritten with map data
+  offset 10..26:  row 0 cols 15..31 (preserved)      ← untouched from LDIRMV
+  offset 27..31:  row 1 cols 0..4   (preserved)      ← untouched from LDIRMV
+  offset 32..41:  row 1 window cols 5..14           ← overwritten with map data
+  offset 42..58:  row 1 cols 15..31 (preserved)
+  ...
+  offset 160..169: row 5 window cols 5..14           ← overwritten with map data
+  (cols 15..31 on row 5 are NOT in buffer — beyond LDIRVM range, untouched)
+```
+This means the destination offset per row is simply `32 * r`, which requires fewer register operations than `(screen_y + r) * 32 + screen_x`.
+
+**What gets preserved:**
+- Tiles **above** the window (rows 0..screen_y-1): never touched
+- Tiles **below** the window (rows screen_y+height..23): never touched
+- Tiles to the **left** of the window (cols 0..screen_x-1): read by LDIRMV, re-written unchanged by LDIRVM
+- Tiles to the **right** on rows screen_y..screen_y+height-2: read and re-written unchanged
+- Tiles to the **right** on the last window row: never read, never touched
+
+**Alternatives considered:**
+- Zero-fill FONTADDR (768 bytes) + full-screen LDIRVM: simpler (1 VDP transfer) but destroys all tiles outside the window — rejected because HUD overlays and dialog boxes need surrounding tiles preserved
+- Per-row LDIRMV+LDIRVM (2 × height VDP transactions): preserves VRAM but each VDP address setup costs cycles — rejected; 2 bulk transfers are far faster than 2 × height small transfers
+- No LDIRMV, fill FONTADDR with map data + explicit zero/pattern fill of gutters: preserves VRAM above/below but destroys left/right tiles on window rows — rejected (incomplete preservation)
 
 ### Decision 6: Incremental builds only
 
@@ -73,5 +106,7 @@ Screen pages are unsupported in MTF — the name table is always written to VRAM
 - [RAM block change breaks inline ASM] → No known inline ASM depends on MTF register conventions; all usage goes through `CMD MTF` BASIC statement
 - [Page parameter on MSX1 silently ignored] → Acceptable: MSX1 has no free VRAM for extra pages. Users targeting MSX1 should use page=0 (the default)
 - [Page parameter is dummy in kernel] → All MTF output goes to 0x1800 regardless of page value. Real page support requires `set-page-screen4` to be implemented. Documented in proposal.
-- [Window bounds validation in kernel] → If width/height exceed map bounds or screen bounds, the kernel will clip (silently) rather than error. BASIC-level validation could be added later via the compiler
-- [Kernel size increase] → New window-copy routine adds ~200 bytes. Acceptable within available ROM space
+- [Window bounds validation in kernel] → If width/height exceed screen bounds, the kernel will clip (silently). Screen coordinates are clamped to 0..31 (x) and 0..23 (y), and width/height are reduced to fit. Clipping happens before buffer size calculation so the formula remains valid.
+- [Window fully off-screen] → If screen_x ≥ 32, screen_y ≥ 24, or clipped width/height ≤ 0, the kernel performs no VDP operations (early return). The LDIRMV+LDIRVM are skipped entirely.
+- [Kernel size increase] → New window-copy routine adds ~250 bytes (vs original ~200 byte estimate). The extra ~50 bytes cover the LDIRMV/LDIRVM setup, buffer size computation, and screen coordinate clipping. Acceptable within available ROM space.
+- [Buffer size calculation correctness] → The formula `(height-1)*32 + width` assumes VRAM rows are contiguous (32 bytes each) and the buffer starts at `screen_x` within the first row. Verified correct for all screen_x/width/height combinations within screen bounds. Maximum buffer size = 768 bytes (full screen), which fits in existing FONTADDR.
