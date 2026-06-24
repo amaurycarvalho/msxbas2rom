@@ -27,7 +27,7 @@ The system SHALL load a tileset resource into VRAM pattern and color tables when
 - **THEN** SOMODE is set to 2 indicating tiled mode is active
 
 ### Requirement: MTF copies full map using relative screen coordinates (operation 0)
-The system SHALL copy a full 32x24-tile screen from the map resource using screen-based col/row coordinates when operation 0 is specified or implied.
+The system SHALL copy a full 32x24-tile screen from the map resource using screen-based col/row coordinates when operation 0 is specified or implied. Operation 0 SHALL delegate to the window_copy kernel routine by setting full-screen window parameters (width=32, height=24, screen_x=0, screen_y=0).
 
 #### Scenario: Full map copy with defaults
 - **WHEN** `CMD MTF 2` is executed with resource 2 being a map file
@@ -37,13 +37,19 @@ The system SHALL copy a full 32x24-tile screen from the map resource using scree
 - **WHEN** `CMD MTF 2, 0, 3, 2` is executed
 - **THEN** the map area starting at column 3 (x = 3 × 32 = 96), row 2 (y = 2 × 24 = 48) is copied to the screen name table
 
+#### Scenario: Operation 0 delegates to window_copy
+- **WHEN** `CMD MTF 2, 0, 5, 3` is executed
+- **THEN** the kernel computes map_x=160 (5×32), map_y=72 (3×24) and sets MTF_WIN_W_PARM=32, MTF_WIN_H_PARM=24, MTF_SCR_X_PARM=0, MTF_SCR_Y_PARM=0
+- **AND** execution continues at `cmd_mtf.window_copy` (single code path for all map copies)
+- **AND** the full-width optimization (screen_x=0, width=32) skips LDIRMV, resulting in 1 LDIRVM
+
 #### Scenario: Full map copy with page parameter (page scaffolding)
 - **WHEN** `CMD MTF 2, 0, 1, 0, 2` is executed on MSX2
 - **THEN** the page parameter (2) is stored in `MTF_PAGE_PARM` at DAC+16
 - **AND** the map area at column 1, row 0 is copied to the screen name table at 0x1800 (dummy — kernel ignores page value; real page support deferred to `set-page-screen4`)
 
 ### Requirement: MTF copies full map using absolute tile coordinates (operation 1)
-The system SHALL copy a full 32x24-tile screen from the map resource using absolute map pixel coordinates when operation 1 is specified.
+The system SHALL copy a full 32x24-tile screen from the map resource using absolute map pixel coordinates when operation 1 is specified. Operation 1 SHALL delegate to the window_copy kernel routine by setting full-screen window parameters (width=32, height=24, screen_x=0, screen_y=0).
 
 #### Scenario: Full map copy with absolute coordinates
 - **WHEN** `CMD MTF 2, 1, 128, 96` is executed
@@ -56,6 +62,12 @@ The system SHALL copy a full 32x24-tile screen from the map resource using absol
 #### Scenario: Coordinate modulo wrapping
 - **WHEN** `CMD MTF 2, 1, 300, 250` is executed on a map of width 256 and height 192
 - **THEN** x wraps to 44 (300 mod 256) and y wraps to 58 (250 mod 192) before the copy
+
+#### Scenario: Operation 1 delegates to window_copy
+- **WHEN** `CMD MTF 2, 1, 64, 48` is executed on MSX2
+- **THEN** after coordinate wrapping, the kernel sets MTF_COLX_PARM=64, MTF_ROWY_PARM=48, MTF_WIN_W_PARM=32, MTF_WIN_H_PARM=24, MTF_SCR_X_PARM=0, MTF_SCR_Y_PARM=0
+- **AND** execution continues at `cmd_mtf.window_copy`
+- **AND** the full-width optimization (screen_x=0, width=32) skips LDIRMV, resulting in 1 LDIRVM
 
 #### Scenario: Absolute copy with page parameter (page scaffolding)
 - **WHEN** `CMD MTF 2, 1, 64, 48, 1` is executed on MSX2
@@ -82,6 +94,11 @@ The system SHALL copy a rectangular window from the map resource to a specific s
 - **WHEN** `CMD MTF 2, 2, 0, 0, 10, 6, 5, 8` is executed
 - **THEN** the kernel performs 1 LDIRMV read and 1 LDIRVM write (2 VDP transactions total)
 - **AND** the number of VDP transactions does not vary with window height
+
+#### Scenario: Full-width window skips LDIRMV (1 VDP transfer)
+- **WHEN** `CMD MTF 2, 2, 0, 0, 32, 6, 0, 8` is executed (screen_x=0, width=32)
+- **THEN** the full-width optimization activates: LDIRMV is skipped because all bytes read would be overwritten
+- **AND** only 1 LDIRVM transfer is performed
 
 #### Scenario: Window copy to top-left corner
 - **WHEN** `CMD MTF 2, 2, 40, 20, 8, 4, 0, 0` is executed
@@ -123,7 +140,7 @@ The system SHALL read the VRAM region surrounding the window before overwriting 
 #### Scenario: Full-screen window is equivalent to full map copy
 - **WHEN** `CMD MTF 2, 2, 0, 0, 32, 24, 0, 0` is executed
 - **THEN** the entire 32×24 screen is overwritten with map data (no tiles preserved, result is identical to operation 0/1)
-- **AND** 2 VDP transactions are performed (1 LDIRMV + 1 LDIRVM)
+- **AND** 1 LDIRVM transfer is performed (full-width optimization: screen_x=0, width=32 skips LDIRMV)
 
 ### Requirement: Page parameter scaffolding — kernel ignores page value
 The system SHALL accept and store the page parameter in the DAC workarea (`MTF_PAGE_PARM` at DAC+16), but SHALL NOT compute page-based VRAM addresses. The kernel SHALL always target `0x1800` for the name table regardless of the page value. Real page offset support is deferred to the `set-page-screen4` change.

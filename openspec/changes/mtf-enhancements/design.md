@@ -10,6 +10,7 @@ Screen pages are unsupported in MTF — the name table is always written to VRAM
 
 **Goals:**
 - Add operation 2 (window copy): `MTF <resource>,2,<map_x>,<map_y>,<width>,<height>,<screen_x>,<screen_y>[,<page>]`
+- Unify all map copy operations (0, 1, 2) into a single `window_copy` kernel routine — ops 0/1 delegate by setting full-screen window params
 - Add page parameter to operations 0 and 1
 - Migrate to RAM-block parameter passing for all operations
 - Maintain backward compatibility — all existing `.bas` programs compile and run identically
@@ -67,7 +68,12 @@ Screen pages are unsupported in MTF — the name table is always written to VRAM
    - Advance to next map row via `go_to_next_row`
 4. **LDIRVM**: write the modified `buffer_size` bytes from FONTADDR back to VRAM at `VRAM_start`
 
-**VDP transactions: 1 LDIRMV + 1 LDIRVM = 2 total**, independent of window height.
+**VDP transactions: 1 LDIRMV + 1 LDIRVM = 2 total**, independent of window height. With the full-width optimization below, full-screen windows perform only 1 VDP transfer.
+
+**Full-width optimization:** When `screen_x == 0` and `width == 32`, the window spans entire rows. All bytes read by LDIRMV would be overwritten by map data — the read is wasted. In this case the kernel skips the LDIRMV step entirely, resulting in only 1 LDIRVM. This covers:
+- Full-screen copies (ops 0/1 delegating with width=32, screen_x=0): 1 VDP transfer — same performance as current code
+- Full-width window copies (e.g., a 32×6 horizontal strip): 1 VDP transfer
+- Code cost: ~6 bytes for the conditional branch check
 
 **Buffer layout rationale:** Because the buffer starts at column `screen_x` of the first window row and VRAM rows are contiguous (32 bytes each), the window data for row `r` always lands at offset `32 * r`:
 ```
@@ -95,6 +101,27 @@ This means the destination offset per row is simply `32 * r`, which requires few
 - Per-row LDIRMV+LDIRVM (2 × height VDP transactions): preserves VRAM but each VDP address setup costs cycles — rejected; 2 bulk transfers are far faster than 2 × height small transfers
 - No LDIRMV, fill FONTADDR with map data + explicit zero/pattern fill of gutters: preserves VRAM above/below but destroys left/right tiles on window rows — rejected (incomplete preservation)
 
+### Decision 7: Operations 0 and 1 delegate to window_copy
+
+**Choice:** Operations 0 (relative col/row) and 1 (absolute x/y) set up full-screen window parameters and jump directly to `window_copy`, eliminating the separate full-screen copy code path (`cmd_mtf.map_xy.copy_to_buffer` loop + `cmd_mtf.map_xy.copy_to_vram`).
+
+Operation 0/1 flow becomes:
+1. Compute `map_x`, `map_y` from col/row or absolute coordinates (existing coordinate wrapping logic unchanged)
+2. Store result in `MTF_COLX_PARM` (map_x) and `MTF_ROWY_PARM` (map_y)
+3. Write `MTF_WIN_W_PARM = 32`, `MTF_WIN_H_PARM = 24` to workarea
+4. Write `MTF_SCR_X_PARM = 0`, `MTF_SCR_Y_PARM = 0` to workarea
+5. `jp cmd_mtf.window_copy` — single code path for ALL map copy operations
+
+**Rationale:**
+- Eliminates ~70 bytes of duplicate code (the 24-iteration `ldir` loop + `LDIRVM` at `copy_to_vram`)
+- Window_copy already handles full-screen efficiently via the full-width optimization: `screen_x=0 && width=32` → skip LDIRMV → 1 LDIRVM, identical performance
+- Single code path = fewer bugs, simpler maintenance, easier to add features (e.g., page support in `set-page-screen4`)
+- Backward compatible: ops 0 and 1 produce identical screen output — same source rows, same VRAM destination
+
+**Alternatives considered:**
+- Keep separate code paths: duplicated ~70 bytes of copy logic, two places to maintain
+- Have ops 0/1 set width/height in registers and call window_copy: violates Decision 1 (pure RAM-based params), adds register pressure in the dispatch path
+
 ### Decision 6: Incremental builds only
 
 **Choice:** Use `make debug` or `make release` directly, never `make all` (which runs `clean` first). The Makefile already has dependency tracking (`-include $(DEP)`).
@@ -104,6 +131,7 @@ This means the destination offset per row is simply `32 * r`, which requires few
 ## Risks / Trade-offs
 
 - [RAM block change breaks inline ASM] → No known inline ASM depends on MTF register conventions; all usage goes through `CMD MTF` BASIC statement
+- [Operations 0/1 regression] → After delegation to window_copy, existing mtf1–mtf4 integration tests must produce bit-identical ROM output. Verified by comparing ROM hashes before and after the change. The new code path computes the same source coordinates, writes the same 768 bytes to the same VRAM address.
 - [Page parameter on MSX1 silently ignored] → Acceptable: MSX1 has no free VRAM for extra pages. Users targeting MSX1 should use page=0 (the default)
 - [Page parameter is dummy in kernel] → All MTF output goes to 0x1800 regardless of page value. Real page support requires `set-page-screen4` to be implemented. Documented in proposal.
 - [Window bounds validation in kernel] → If width/height exceed screen bounds, the kernel will clip (silently). Screen coordinates are clamped to 0..31 (x) and 0..23 (y), and width/height are reduced to fit. Clipping happens before buffer size calculation so the formula remains valid.
