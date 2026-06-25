@@ -530,11 +530,18 @@ SUB_LDIRMV.loop:
 ; Wait for VDP VBLANK
 ;---------------------------------------------------------------------------------------------------------
 
-VDP_WaitVblank:
-    in a, ($99)           ; Read VDP Status Register 0
-    and $80               ; Check bit 7 (VBLANK flag)
-    jr z, VDP_WaitVblank   ; Loop if bit 7 is 0
-    ret
+;VDP_WaitVblank:
+;    in a, ($99)           ; Read VDP Status Register 0
+;    and $80               ; Check bit 7 (VBLANK flag)
+;    jr z, VDP_WaitVblank   ; Loop if bit 7 is 0
+;    ret
+
+;VDP_WaitVblank_Jiffy:
+;    ld a, (JIFFY)
+;WaitVblank_Jiffy.loop:
+;    cp (JIFFY)
+;    jr z, WaitVblank_Jiffy.loop
+;    ret
 
 ;---------------------------------------------------------------------------------------------------------
 ; Detect VDP version

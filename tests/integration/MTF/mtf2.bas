@@ -1,8 +1,9 @@
 ' ----------------------------------------------------------------------------
-' MSX TILE FORGE - TEST SCREEN 4
+' MSX TILE FORGE - MAP TO SCREEN FULL COPY (SCREEN 4)
 ' ----------------------------------------------------------------------------
-' CMD MTF <resource number> [, <map operation> [, <x|col> [, <y|row>] ] ]
-'   map operation: 0=col/row screen relative coords, 1=x/y map absolute coords 
+' MTF <resource>, 0, <horizontal_col>, <vertical_row>
+'   horizontal_col  Horizontal screen position in the map (default=0)
+'   vertical_row    Vertical screen position in the map (default=0)
 ' ----------------------------------------------------------------------------
 
 FILE "mtf.SC4Pal"           ' 0

@@ -2050,11 +2050,14 @@ cmd_mtf.window_copy:
   jp MR_CHANGE_SGM
 
 .copy_done:
+  call resource.close
+  ei
   ld hl, (MTF_SCR_RAM_BUF)       ; screen ram buffer source
   ld de, (MTF_SCR_VRAM_BUF)      ; screen vram buffer dest
   ld bc, (MTF_SCR_SIZE)          ; screen buffer size
-  call VDP_WaitVblank
-  call SUB_LDIRVM                ; hl = ram data address, de = vram data address, bc = length
+  ;call VDP_WaitVblank
+  ;call SUB_LDIRVM                ; hl = ram data address, de = vram data address, bc = length
+  jp LDIRVM 
 
 .window_copy_done:
   call resource.close

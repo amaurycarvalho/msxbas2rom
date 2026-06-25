@@ -3,8 +3,8 @@
 ### Requirement: MTF loads palette resources into VRAM
 The system SHALL load a palette resource into VDP palette registers when CMD MTF is called with a palette resource number and no map operation.
 
-#### Scenario: Load palette on MSX2 screen 2
-- **WHEN** `CMD MTF 0` is executed with resource 0 being a palette file and SCREEN 2 is active on MSX2
+#### Scenario: Load palette on MSX2 screen 2 or 4
+- **WHEN** `CMD MTF 0` is executed with resource 0 being a palette file and SCREEN 2 or 4 is active on MSX2
 - **THEN** the 16-color palette from the resource is written to VDP palette registers
 
 #### Scenario: Load palette skipped on MSX1
@@ -12,14 +12,14 @@ The system SHALL load a palette resource into VDP palette registers when CMD MTF
 - **THEN** the command returns immediately without modifying VDP registers
 
 #### Scenario: Load palette ignored on unsupported screen mode
-- **WHEN** `CMD MTF 0` is executed with SCREEN 0 active
+- **WHEN** `CMD MTF 0` is executed with SCREEN 0 or 1 active
 - **THEN** the command returns immediately without loading
 
 ### Requirement: MTF loads tileset resources into VRAM
 The system SHALL load a tileset resource into VRAM pattern and color tables when CMD MTF is called with a tileset resource number.
 
-#### Scenario: Load tileset on screen 2
-- **WHEN** `CMD MTF 1` is executed with resource 1 being a tileset file and SCREEN 2 is active
+#### Scenario: Load tileset on screen 2 or 4
+- **WHEN** `CMD MTF 1` is executed with resource 1 being a tileset file and SCREEN 2 or 4 is active
 - **THEN** tile pattern data is copied to VRAM banks 0, 1, 2 (offsets 0x0000, 0x0800, 0x1000) and color data to banks 0, 1, 2 (offsets 0x2000, 0x2800, 0x3000)
 
 #### Scenario: Tileset activates tiled mode
@@ -39,13 +39,13 @@ The system SHALL copy a full 32x24-tile screen from the map resource using scree
 
 #### Scenario: Operation 0 delegates to window_copy
 - **WHEN** `CMD MTF 2, 0, 5, 3` is executed
-- **THEN** the kernel computes map_x=160 (5×32), map_y=72 (3×24) and sets MTF_WIN_W_PARM=32, MTF_WIN_H_PARM=24, MTF_SCR_X_PARM=0, MTF_SCR_Y_PARM=0
+- **THEN** the kernel computes map_x=160 (5×32), map_y=72 (3×24). `MTF_WIN_W_PARM=32`, `MTF_WIN_H_PARM=24`, `MTF_SCR_X_PARM=0`, `MTF_SCR_Y_PARM=0` are already set by the compiler as defaults
 - **AND** execution continues at `cmd_mtf.window_copy` (single code path for all map copies)
 - **AND** the full-width optimization (screen_x=0, width=32) skips LDIRMV, resulting in 1 LDIRVM
 
 #### Scenario: Full map copy with page parameter (page scaffolding)
 - **WHEN** `CMD MTF 2, 0, 1, 0, 2` is executed on MSX2
-- **THEN** the page parameter (2) is stored in `MTF_PAGE_PARM` at DAC+16
+- **THEN** the page parameter (2) is stored in `MTF_PAGE_PARM` at PARM1+16
 - **AND** the map area at column 1, row 0 is copied to the screen name table at 0x1800 (dummy — kernel ignores page value; real page support deferred to `set-page-screen4`)
 
 ### Requirement: MTF copies full map using absolute tile coordinates (operation 1)
@@ -65,7 +65,7 @@ The system SHALL copy a full 32x24-tile screen from the map resource using absol
 
 #### Scenario: Operation 1 delegates to window_copy
 - **WHEN** `CMD MTF 2, 1, 64, 48` is executed on MSX2
-- **THEN** after coordinate wrapping, the kernel sets MTF_COLX_PARM=64, MTF_ROWY_PARM=48, MTF_WIN_W_PARM=32, MTF_WIN_H_PARM=24, MTF_SCR_X_PARM=0, MTF_SCR_Y_PARM=0
+- **THEN** after coordinate wrapping, the kernel sets MTF_COLX_PARM=64, MTF_ROWY_PARM=48. `MTF_WIN_W_PARM=32`, `MTF_WIN_H_PARM=24`, `MTF_SCR_X_PARM=0`, `MTF_SCR_Y_PARM=0` are already set by the compiler
 - **AND** execution continues at `cmd_mtf.window_copy`
 - **AND** the full-width optimization (screen_x=0, width=32) skips LDIRMV, resulting in 1 LDIRVM
 
@@ -143,11 +143,11 @@ The system SHALL read the VRAM region surrounding the window before overwriting 
 - **AND** 1 LDIRVM transfer is performed (full-width optimization: screen_x=0, width=32 skips LDIRMV)
 
 ### Requirement: Page parameter scaffolding — kernel ignores page value
-The system SHALL accept and store the page parameter in the DAC workarea (`MTF_PAGE_PARM` at DAC+16), but SHALL NOT compute page-based VRAM addresses. The kernel SHALL always target `0x1800` for the name table regardless of the page value. Real page offset support is deferred to the `set-page-screen4` change.
+The system SHALL accept and store the page parameter in the PARM1 workarea (`MTF_PAGE_PARM` at PARM1+16), but SHALL NOT compute page-based VRAM addresses. The kernel SHALL always target `0x1800` for the name table regardless of the page value. Real page offset support is deferred to the `set-page-screen4` change.
 
 #### Scenario: Page parameter stored but ignored on MSX2
 - **WHEN** `CMD MTF 2, 0, 0, 0, 3` is executed on MSX2
-- **THEN** the page parameter (3) is stored in `MTF_PAGE_PARM` at DAC+16
+- **THEN** the page parameter (3) is stored in `MTF_PAGE_PARM` at PARM1+16
 - **AND** the map is copied to VRAM 0x1800 (kernel ignores page value)
 
 #### Scenario: Window copy page parameter stored but ignored
@@ -175,12 +175,12 @@ The system SHALL accept 1 to 9 parameters for CMD MTF and report a syntax error 
 - **THEN** the compiler reports "CMD MTF syntax error"
 
 ### Requirement: Compiler emits RAM-based parameter storage
-The system SHALL emit Z80 instructions that store MTF parameters to the DAC workarea (0xF7F6–0xF806) before calling the kernel.
+The system SHALL emit Z80 instructions that store MTF parameters to the PARM1 workarea (0xF6E8–0xF6F8) before calling the kernel.
 
 #### Scenario: Operation 0 emits correct RAM stores
 - **WHEN** `CMD MTF 2, 0, 1, 0` is compiled
-- **THEN** the emitted code writes resource=2 to DAC+0, col=1 to DAC+2, row=0 to DAC+4, operation=0 to DAC+6, and defaults for window/page (0) to DAC+8 through DAC+16
+- **THEN** the emitted code writes resource=2 to PARM1+0, col=1 to PARM1+2, row=0 to PARM1+4, operation=0 to PARM1+6, and defaults for window/page (0) to PARM1+8 through PARM1+16
 
 #### Scenario: Operation 2 emits all 9 parameters to RAM
 - **WHEN** `CMD MTF 2, 2, 20, 12, 10, 6, 5, 8, 1` is compiled
-- **THEN** the emitted code writes resource=2, map_x=20, map_y=12, operation=2, width=10, height=6, screen_x=5, screen_y=8, page=1 to their respective DAC offsets
+- **THEN** the emitted code writes resource=2, map_x=20, map_y=12, operation=2, width=10, height=6, screen_x=5, screen_y=8, page=1 to their respective PARM1 offsets

@@ -1,8 +1,9 @@
 ' ----------------------------------------------------------------------------
-' MSX TILE FORGE - TEST SCREEN SCROLL
+' MSX TILE FORGE - MAP TO SCREEN FULL SCROLL WITH SOUND
 ' ----------------------------------------------------------------------------
-' CMD MTF <resource number> [, <map operation> [, <x|col> [, <y|row>] ] ]
-'   map operation: 0=col/row screen relative coords, 1=x/y map absolute coords 
+' MTF <resource>, 1, <map_x>, <map_y>
+'   map_x           Absolute X coordinate in the map (default=0)
+'   map_y           Absolute Y coordinate in the map (default=0)
 ' ----------------------------------------------------------------------------
 
 FILE "mtf.SC4Pal"           ' 0
