@@ -32,5 +32,5 @@ install -m 0755 msxbas2rom %{buildroot}/usr/bin/msxbas2rom
 /usr/bin/msxbas2rom
 
 %changelog
-* Wed Jun 24 2026 Amaury Carvalho <amauryspires@gmail.com>
+* Thu Jun 25 2026 Amaury Carvalho <amauryspires@gmail.com>
 - Release 1.2.0.0: MTF window-copy support with extended parameter handling

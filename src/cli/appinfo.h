@@ -81,7 +81,7 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char* info_history = R"(
 Version history
 
-## [1.2.0.0] - 2026-06-24
+## [1.2.0.0] - 2026-06-25
 
 Release 1.2.0.0: MTF window-copy support with extended parameter handling
 
