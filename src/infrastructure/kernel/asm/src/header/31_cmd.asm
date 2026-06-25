@@ -305,7 +305,7 @@ cmd_rsctoram:
     push de
     push af
       ld (DAC), hl
-      call resource.open_and_get_address          ; out: hl = resource data, a = resource segment, bc = resource size
+      call resource.open_and_get_address          ; in: DAC = resource number, out: hl = resource data, a = resource segment, bc = resource size
     pop af
     pop de
     or a
@@ -549,7 +549,7 @@ cmd_turbo.msx2p:    ; msx2+ machine type
 ; DAC = data resource number
 cmd_restore:
   di
-    call resource.open_and_get_address  ; out: hl = resource data, a = resource segment, bc = resource size
+    call resource.open_and_get_address  ; in: DAC = resource number, out: hl = resource data, a = resource segment, bc = resource size
     ld (DATLIN), hl          ; DATA start pointer
     ld (SUBFLG), a           ; DATA segment start number
     ld (DATPTR), hl          ; DATA current pointer
@@ -1620,7 +1620,7 @@ cmd_screen_paste:
   ex de,hl
     call cmd_screen.get_start
   ex de,hl
-  jp LDIRVM     ; ram to vram - hl=ram, de=vram, bc=size
+  jp LDIRVM     ; ; hl = ram data address, de = vram data address, bc = length
 
 cmd_screen.get_start:
   ld a, (SCRMOD)
@@ -1632,9 +1632,10 @@ cmd_screen.get_start:
   ret
 
 ; hl = resource number
+; DAC = resource number
 cmd_screen_load:
   di
-    call resource.open_and_get_address
+    call resource.open_and_get_address  ; in: DAC = resource number, out: hl = resource data, a = resource segment, bc = resource size
       ld c, (hl)
       inc hl
       ld b, (hl)
@@ -1647,25 +1648,36 @@ cmd_screen_load:
   jp XBASIC_BLOAD
 
 ; MSX Tile Forge - load resource
-; cmd_mtf <resource number> [, operation [, col|X [, row|Y] ] ]
-;   hl = resource number
-;   de = col_x position
-;   bc = row_y position
-;   a = map operation (0 for relative coords, 1 for absolute coords)
-MTF_RESN_PARM equ DAC 
+; cmd_mtf <resource> [,<operation>[,<parameters>]]
+;      oper            Operation.
+;                      0 (Palette/Tileset) - Load resource into VRAM
+;                      0 (Map) - Full map copy using relative screen coordinates (default)
+;                      1 (Map) - Full map copy using absolute tile coordinates
+;                      2 (Map) - Partial map copy (window)
+;      resn            Resource number.
+;      colx            Horizontal screen position in the map / Source X coordinate in the map.
+;      rowy            Vertical screen position in the map / Source Y coordinate in the map.
+;      win_w           Window width in tiles.
+;      win_h           Window height in tiles.
+;      scr_x           Destination X coordinate on screen.
+;      scr_y           Destination Y coordinate on screen.
+;      page            Destination screen page (default=0, for screen 4 only).
+MTF_RESN_PARM equ PARM1 
 MTF_COLX_PARM equ MTF_RESN_PARM+2
 MTF_ROWY_PARM equ MTF_COLX_PARM+2
 MTF_OPER_PARM equ MTF_ROWY_PARM+2
-MTF_MAP_1ST_ROW equ ARG
+MTF_WIN_W_PARM equ MTF_OPER_PARM+2
+MTF_WIN_H_PARM equ MTF_WIN_W_PARM+2
+MTF_SCR_X_PARM equ MTF_WIN_H_PARM+2
+MTF_SCR_Y_PARM equ MTF_SCR_X_PARM+2
+MTF_PAGE_PARM equ MTF_SCR_Y_PARM+2
+MTF_MAP_1ST_ROW equ PARM2
 MTF_MAP_WIDTH equ MTF_MAP_1ST_ROW+2
 MTF_MAP_HEIGHT equ MTF_MAP_WIDTH+2
-MTF_SCR_BUF equ MTF_MAP_HEIGHT+2
-MTF_SCR_SIZE equ MTF_SCR_BUF+2
+MTF_SCR_VRAM_BUF equ MTF_MAP_HEIGHT+2
+MTF_SCR_RAM_BUF equ MTF_SCR_VRAM_BUF+2
+MTF_SCR_SIZE equ MTF_SCR_RAM_BUF+2
 cmd_mtf:
-  ld (MTF_RESN_PARM), hl
-  ld (MTF_COLX_PARM), de
-  ld (MTF_ROWY_PARM), bc
-  ld (MTF_OPER_PARM), a
 cmd_mtf.check_screen_mode:
   ld a,(SCRMOD)
   cp 2
@@ -1673,8 +1685,12 @@ cmd_mtf.check_screen_mode:
   cp 4
   ret nz
 cmd_mtf.load_resource:
+  ld hl, (FONTADDR)
+  ld (MTF_SCR_RAM_BUF), hl                    ; screen ram buffer address
   di
-    call resource.open_and_get_address
+    ld hl, (MTF_RESN_PARM)                    ; resource number
+    ld (DAC), hl 
+    call resource.open_and_get_address        ; in: DAC = resource number, out: hl = resource data, a = resource segment, bc = resource size
       ld a, (hl)                              ; resource type 
       inc hl                                  ; skip resource type
 
@@ -1694,13 +1710,13 @@ cmd_mtf.palette.copy.to_buffer:
       inc hl
       inc hl 
       inc hl                                  ; point to palette data start address
-      ld de, (FONTADDR)                       ; screen buffer address 
+      ld de, (MTF_SCR_RAM_BUF)        ; screen ram buffer address 
       ld bc, 16*3
       ldir                                    ; copy to screen buffer
     call resource.close
   ei
 cmd_mtf.palette.copy.to_vram:
-  ld hl, (FONTADDR)
+  ld hl, (MTF_SCR_RAM_BUF)
   ld d, 0                                     ; color number 
 cmd_mtf.palette.copy.to_vram.loop:
   push de
@@ -1753,8 +1769,7 @@ cmd_mtf.tileset.copy.to_buffer:
         ld c, l
         ld b, h                               ; bc = tileset data  + colorset data size
       ex de, hl                               ; hl=header address, de=tiles data size
-      ld de, (FONTADDR)
-      ld (MTF_SCR_BUF), de
+      ld de, (MTF_SCR_RAM_BUF)
       ldir                                    ; copy to buffer
     call resource.close
   ei
@@ -1766,10 +1781,10 @@ cmd_mtf.tileset.copy.to_vram:
   call cmd_mtf.copy.to_vram
   ld de, 0x1000                               ; tileset bank 2
   call cmd_mtf.copy.to_vram
-  ld hl, (MTF_SCR_BUF)
+  ld hl, (MTF_SCR_RAM_BUF)
   ld bc, (MTF_SCR_SIZE)
   add hl, bc                                  ; colorset buffer address
-  ld (MTF_SCR_BUF), hl  
+  ld (MTF_SCR_RAM_BUF), hl  
   ld de, 0x2000                               ; colorset bank 0
   call cmd_mtf.copy.to_vram
   ld de, 0x2800                               ; colorset bank 1
@@ -1777,17 +1792,30 @@ cmd_mtf.tileset.copy.to_vram:
   ld de, 0x3000                               ; colorset bank 2
 
 cmd_mtf.copy.to_vram:
-  ld hl, (MTF_SCR_BUF)
+  ld hl, (MTF_SCR_RAM_BUF)
   ld bc, (MTF_SCR_SIZE)
-  jp LDIRVM
+  jp LDIRVM                                   ; hl = ram data address, de = vram data address, bc = length
 
 cmd_mtf.map:
+      ; Read map header (common to all map operations)
+      ld e, (hl)
+      inc hl
+      ld d, (hl)
+      inc hl
+      ld (MTF_MAP_WIDTH), de                  ; map width
+      ld e, (hl)
+      inc hl
+      ld d, (hl)
+      inc hl
+      ld (MTF_MAP_HEIGHT), de                 ; map height
+      ld (MTF_MAP_1ST_ROW), hl                ; map 1st row address
+      ; Dispatch based on operation
       ld de, (MTF_COLX_PARM)                  ; col_x parameter
       ld bc, (MTF_ROWY_PARM)                  ; row_y parameter
       ld a, (MTF_OPER_PARM)                   ; map operation
-      or a                                    ; absolute coords?
-      jr nz, cmd_mtf.map_xy
-        ; calculate x and y coords from col/row coords
+      or a                                    ; relative coords?
+      jr nz, cmd_mtf.map_xy                   ; skip if it's not
+        ; calculate absolute x and y coords from col/row relative coords
         push hl                               ; resource header
           ex de,hl
           add hl, hl
@@ -1795,7 +1823,7 @@ cmd_mtf.map:
           add hl, hl
           add hl, hl
           add hl, hl    
-          ex de, hl                           ; x = col * 32 = col * 2^5
+          ex de, hl                           ; de = col_x = col * 32 = col * 2^5
           ld l, c 
           ld h, b  
           add hl, hl
@@ -1806,23 +1834,10 @@ cmd_mtf.map:
           add hl, hl                          ; row * 2^4
           add hl, bc 
           ld c, l 
-          ld b, h                             ; y = row * 24 = row * 2^3 + row * 2^4        
-          ld (MTF_ROWY_PARM), bc              ; row_y parameter
+          ld b, h                             ; bc = row_y = row * 24 = row * 2^3 + row * 2^4        
         pop hl                                ; resource header
+
 cmd_mtf.map_xy:
-      push de 
-        ld e, (hl) 
-        inc hl 
-        ld d, (hl) 
-        inc hl
-        ld (MTF_MAP_WIDTH), de                ; map width
-        ld e, (hl) 
-        inc hl 
-        ld d, (hl) 
-        inc hl
-        ld (MTF_MAP_HEIGHT), de               ; map height
-        ld (MTF_MAP_1ST_ROW), hl              ; map 1st row address 
-      pop de 
 cmd_mtf.map_xy.adjust_if_y_negative:
       ; adjust if y negative
       bit 7, b
@@ -1836,7 +1851,6 @@ cmd_mtf.map_xy.adjust_if_y_negative.loop:
         jr nz, cmd_mtf.map_xy.adjust_if_y_negative.loop
           ld c, l 
           ld b, h
-          ld (MTF_ROWY_PARM), bc              ; row_y parameter
 cmd_mtf.map_xy.adjust_if_x_negative:
       ; adjust if x negative 
       bit 7, d
@@ -1869,49 +1883,164 @@ cmd_mtf.map_xy.adjust_if_y_gt_tilemap_height:
         ld b, d
       pop de
       ld (MTF_ROWY_PARM), bc                  ; row_y parameter
-cmd_mtf.map_xy.search_row_table:
-      ; search for y screen row
-      ld hl, (MTF_MAP_1ST_ROW)                ; 1st row address in the row table
-      add hl, bc                              ; row_y = 1stRow + 3 * row_y 
-      add hl, bc
-      add hl, bc
-      call cmd_mtf.map_xy.go_to_next_row
-cmd_mtf.map_xy.copy_to_buffer:
-      ; copy to screen RAM buffer 32 cols of 24 screen rows 
-      ld bc, 24
-      ld de, (FONTADDR)
-      ld (MTF_SCR_BUF), de
-cmd_mtf.map_xy.copy_to_buffer.loop:
-      push bc                    ; rows to copy 
-        push hl                  ; current row address 
-          inc hl 
-          inc hl 
-          inc hl                 ; row data start (skip linked list header)
-          ld de, (MTF_COLX_PARM)
-          add hl, de
-          ld de, (MTF_SCR_BUF)
-          ld bc, 32
-          ldir 
-          ld (MTF_SCR_BUF), de
-        pop hl 
-      pop bc 
-      dec bc 
-      ld a, b
-      or c 
-      jr z, cmd_mtf.map_xy.copy_to_vram
-        call cmd_mtf.map_xy.go_to_next_row
-        jr cmd_mtf.map_xy.copy_to_buffer.loop
- 
-cmd_mtf.map_xy.copy_to_vram:
-        call resource.close
-      ei
-      ; copy screen RAM buffer to VRAM
-      ld hl, (FONTADDR)
-      ld de, 0x1800
-      ld bc, 768
-      jp LDIRVM 
 
-cmd_mtf.map_xy.go_to_next_row:
+; real page support deferred to set-page-screen4 — will replace 0x1800 with (GRPNAM)
+cmd_mtf.window_copy:
+  ; Clip screen_x
+  ld hl, (MTF_SCR_X_PARM)
+  ld a, l
+  cp 32
+  jr c, .sx_ok
+  ld a, 31
+.sx_ok:
+  ld d, a                        ; d = screen_x
+
+  ; Clip screen_y
+  ld hl, (MTF_SCR_Y_PARM)
+  ld a, l
+  cp 24
+  jr c, .sy_ok
+  ld a, 23
+.sy_ok:
+  ld e, a                        ; e = screen_y
+
+  ; Clip width
+  ld hl, (MTF_WIN_W_PARM)
+  ld b, l                        ; b = win_w 
+  ld a, 32
+  sub d
+  cp b
+  jr nc, .w_ok
+  ld b, a
+.w_ok:
+  ld a, b
+  or a
+  jp z, .window_copy_done
+
+  ; Clip height
+  ld hl, (MTF_WIN_H_PARM)
+  ld c, l                        ; c = win_h 
+  ld a, 24
+  sub e
+  cp c
+  jr nc, .h_ok
+  ld c, a
+.h_ok:
+  ld a, c
+  or a
+  jp z, .window_copy_done
+
+  ; Store clipped width and height
+  ld a, b
+  ld (MTF_WIN_W_PARM), a
+  ld a, c
+  ld (MTF_WIN_H_PARM), a
+
+  ; Compute vram_start = 0x1800 + screen_y * 32 + screen_x
+  ld l, e
+  ld h, 0
+  add hl, hl
+  add hl, hl
+  add hl, hl
+  add hl, hl
+  add hl, hl                     ; hl = screen_y * 32
+  ld a, d
+  add a, l
+  ld l, a
+  ld a, h
+  adc a, 0
+  ld h, a                        ; hl = screen_y * 32 + screen_x
+  push de 
+    ld de, 0x1800
+    add hl, de                   ; hl = 0x1800 + screen_y * 32 + screen_x
+  pop de 
+  ld (MTF_SCR_VRAM_BUF), hl      ; save vram_start
+
+  ; Compute buffer_size = (height - 1) * 32 + width
+  ld a, c                        ; a = win_h 
+  dec a
+  ld l, a
+  ld h, 0
+  add hl, hl
+  add hl, hl
+  add hl, hl
+  add hl, hl
+  add hl, hl                     ; hl = (height - 1) * 32
+  ld a, b                        ; a = win_w 
+  add a, l
+  ld l, a
+  ld a, h
+  adc a, 0
+  ld h, a                        ; hl = buffer_size
+  ld (MTF_SCR_SIZE), hl          ; save buffer_size
+
+  ; Full-width optimization: skip LDIRMV if screen_x == 0 and width == 32
+  ld a, d                        ; a = screen_x
+  or a
+  jr nz, .do_ldirmv
+  ld a, b                        ; a = win_w
+  cp 32
+  jr z, .navigate_source
+
+  ; Copy from VRAM to RAM
+.do_ldirmv:
+  ld hl, (MTF_SCR_VRAM_BUF)
+  ld de, (MTF_SCR_RAM_BUF)
+  ld bc, (MTF_SCR_SIZE)
+  call SUB_LDIRMV                ; hl = vram data address, de = ram data address, bc = length (do not touch interruptions version)
+
+  ; Navigate to first source map row
+.navigate_source:
+  ld de, (MTF_ROWY_PARM)         ; map_y
+  ld hl, (MTF_MAP_1ST_ROW)
+  add hl, de
+  add hl, de
+  add hl, de                     ; hl = MTF_MAP_1ST_ROW + map_y * 3
+  call .go_to_next_map_row
+  ; hl = first source row pointer
+
+  ld de, (MTF_SCR_RAM_BUF)       ; dest base
+
+  ; Per-row copy loop
+.copy_row:
+  ld a, (MTF_WIN_H_PARM)
+  or a
+  jr z, .copy_done
+  dec a
+  ld (MTF_WIN_H_PARM), a
+
+  push de                        ; save dest
+  push hl                        ; save source row pointer
+
+  ; Skip 3-byte linked-list header
+  inc hl
+  inc hl
+  inc hl
+
+  ; Advance to map_x column
+  ld bc, (MTF_COLX_PARM)         ; map_x
+  add hl, bc                     ; hl = source + map_x
+
+  ; Copy width bytes: hl=source, de=dest, bc=size
+  ld a, (MTF_WIN_W_PARM)
+  ld c, a
+  ld b, 0
+  ldir
+
+  ; Restore source and advance to next source row
+  pop hl                         ; hl = saved source row pointer
+  call .go_to_next_map_row
+
+  ; Restore dest and advance by 32 for next dest row
+  pop de                         ; de = saved dest
+  ex de, hl                      ; hl = saved dest
+    ld bc, 32
+    add hl, bc                   ; hl = next row dest
+  ex de, hl                      ; de = next row dest
+
+  jr .copy_row
+
+.go_to_next_map_row:
   ld a, (hl)       ; next row segment 
   inc hl 
   ld e, (hl) 
@@ -1919,6 +2048,18 @@ cmd_mtf.map_xy.go_to_next_row:
   ld d, (hl)       ; next row address
   ex de, hl 
   jp MR_CHANGE_SGM
+
+.copy_done:
+  ld hl, (MTF_SCR_RAM_BUF)       ; screen ram buffer source
+  ld de, (MTF_SCR_VRAM_BUF)      ; screen vram buffer dest
+  ld bc, (MTF_SCR_SIZE)          ; screen buffer size
+  call VDP_WaitVblank
+  call SUB_LDIRVM                ; hl = ram data address, de = vram data address, bc = length
+
+.window_copy_done:
+  call resource.close
+  ei
+  ret
 
 ; https://www.msx.org/wiki/PAD()
 ; input l = pad function parameter code (mouse, trackball...)

@@ -437,6 +437,8 @@
 #define def_TEMP8 0xF69F    // 2
 #define def_TEMPPT 0xF678   // 2 - pointer to next free position into TEMPST
 #define def_TEMPST 0xF67A   // 30 - temporary string descriptors buffer
+#define def_PARM1 0xF6E8    // 100 - parameters buffer 1
+#define def_PARM2 0xF750    // 100 - parameters buffer 2
 #define def_DSCTMP 0xF698   // 3 - index and start address of temporary strings
 #define def_ENDFOR 0xF6A1   // 2
 #define def_ENDPRG 0xF40F   // fake empty line

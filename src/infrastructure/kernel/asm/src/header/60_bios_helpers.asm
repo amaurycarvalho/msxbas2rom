@@ -2,6 +2,7 @@
 ; MEMORY / SLOT / PAGE ROUTINES
 ;---------------------------------------------------------------------------------------------------------
 
+; in: DAC = resource number
 resource.open:
   ld a, (RSCMAPSG)
   or a
@@ -42,7 +43,7 @@ select_rsc_on_megarom:
   jp MR_CHANGE_SGM
 
 resource.open_and_get_address:
-  call resource.open
+  call resource.open                      ; in: DAC = resource number
   ld bc, (DAC)                            ; bc = resource number
   jp resource.address                     ; hl = resource start address, a = segment, bc = resource size
 
@@ -485,22 +486,55 @@ ENASLT.SUBSLT.1:
 ;---------------------------------------------------------------------------------------------------------
 
 SUB_LDIRVM:
-  ex      de,hl
-  ld a,l           ; initialize (msx1)
+  ld      a,e           ; set VRAM write address
   out     (099H),a
-  ld      a,h
+  ld      a,d
   and     03FH
   or      040H
   out     (099H),a
+  ld e, c 
+  ld d, b 
+  ld c, 098H            ; C = VDP Data Port ($98)
 SUB_LDIRVM.loop:
-  ld      a,(de)
-  out     (098H),a
-  inc     de
-  dec     bc
-  ld      a,c
-  or      b
-  jr      nz, SUB_LDIRVM.loop
+  outi               
+  dec de 
+  ld a, e 
+  or d
+  jr nz, SUB_LDIRVM.loop
   ret
+
+;---------------------------------------------------------------------------------------------------------
+; VRAM to RAM alternative (needs DI/EI)
+; in: BC=Length, dest DE=RAM address, source HL=VRAM address
+;---------------------------------------------------------------------------------------------------------
+
+SUB_LDIRMV:
+  ld      a,l           ; set VRAM read address
+  out     (099H),a
+  ld      a,h
+  and     03FH
+  out     (099H),a
+  ex de, hl 
+  ld e, c 
+  ld d, b 
+  ld c, 098H            ; C = VDP Data Port ($98)
+SUB_LDIRMV.loop:
+  ini                 
+  dec de 
+  ld a, e 
+  or d
+  jr nz, SUB_LDIRMV.loop
+  ret 
+
+;---------------------------------------------------------------------------------------------------------
+; Wait for VDP VBLANK
+;---------------------------------------------------------------------------------------------------------
+
+VDP_WaitVblank:
+    in a, ($99)           ; Read VDP Status Register 0
+    and $80               ; Check bit 7 (VBLANK flag)
+    jr z, VDP_WaitVblank   ; Loop if bit 7 is 0
+    ret
 
 ;---------------------------------------------------------------------------------------------------------
 ; Detect VDP version

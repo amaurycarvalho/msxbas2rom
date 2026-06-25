@@ -189,6 +189,7 @@ cmd_fmaxfiles.populate_filtab.loop:
 ; out: hl = true if success, false if error
 ; reference: BDOS 0x0F (OpenFile) and 0x16 (CreateFile)
 ; ------------------------------------------------------------------------------------------------------
+FOPEN_STRING_DESCRIPTOR: equ PARM1
 cmd_fopen:
   or a 
   jr z, cmd_fopen.error
@@ -197,9 +198,9 @@ cmd_fopen:
   push bc
     ld a, (hl)        
     inc hl 
-    ld (PARM1), a                       ; string size 
-    ld (PARM1+1), hl                    ; string pointer
-    ld hl, PARM1                        ; string descriptor
+    ld (FOPEN_STRING_DESCRIPTOR), a                       ; string size 
+    ld (FOPEN_STRING_DESCRIPTOR+1), hl                    ; string pointer
+    ld hl, FOPEN_STRING_DESCRIPTOR                        ; string descriptor
     ld a, 3
     ld (VALTYP), a                      ; DAC type=string 
     ld (DAC+2), hl                      ; DAC=string descriptor
