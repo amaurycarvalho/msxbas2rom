@@ -19,7 +19,7 @@
  * git checkout -b release/v0.0.0.0 && git push origin release/v0.0.0.0
  * git switch master
  */
-#define app_version "1.2.0.0"
+#define app_version "1.2.1.0"
 
 //! @brief Header information
 const char* info_header = R"(MSXBAS2ROM - MSX-BASIC TO ROM COMPILER

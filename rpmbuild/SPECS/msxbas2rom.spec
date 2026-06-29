@@ -1,5 +1,5 @@
 Name: msxbas2rom
-Version: 1.2.0.0
+Version: 1.2.1.0
 Release: 1%{?dist}
 Summary: MSX-BASIC to ROM compiler
 
@@ -32,5 +32,5 @@ install -m 0755 msxbas2rom %{buildroot}/usr/bin/msxbas2rom
 /usr/bin/msxbas2rom
 
 %changelog
-* Thu Jun 25 2026 Amaury Carvalho <amauryspires@gmail.com>
+* Mon Jun 29 2026 Amaury Carvalho <amauryspires@gmail.com>
 - Release 1.2.0.0: MTF window-copy support with extended parameter handling
