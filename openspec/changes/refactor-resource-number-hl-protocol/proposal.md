@@ -1,5 +1,7 @@
 ## Why
 
+> **IMPORTANT**: This change is a **rough first pass** — it captures the exploration discovery and a proposed fix direction. It MUST be refined, validated with tests, and reviewed before any implementation (`/opsx-apply`). Do not apply in current state.
+
 O resource number trafega por três canais diferentes (DAC, BC, HL) dependendo do caller, causando dupla leitura de DAC, escrita desnecessária em RAM, repurposing confuso de DAC como scratch, e inconsistência de contrato entre as rotinas `resource.*` e seus callers. Padronizar em HL como protocolo único elimina poluição do DAC — liberando-o exclusivamente para o MSX BASIC math pack — e reduz o footprint do kernel e do código gerado.
 
 ## What Changes
@@ -19,10 +21,12 @@ O resource number trafega por três canais diferentes (DAC, BC, HL) dependendo d
 ## Capabilities
 
 ### New Capabilities
+
 - `kernel-resource-protocol`: Define o contrato canônico HL para passagem de resource number entre C++ compiler, kernel CMD/USR handlers, e rotinas `resource.*`. Documenta os mecanismos de preservação (push/pop) necessários porque `resource.open` destrói H no caminho não-MegaROM.
 
 ### Modified Capabilities
-- `kernel-call-routing`: Atualiza a documentação dos registradores de entrada/saída das rotinas `resource.open`, `resource.address`, `resource.get_data`, `resource.open_and_get_address` no dispatch table. (Mudança de documentação, sem alteração de índices DISP_*.)
+
+- `kernel-call-routing`: Atualiza a documentação dos registradores de entrada/saída das rotinas `resource.open`, `resource.address`, `resource.get_data`, `resource.open_and_get_address` no dispatch table. (Mudança de documentação, sem alteração de índices DISP\_\*.)
 - `compiler`: Atualiza a documentação do contrato de passagem de parâmetros: resource-related calls não usam mais DAC; non-resource CMD calls usam PARM1 em vez de DAC.
 
 ## Impact

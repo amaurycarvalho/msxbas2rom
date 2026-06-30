@@ -1,5 +1,7 @@
 ## Why
 
+> **IMPORTANT**: This change is a **rough first pass** — it captures the exploration discovery and a proposed fix direction. It MUST be refined, validated with tests, and reviewed before any implementation (`/opsx-apply`). Do not apply in current state.
+
 O MSX BASIC oficial suporta SET PAGE apenas para SCREEN 5 a 13 (modos bitmap com hardware de page flipping via DPPAGE/ACPAGE). Screen 4 (modo character-based 256x192, 16 cores de 512, SCRMOD=5) fica excluída — apesar de ter VRAM livre significativa (114KB em V9938 de 128KB). Jogos e demos que usam Screen 4 com tiles precisam de double-buffering e múltiplas "telas", forçando workarounds manuais com VPOKE/VPEEK e manipulação direta de registradores VDP. Esta change estende SET PAGE para Screen 4, aproveitando a VRAM livre como storage de páginas completas (tileset + name table) com troca via VDP command engine, mantendo compatibilidade total com SET TILE (3 bancos).
 
 ## What Changes

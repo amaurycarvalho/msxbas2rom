@@ -1,5 +1,7 @@
 ## Why
 
+> **IMPORTANT**: This change is a **rough first pass** — it captures the exploration discovery and a proposed fix direction. It MUST be refined, validated with tests, and reviewed before any implementation (`/opsx-apply`). Do not apply in current state.
+
 MSX BASIC's `subtype_double_decimal` currently occupies 3 bytes and uses the same single-precision math routines as `subtype_single_decimal`, making it a semantic phantom — double-precision variables exist in the language grammar but offer no precision benefit. This change implements true double-precision floating point via the float-float (double-double) technique, where each double is the sum of two single-precision floats (6 bytes total), providing approximately 48 bits of mantissa versus the single's 23 bits. Double-precision is essential for numerical accuracy in scientific computation, financial calculations, and iterative algorithms susceptible to single-precision round-off.
 
 ## What Changes

@@ -1,5 +1,7 @@
 ## Why
 
+> **IMPORTANT**: This change is a **rough first pass** — it captures the exploration discovery and a proposed fix direction. It MUST be refined, validated with tests, and reviewed before any implementation (`/opsx-apply`). Do not apply in current state.
+
 O sistema atual armazena números de segmento como valores de 8 bits em múltiplos pontos críticos — ROM header, resource map, kernel `MR_CHANGE_SGM`, bridges de código e fixups — limitando o tamanho máximo do MegaROM a 2MB (255 segmentos × 8KB). Para suportar ROMs de 4MB no mapper ASCII16 (256 páginas de 16KB = 512 segmentos de 8KB) e 8MB no mapper ASCII16-X (512 páginas de 16KB = 1024 segmentos de 8KB), é necessário migrar o tratamento interno de segmentos para 16 bits com o mínimo de alteração de código.
 
 ## What Changes
