@@ -81,12 +81,12 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char* info_history = R"(
 Version history
 
-## [1.2.0.0] - 2026-06-25
+## [1.2.1.0] - 2026-06-29
 
-Release 1.2.0.0: MTF window-copy support with extended parameter handling
+Fix Windows startup Unicode argv to ensure CLI runs reliably on Windows
 
 See full changelog:
-https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.2.0.0
+https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.2.1.0
 )";
 
 /***

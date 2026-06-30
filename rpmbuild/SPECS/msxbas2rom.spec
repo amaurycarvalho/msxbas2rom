@@ -33,4 +33,4 @@ install -m 0755 msxbas2rom %{buildroot}/usr/bin/msxbas2rom
 
 %changelog
 * Mon Jun 29 2026 Amaury Carvalho <amauryspires@gmail.com>
-- Release 1.2.0.0: MTF window-copy support with extended parameter handling
+- Fix Windows startup Unicode argv to ensure CLI runs reliably on Windows

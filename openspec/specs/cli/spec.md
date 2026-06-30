@@ -1,4 +1,4 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: Provide CLI that validates options and executes pipeline stages
 As a command-line user, the system SHALL provide a CLI that validates options and executes lexer, parser, compiler, and ROM builder stages with clear diagnostics so that users can convert BASIC sources to ROM artifacts safely.
@@ -6,6 +6,8 @@ As a command-line user, the system SHALL provide a CLI that validates options an
 The CLI SHALL validate arguments and return non-zero exit code for invalid parameter combinations. The CLI SHALL support informational commands (`--help`, `--doc`, `--history`, `--ver`) and exit without compilation. The CLI SHALL enforce input file existence and output overwrite behavior. The CLI SHALL execute stages in order: lexical, syntactic, semantic, ROM build. The CLI SHALL report stage-specific errors and success metrics depending on quiet/debug/settings.
 
 The CLI SHALL support compile mode selection flags: `-c`/`--compile` (Plain ROM), `-0`/`--plain` (Plain ROM), `-x`/`--megarom` (ASCII8 default), `-8`/`--ascii8` (ASCII8), `-k`/`--scc` (KonamiSCC), `-4`/`--konami` (Konami4), `-6`/`--ascii16` (ASCII16), `-7`/`--ascii16x` (ASCII16-X), and `-a`/`--auto` (auto-fallback to ASCII8 on plain ROM overflow).
+
+On Windows, CLI startup SHALL safely initialize command-line arguments before parsing. If Unicode argv conversion is available and succeeds, the CLI SHALL parse UTF-8 converted arguments. If Unicode argv conversion is unavailable or fails, the CLI SHALL avoid unsafe allocation and continue with the original narrow `argv` instead of crashing or returning silently before informational output.
 
 The `--history` flag SHALL display the `info_history` string, which contains only the current release entry, a summary of the last 2 releases, and a link to the current release on GitHub — not the full changelog. The `info_history` content is maintained by the `openspec-changelog` skill.
 
@@ -15,6 +17,27 @@ The `--help` flag SHALL list all compile mode flags including `-4`/`--konami` an
 - **WHEN** the command `msxbas2rom -h` is executed
 - **THEN** help text is printed
 - **AND** the help text lists `-4`/`--konami` and `-6`/`--ascii16` among compile options
+- **AND** process exits with status code 0
+
+#### Scenario: Windows no-argument startup shows help
+- **WHEN** the Windows executable is run without arguments
+- **THEN** the application prints the header and help text
+- **AND** process exits with status code 0
+- **AND** the process does not crash, abort, or return silently before printing output
+
+#### Scenario: Windows help startup survives Unicode conversion failure
+- **WHEN** Windows Unicode argv conversion is unavailable or returns a conversion failure before CLI parsing
+- **AND** the Windows executable is run with `-h` or `--help`
+- **THEN** the application falls back to original `argv`
+- **AND** help text is printed
+- **AND** process exits with status code 0
+- **AND** no allocation is attempted from a negative or zero conversion length
+
+#### Scenario: Windows version startup survives Unicode conversion failure
+- **WHEN** Windows Unicode argv conversion is unavailable or returns a conversion failure before CLI parsing
+- **AND** the Windows executable is run with `-v` or `--version`
+- **THEN** the application falls back to original `argv`
+- **AND** version text is printed
 - **AND** process exits with status code 0
 
 #### Scenario: Reject missing input file

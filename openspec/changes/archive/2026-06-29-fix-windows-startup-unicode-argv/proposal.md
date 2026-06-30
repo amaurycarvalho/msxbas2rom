@@ -27,3 +27,4 @@ None.
 - `src/cli/parser/cliparser.cpp` and `src/cli/options/build_options_setup.cpp` - no expected behavior change, but may be touched by tests.
 - Tests/build validation - add or extend coverage for no-argument/help/version startup paths and conversion failure safety.
 - Release confidence - validates regression introduced after v0.3.4.2 and first observed in Windows `.exe` builds from v1.0.0.0 onward.
+- **Target**: Release 1.2.1.0
