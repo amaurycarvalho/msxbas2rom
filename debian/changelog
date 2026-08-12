@@ -1,3 +1,9 @@
+msxbas2rom (1.2.2.0-0) bionic; urgency=low
+
+  * Fix make lint gate failures and indeterminate Logger::LogEntry fields
+
+ -- Amaury Carvalho <amauryspires@gmail.com>  Wed, 12 Aug 2026 12:00:00 -0300
+
 msxbas2rom (1.2.1.0-0) bionic; urgency=low
 
   * Fix Windows startup Unicode argv to ensure CLI runs reliably on Windows

@@ -1,5 +1,5 @@
 Name: msxbas2rom
-Version: 1.2.1.0
+Version: 1.2.2.0
 Release: 1%{?dist}
 Summary: MSX-BASIC to ROM compiler
 
@@ -32,5 +32,7 @@ install -m 0755 msxbas2rom %{buildroot}/usr/bin/msxbas2rom
 /usr/bin/msxbas2rom
 
 %changelog
+* Wed Aug 12 2026 Amaury Carvalho <amauryspires@gmail.com>
+- Fix make lint gate failures and indeterminate Logger::LogEntry fields
 * Mon Jun 29 2026 Amaury Carvalho <amauryspires@gmail.com>
 - Fix Windows startup Unicode argv to ensure CLI runs reliably on Windows
