@@ -133,22 +133,18 @@ Run in the terminal (or CTRL+SHIFT+P, "Tasks: Run Task" and "test unit msxbas2ro
 ./bin/Release/msxbas2rom -v
 ```
 
-Also, run unit testing:
+Also, run linting, unit testing and code coverage:
 
 ```bash
-make test-unit
+make lint
+make test
+make coverage
 ```
 
 And run integration testing as well:
 
 ```bash
 make test-integration
-```
-
-To run all tests in sequence:
-
-```bash
-make test
 ```
 
 Create new test scenarios if need.

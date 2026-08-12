@@ -3,7 +3,7 @@
 # by Amaury Carvalho (2022-2026)                                               #
 #------------------------------------------------------------------------------#
 
-.PHONY: all clean debug release test test-clean test-unit test-integration test-kernel debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
+.PHONY: all clean debug release lint test coverage test-clean test-unit test-integration test-coverage test-kernel debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
 
 # ----------------------------
 # Variables
@@ -19,6 +19,8 @@ WINDRES = windres
 
 CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG)
 DEPFLAGS = -MMD -MP
+LINTFLAGS = -fsyntax-only -Wall -Wextra -Werror -pedantic -fanalyzer -Wno-unused-parameter
+
 SRC = src
 INC = $(shell find $(SRC) -type f \( -name "*.h" -o -name "*.hpp" \) -exec dirname {} + | uniq | sort)
 CPPFLAGS = $(foreach dir,$(INC),-I$(dir))
@@ -154,19 +156,41 @@ $(OBJDIR_DEBUG) $(OBJDIR_RELEASE):
 -include $(DEP_DEBUG) $(DEP_RELEASE)
 
 # ----------------------------
+# Linting
+# ----------------------------
+
+lint:
+	@echo "🔍 Running static analysis on all source files..."
+	@$(CXX) $(LINTFLAGS) $(CPPFLAGS) $(shell find $(SRC) -name "*.cpp" -o -name "*.h" -o -name "*.hpp") 
+	@echo "✅ Lint passed!"
+
+# ----------------------------
 # Tests
 # ----------------------------
 
 test: test-unit
 
+coverage: test-coverage
+
 test-unit:
+	@echo "🔍 Running unit testing..."
 	@$(MAKE) -C tests/unit run
+	@echo "✅ Unit testing passed!"
+
+test-coverage:
+	@echo "🔍 Running code coverage..."
+	@$(MAKE) -C tests/unit coverage
+	@echo "✅ Code coverage passed!"
 
 test-integration:
+	@echo "🔍 Running integration testing..."
 	@$(MAKE) -C tests/integration run
+	@echo "✅ Integration testing passed!"
 
 test-kernel:
+	@echo "🔍 Running kernel testing..."
 	@$(MAKE) -C tests/kernel run
+	@echo "✅ Kernel testing passed!"
 
 test-clean:
 	@echo "🧹 Cleaning testing files..."

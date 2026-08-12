@@ -1,0 +1,35 @@
+name: CI Quality Gate
+
+on:
+  push:
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: "Branch to run the workflow on"
+        required: true
+        default: "master"
+
+jobs:
+  test-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcovr
+      #- name: Linting
+      #  run: |
+      #    make lint
+      - name: Unit testing
+        run: |
+          make test
+      - name: Code coverage
+        run: |
+          make coverage
+      - name: Integration testing
+        run: |
+          make test-integration

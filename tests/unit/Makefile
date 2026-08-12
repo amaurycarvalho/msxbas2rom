@@ -3,7 +3,7 @@
 # by Amaury Carvalho (2025)                                                    #
 #------------------------------------------------------------------------------#
 
-.PHONY: all clean setup build build-init run
+.PHONY: all clean setup build build-init run coverage
 
 CC = gcc
 CXX = g++
@@ -19,8 +19,8 @@ DEPFLAGS = -MMD -MP
 OBJ = ./obj
 BIN = ./bin
 TMP = ./tmp
-CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG)
-LDFLAGS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc
+CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG) --coverage -O0
+LDFLAGS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc --coverage -O0
 
 SRC_FILES = $(shell find $(SRC_ROOT) -name '*.cpp' ! -path '$(SRC_ROOT)/cli/main.cpp' | sort)
 SRC_OBJ = $(patsubst $(SRC_ROOT)/%.cpp,$(OBJ)/src_%.o,$(SRC_FILES))
@@ -65,6 +65,9 @@ setup:
 	@mkdir -p $(OBJ)
 	@mkdir -p $(BIN)
 	@mkdir -p $(TMP)
+
+coverage:
+	@gcovr --root . --filter "$(SRC_ROOT)/" --filter "$(TEST_SRC)/" --exclude ".*doctest\.h$$" --json=coverage.json --json-summary=coverage-summary.json --json-summary-pretty --print-summary --fail-under-line 85
 
 $(OBJ)/src_%.o: $(SRC_ROOT)/%.cpp | setup
 	@echo "📦 Compiling source module $<..."

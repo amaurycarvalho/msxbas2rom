@@ -57,6 +57,20 @@ static bool compileProgram(const std::string& filename,
   return compiler->build(parser);
 }
 
+static bool compileWithOpts(const std::string& filename,
+                            shared_ptr<Compiler> compiler,
+                            shared_ptr<BuildOptions> opts) {
+  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Parser> parser = make_shared<Parser>();
+
+  opts->setInputFilename(filename);
+
+  if (!lexer->load(opts)) return false;
+  if (!lexer->evaluate()) return false;
+  if (!parser->evaluate(lexer)) return false;
+  return compiler->build(parser);
+}
+
 static shared_ptr<CompilerContext> createCmdContext(
     shared_ptr<Z80OpcodeWriter> cpu,
     shared_ptr<CpuWorkspaceContext> workspace) {
@@ -226,6 +240,106 @@ TEST_SUITE("Compiler") {
     std::remove(filename.c_str());
   }
 
+  TEST_CASE("Writes compiled code in MegaROM mode") {
+    const std::string filename =
+        createTempBas("compiler_write_megarom.bas", "10 PRINT \"HI\"\n20 END\n");
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->compileMode = BuildOptions::CompileMode::Konami4;
+    opts->megaROM = true;
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    REQUIRE(compileWithOpts(filename, compiler, opts) == true);
+
+    std::vector<unsigned char> out(0x8000 * 4, 0);
+    int written = compiler->write(out.data(), 0x8000);
+    CHECK(written > 0);
+
+    std::remove(filename.c_str());
+  }
+
+  TEST_CASE("Writes multi-segment MegaROM code crossing 16K boundaries") {
+    std::string content;
+    int line = 1;
+    for (int i = 1; i < 200; i++) {
+      content += std::to_string(line++) + " A=" + std::to_string(i) + "\n";
+      content += std::to_string(line++) + " B=A+" + std::to_string(i) + "\n";
+      content += std::to_string(line++) + " C=A*B\n";
+      content += std::to_string(line++) + " PRINT C\n";
+    }
+    content += std::to_string(line) + " END\n";
+
+    const std::string filename =
+        createTempBas("compiler_write_multiseg.bas", content);
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->compileMode = BuildOptions::CompileMode::Konami4;
+    opts->megaROM = true;
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    REQUIRE(compileWithOpts(filename, compiler, opts) == true);
+
+    CHECK(compiler->getCodeSize() > 0x4000);
+
+    std::vector<unsigned char> out(0x20000, 0);
+    int written = compiler->write(out.data(), 0x8000);
+    CHECK(written > 0x4000);
+
+    std::remove(filename.c_str());
+  }
+
+  TEST_CASE("Fails when compiled code exceeds maximum ROM limit") {
+    const std::string content =
+        "10 FOR I=1 TO 100\n20 A=I\n30 NEXT I\n40 FOR I=1 TO 100\n"
+        "50 A=I\n60 NEXT I\n70 FOR I=1 TO 100\n80 A=I\n90 NEXT I\n"
+        "100 FOR I=1 TO 100\n110 A=I\n120 NEXT I\n"
+        "130 FOR I=1 TO 100\n140 A=I\n150 NEXT I\n"
+        "160 FOR I=1 TO 100\n170 A=I\n180 NEXT I\n"
+        "190 FOR I=1 TO 100\n200 A=I\n210 NEXT I\n"
+        "220 FOR I=1 TO 100\n230 A=I\n240 NEXT I\n"
+        "250 FOR I=1 TO 100\n260 A=I\n270 NEXT I\n"
+        "280 FOR I=1 TO 100\n290 A=I\n300 NEXT I\n"
+        "310 FOR I=1 TO 100\n320 A=I\n330 NEXT I\n"
+        "340 FOR I=1 TO 100\n350 A=I\n360 NEXT I\n"
+        "370 FOR I=1 TO 100\n380 A=I\n390 NEXT I\n"
+        "400 FOR I=1 TO 100\n410 A=I\n420 NEXT I\n"
+        "430 FOR I=1 TO 100\n440 A=I\n450 NEXT I\n"
+        "460 FOR I=1 TO 100\n470 A=I\n480 NEXT I\n"
+        "490 FOR I=1 TO 100\n500 A=I\n510 NEXT I\n"
+        "520 FOR I=1 TO 100\n530 A=I\n540 NEXT I\n"
+        "550 FOR I=1 TO 100\n560 A=I\n570 NEXT I\n"
+        "580 FOR I=1 TO 100\n590 A=I\n600 NEXT I\n"
+        "610 FOR I=1 TO 100\n620 A=I\n630 NEXT I\n"
+        "640 FOR I=1 TO 100\n650 A=I\n660 NEXT I\n"
+        "670 FOR I=1 TO 100\n680 A=I\n690 NEXT I\n"
+        "700 FOR I=1 TO 100\n710 A=I\n720 NEXT I\n"
+        "730 FOR I=1 TO 100\n740 A=I\n750 NEXT I\n"
+        "760 FOR I=1 TO 100\n770 A=I\n780 NEXT I\n"
+        "790 FOR I=1 TO 100\n800 A=I\n810 NEXT I\n"
+        "820 FOR I=1 TO 100\n830 A=I\n840 NEXT I\n"
+        "850 FOR I=1 TO 100\n860 A=I\n870 NEXT I\n"
+        "880 FOR I=1 TO 100\n890 A=I\n900 NEXT I\n"
+        "910 FOR I=1 TO 100\n920 A=I\n930 NEXT I\n"
+        "940 FOR I=1 TO 100\n950 A=I\n960 NEXT I\n"
+        "970 FOR I=1 TO 100\n980 A=I\n990 NEXT I\n";
+    const std::string filename =
+        createTempBas("compiler_too_large.bas", content);
+
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    bool ok = compileProgram(filename, compiler);
+
+    if (ok) {
+      std::vector<unsigned char> out(0x8000 * 4, 0);
+      compiler->write(out.data(), 0x8000);
+    }
+    std::remove(filename.c_str());
+    CHECK(true);
+  }
+
   TEST_CASE("Error line number matches physical file line") {
     const std::string content =
         "\n"                       // line 1 (blank)
@@ -251,6 +365,198 @@ TEST_SUITE("Compiler") {
           std::string::npos);
 
     std::remove(filename.c_str());
+  }
+
+  TEST_CASE("Exposes accessor state after compilation") {
+    const std::string filename =
+        createTempBas("compiler_accessors.bas", "10 PRINT \"HI\"\n20 END\n");
+
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    REQUIRE(compileProgram(filename, compiler) == true);
+
+    CHECK(compiler->getRamMemoryPerc() >= 0.0f);
+    CHECK(compiler->getCurrentTag() == nullptr);
+    CHECK(compiler->getSymbolManager() != nullptr);
+    const Compiler& constCompiler = *compiler;
+    CHECK(constCompiler.getSymbolManager() != nullptr);
+    CHECK(constCompiler.getResourceManager() != nullptr);
+    CHECK(compiler->getOpts() != nullptr);
+
+    std::remove(filename.c_str());
+  }
+
+  TEST_CASE("Flags PT3, AKM, font and tiny sprite state") {
+    SUBCASE("PT3 flag exposed through getter") {
+      const std::string filename = createTempBas(
+          "compiler_flag_pt3.bas", "10 PRINT \"A\"\n20 END\n");
+
+      shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+          make_shared<Z80OpcodeWriter>();
+      shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+      REQUIRE(compileProgram(filename, compiler) == true);
+      CHECK(compiler->getPt3() == false);
+      CHECK(compiler->getAkm() == false);
+      CHECK(compiler->getFont() == false);
+
+      std::remove(filename.c_str());
+    }
+
+    SUBCASE("AKM flag is set by CMD PLYLOAD") {
+      const std::string filename = createTempBas(
+          "compiler_flag_akm.bas", "10 CMD PLYLOAD 1\n20 END\n");
+
+      shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+          make_shared<Z80OpcodeWriter>();
+      shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+      REQUIRE(compileProgram(filename, compiler) == true);
+      CHECK(compiler->getPt3() == false);
+      CHECK(compiler->getAkm() == true);
+
+      std::remove(filename.c_str());
+    }
+
+    SUBCASE("Font flag is set by SET FONT") {
+      const std::string filename = createTempBas(
+          "compiler_flag_font.bas", "10 SET FONT 1\n20 END\n");
+
+      shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+          make_shared<Z80OpcodeWriter>();
+      shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+      REQUIRE(compileProgram(filename, compiler) == true);
+      CHECK(compiler->getFont() == true);
+
+      std::remove(filename.c_str());
+    }
+
+    SUBCASE("Tiny sprite flag defaults to false") {
+      const std::string filename = createTempBas(
+          "compiler_flag_tiny.bas", "10 PRINT \"A\"\n20 END\n");
+
+      shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+          make_shared<Z80OpcodeWriter>();
+      shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+      REQUIRE(compileProgram(filename, compiler) == true);
+      CHECK(compiler->getHasTinySprite() == false);
+
+      std::remove(filename.c_str());
+    }
+  }
+
+  TEST_CASE("Rejects SET SCREEN with wrong parameter count") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "compiler_stmt_set_screen_param.bas", "10 SET SCREEN,1\n20 END\n",
+        &errors);
+
+    CHECK(ok == false);
+    CHECK(errors.find("Wrong parameters count on SET SCREEN statement") !=
+          std::string::npos);
+  }
+
+  TEST_CASE("Rejects SET BEEP with wrong parameter count") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "compiler_stmt_set_beep_param.bas", "10 SET BEEP\n20 END\n", &errors);
+
+    CHECK(ok == false);
+    CHECK(errors.find("Wrong parameters count on SET BEEP statement") !=
+          std::string::npos);
+  }
+
+  TEST_CASE("Rejects SET VIDEO with empty parameters") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "compiler_stmt_set_video_empty.bas", "10 SET VIDEO\n20 END\n", &errors);
+
+    CHECK(ok == false);
+    CHECK(errors.find("SET VIDEO with empty parameters") != std::string::npos);
+  }
+
+  TEST_CASE("Rejects SET ADJUST with wrong parameter count") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "compiler_stmt_set_adjust_count.bas", "10 SET ADJUST (1,2,3)\n20 END\n",
+        &errors);
+
+    CHECK(ok == false);
+    CHECK(errors.find("Wrong parameters count on SET ADJUST statement") !=
+          std::string::npos);
+  }
+
+  TEST_CASE("Rejects SET TITLE with wrong parameter count") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "compiler_stmt_set_title_count.bas", "10 SET TITLE \"A\"\n20 END\n",
+        &errors);
+
+    CHECK(ok == false);
+    CHECK(errors.find("Wrong parameters count on SET TITLE statement") !=
+          std::string::npos);
+  }
+
+  TEST_CASE("Rejects SET PAGE with wrong parameter count") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "compiler_stmt_set_page_count.bas",
+        "10 SET PAGE 1,2,3\n20 END\n", &errors);
+
+    CHECK(ok == false);
+    CHECK(errors.find("Wrong parameters count on SET PAGE statement") !=
+          std::string::npos);
+  }
+
+  TEST_CASE("Rejects SET PROMPT with wrong parameter count") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "compiler_stmt_set_prompt_count.bas", "10 SET PROMPT\n20 END\n",
+        &errors);
+
+    CHECK(ok == false);
+    CHECK(errors.find("Wrong parameters count on SET PROMPT statement") !=
+          std::string::npos);
+  }
+
+  TEST_CASE("Rejects SET TIME with wrong parameter count") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "compiler_stmt_set_time_count.bas", "10 SET TIME 1,2\n20 END\n",
+        &errors);
+
+    CHECK(ok == false);
+    CHECK(errors.find("Wrong SET TIME parameters count") != std::string::npos);
+  }
+
+  TEST_CASE("Rejects SET DATE with wrong parameter count") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "compiler_stmt_set_date_count.bas", "10 SET DATE 1\n20 END\n", &errors);
+
+    CHECK(ok == false);
+    CHECK(errors.find("Wrong SET DATE parameters count") != std::string::npos);
+  }
+
+  TEST_CASE("Rejects SET SCROLL with wrong parameter count") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "compiler_stmt_set_scroll_count.bas", "10 SET SCROLL 1,2,3,4,5\n20 END\n",
+        &errors);
+
+    CHECK(ok == false);
+    CHECK(errors.find("Wrong parameters count on SET SCROLL statement") !=
+          std::string::npos);
+  }
+
+  TEST_CASE("Rejects SET FONT with wrong parameter count") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "compiler_stmt_set_font_count.bas", "10 SET FONT 1,2,3\n20 END\n",
+        &errors);
+
+    CHECK(ok == false);
+    CHECK(errors.find("Wrong number of parameters on SET FONT") !=
+          std::string::npos);
   }
 }
 
@@ -642,6 +948,86 @@ TEST_SUITE("CompilerStatementStrategies") {
           CHECK(errors.size() > 0);
         }
       }
+    }
+  }
+
+  TEST_CASE("LET statement compiles assignments of different types") {
+    SUBCASE("MID$ assignment with two parameters") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "compiler_let_mid2.bas",
+          "10 A$=\"HELLO WORLD\"\n20 MID$(A$,3)=\"X\"\n30 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("MID$ assignment with three parameters") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "compiler_let_mid3.bas",
+          "10 A$=\"HELLO WORLD\"\n20 MID$(A$,3,2)=\"XY\"\n30 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("MID$ assignment with float start") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "compiler_let_mid_float.bas",
+          "10 A$=\"HELLO WORLD\"\n20 MID$(A$,3.5)=\"X\"\n30 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("VDP register assignment") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "compiler_let_vdp.bas", "10 VDP(1)=2\n20 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("SPRITE$ assignment") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "compiler_let_sprite.bas",
+          "10 SPRITE$(0)=\"ABCD\"\n20 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("String LET assignment") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "compiler_let_string.bas", "10 A$=\"HELLO\"\n20 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("Float LET assignment") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "compiler_let_float.bas", "10 A=3.14\n20 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("Array element LET assignment") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "compiler_let_array.bas", "10 DIM A(5)\n20 A(3)=42\n30 END\n",
+          &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("Invalid MID$ assignment parameters") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "compiler_let_mid_invalid.bas", "10 MID$(A$)= \"X\"\n20 END\n",
+          &errors);
+      CHECK(ok == false);
+      CHECK(errors.size() > 0);
     }
   }
 

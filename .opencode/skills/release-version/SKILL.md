@@ -75,7 +75,7 @@ Files updated:
 - debian/changelog
 - rpmbuild/SPECS/msxbas2rom.spec
 
-Commentary: openspec-changelog skill can now be used manually to update the changelog files.
+Commentary: changelog skill can now be used manually to update the changelog files.
 ```
 
 **Output On Error**

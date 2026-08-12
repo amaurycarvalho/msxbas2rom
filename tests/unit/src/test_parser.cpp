@@ -847,6 +847,93 @@ TEST_SUITE("IfStatementStrategy") {
 
     CHECK(result == true);
   }
+
+  TEST_CASE("Rejects IF without a condition") {
+    shared_ptr<ParserStatementStrategyFactory> factory =
+        make_shared<ParserStatementStrategyFactory>();
+    shared_ptr<ParserContext> ctx = createContext();
+    IfStatementStrategy strategy;
+
+    ctx->setHelpers(ctx, factory);
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("THEN"));
+    line->addLexeme(kw("PRINT"));
+    line->addLexeme(num("1"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("IF"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects IF without THEN/GOTO/GOSUB complement") {
+    shared_ptr<ParserStatementStrategyFactory> factory =
+        make_shared<ParserStatementStrategyFactory>();
+    shared_ptr<ParserContext> ctx = createContext();
+    IfStatementStrategy strategy;
+
+    ctx->setHelpers(ctx, factory);
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(id("A"));
+    line->addLexeme(op("="));
+    line->addLexeme(num("1"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("IF"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects IF with empty statement after THEN") {
+    shared_ptr<ParserStatementStrategyFactory> factory =
+        make_shared<ParserStatementStrategyFactory>();
+    shared_ptr<ParserContext> ctx = createContext();
+    IfStatementStrategy strategy;
+
+    ctx->setHelpers(ctx, factory);
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(id("A"));
+    line->addLexeme(op("="));
+    line->addLexeme(num("1"));
+    line->addLexeme(kw("THEN"));
+    line->addLexeme(sep(":"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("IF"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects IF with duplicated ELSE") {
+    shared_ptr<ParserStatementStrategyFactory> factory =
+        make_shared<ParserStatementStrategyFactory>();
+    shared_ptr<ParserContext> ctx = createContext();
+    IfStatementStrategy strategy;
+
+    ctx->setHelpers(ctx, factory);
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(id("A"));
+    line->addLexeme(op("="));
+    line->addLexeme(num("1"));
+    line->addLexeme(kw("THEN"));
+    line->addLexeme(kw("PRINT"));
+    line->addLexeme(num("1"));
+    line->addLexeme(kw("ELSE"));
+    line->addLexeme(kw("PRINT"));
+    line->addLexeme(num("2"));
+    line->addLexeme(kw("ELSE"));
+    line->addLexeme(kw("PRINT"));
+    line->addLexeme(num("3"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("IF"));
+    CHECK(result == false);
+  }
 }
 
 TEST_SUITE("DefStatementStrategy") {
@@ -1060,6 +1147,144 @@ TEST_SUITE("FileStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("MAXFILES"));
 
     CHECK(result == true);
+  }
+
+  TEST_CASE("Rejects OPEN without file name") {
+    shared_ptr<ParserContext> ctx = createContext();
+    FileStatementStrategy strategy;
+
+    setActionRoot(ctx, "OPEN");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("FOR"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("OPEN"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects OPEN with invalid FOR parameter") {
+    shared_ptr<ParserContext> ctx = createContext();
+    FileStatementStrategy strategy;
+
+    setActionRoot(ctx, "OPEN");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(lit("\"A\""));
+    line->addLexeme(kw("FOR"));
+    line->addLexeme(kw("BINARY"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("OPEN"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects OPEN missing LEN") {
+    shared_ptr<ParserContext> ctx = createContext();
+    FileStatementStrategy strategy;
+
+    setActionRoot(ctx, "OPEN");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(lit("\"A\""));
+    line->addLexeme(kw("FOR"));
+    line->addLexeme(kw("INPUT"));
+    line->addLexeme(kw("AS"));
+    line->addLexeme(sep("#"));
+    line->addLexeme(num("1"));
+    line->addLexeme(kw("BAD"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("OPEN"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects OPEN with invalid file number") {
+    shared_ptr<ParserContext> ctx = createContext();
+    FileStatementStrategy strategy;
+
+    setActionRoot(ctx, "OPEN");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(lit("\"A\""));
+    line->addLexeme(kw("FOR"));
+    line->addLexeme(kw("INPUT"));
+    line->addLexeme(id("AS#16"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("OPEN"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects CLOSE without channel") {
+    shared_ptr<ParserContext> ctx = createContext();
+    FileStatementStrategy strategy;
+
+    setActionRoot(ctx, "CLOSE");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(num("1"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("CLOSE"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects OPEN with INPUT followed by invalid AS") {
+    shared_ptr<ParserContext> ctx = createContext();
+    FileStatementStrategy strategy;
+
+    setActionRoot(ctx, "OPEN");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(lit("\"A.TXT\""));
+    line->addLexeme(kw("INPUT"));
+    line->addLexeme(id("AS#"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("OPEN"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects OPEN with INPUT and AS missing number") {
+    shared_ptr<ParserContext> ctx = createContext();
+    FileStatementStrategy strategy;
+
+    setActionRoot(ctx, "OPEN");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(lit("\"A.TXT\""));
+    line->addLexeme(kw("INPUT"));
+    line->addLexeme(kw("AS"));
+    line->addLexeme(kw("FOR"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("OPEN"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects OPEN with INPUT and out-of-range inline AS") {
+    shared_ptr<ParserContext> ctx = createContext();
+    FileStatementStrategy strategy;
+
+    setActionRoot(ctx, "OPEN");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(lit("\"A.TXT\""));
+    line->addLexeme(kw("INPUT"));
+    line->addLexeme(id("AS#16"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("OPEN"));
+    CHECK(result == false);
   }
 }
 
@@ -1367,6 +1592,170 @@ TEST_SUITE("SetStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("SET"));
     CHECK(result == true);
   }
+
+  TEST_CASE("Parses SET BEEP with two params") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("BEEP"));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SET VIDEO with parameters") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("VIDEO"));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("1"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SET ADJUST with parentheses") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("ADJUST"));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(")"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SET SPRITE PATTERN with buffer") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("SPRITE"));
+    line->addLexeme(kw("PATTERN"));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(","));
+    line->addLexeme(id("PB%"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SET SPRITE COLOR with buffer") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("SPRITE"));
+    line->addLexeme(kw("COLOR"));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(","));
+    line->addLexeme(id("CB%"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Rejects SET ADJUST without parenthesis") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("ADJUST"));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects SET TILE with unknown sub-command") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("TILE"));
+    line->addLexeme(kw("FOOBAR"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Parses SET TILE COLOR with tuple and bank") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("TILE"));
+    line->addLexeme(kw("COLOR"));
+    line->addLexeme(num("5"));
+    line->addLexeme(sep(","));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("1"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SET TILE COLOR with two tuples") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("TILE"));
+    line->addLexeme(kw("COLOR"));
+    line->addLexeme(num("5"));
+    line->addLexeme(sep(","));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(sep(","));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("3"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("4"));
+    line->addLexeme(sep(")"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
 }
 
 TEST_SUITE("ScreenStatementStrategy") {
@@ -1383,6 +1772,75 @@ TEST_SUITE("ScreenStatementStrategy") {
 
     bool result = strategy.execute(ctx, line, kw("SCREEN"));
 
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SCREEN PASTE FROM") {
+    shared_ptr<ParserContext> ctx = createContext();
+    ScreenStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("PASTE"));
+    line->addLexeme(kw("FROM"));
+    line->addLexeme(id("A"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SCREEN"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SCREEN SCROLL") {
+    shared_ptr<ParserContext> ctx = createContext();
+    ScreenStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("SCROLL"));
+    line->addLexeme(num("1"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SCREEN"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SCREEN LOAD") {
+    shared_ptr<ParserContext> ctx = createContext();
+    ScreenStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("LOAD"));
+    line->addLexeme(num("0"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SCREEN"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SCREEN ON") {
+    shared_ptr<ParserContext> ctx = createContext();
+    ScreenStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("ON"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SCREEN"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SCREEN OFF") {
+    shared_ptr<ParserContext> ctx = createContext();
+    ScreenStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("OFF"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SCREEN"));
     CHECK(result == true);
   }
 }
@@ -1436,6 +1894,60 @@ TEST_SUITE("PutStatementStrategy") {
 
     CHECK(result == true);
   }
+
+  TEST_CASE("Parses PUT SPRITE with STEP coordinates") {
+    shared_ptr<ParserContext> ctx = createContext();
+    PutStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("SPRITE"));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(","));
+    line->addLexeme(kw("STEP"));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(")"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("PUT"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses PUT TILE") {
+    shared_ptr<ParserContext> ctx = createContext();
+    PutStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("TILE"));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(")"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("PUT"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Rejects PUT without SPRITE or TILE keyword") {
+    shared_ptr<ParserContext> ctx = createContext();
+    PutStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(num("1"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("PUT"));
+    CHECK(result == false);
+  }
 }
 
 TEST_SUITE("GraphicsStatementStrategy") {
@@ -1458,6 +1970,407 @@ TEST_SUITE("GraphicsStatementStrategy") {
 
     CHECK(result == true);
   }
+
+  TEST_CASE("Parses PSET STEP coordinates") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "PSET");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("STEP"));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(")"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("PSET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses LINE with STEP and attribute") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "LINE");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(sep("("));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(op("-"));
+    line->addLexeme(kw("STEP"));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(")"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("LINE"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses CIRCLE with attributes") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "CIRCLE");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("5"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("3"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("CIRCLE"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses PAINT with fill and border") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "PAINT");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("3"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("4"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("PAINT"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses COPY with coordinates") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "COPY");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(sep("("));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(op("-"));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(kw("TO"));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(")"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("COPY"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses COPY with address to coordinates") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "COPY");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(id("A"));
+    line->addLexeme(kw("TO"));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(")"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("COPY"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses COPY with operator parameter") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "COPY");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(sep("("));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(op("-"));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(kw("TO"));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(sep(","));
+    line->addLexeme(kw("OR"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("COPY"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Rejects COPY with invalid syntax") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "COPY");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(sep("("));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(sep(":"));
+    line->addLexeme(num("1"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("COPY"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects PSET without valid complement") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "PSET");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(num("5"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("PSET"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects CIRCLE without valid complement") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "CIRCLE");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(num("5"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("CIRCLE"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects PAINT without valid complement") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "PAINT");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(num("5"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("PAINT"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects LINE without valid complement") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "LINE");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(num("5"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("LINE"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects LINE with invalid parenthesis syntax") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "LINE");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(op("-"));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(")"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("LINE"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects LINE with invalid syntax after coordinates") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "LINE");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(op("-"));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("3"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("4"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(sep(":"));
+    line->addLexeme(num("5"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("LINE"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Parses LINE with B special parameter") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "LINE");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(sep("("));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(op("-"));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("15"));
+    line->addLexeme(sep(","));
+    line->addLexeme(id("B"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("LINE"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses LINE with BF special parameter") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "LINE");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(sep("("));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("0"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(op("-"));
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(")"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("15"));
+    line->addLexeme(sep(","));
+    line->addLexeme(id("BF"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("LINE"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Rejects CIRCLE without valid coordinates") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "CIRCLE");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(sep("("));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(")"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("CIRCLE"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Rejects PAINT without valid complement") {
+    shared_ptr<ParserContext> ctx = createContext();
+    GraphicsStatementStrategy strategy;
+
+    setActionRoot(ctx, "PAINT");
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("FOO"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("PAINT"));
+    CHECK(result == false);
+  }
 }
 
 TEST_SUITE("OnStatementStrategy") {
@@ -1475,6 +2388,116 @@ TEST_SUITE("OnStatementStrategy") {
 
     bool result = strategy.execute(ctx, line, kw("ON"));
 
+    CHECK(result == true);
+    CHECK(ctx->has_traps == false);
+  }
+
+  TEST_CASE("Parses ON KEY GOSUB") {
+    shared_ptr<ParserContext> ctx = createContext();
+    OnStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("ON"));
+    line->addLexeme(kw("KEY"));
+    line->addLexeme(kw("GOSUB"));
+    line->addLexeme(num("10"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("20"));
+
+    line->getFirstLexeme();
+
+    bool result = strategy.execute(ctx, line, kw("ON"));
+    CHECK(result == true);
+    CHECK(ctx->has_traps == true);
+  }
+
+  TEST_CASE("Parses ON SPRITE GOSUB") {
+    shared_ptr<ParserContext> ctx = createContext();
+    OnStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("ON"));
+    line->addLexeme(kw("SPRITE"));
+    line->addLexeme(kw("GOSUB"));
+    line->addLexeme(num("10"));
+
+    line->getFirstLexeme();
+
+    bool result = strategy.execute(ctx, line, kw("ON"));
+    CHECK(result == true);
+    CHECK(ctx->has_traps == true);
+  }
+
+  TEST_CASE("Parses ON STOP GOSUB") {
+    shared_ptr<ParserContext> ctx = createContext();
+    OnStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("ON"));
+    line->addLexeme(kw("STOP"));
+    line->addLexeme(kw("GOSUB"));
+    line->addLexeme(num("10"));
+
+    line->getFirstLexeme();
+
+    bool result = strategy.execute(ctx, line, kw("ON"));
+    CHECK(result == true);
+    CHECK(ctx->has_traps == true);
+  }
+
+  TEST_CASE("Parses ON STRIG GOSUB") {
+    shared_ptr<ParserContext> ctx = createContext();
+    OnStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("ON"));
+    line->addLexeme(kw("STRIG"));
+    line->addLexeme(kw("GOSUB"));
+    line->addLexeme(num("10"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("20"));
+
+    line->getFirstLexeme();
+
+    bool result = strategy.execute(ctx, line, kw("ON"));
+    CHECK(result == true);
+    CHECK(ctx->has_traps == true);
+  }
+
+  TEST_CASE("Parses ON INTERVAL") {
+    shared_ptr<ParserContext> ctx = createContext();
+    OnStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("ON"));
+    line->addLexeme(kw("INTERVAL"));
+    line->addLexeme(op("="));
+    line->addLexeme(id("A"));
+    line->addLexeme(kw("GOSUB"));
+    line->addLexeme(num("10"));
+
+    line->getFirstLexeme();
+
+    bool result = strategy.execute(ctx, line, kw("ON"));
+    CHECK(result == true);
+    CHECK(ctx->has_traps == true);
+  }
+
+  TEST_CASE("Parses ON ... GOSUB list") {
+    shared_ptr<ParserContext> ctx = createContext();
+    OnStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("ON"));
+    line->addLexeme(num("1"));
+    line->addLexeme(kw("GOSUB"));
+    line->addLexeme(num("10"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("20"));
+
+    line->getFirstLexeme();
+
+    bool result = strategy.execute(ctx, line, kw("ON"));
     CHECK(result == true);
     CHECK(ctx->has_traps == false);
   }

@@ -1,24 +1,29 @@
 ## ADDED Requirements
 
 ### Requirement: Double variable occupies 6 bytes in RAM
-The compiler SHALL allocate 6 bytes per double-precision variable (`subtype_double_decimal`), storing the high-order single (3 bytes: B:HL) followed by the low-order single (3 bytes: C:DE). The var_size for `subtype_double_decimal` in `compiler_symbol_resolver.cpp` SHALL be 6 (changed from 3).
+The compiler SHALL allocate 6 bytes per double-precision variable (`subtype_double_decimal`), storing the high-order single (3 bytes: B:HL) followed by the low-order single (3 bytes: C:DE). The var_size for `subtype_double_decimal` in `compiler_symbol_resolver.cpp` SHALL be 6 (changed from 3). Array element size (x_factor) SHALL be 6 for double arrays.
 
 #### Scenario: Double variable allocation
 - **WHEN** a variable with subtype `subtype_double_decimal` is allocated
 - **THEN** the symbol resolver assigns 6 bytes of RAM
 - **AND** the address fixups reference the high part at offset 0 and low part at offset 3
 
-### Requirement: Double loading uses B:HL + C:DE register pairs
-The expression evaluator SHALL load a double value from RAM into registers as B:HL (high part) + C:DE (low part). Loading SHALL read 6 consecutive bytes: `ld a,(var)`, `ld b,a`, `ld hl,(var+1)` for the high part, and `ld a,(var+3)`, `ld c,a`, `ld de,(var+4)` for the low part.
+#### Scenario: Double array element size
+- **WHEN** a DIM statement declares a double array (e.g., `DIM A#(10)`)
+- **THEN** `x_factor` is 6 (not 3)
+- **AND** `array_size = x_factor * x_size * y_size` reflects 6-byte elements
+
+### Requirement: Double loading uses kernel utility or inline code
+The expression evaluator SHALL load a double value from RAM into registers as B:HL (high part) + C:DE (low part). Loading may be emitted inline (ld a,(var), ld b,a, ld hl,(var+1), ld a,(var+3), ld c,a, ld de,(var+4)) or via `call DISP_doubleLoadHL` (DISP 229) when HL is set to the variable address. Array element access SHALL use the same load sequence after computing the element address in HL.
 
 #### Scenario: Load double variable into registers
 - **WHEN** a double variable reference is evaluated in an expression
 - **THEN** B:HL contain the high-order single
 - **AND** C:DE contain the low-order single
-- **AND** Z80 opcodes for 6-byte load are emitted
+- **AND** 6 bytes are read from the variable's RAM location
 
 ### Requirement: Double storage writes B:HL + C:DE to RAM
-The variable emitter SHALL store a double value from registers (B:HL high, C:DE low) into 6 consecutive bytes of RAM: `ld a,b`, `ld (var),a`, `ld (var+1),hl` for the high part, then `ld a,c`, `ld (var+3),a`, `ld (var+4),de` for the low part.
+The variable emitter SHALL store a double value from registers (B:HL high, C:DE low) into 6 consecutive bytes of RAM. Storage may be emitted inline (ld a,b, ld (var),a, ld (var+1),hl, ld a,c, ld (var+3),a, ld (var+4),de) or via `call DISP_doubleStoreHL` (DISP 230) when HL is set to the destination address.
 
 #### Scenario: Store double to scalar variable
 - **WHEN** a double value in B:HL + C:DE is assigned to a scalar double variable
@@ -30,17 +35,17 @@ The variable emitter SHALL store a double value from registers (B:HL high, C:DE 
 - **THEN** the array address is computed and 6 bytes are stored sequentially
 - **AND** register push/pop order preserves all 6 bytes
 
-### Requirement: Double stack discipline uses 6 bytes
-The expression evaluator SHALL push and pop 6 bytes on the Z80 hardware stack for double values during binary operations (push hl, push bc, push de, push af for the extra byte; pattern: push hl, push bc for high part, then push de, push af for low part or equivalent). The pop order SHALL reverse the push order to correctly restore B:HL + C:DE.
+### Requirement: Double stack discipline uses 8 bytes
+The expression evaluator SHALL push and pop 8 bytes on the Z80 hardware stack for double values during binary operations. Since a double holds 6 bytes of useful data but Z80 `push` operates on register pairs, the stack footprint is 8 bytes: push hl (high mantissa), push bc (B = high sign/exp), push de (low mantissa), and push af (A = low sign/exp) after `ld a, c`. The pop order SHALL reverse the push order: pop af, pop de, pop bc, pop hl, ld c, a.
 
 #### Scenario: Push double before binary operation
 - **WHEN** evaluating a binary operation with two double operands
-- **THEN** the first operand result (B:HL + C:DE) is pushed onto the stack as 6 bytes
+- **THEN** the first operand result (B:HL + C:DE) is pushed onto the stack as 8 bytes
 - **AND** the second operand is then loaded into registers for the operation
 
 #### Scenario: Pop double after stack load
 - **WHEN** a double value was previously pushed and must be restored
-- **THEN** 6 bytes are popped from the stack into B:HL + C:DE
+- **THEN** 8 bytes are popped from the stack into B:HL + C:DE
 - **AND** register order is consistent with the push order
 
 ### Requirement: Double type suffix # is consistently recognized
