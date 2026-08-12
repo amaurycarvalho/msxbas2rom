@@ -48,7 +48,7 @@ class CompilerCodeHelper {
    */
   void beginBasicSetStmt(string name);
   void endBasicSetStmt();
-  void addBasicChar(char c);
+  void addBasicChar(unsigned char c);
 
   CompilerCodeHelper(shared_ptr<CompilerContext> context);
   ~CompilerCodeHelper();

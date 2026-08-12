@@ -191,7 +191,7 @@ void CompilerCodeHelper::endBasicSetStmt() {
   // skip:
 }
 
-void CompilerCodeHelper::addBasicChar(char c) {
+void CompilerCodeHelper::addBasicChar(unsigned char c) {
   auto& cpu = *context->cpu;
   // ld (hl), char
   cpu.addLdiHL(c);

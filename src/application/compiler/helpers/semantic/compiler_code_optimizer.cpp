@@ -244,8 +244,7 @@ int CompilerCodeOptimizer::getKernelCallAddr(unsigned int address) {
   int result = address, i;
 
   if (address < 0x4000) {
-    if (address >= def_wrapper_routines_map_table &&
-        address < def_wrapper_routines_map_table + DISP_ENTRIES * 2) {
+    if (address < def_wrapper_routines_map_table + DISP_ENTRIES * 2) {
       result = bin_header_bin[address] | (bin_header_bin[address + 1] << 8);
     }
   } else if (address >= 0x4000 && address < 0x8000) {

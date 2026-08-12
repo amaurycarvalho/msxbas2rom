@@ -1,7 +1,7 @@
 {
     "branch_covered": 10305,
     "branch_percent": 50.7,
-    "branch_total": 20331,
+    "branch_total": 20329,
     "files": [
         {
             "branch_covered": 83,
@@ -3413,23 +3413,35 @@
         },
         {
             "branch_covered": 55,
-            "branch_percent": 49.5,
-            "branch_total": 111,
+            "branch_percent": 50.5,
+            "branch_total": 109,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/infrastructure/logging/logger.cpp",
             "function_covered": 26,
             "function_percent": 83.9,
             "function_total": 31,
-            "line_covered": 83,
-            "line_percent": 80.6,
-            "line_total": 103
+            "line_covered": 82,
+            "line_percent": 80.4,
+            "line_total": 102
+        },
+        {
+            "branch_covered": 0,
+            "branch_percent": null,
+            "branch_total": 0,
+            "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/infrastructure/logging/logger.h",
+            "function_covered": 2,
+            "function_percent": 100.0,
+            "function_total": 2,
+            "line_covered": 3,
+            "line_percent": 100.0,
+            "line_total": 3
         }
     ],
-    "function_covered": 896,
+    "function_covered": 898,
     "function_percent": 90.3,
-    "function_total": 992,
+    "function_total": 994,
     "gcovr/summary_format_version": "0.5",
-    "line_covered": 12413,
+    "line_covered": 12415,
     "line_percent": 85.0,
-    "line_total": 14612,
+    "line_total": 14614,
     "root": "."
 }

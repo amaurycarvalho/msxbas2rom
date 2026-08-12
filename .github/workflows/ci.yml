@@ -12,7 +12,7 @@ on:
         default: "master"
 
 jobs:
-  test-linux:
+  ci-linux:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,9 +21,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gcovr
-      #- name: Linting
-      #  run: |
-      #    make lint
+      - name: Linting
+        run: |
+          make lint
       - name: Unit testing
         run: |
           make test

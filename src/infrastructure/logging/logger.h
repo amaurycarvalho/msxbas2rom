@@ -21,6 +21,10 @@ class Logger {
     string levelToString(LogLevel level) const;
 
    public:
+    LogEntry() : severity(LogLevel::INFO), line(0), column(0), code(0) {}
+    LogEntry(LogLevel severity, const string& message)
+        : severity(severity), message(message), line(0), column(0), code(0) {}
+
     LogLevel severity;
     string message;
     string file;

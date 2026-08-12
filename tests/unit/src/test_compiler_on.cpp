@@ -59,9 +59,8 @@ static bool compileStatementProgram(const std::string& filename,
 }
 
 static shared_ptr<CompilerContext> createOnContext() {
-  shared_ptr<CpuWorkspaceContext> workspace =
-      make_shared<CpuWorkspaceContext>(COMPILE_CODE_SIZE, COMPILE_RAM_SIZE,
-                                       def_RAM_BOTTOM);
+  shared_ptr<CpuWorkspaceContext> workspace = make_shared<CpuWorkspaceContext>(
+      COMPILE_CODE_SIZE, COMPILE_RAM_SIZE, def_RAM_BOTTOM);
   workspace->clear();
   shared_ptr<Z80OpcodeWriter> cpu = make_shared<Z80OpcodeWriter>();
   cpu->context = workspace;
@@ -82,10 +81,12 @@ static shared_ptr<Lexeme> onKw(const std::string& v) {
   return make_shared<Lexeme>(Lexeme::type_keyword, Lexeme::subtype_any, v);
 }
 
+/*
 static shared_ptr<Lexeme> onId(const std::string& v) {
   return make_shared<Lexeme>(Lexeme::type_identifier, Lexeme::subtype_numeric,
                              v);
 }
+*/
 
 static shared_ptr<ActionNode> onAction(const std::string& keyword) {
   return make_shared<ActionNode>(keyword);
@@ -101,8 +102,7 @@ TEST_SUITE("CompilerOnStatementStrategy") {
     const OnCase cases[] = {
         {"ON_INTERVAL",
          "10 A=1\n20 ON INTERVAL=1 GOSUB 100\n30 END\n100 RETURN\n"},
-        {"ON_KEY",
-         "10 ON KEY GOSUB 100,200\n20 END\n100 RETURN\n200 RETURN\n"},
+        {"ON_KEY", "10 ON KEY GOSUB 100,200\n20 END\n100 RETURN\n200 RETURN\n"},
         {"ON_SPRITE", "10 ON SPRITE GOSUB 100\n20 END\n100 RETURN\n"},
         {"ON_STOP", "10 ON STOP GOSUB 100\n20 END\n100 RETURN\n"},
         {"ON_STRIG",
@@ -165,8 +165,8 @@ TEST_SUITE("CompilerOnStatementStrategy") {
     SUBCASE("ON KEY with non-numeric handler uses dummy") {
       std::string errors;
       bool ok = compileStatementProgram(
-          "on_key_dummy.bas",
-          "10 ON KEY GOSUB 100,\"X\"\n20 END\n100 RETURN\n", &errors);
+          "on_key_dummy.bas", "10 ON KEY GOSUB 100,\"X\"\n20 END\n100 RETURN\n",
+          &errors);
       CHECK(ok == true);
       CHECK(errors.empty());
     }
@@ -194,8 +194,7 @@ TEST_SUITE("CompilerOnStatementStrategy") {
     SUBCASE("ON SPRITE with non-numeric handler uses dummy") {
       std::string errors;
       bool ok = compileStatementProgram(
-          "on_sprite_dummy.bas", "10 ON SPRITE GOSUB \"X\"\n20 END\n",
-          &errors);
+          "on_sprite_dummy.bas", "10 ON SPRITE GOSUB \"X\"\n20 END\n", &errors);
       CHECK(ok == true);
       CHECK(errors.empty());
     }
@@ -209,10 +208,10 @@ TEST_SUITE("CompilerOnStatementStrategy") {
     }
 
     SUBCASE("ON KEY with handlers in MegaROM mode") {
-      const std::string path = createTempBas(
-          "on_key_four_mega.bas",
-          "10 ON KEY GOSUB 100,200,300,400\n20 END\n"
-          "100 RETURN\n200 RETURN\n300 RETURN\n400 RETURN\n");
+      const std::string path =
+          createTempBas("on_key_four_mega.bas",
+                        "10 ON KEY GOSUB 100,200,300,400\n20 END\n"
+                        "100 RETURN\n200 RETURN\n300 RETURN\n400 RETURN\n");
 
       shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
       opts->compileMode = BuildOptions::CompileMode::Konami4;
@@ -235,10 +234,10 @@ TEST_SUITE("CompilerOnStatementStrategy") {
     }
 
     SUBCASE("ON STRIG with handlers in MegaROM mode") {
-      const std::string path = createTempBas(
-          "on_strig_four_mega.bas",
-          "10 ON STRIG GOSUB 100,200,300,400\n20 END\n"
-          "100 RETURN\n200 RETURN\n300 RETURN\n400 RETURN\n");
+      const std::string path =
+          createTempBas("on_strig_four_mega.bas",
+                        "10 ON STRIG GOSUB 100,200,300,400\n20 END\n"
+                        "100 RETURN\n200 RETURN\n300 RETURN\n400 RETURN\n");
 
       shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
       opts->compileMode = BuildOptions::CompileMode::Konami4;
@@ -313,38 +312,38 @@ TEST_SUITE("CompilerOnStatementStrategy") {
   TEST_CASE("ON error paths are detected") {
     SUBCASE("ON KEY missing GOSUB") {
       std::string errors;
-      bool ok = compileStatementProgram(
-          "on_err_key_gosub.bas", "10 ON KEY 100\n20 END\n", &errors);
+      bool ok = compileStatementProgram("on_err_key_gosub.bas",
+                                        "10 ON KEY 100\n20 END\n", &errors);
       CHECK(ok == false);
     }
 
     SUBCASE("ON SPRITE missing GOSUB") {
       std::string errors;
-      bool ok = compileStatementProgram(
-          "on_err_sprite_gosub.bas", "10 ON SPRITE 100\n20 END\n", &errors);
+      bool ok = compileStatementProgram("on_err_sprite_gosub.bas",
+                                        "10 ON SPRITE 100\n20 END\n", &errors);
       CHECK(ok == false);
     }
 
     SUBCASE("ON INTERVAL missing GOSUB") {
       std::string errors;
-      bool ok = compileStatementProgram(
-          "on_err_interval_gosub.bas",
-          "10 ON INTERVAL=1 GOTO 100\n20 END\n", &errors);
+      bool ok = compileStatementProgram("on_err_interval_gosub.bas",
+                                        "10 ON INTERVAL=1 GOTO 100\n20 END\n",
+                                        &errors);
       CHECK(ok == false);
     }
 
     SUBCASE("ON STOP missing GOSUB") {
       std::string errors;
-      bool ok = compileStatementProgram(
-          "on_err_stop_gosub.bas", "10 ON STOP 100\n20 END\n", &errors);
+      bool ok = compileStatementProgram("on_err_stop_gosub.bas",
+                                        "10 ON STOP 100\n20 END\n", &errors);
       CHECK(ok == false);
     }
 
     SUBCASE("ON SPRITE wrong parameter count") {
       std::string errors;
-      bool ok = compileStatementProgram(
-          "on_err_sprite_count.bas", "10 ON SPRITE GOSUB 100,200\n20 END\n",
-          &errors);
+      bool ok = compileStatementProgram("on_err_sprite_count.bas",
+                                        "10 ON SPRITE GOSUB 100,200\n20 END\n",
+                                        &errors);
       CHECK(ok == false);
       CHECK(errors.find("ON SPRITE with wrong count of parameters") !=
             std::string::npos);
@@ -405,8 +404,8 @@ TEST_SUITE("CompilerOnDirect") {
     ctx->current_action = action;
     strategy.execute(ctx);
 
-    CHECK(ctx->logger->errors().toString().find(
-              "Interval index is missing") != std::string::npos);
+    CHECK(ctx->logger->errors().toString().find("Interval index is missing") !=
+          std::string::npos);
   }
 
   TEST_CASE("ON INTERVAL with wrong index count is rejected") {
@@ -426,8 +425,7 @@ TEST_SUITE("CompilerOnDirect") {
     strategy.execute(ctx);
 
     CHECK(ctx->logger->errors().toString().find(
-              "Wrong parameter count in interval index") !=
-          std::string::npos);
+              "Wrong parameter count in interval index") != std::string::npos);
   }
 
   TEST_CASE("ON INTERVAL with missing GOSUB is rejected") {

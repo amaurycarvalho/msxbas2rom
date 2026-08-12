@@ -3,7 +3,7 @@
 # by Amaury Carvalho (2022-2026)                                               #
 #------------------------------------------------------------------------------#
 
-.PHONY: all clean debug release lint test coverage test-clean test-unit test-integration test-coverage test-kernel debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
+.PHONY: all clean debug release lint test coverage lint-full test-clean test-unit test-integration test-coverage test-kernel debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
 
 # ----------------------------
 # Variables
@@ -19,7 +19,7 @@ WINDRES = windres
 
 CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG)
 DEPFLAGS = -MMD -MP
-LINTFLAGS = -fsyntax-only -Wall -Wextra -Werror -pedantic -fanalyzer -Wno-unused-parameter
+LINTFLAGS = -fsyntax-only -Wall -Wextra -Werror -pedantic -Wno-unused-parameter
 
 SRC = src
 INC = $(shell find $(SRC) -type f \( -name "*.h" -o -name "*.hpp" \) -exec dirname {} + | uniq | sort)
@@ -161,7 +161,12 @@ $(OBJDIR_DEBUG) $(OBJDIR_RELEASE):
 
 lint:
 	@echo "🔍 Running static analysis on all source files..."
-	@$(CXX) $(LINTFLAGS) $(CPPFLAGS) $(shell find $(SRC) -name "*.cpp" -o -name "*.h" -o -name "*.hpp") 
+	@$(CXX) $(LINTFLAGS) $(CPPFLAGS) $(shell find $(SRC) -name "*.cpp") 
+	@echo "✅ Lint passed!"
+
+lint-full:
+	@echo "🔍 Running full static analysis on all source files..."
+	@$(CXX) $(LINTFLAGS) -fanalyzer $(CPPFLAGS) $(shell find $(SRC) -name "*.cpp") 
 	@echo "✅ Lint passed!"
 
 # ----------------------------

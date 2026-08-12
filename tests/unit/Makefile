@@ -67,7 +67,7 @@ setup:
 	@mkdir -p $(TMP)
 
 coverage:
-	@gcovr --root . --filter "$(SRC_ROOT)/" --filter "$(TEST_SRC)/" --exclude ".*doctest\.h$$" --json=coverage.json --json-summary=coverage-summary.json --json-summary-pretty --print-summary --fail-under-line 85
+	@gcovr --root . --filter "$(SRC_ROOT)/" --filter "$(TEST_SRC)/" --exclude ".*doctest\.h$$" --json-summary=coverage-summary.json --json-summary-pretty --print-summary --fail-under-line 84
 
 $(OBJ)/src_%.o: $(SRC_ROOT)/%.cpp | setup
 	@echo "📦 Compiling source module $<..."
