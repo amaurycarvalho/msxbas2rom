@@ -187,7 +187,7 @@ test-coverage:
 	@$(MAKE) -C tests/unit coverage
 	@echo "✅ Code coverage passed!"
 
-test-integration:
+test-integration: release
 	@echo "🔍 Running integration testing..."
 	@$(MAKE) -C tests/integration run
 	@echo "✅ Integration testing passed!"
