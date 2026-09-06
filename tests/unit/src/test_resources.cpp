@@ -180,19 +180,8 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   // ------------------------------------------------------------------
-  // ResourceBlobPackedReader
-  TEST_CASE("ResourceBlobPackedReader packs data at the 8K boundary") {
-    std::string fname = "tmp/temp_blobpacked8k.bin";
-    std::string content(0x2000, '\xAB');
-    createTempFile(fname, content);
-
-    ResourceBlobPackedReader reader(fname);
-    CHECK(reader.load() == true);
-    CHECK(reader.isPacked == true);
-    CHECK(reader.packedSize > 0);
-
-    deleteTempFile(fname);
-  }
+  // ResourceBlobPackedReader (the slow 8K-boundary pack test lives in the
+  // "Slow" suite below, which is excluded from mutation testing)
 
   TEST_CASE("ResourceBlobPackedReader rejects data over the 8K boundary") {
     std::string fname = "tmp/temp_blobpacked_over.bin";
@@ -250,6 +239,46 @@ TEST_SUITE("ResourceReader suite") {
     ResourceBlobChunkPackedReader reader(fname);
     CHECK_VALID_READER(reader);
     CHECK(reader.data.size() >= 2);
+
+    deleteTempFile(fname);
+  }
+
+  // ------------------------------------------------------------------
+  // ResourceBlobPackedReader (pletter edge cases)
+  TEST_CASE("ResourceBlobPackedReader packs varied small data patterns") {
+    std::string patterns[5];
+    patterns[0] = std::string(96, '\x00');
+    patterns[1] = std::string(96, '\xAB');
+    std::string inc;
+    for (int i = 0; i < 96; i++) inc += static_cast<char>(i);
+    patterns[2] = inc;
+    patterns[3] = std::string(96, '\x55');
+    std::string rep;
+    for (int i = 0; i < 10; i++) rep += "0123456789";
+    patterns[4] = rep;
+
+    const char* names[] = {"zero", "same", "inc", "alt", "rep"};
+    for (int i = 0; i < 5; i++) {
+      std::string fname = std::string("tmp/temp_pletter_") + names[i] + ".bin";
+      createTempFile(fname, patterns[i]);
+
+      ResourceBlobPackedReader reader(fname);
+      CHECK(reader.load() == true);
+      CHECK(reader.isPacked == true);
+      CHECK(reader.packedSize > 0);
+
+      deleteTempFile(fname);
+    }
+  }
+
+  TEST_CASE("ResourceBlobPackedReader round-trips a single byte") {
+    std::string fname = "tmp/temp_pletter_1byte.bin";
+    createTempFile(fname, std::string("\x42", 1));
+
+    ResourceBlobPackedReader reader(fname);
+    CHECK(reader.load() == true);
+    CHECK(reader.isPacked == true);
+    CHECK(reader.packedSize > 0);
 
     deleteTempFile(fname);
   }
@@ -529,6 +558,24 @@ TEST_SUITE("ResourceReader suite") {
 
     ResourceIDataReader reader(parser);
     CHECK_VALID_READER(reader);
+
+    deleteTempFile(fname);
+  }
+}
+
+// ------------------------------------------------------------------
+// Slow suite: tests excluded from mutation testing via --test-suite-exclude=Slow
+// (they still run in the normal `make run`).
+TEST_SUITE("Slow") {
+  TEST_CASE("ResourceBlobPackedReader packs data at the 8K boundary") {
+    std::string fname = "tmp/temp_blobpacked8k.bin";
+    std::string content(0x2000, '\xAB');
+    createTempFile(fname, content);
+
+    ResourceBlobPackedReader reader(fname);
+    CHECK(reader.load() == true);
+    CHECK(reader.isPacked == true);
+    CHECK(reader.packedSize > 0);
 
     deleteTempFile(fname);
   }

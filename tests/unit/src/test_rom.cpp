@@ -224,6 +224,32 @@ TEST_SUITE("Rom") {
     std::remove(opts->outputFilename.c_str());
   }
 
+  TEST_CASE("Builds KonamiSCC ROM with patched kernel addresses") {
+    const std::string filename =
+        createTempBas("rom_konamiscc.bas", "10 PRINT \"HI\"\n20 END\n");
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->compileMode = BuildOptions::CompileMode::KonamiSCC;
+    opts->megaROM = true;
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+
+    REQUIRE(compileWithOpts(filename, compiler, opts) == true);
+
+    shared_ptr<Rom> rom = make_shared<Rom>();
+    REQUIRE(rom->build(compiler) == true);
+
+    std::ifstream out(opts->outputFilename, std::ios::binary);
+    REQUIRE(out.good());
+    out.seekg(0, std::ios::end);
+    CHECK(out.tellg() > 0);
+    out.close();
+
+    std::remove(filename.c_str());
+    std::remove(opts->outputFilename.c_str());
+  }
+
   TEST_CASE("ASCII8 ROM does NOT have ASCII16X signature") {
     const std::string filename =
         createTempBas("rom_ascii8_nosig.bas", "10 PRINT \"HI\"\n20 END\n");

@@ -90,6 +90,48 @@ TEST_SUITE("Builder") {
 
     std::remove(filename.c_str());
   }
+
+  TEST_CASE("Builds resource map with multiple resources") {
+    const std::string f1 = createTempBin("builder_multi_a.bin", 16);
+    const std::string f2 = createTempBin("builder_multi_b.bin", 32);
+
+    ResourceManager rm;
+    REQUIRE(rm.addFile(f1, "tmp") == true);
+    REQUIRE(rm.addFile(f2, "tmp") == true);
+    CHECK(rm.buildMap(0, 0x8000) == true);
+    CHECK(rm.pages.size() >= 1);
+    CHECK(rm.resourcesPackedSize > 0);
+    CHECK(rm.resourcesUnpackedSize > 0);
+    CHECK(rm.toString().size() > 0);
+
+    std::remove(f1.c_str());
+    std::remove(f2.c_str());
+  }
+
+  TEST_CASE("Builds resource map with a multi-block text resource") {
+    const std::string filename = "tmp/builder_txt.txt";
+    std::ofstream ofs(filename);
+    ofs << "line one\nline two\nline three\n";
+    ofs.close();
+
+    ResourceManager rm;
+    REQUIRE(rm.addFile(filename, "tmp") == true);
+    CHECK(rm.buildMap(0, 0x8000) == true);
+    CHECK(rm.pages.size() >= 1);
+
+    std::remove(filename.c_str());
+  }
+
+  TEST_CASE("Builds resource map spanning multiple segments") {
+    const std::string filename = createTempBin("builder_segment.bin", 0x3FF0);
+
+    ResourceManager rm;
+    REQUIRE(rm.addFile(filename, "tmp") == true);
+    CHECK(rm.buildMap(0, 0x8000) == true);
+    CHECK(rm.pages.size() >= 2);
+
+    std::remove(filename.c_str());
+  }
 }
 
 // NOLINTEND

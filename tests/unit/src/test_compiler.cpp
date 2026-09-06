@@ -351,6 +351,38 @@ TEST_SUITE("Compiler") {
     std::remove(filename.c_str());
   }
 
+  TEST_CASE("Resolves cross-segment conditional jumps in MegaROM") {
+    int line = 20;
+    std::string content = "10 IF A=1 THEN GOTO 20000\n";
+    for (int i = 0; i < 400; i++) {
+      content += std::to_string(line++) + " A=" + std::to_string(i) + "\n";
+      content += std::to_string(line++) + " B=A+" + std::to_string(i) + "\n";
+      content += std::to_string(line++) + " C=A*B\n";
+      content += std::to_string(line++) + " PRINT C\n";
+    }
+    content += "20000 PRINT \"END\"\n";
+    content += "20010 END\n";
+
+    const std::string filename =
+        createTempBas("compiler_cross_segment.bas", content);
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->compileMode = BuildOptions::CompileMode::Konami4;
+    opts->megaROM = true;
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    REQUIRE(compileWithOpts(filename, compiler, opts) == true);
+
+    CHECK(compiler->getCodeSize() > 0x4000);
+
+    std::vector<unsigned char> out(0x20000, 0);
+    int written = compiler->write(out.data(), 0x8000);
+    CHECK(written > 0x4000);
+
+    std::remove(filename.c_str());
+  }
+
   TEST_CASE("Fails when compiled code exceeds maximum ROM limit") {
     const std::string content =
         "10 FOR I=1 TO 100\n20 A=I\n30 NEXT I\n40 FOR I=1 TO 100\n"

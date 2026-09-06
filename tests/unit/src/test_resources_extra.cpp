@@ -78,6 +78,65 @@ TEST_SUITE("ResourceReadersExtra") {
     deleteTempFile(fname);
   }
 
+  TEST_CASE("ResourceSprReader handles every hex digit range") {
+    std::string fname = "tmp/temp_hex.spr";
+    std::string content = "!type\nmsx1\n#Slot 0\n";
+    const char* rows[16] = {
+        "0123456789ABCDEF", "FEDCBA9876543210", "aabbccddeeff0011",
+        "8899AABBCCDDEEFF", "0123456789abcdef", "fedcba9876543210",
+        "0102030405060708", "090A0B0C0D0E0F00", "0011223344556677",
+        "8899AABBCCDDEEFF", "0101010101010101", "0F0F0F0F0F0F0F0F",
+        "FFFFFFFFFFFFFFFF", "0000000000000000", "123456789ABCDEF0",
+        "0FEDCBA987654321"};
+    for (int i = 0; i < 16; i++) {
+      content += rows[i];
+      content += "\n";
+    }
+    createTempFile(fname, content);
+
+    ResourceSprReader reader(fname);
+    CHECK(reader.load() == true);
+    CHECK(reader.unpackedSize > 0);
+    CHECK(reader.packedSize > 0);
+
+    deleteTempFile(fname);
+  }
+
+  TEST_CASE("ResourceSprReader remaps an MSX2 sprite with many colors") {
+    std::string fname = "tmp/temp_hex_msx2.spr";
+    std::string content = "!type\nmsx2\n#Slot 0\n";
+    const char* rows[16] = {
+        "0123456789ABCDEF", "FEDCBA9876543210", "aabbccddeeff0011",
+        "8899AABBCCDDEEFF", "0123456789abcdef", "fedcba9876543210",
+        "0102030405060708", "090A0B0C0D0E0F00", "0011223344556677",
+        "8899AABBCCDDEEFF", "0101010101010101", "0F0F0F0F0F0F0F0F",
+        "FFFFFFFFFFFFFFFF", "0000000000000000", "123456789ABCDEF0",
+        "0FEDCBA987654321"};
+    for (int i = 0; i < 16; i++) {
+      content += rows[i];
+      content += "\n";
+    }
+    content += "#Slot 1\n";
+    const char* rows2[16] = {
+        "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF",
+        "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF",
+        "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF",
+        "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF",
+        "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF",
+        "FFFFFFFFFFFFFFFF"};
+    for (int i = 0; i < 16; i++) {
+      content += rows2[i];
+      content += "\n";
+    }
+    createTempFile(fname, content);
+
+    ResourceSprReader reader(fname);
+    CHECK(reader.load() == true);
+    CHECK(reader.unpackedSize > 0);
+
+    deleteTempFile(fname);
+  }
+
   TEST_CASE("ResourceAkmReader loads real AKM song") {
     std::string fname = "../../tests/integration/ARKTRK/songs.akm";
 
@@ -112,6 +171,42 @@ TEST_SUITE("ResourceReadersExtra") {
     SUBCASE("Cannot guess base address of small file") {
       CHECK(reader.remapTo(0, 0, 0x8000) == true);
     }
+
+    deleteTempFile(fname);
+  }
+
+  TEST_CASE("ResourceAkmReader remaps a synthetic song with tables") {
+    std::string fname = "tmp/temp_synth.akm";
+    // Synthetic AKM layout (32 bytes):
+    //   [0..1]  instrumentIndexTable = 8
+    //   [2..3]  arpeggioIndexTable   = 0x10 (non-zero -> remapped)
+    //   [4..5]  pitchIndexTable      = 0x12 (non-zero -> remapped)
+    //   [6..7]  subsongIndexTable    = 0x0C (points to subsong header)
+    //   [8..9]  instrument entry 0   = 0x0A (loop bound t = 10)
+    //   [10..11] padding
+    //   [12..24] subsong header, areEffectsPresent (offset 12) = 0x0C
+    //   [25..31] instrument/arpeggio/pitch target data
+    std::string content;
+    content += std::string("\x08\x00", 2);  // instrumentIndexTable = 8
+    content += std::string("\x10\x00", 2);  // arpeggioIndexTable = 0x10
+    content += std::string("\x12\x00", 2);  // pitchIndexTable = 0x12
+    content += std::string("\x0C\x00", 2);  // subsongIndexTable = 0x0C
+    content += std::string("\x0A\x00", 2);  // instrument entry 0 = 0x0A
+    content += std::string("\x00\x00", 2);  // padding
+    content += std::string(12, '\x00');     // subsong header [12..23]
+    content += '\x0C';                      // areEffectsPresent @ 24
+    content += std::string(7, '\x00');      // [25..31]
+    createTempFile(fname, content);
+
+    ResourceAkmReader reader(fname);
+    REQUIRE(reader.load() == true);
+    CHECK(reader.remapTo(0, 0, 0x8000) == true);
+    REQUIRE(reader.data.size() >= 1);
+    CHECK(reader.data[0][1] == 0x80);  // instrumentIndexTable remapped
+    CHECK(reader.data[0][3] == 0x80);  // arpeggioIndexTable remapped
+    CHECK(reader.data[0][5] == 0x80);  // pitchIndexTable remapped
+    CHECK(reader.data[0][7] == 0x80);  // subsongIndexTable remapped
+    CHECK(reader.data[0][9] == 0x80);  // instrument entry remapped
 
     deleteTempFile(fname);
   }
@@ -170,6 +265,53 @@ TEST_SUITE("ResourceReadersExtra") {
     }
     CHECK(reader1.packedSize == reader2.packedSize);
     CHECK(reader1.unpackedSize == reader2.unpackedSize);
+  }
+
+  TEST_CASE("ResourceAkxReader remaps a synthetic effects list") {
+    std::string fname = "tmp/temp_synth.akx";
+    // 2 effects, first sound effect address = 4 (2-byte pointer list)
+    // base address is guessed as 0, so both pointers are remapped to 0x8000+
+    std::string content =
+        std::string("\x04\x00\x06\x00\xAA\xBB\xCC\xDD", 8);
+    createTempFile(fname, content);
+
+    ResourceAkxReader reader(fname);
+    REQUIRE(reader.load() == true);
+    CHECK(reader.remapTo(0, 0, 0x8000) == true);
+    REQUIRE(reader.data.size() >= 1);
+    CHECK(reader.data[0][1] == 0x80);
+    CHECK(reader.data[0][3] == 0x80);
+
+    deleteTempFile(fname);
+  }
+
+  TEST_CASE("ResourceAkxReader guesses base address across iterations") {
+    std::string fname = "tmp/temp_guess.akx";
+    // first sound effect address = 4, second pointer (0x09) is out of range
+    // for base address 0, so the guessing loop advances base address
+    std::string content =
+        std::string("\x04\x00\x09\x00\xAA\xBB\xCC\xDD", 8);
+    createTempFile(fname, content);
+
+    ResourceAkxReader reader(fname);
+    REQUIRE(reader.load() == true);
+    CHECK(reader.remapTo(0, 0, 0x8000) == true);
+    CHECK(!reader.getLogger()->containErrors());
+
+    deleteTempFile(fname);
+  }
+
+  TEST_CASE("ResourceAkxReader warns on unguessable base address") {
+    std::string fname = "tmp/temp_bad.akx";
+    std::string content = std::string("\x00\x00", 2);
+    createTempFile(fname, content);
+
+    ResourceAkxReader reader(fname);
+    REQUIRE(reader.load() == true);
+    CHECK(reader.remapTo(0, 0, 0x8000) == true);
+    CHECK(reader.getLogger()->containWarnings() == true);
+
+    deleteTempFile(fname);
   }
 
   TEST_CASE("ResourceMtfMapReader loads a minimal map") {
@@ -284,6 +426,67 @@ TEST_SUITE("ResourceReadersExtra") {
     CHECK(reader.data[2][0] == 2);        // second line wraps to the first line
     CHECK(reader.data[2][1] == 0x00);
     CHECK(reader.data[2][2] == 0x80);
+
+    deleteTempFile(superName);
+    deleteTempFile(mapName);
+  }
+
+  TEST_CASE("ResourceMtfMapReader handles 3-byte count header and 2D tiles") {
+    std::string superName = "tmp/temp_3byte.SC4Super";
+    std::string mapName = "tmp/temp_3byte.SC4Map";
+
+    // supertile: 3-byte count header (first byte 0), count=2, width=2,
+    // height=2, limit 0xFFFF, reserved(2), two 2x2 supertiles
+    std::string supertile;
+    supertile += '\x00';  // count marker -> 3-byte count
+    supertile += '\x02';  // count low
+    supertile += '\x00';  // count high
+    supertile += '\x02';  // width
+    supertile += '\x02';  // height
+    supertile += '\xFF';  // limit low
+    supertile += '\xFF';  // limit high
+    supertile += '\x00';  // reserved
+    supertile += '\x00';  // reserved
+    supertile += std::string("\x01\x02\x03\x04", 4);  // supertile 0 (2x2)
+    supertile += std::string("\x05\x06\x07\x08", 4);  // supertile 1 (2x2)
+
+    // tilemap: width=1, height=2, reserved(4), two 2-byte supertile indices
+    std::string tilemap;
+    tilemap += std::string("\x01\x00\x02\x00\x00\x00\x00\x00", 8);
+    tilemap += std::string("\x00\x00", 2);  // index 0 -> supertile 0
+    tilemap += std::string("\x01\x00", 2);  // index 1 -> supertile 1
+
+    createTempFile(superName, supertile);
+    createTempFile(mapName, tilemap);
+
+    ResourceMtfMapReader reader(mapName);
+    REQUIRE(reader.load() == true);
+    REQUIRE(reader.data.size() == 5);
+
+    // Header: type + width + height + 4-line table
+    REQUIRE(reader.data[0].size() == 17);
+    CHECK(reader.data[0][0] == 2);
+    CHECK(reader.data[0][1] == 2);  // resource width = tilemapWidth * supertileWidth
+    CHECK(reader.data[0][2] == 0);
+    CHECK(reader.data[0][3] == 4);  // resource height = tilemapHeight * supertileHeight
+    CHECK(reader.data[0][4] == 0);
+
+    // Four line blocks (tilemapHeight * supertileHeight), each 2+31+3 bytes
+    CHECK(reader.data[1].size() == 36);
+    CHECK(reader.data[1][3] == 0x01);
+    CHECK(reader.data[1][4] == 0x02);
+    CHECK(reader.data[2][3] == 0x03);
+    CHECK(reader.data[2][4] == 0x04);
+    CHECK(reader.data[3][3] == 0x05);
+    CHECK(reader.data[3][4] == 0x06);
+    CHECK(reader.data[4][3] == 0x07);
+    CHECK(reader.data[4][4] == 0x08);
+
+    // Remap all four lines
+    CHECK(reader.remapTo(1, 2, 0x8000) == true);
+    CHECK(reader.remapTo(2, 3, 0x9000) == true);
+    CHECK(reader.remapTo(3, 4, 0xA000) == true);
+    CHECK(reader.remapTo(4, 5, 0xB000) == true);
 
     deleteTempFile(superName);
     deleteTempFile(mapName);

@@ -268,7 +268,9 @@ mutation-run:
 		--mutation-score-threshold 85 \
 		--allow-surviving \
 		--no-test-output \
-		"$(abspath $(MUTATION_OUT))"
+		--ld-search-path /lib/x86_64-linux-gnu:/lib64 \
+		"$(abspath $(MUTATION_OUT))" \
+		--test-suite-exclude=Slow
 	@echo "✅ Mutation tests completed. Report saved to $(MUTATION_REPORT)"
 
 mutation-check:

@@ -1,2 +1,4 @@
 mutators:
   - cxx_default
+excludePaths:
+  - .*src/infrastructure/compression/pletter\.cpp

@@ -79,6 +79,30 @@ TEST_SUITE("CompilerExpressionEvaluator") {
       CHECK(ok == true);
       CHECK(errors.empty());
     }
+
+    SUBCASE("Lowercase hex literal") {
+      std::string errors;
+      bool ok = compileStatementProgram("expr_hex_low.bas",
+                                        "10 A=&hff\n20 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("Lowercase octal literal") {
+      std::string errors;
+      bool ok = compileStatementProgram("expr_oct_low.bas",
+                                        "10 A=&o17\n20 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("Lowercase binary literal") {
+      std::string errors;
+      bool ok = compileStatementProgram("expr_bin_low.bas",
+                                        "10 A=&b1010\n20 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
   }
 
   TEST_CASE("Arithmetic operators compile") {
@@ -556,6 +580,52 @@ TEST_SUITE("CompilerVariableEmitter") {
       std::string errors;
       bool ok = compileStatementProgram("var_maxfiles.bas",
                                         "10 MAXFILES=5\n20 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+  }
+
+  TEST_CASE("Variables of every subtype compile") {
+    SUBCASE("Integer variable") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "var_int.bas", "10 DEFINT A-Z\n20 A=1\n30 B=A+2\n40 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("Single-decimal variable") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "var_sng.bas", "10 DEFSNG A-Z\n20 A=1.5\n30 B=A+0.5\n40 END\n",
+          &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("Double-decimal variable") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "var_dbl.bas", "10 DEFDBL A-Z\n20 A=1.5\n30 B=A+0.25\n40 END\n",
+          &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("String variable") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "var_str.bas", "10 DEFSTR A-Z\n20 A$=\"X\"\n30 B$=A$\n40 END\n",
+          &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("Implicit single variable via suffix") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "var_suffix.bas", "10 A!=1.5\n20 A#=2.5\n30 A$=\"S\"\n40 END\n",
+          &errors);
       CHECK(ok == true);
       CHECK(errors.empty());
     }
