@@ -71,6 +71,37 @@ static bool compileWithOpts(const std::string& filename,
   return compiler->build(parser);
 }
 
+static std::string compiledCodeHex(const std::string& filename,
+                                   const std::string& program) {
+  const std::string path = createTempBas(filename, program);
+
+  shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
+  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Parser> parser = make_shared<Parser>();
+
+  bool ok = false;
+  if (lexer->load(path) && lexer->evaluate() && parser->evaluate(lexer)) {
+    ok = compiler->build(parser);
+  }
+
+  std::remove(path.c_str());
+
+  if (!ok) return std::string();
+
+  int n = compiler->getCodeSize();
+  std::vector<unsigned char> buffer(n);
+  compiler->write(buffer.data(), 0);
+
+  std::string out;
+  char byte[4];
+  for (int i = 0; i < n; i++) {
+    snprintf(byte, sizeof(byte), "%02X", buffer[i]);
+    out += byte;
+  }
+  return out;
+}
+
 static shared_ptr<CompilerContext> createCmdContext(
     shared_ptr<Z80OpcodeWriter> cpu,
     shared_ptr<CpuWorkspaceContext> workspace) {
@@ -365,6 +396,39 @@ TEST_SUITE("Compiler") {
 
     const std::string filename =
         createTempBas("compiler_cross_segment.bas", content);
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->compileMode = BuildOptions::CompileMode::Konami4;
+    opts->megaROM = true;
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    REQUIRE(compileWithOpts(filename, compiler, opts) == true);
+
+    CHECK(compiler->getCodeSize() > 0x4000);
+
+    std::vector<unsigned char> out(0x20000, 0);
+    int written = compiler->write(out.data(), 0x8000);
+    CHECK(written > 0x4000);
+
+    std::remove(filename.c_str());
+  }
+
+  TEST_CASE("Resolves cross-segment GOSUB call in MegaROM") {
+    int line = 20;
+    std::string content = "10 GOSUB 20000\n";
+    for (int i = 0; i < 400; i++) {
+      content += std::to_string(line++) + " A=" + std::to_string(i) + "\n";
+      content += std::to_string(line++) + " B=A+" + std::to_string(i) + "\n";
+      content += std::to_string(line++) + " C=A*B\n";
+      content += std::to_string(line++) + " PRINT C\n";
+    }
+    content += "20000 PRINT \"SUB\"\n";
+    content += "20010 RETURN\n";
+    content += "20020 END\n";
+
+    const std::string filename =
+        createTempBas("compiler_cross_gosub.bas", content);
 
     shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
     opts->compileMode = BuildOptions::CompileMode::Konami4;
@@ -930,8 +994,7 @@ TEST_SUITE("CompilerStatementStrategies") {
         {"OUT", "10 OUT 1,2\n20 END\n", true},
         {"POKE", "10 POKE 1,2\n20 END\n", true},
         {"VPOKE", "10 VPOKE 1,2\n20 END\n", true},
-        {"IPOKE", "10 IPOKE 1,2\n20 END\n", true},
-        {"DATA", "10 DATA 1,2\n20 END\n", true},
+        {"IPOKE", "10 IPOKE 1,2\n20 END\n", true},        {"DATA", "10 DATA 1,2\n20 END\n", true},
         {"IDATA", "10 IDATA 1,2\n20 END\n", true},
         {"READ", "10 DATA 1\n20 READ A\n30 END\n", true},
         {"IREAD", "10 IDATA 1\n20 IREAD A\n30 END\n", true},
@@ -1042,6 +1105,14 @@ TEST_SUITE("CompilerStatementStrategies") {
         }
       }
     }
+  }
+
+  TEST_CASE("POKE statement emits the store sequence") {
+    std::string hex =
+        compiledCodeHex("compiler_poke_bytes.bas", "10 POKE &H4000,42\n20 END\n");
+    CHECK(!hex.empty());
+    // ex de,hl -> pop hl -> ld (hl),e sequence: EB E1 73
+    CHECK(hex.find("EBE173") != std::string::npos);
   }
 
   TEST_CASE("LET statement compiles assignments of different types") {

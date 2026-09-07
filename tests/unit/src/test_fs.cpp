@@ -18,6 +18,7 @@
 #include "doctest/doctest.h"
 #include "fswrapper.h"
 #include "lexer.h"
+#include "logger.h"
 #include "parser.h"
 #include "pletter.h"
 #include "z80.h"
@@ -212,6 +213,24 @@ TEST_SUITE("Fswrapper") {
     CHECK(removeQuotes("hello\"") == "hello");
     CHECK(removeQuotes("hello") == "hello");
     CHECK(removeQuotes("") == "");
+  }
+
+  TEST_CASE("pathExists detects directories only") {
+    CHECK(pathExists("tmp") == true);
+    CHECK(pathExists("tmp/nonexistent_dir_xyz") == false);
+    CHECK(pathExists("Makefile") == false);
+  }
+
+  TEST_CASE("Logger contain filters by level") {
+    Logger logger;
+    logger.error("boom");
+    logger.warning("warn");
+
+    CHECK(logger.contain(set<Logger::LogLevel>{Logger::LogLevel::ERR}) == true);
+    CHECK(logger.contain(set<Logger::LogLevel>{Logger::LogLevel::WARNING}) ==
+          true);
+    CHECK(logger.contain(set<Logger::LogLevel>{Logger::LogLevel::DEBUG}) ==
+          false);
   }
 }
 

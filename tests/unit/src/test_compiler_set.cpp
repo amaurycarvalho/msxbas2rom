@@ -72,6 +72,37 @@ static int compiledCodeSize(const std::string& filename,
   return ok ? compiler->getCodeSize() : -1;
 }
 
+static std::string compiledCodeHex(const std::string& filename,
+                                   const std::string& program) {
+  const std::string path = createTempBas(filename, program);
+
+  shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
+  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Parser> parser = make_shared<Parser>();
+
+  bool ok = false;
+  if (lexer->load(path) && lexer->evaluate() && parser->evaluate(lexer)) {
+    ok = compiler->build(parser);
+  }
+
+  std::remove(path.c_str());
+
+  if (!ok) return std::string();
+
+  int n = compiler->getCodeSize();
+  std::vector<unsigned char> buffer(n);
+  compiler->write(buffer.data(), 0);
+
+  std::string out;
+  char byte[4];
+  for (int i = 0; i < n; i++) {
+    snprintf(byte, sizeof(byte), "%02X", buffer[i]);
+    out += byte;
+  }
+  return out;
+}
+
 TEST_SUITE("CompilerSetStatementStrategy") {
   TEST_CASE("SET SCROLL null and full argument forms compile") {
     int plain = compiledCodeSize("set_a.bas", "10 SET SCROLL 1,2,3,4\n20 END\n");
@@ -94,6 +125,18 @@ TEST_SUITE("CompilerSetStatementStrategy") {
     CHECK(t1 != t2);
     CHECK(t2 != t3);
     CHECK(t3 != t4);
+  }
+
+  TEST_CASE("SET SCROLL four parameters emit pop af") {
+    // t == 4 -> pop af (0xF1); t == 3 -> ld a, 0xff (0x3E 0xFF)
+    std::string t3 =
+        compiledCodeHex("set_scroll_t3.bas", "10 SET SCROLL 1,2,3\n20 END\n");
+    std::string t4 =
+        compiledCodeHex("set_scroll_t4.bas", "10 SET SCROLL 1,2,3,4\n20 END\n");
+    CHECK(!t3.empty());
+    CHECK(!t4.empty());
+    CHECK(t4.find("F1") != std::string::npos);
+    CHECK(t3.find("3EFF") != std::string::npos);
   }
 
   TEST_CASE("SET TILE COLOR buffer and tuple forms compile") {

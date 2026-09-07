@@ -242,8 +242,19 @@ TEST_SUITE("Rom") {
 
     std::ifstream out(opts->outputFilename, std::ios::binary);
     REQUIRE(out.good());
-    out.seekg(0, std::ios::end);
-    CHECK(out.tellg() > 0);
+
+    int addrCount8000 = 0, addrCountA000 = 0;
+    for (int i = 0; i < 0x4000 - 3; i++) {
+      unsigned char buf[3];
+      out.seekg(i, std::ios::beg);
+      out.read(reinterpret_cast<char*>(buf), 3);
+      if (buf[1] == 0 && buf[0] == 0x32 && buf[2] == 0x80) addrCount8000++;
+      if (buf[1] == 0 && buf[0] == 0x3A && buf[2] == 0x80) addrCount8000++;
+      if (buf[1] == 0 && buf[0] == 0x32 && buf[2] == 0xA0) addrCountA000++;
+      if (buf[1] == 0 && buf[0] == 0x3A && buf[2] == 0xA0) addrCountA000++;
+    }
+    CHECK(addrCount8000 > 0);
+    CHECK(addrCountA000 > 0);
     out.close();
 
     std::remove(filename.c_str());
@@ -441,6 +452,108 @@ TEST_SUITE("Rom") {
     CHECK(rom->romSize >= 0x8000);
     CHECK(rom->kernelShare + rom->codeShare + rom->resourcesShare ==
           doctest::Approx(100.0).epsilon(1.0));
+
+    std::remove(filename.c_str());
+    std::remove(opts->outputFilename.c_str());
+  }
+
+  TEST_CASE("MegaROM resource map start address and segment are written") {
+    const std::string filename =
+        createTempBas("rom_resmap.bas", "10 PRINT \"HI\"\n20 END\n");
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->compileMode = BuildOptions::CompileMode::Konami4;
+    opts->megaROM = true;
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+
+    REQUIRE(compileWithOpts(filename, compiler, opts) == true);
+
+    shared_ptr<Rom> rom = make_shared<Rom>();
+    REQUIRE(rom->build(compiler) == true);
+
+    std::ifstream out(opts->outputFilename, std::ios::binary);
+    REQUIRE(out.good());
+    // pages[1][11..13] = resource map start address (lo/hi) + segment
+    unsigned char lo = 0, hi = 0, seg = 0;
+    out.seekg(0x4000 + 11, std::ios::beg);
+    out.read(reinterpret_cast<char*>(&lo), 1);
+    out.read(reinterpret_cast<char*>(&hi), 1);
+    out.read(reinterpret_cast<char*>(&seg), 1);
+    // resourceAddress = 0x8000 + 0x10 = 0x8010
+    CHECK(lo == 0x10);
+    CHECK(hi == 0x80);
+    // resourceSegment = pages.size() * 2 (kernel + start = 2 pages)
+    CHECK(seg == 4);
+    out.close();
+
+    std::remove(filename.c_str());
+    std::remove(opts->outputFilename.c_str());
+  }
+
+  TEST_CASE("Reports an exact resources share for a DATA resource") {
+    std::string content = "10 DATA ";
+    for (int i = 0; i < 80; i++) {
+      content += std::to_string(i);
+      if (i < 79) content += ",";
+    }
+    content += "\n20 READ A\n30 END\n";
+    const std::string filename =
+        createTempBas("rom_data_share.bas", content);
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+
+    REQUIRE(compileWithOpts(filename, compiler, opts) == true);
+
+    shared_ptr<Rom> rom = make_shared<Rom>();
+    REQUIRE(rom->build(compiler) == true);
+
+    CHECK(rom->resourcesSize > 0);
+    CHECK(rom->romSize > 0);
+    double expected =
+        (static_cast<double>(rom->resourcesSize) / rom->romSize) * 100.0;
+    CHECK(rom->resourcesShare == doctest::Approx(expected).epsilon(0.01));
+
+    std::remove(filename.c_str());
+    std::remove(opts->outputFilename.c_str());
+  }
+
+  TEST_CASE("MegaROM output size is a multiple of 128KB") {
+    std::string content;
+    int line = 10;
+    for (int i = 0; i < 200; i++) {
+      content += std::to_string(line++) + " A=" + std::to_string(i) + "\n";
+      content += std::to_string(line++) + " B=A+" + std::to_string(i) + "\n";
+      content += std::to_string(line++) + " C=A*B\n";
+      content += std::to_string(line++) + " PRINT C\n";
+    }
+    content += std::to_string(line) + " END\n";
+    const std::string filename =
+        createTempBas("rom_mega_mult.bas", content);
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->compileMode = BuildOptions::CompileMode::Konami4;
+    opts->megaROM = true;
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+
+    REQUIRE(compileWithOpts(filename, compiler, opts) == true);
+
+    shared_ptr<Rom> rom = make_shared<Rom>();
+    REQUIRE(rom->build(compiler) == true);
+
+    std::ifstream out(opts->outputFilename, std::ios::binary);
+    REQUIRE(out.good());
+    out.seekg(0, std::ios::end);
+    std::streamoff size = out.tellg();
+    out.close();
+    CHECK(size > 0);
+    CHECK(size % (8 * 0x4000) == 0);
 
     std::remove(filename.c_str());
     std::remove(opts->outputFilename.c_str());

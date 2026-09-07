@@ -1,33 +1,51 @@
 ## ADDED Requirements
 
-### Requirement: Peephole code optimizer has dedicated coverage
+### Requirement: Peephole code optimizer has exhaustive dedicated coverage
 
-The peephole code optimizer SHALL have dedicated tests exercising each recognized optimization pattern (for example, `pop de` / `ld hl,x` / `push hl` / `ld hl,x` / `pop de` sequences, and `add hl,de` with immediate values 1, 2, and 3), so that equality mutants on opcode and immediate-value comparisons do not survive because a branch is never executed.
+The peephole code optimizer SHALL have dedicated tests exercising **every** recognized optimization pattern (for example, `pop de` / `ld hl,x` / `push hl` / `ld hl,x` / `pop de` sequences, and `add hl,de` with immediate values 1, 2, and 3), and **every** boundary immediate value of each pattern, so that equality and arithmetic mutants on opcode and immediate-value comparisons do not survive because a branch or value is never exercised. Representative sampling of a subset of patterns is not sufficient.
 
-#### Scenario: Each peephole pattern is exercised
-- **WHEN** the optimizer is fed each documented byte-sequence pattern and its boundary immediate values
-- **THEN** each opcode-equality and immediate-value branch SHALL be executed
-- **THEN** the corresponding equality mutants SHALL be killed
+#### Scenario: Every peephole pattern is exercised
+- **WHEN** the optimizer is fed every documented byte-sequence pattern and all of its boundary immediate values
+- **THEN** every opcode-equality and immediate-value branch SHALL be executed
+- **THEN** the corresponding equality and arithmetic mutants SHALL be killed
 
-### Requirement: Cross-segment relocation opcodes are covered
+### Requirement: Every reachable cross-segment relocation opcode is covered
 
-The cross-segment symbol fixup performed during code output SHALL have tests exercising the reachable conditional `jp` opcode variants it rewrites (`jp z`, `jp nz`, `jp`, and the segment-relative LOAD case), so that the arithmetic mutants inside those relocation switch branches are killed. The conditional `call` and `jp m/pe/p/po` variants are never emitted by the compiler and are not required to be exercised.
+The cross-segment symbol fixup performed during code output SHALL have tests exercising **every reachable** opcode variant it rewrites — the conditional `call` (`nc`/`nz`/`c`/`z`), the conditional `jp` (`nc`/`nz`/`c`/`z`), the unconditional `call` and `jp`, and the segment-relative LOAD (`0xFF`) case — so that the arithmetic and boundary mutants inside those relocation switch branches are killed. The conditional `call p/po/m/pe` and `jp m/pe/p/po` variants are never emitted by the compiler and are not required to be exercised; if they are confirmed unreachable they MAY instead be excluded from the mutation scope.
 
-#### Scenario: Reachable fixup opcodes are exercised
-- **WHEN** compiled code produces a cross-segment reference to a reachable `jp`/LOAD opcode variant
+#### Scenario: Every reachable fixup opcode is exercised
+- **WHEN** compiled code produces a cross-segment reference to each reachable `call`/`jp`/LOAD opcode variant
 - **THEN** the corresponding rewrite branch SHALL be executed
 - **THEN** the emitted byte sequence SHALL differ from the unrewritten sequence
-- **THEN** the arithmetic mutants in that branch SHALL be killed
+- **THEN** the arithmetic and boundary mutants in that branch SHALL be killed
 
-### Requirement: Complex binary readers cover boundary and error paths
+### Requirement: Complex binary readers cover every boundary and error path
 
-The AKM, AKX, MTF, and SPR resource readers SHALL have tests covering exact-size boundaries and malformed or truncated inputs, so that boundary-comparison and arithmetic mutants in these parsers do not survive because only valid files are exercised.
+The AKM, AKX, MTF, SPR, and CSV resource readers SHALL have tests covering **every** exact-size boundary (`==` and `±1` on each limit) and **every** malformed or truncated input that reaches a distinct error path, so that boundary-comparison and arithmetic mutants in these parsers do not survive because only valid files or a single boundary is exercised.
 
-#### Scenario: Reader boundary and error paths are exercised
-- **WHEN** a reader is given inputs at exact size boundaries and malformed or truncated inputs
-- **THEN** the boundary comparison SHALL be evaluated on both sides
-- **THEN** the error paths SHALL be executed
+#### Scenario: Every reader boundary and error path is exercised
+- **WHEN** a reader is given inputs at every size boundary (exact, one over, one under) and every malformed or truncated shape
+- **THEN** every boundary comparison SHALL be evaluated on both sides
+- **THEN** every distinct error path SHALL be executed
 - **THEN** the corresponding boundary and arithmetic mutants SHALL be killed
+
+### Requirement: Type-dispatch equality is exhaustively covered
+
+The type/subtype dispatch equality checks in `compiler_expression_evaluator.cpp` and the graphics copy/line/put/circle/get statement strategies, plus the equality guards in `compiler_symbol_resolver.cpp` and `compiler_variable_emitter.cpp`, SHALL have tests that drive **every** reachable type/subtype pair through the dispatch and assert the emitted result, so that `eq_to_ne` mutants on those branches do not survive because a specific type or subtype is never exercised.
+
+#### Scenario: Every type/subtype pair is exercised
+- **WHEN** the evaluator and statement strategies are invoked with every reachable type/subtype combination
+- **THEN** every `==`/`!=` dispatch branch SHALL be evaluated on both sides
+- **THEN** the corresponding `eq_to_ne`/`ne_to_eq` mutants SHALL be killed
+
+### Requirement: Equivalent mutants may be excluded via scope narrowing
+
+When a surviving mutant is provably equivalent (no test can distinguish the mutant's output) or resides in code the compiler never emits, the mutation scope SHALL MAY be narrowed by adding the specific region to `excludePaths` in `mull.yml`, as a fallback applied only after test-led coverage has been exhausted. This SHALL NOT be used to exclude mutants that are merely hard to reach with tests.
+
+#### Scenario: Unreachable or equivalent code is excluded
+- **WHEN** a mutant region is demonstrated to be equivalent or never emitted
+- **THEN** that region MAY be added to `mull.yml` `excludePaths`
+- **THEN** the mutation score SHALL be computed over the remaining project-owned, reachable code
 
 ### Requirement: Slow tests are excluded from mutation testing
 

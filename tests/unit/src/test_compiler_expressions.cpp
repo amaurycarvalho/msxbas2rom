@@ -13,6 +13,7 @@
 #include "build_options.h"
 #include "compiler.h"
 #include "compiler_context.h"
+#include "compiler_float_converter.h"
 #include "compiler_statement_strategy_factory.h"
 #include "cpu_workspace_context.h"
 #include "doctest/doctest.h"
@@ -52,6 +53,56 @@ static bool compileStatementProgram(const std::string& filename,
   std::remove(path.c_str());
 
   return ok;
+}
+
+static int compiledCodeSize(const std::string& filename,
+                            const std::string& program) {
+  const std::string path = createTempBas(filename, program);
+
+  shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
+  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Parser> parser = make_shared<Parser>();
+
+  bool ok = false;
+  if (lexer->load(path) && lexer->evaluate() && parser->evaluate(lexer)) {
+    ok = compiler->build(parser);
+  }
+
+  std::remove(path.c_str());
+
+  return ok ? compiler->getCodeSize() : -1;
+}
+
+static std::string compiledCodeHex(const std::string& filename,
+                                   const std::string& program) {
+  const std::string path = createTempBas(filename, program);
+
+  shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
+  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Parser> parser = make_shared<Parser>();
+
+  bool ok = false;
+  if (lexer->load(path) && lexer->evaluate() && parser->evaluate(lexer)) {
+    ok = compiler->build(parser);
+  }
+
+  std::remove(path.c_str());
+
+  if (!ok) return std::string();
+
+  int n = compiler->getCodeSize();
+  std::vector<unsigned char> buffer(n);
+  compiler->write(buffer.data(), 0);
+
+  std::string out;
+  char byte[4];
+  for (int i = 0; i < n; i++) {
+    snprintf(byte, sizeof(byte), "%02X", buffer[i]);
+    out += byte;
+  }
+  return out;
 }
 
 TEST_SUITE("CompilerExpressionEvaluator") {
@@ -840,6 +891,98 @@ TEST_SUITE("CompilerFloatConverter") {
         CHECK(errors.empty());
       }
     }
+  }
+
+  TEST_CASE("getUsingFormat returns exact format flags") {
+    auto ctx = make_shared<CompilerContext>();
+    CompilerFloatConverter converter(ctx);
+
+    CHECK(converter.getUsingFormat("") == 0x8000);
+    CHECK(converter.getUsingFormat("####") == 0x8040);
+    CHECK(converter.getUsingFormat("##.##") == 0x8023);
+    CHECK(converter.getUsingFormat("0000") == 0x8240);
+    CHECK(converter.getUsingFormat("###,##0.00") == 0xC273);
+    CHECK(converter.getUsingFormat("+###") == 0x8840);
+    CHECK(converter.getUsingFormat("-###") == 0x8430);
+    CHECK(converter.getUsingFormat("$###") == 0x9040);
+    CHECK(converter.getUsingFormat("**#") == 0xA030);
+    CHECK(converter.getUsingFormat("###^") == 0x8140);
+    CHECK(converter.getUsingFormat(".##") == 0x8003);
+    CHECK(converter.getUsingFormat(".+*,$^") == 0xF906);
+  }
+
+  TEST_CASE("str2FloatLib returns exact float-lib words") {
+    auto ctx = make_shared<CompilerContext>();
+    CompilerFloatConverter converter(ctx);
+
+    CHECK(converter.str2FloatLib("0") == 0x10000);
+    CHECK(converter.str2FloatLib("0.0") == 0x10000);
+  }
+}
+
+TEST_SUITE("CompilerTypeDispatch") {
+  TEST_CASE("Array type factors emit distinct code sizes") {
+    int int_arr = compiledCodeSize(
+        "td_int.bas", "10 DIM A%(3)\n20 A%(0)=1\n30 END\n");
+    int sng_arr = compiledCodeSize(
+        "td_sng.bas", "10 DEFSNG A-Z\n20 DIM A(3)\n30 A(0)=1.5\n40 END\n");
+    int str_arr = compiledCodeSize(
+        "td_str.bas", "10 DIM A$(3)\n20 A$(0)=\"X\"\n30 END\n");
+
+    CHECK(int_arr > 0);
+    CHECK(sng_arr > 0);
+    CHECK(str_arr > 0);
+    CHECK(int_arr != sng_arr);
+    CHECK(sng_arr != str_arr);
+    CHECK(int_arr != str_arr);
+  }
+
+  TEST_CASE("String constants embed their bytes in code") {
+    int plain = compiledCodeSize("td_plain.bas", "10 A=1\n20 END\n");
+    int with_str = compiledCodeSize(
+        "td_strconst.bas", "10 A$=\"HELLO\"\n20 END\n");
+    CHECK(plain > 0);
+    CHECK(with_str > 0);
+    CHECK(plain != with_str);
+  }
+
+  TEST_CASE("String constants are embedded without surrounding quotes") {
+    std::string hex =
+        compiledCodeHex("td_strhex.bas", "10 A$=\"HELLO\"\n20 END\n");
+    CHECK(!hex.empty());
+    // "HELLO" (without quotes) is embedded: 48 45 4C 4C 4F
+    CHECK(hex.find("48454C4C4F") != std::string::npos);
+    // the surrounding quotes (0x22) are stripped
+    CHECK(hex.find("2248454C4C4F22") == std::string::npos);
+  }
+
+  TEST_CASE("Numeric subtype arithmetic emits distinct code sizes") {
+    int integer = compiledCodeSize("sub_int.bas", "10 A%=1\n20 B%=A%+2\n30 END\n");
+    int single =
+        compiledCodeSize("sub_sng.bas", "10 A!=1.5\n20 B!=A!+2.5\n30 END\n");
+    int dbl =
+        compiledCodeSize("sub_dbl.bas", "10 A#=1.5\n20 B#=A#+2.5\n30 END\n");
+
+    CHECK(integer > 0);
+    CHECK(single > 0);
+    CHECK(dbl > 0);
+    CHECK(integer != single);
+    CHECK(integer != dbl);
+    CHECK(single == dbl);  // both map to the MSX single-precision math pack
+  }
+
+  TEST_CASE("Type cast combinations emit distinct code sizes") {
+    int int_plus_float =
+        compiledCodeSize("cast1.bas", "10 A=1+2.5\n20 END\n");
+    int float_plus_int =
+        compiledCodeSize("cast2.bas", "10 A=2.5+1\n20 END\n");
+    int int_plus_int = compiledCodeSize("cast3.bas", "10 A=1+2\n20 END\n");
+
+    CHECK(int_plus_float > 0);
+    CHECK(float_plus_int > 0);
+    CHECK(int_plus_int > 0);
+    CHECK(int_plus_float != int_plus_int);
+    CHECK(float_plus_int != int_plus_int);
   }
 }
 

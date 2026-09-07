@@ -6,8 +6,10 @@
 // NOLINTBEGIN
 
 #include <cstring>
+#include <stdexcept>
 
 #include "build_options_setup.h"
+#include "cliparser.h"
 #include "doctest/doctest.h"
 
 TEST_SUITE("Options") {
@@ -152,6 +154,36 @@ TEST_SUITE("Options") {
     CHECK(opts.parse(3, argv) == false);
     CHECK(opts.error == true);
     CHECK(opts.errorMessage.find("Unexpected argument") != std::string::npos);
+  }
+}
+
+TEST_SUITE("CommandLineParser") {
+  TEST_CASE("Parses option with value and filename") {
+    CommandLineParser parser;
+    std::string captured;
+    parser.addOption("-x", "--xxx", "desc", true, false,
+                     [&](const std::string& v) { captured = v; });
+
+    char arg0[] = "prog";
+    char arg1[] = "-x";
+    char arg2[] = "42";
+    char arg3[] = "file.bas";
+    char* argv[] = {arg0, arg1, arg2, arg3};
+    parser.parse(4, argv);
+
+    CHECK(captured == "42");
+    CHECK(parser.getFilename() == "file.bas");
+  }
+
+  TEST_CASE("Missing option value throws") {
+    CommandLineParser parser;
+    parser.addOption("-x", "--xxx", "desc", true, false,
+                     [](const std::string&) {});
+
+    char arg0[] = "prog";
+    char arg1[] = "-x";
+    char* argv[] = {arg0, arg1};
+    CHECK_THROWS_AS(parser.parse(2, argv), std::runtime_error);
   }
 }
 

@@ -211,6 +211,28 @@ TEST_SUITE("ResourceReadersExtra") {
     deleteTempFile(fname);
   }
 
+  TEST_CASE("ResourceAkmReader remaps a song with effects flag 0x0D") {
+    std::string fname = "tmp/temp_akm_0d.akm";
+    std::string content;
+    content += std::string("\x08\x00", 2);  // instrumentIndexTable = 8
+    content += std::string("\x00\x00", 2);  // arpeggioIndexTable = 0
+    content += std::string("\x00\x00", 2);  // pitchIndexTable = 0
+    content += std::string("\x0C\x00", 2);  // subsongIndexTable = 0x0C
+    content += std::string("\x0A\x00", 2);  // instrument entry 0 = 0x0A
+    content += std::string("\x00\x00", 2);  // padding
+    content += std::string(12, '\x00');     // subsong header [12..23]
+    content += '\x0D';                      // areEffectsPresent @ 24 = 0x0D
+    content += std::string(7, '\x00');      // [25..31]
+    createTempFile(fname, content);
+
+    ResourceAkmReader reader(fname);
+    REQUIRE(reader.load() == true);
+    CHECK(reader.remapTo(0, 0, 0x8000) == true);
+    CHECK(reader.data[0][1] == 0x80);
+
+    deleteTempFile(fname);
+  }
+
   TEST_CASE("ResourceAkmReader produces identical bytes across loads") {
     std::string fname = "../../tests/integration/ARKTRK/songs.akm";
 
@@ -281,6 +303,27 @@ TEST_SUITE("ResourceReadersExtra") {
     REQUIRE(reader.data.size() >= 1);
     CHECK(reader.data[0][1] == 0x80);
     CHECK(reader.data[0][3] == 0x80);
+
+    deleteTempFile(fname);
+  }
+
+  TEST_CASE("ResourceAkxReader remaps a three-effect list") {
+    std::string fname = "tmp/temp_three.akx";
+    // 3 effects: first address = 6, effect addresses 8 and 10, then data
+    std::string content =
+        std::string("\x06\x00\x08\x00\x0A\x00\xAA\xBB\xCC\xDD\xEE\xFF", 12);
+    createTempFile(fname, content);
+
+    ResourceAkxReader reader(fname);
+    REQUIRE(reader.load() == true);
+    CHECK(reader.remapTo(0, 0, 0x8000) == true);
+    REQUIRE(reader.data.size() >= 1);
+    CHECK(reader.data[0][0] == 0x06);
+    CHECK(reader.data[0][1] == 0x80);
+    CHECK(reader.data[0][2] == 0x08);
+    CHECK(reader.data[0][3] == 0x80);
+    CHECK(reader.data[0][4] == 0x0A);
+    CHECK(reader.data[0][5] == 0x80);
 
     deleteTempFile(fname);
   }
@@ -366,6 +409,29 @@ TEST_SUITE("ResourceReadersExtra") {
     CHECK(ResourceMtfMapReader::isIt(".SC4Map") == true);
     CHECK(ResourceMtfMapReader::isIt(".sc4map") == true);
     CHECK(ResourceMtfMapReader::isIt(".MTF") == false);
+  }
+
+  TEST_CASE("ResourceMtfMapReader loads map with 16-bit supertile indices") {
+    std::string superName = "tmp/temp_wide.SC4Super";
+    std::string mapName = "tmp/temp_wide.SC4Map";
+
+    // supertile: count byte 0 -> 2-byte count (256), width=1, height=1,
+    // limit=1, reserved, 256 supertile blocks
+    std::string supertile =
+        std::string("\x00\x00\x01\x01\x01\x01\x00\x00\x00", 9) +
+        std::string(256, '\x00');
+    // tilemap: width=1, height=1, reserved(4), one 16-bit supertile index
+    std::string tilemap = std::string(
+        "\x01\x00\x01\x00\x00\x00\x00\x00\x00\x00", 10);
+    createTempFile(superName, supertile);
+    createTempFile(mapName, tilemap);
+
+    ResourceMtfMapReader reader(mapName);
+    CHECK(reader.load() == true);
+    CHECK(reader.data.size() >= 2);
+
+    deleteTempFile(superName);
+    deleteTempFile(mapName);
   }
 
   TEST_CASE("ResourceMtfMapReader produces byte-exact map output") {
@@ -572,6 +638,18 @@ TEST_SUITE("ResourceReadersExtra") {
     for (int i = 1; i < 500; i++) line += "," + std::to_string(i);
     line += "\n";
     createTempFile(fname, line);
+
+    ResourceCsvReader reader(fname);
+    CHECK(reader.load() == true);
+    CHECK(reader.unpackedSize > 0);
+
+    deleteTempFile(fname);
+  }
+
+  TEST_CASE("ResourceCsvReader parses backspace-separated fields") {
+    std::string fname = "tmp/temp_backspace.csv";
+    std::string csv = "a\bb\bc\n1\b2\b3\n";
+    createTempFile(fname, csv);
 
     ResourceCsvReader reader(fname);
     CHECK(reader.load() == true);

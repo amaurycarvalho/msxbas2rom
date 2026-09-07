@@ -1,21 +1,15 @@
 ## Why
 
-The mutation score is stuck at **66%** (1704 detected / 2549 mutants: 1695 killed + 9 timeout), still short of the 85% target already mandated by the `mutation-testing` spec and enforced by `make mutation-check`. The previous attempt (`raise-mutation-score-to-85`) moved the score only 65% → 66% (+29 kills) because it focused on easy paths and left the highest-survivor modules untouched. A fresh analysis of `mutation_report.json` shows **845 surviving mutants**, dominated by three areas the prior plan missed: the peephole code optimizer (6.7% score, zero dedicated tests), the cross-segment relocation switch in `compiler.cpp` (84 arithmetic survivors from untested conditional opcodes), and the complex binary readers (AKM/AKX/MTF). The remaining graphics/semantic survivors are largely equivalent or byte-exact-required, so this change also narrows the mutation scope (exclude third-party/embedded code) and reduces the ~4.8 h per-run cost (a ~27 s baseline run once per mutant) to make the 85% target reachable and faster to verify.
+The mutation score is **70%** (1714 killed + 4 timeout = 1718 detected / 2445 mutants), still short of the 85% target mandated by the `mutation-testing` spec and enforced by `make mutation-check`. Round 1 of this change moved the score 66% → 70% (+~118 kills) but under-delivered because it sampled a *representative* case per branch (a few relocation opcodes, a few type pairs, a few reader boundaries) instead of exhausting the reachable cases. A fresh analysis of `mutation_report.json` shows **727 surviving mutants**, dominated by three areas Round 1 never fully reached: the cross-segment relocation switch in `compiler.cpp` (106 survivors, ~85 arithmetic), the AKM binary reader (75), and the type-dispatch equality checks in `compiler_expression_evaluator.cpp` (42, of which 30 `eq_to_ne`). Reaching 85% requires killing **~361** more survivors (about half of those remaining), which is achievable only by exhausting every reachable branch, with a scope-narrowing fallback for genuinely equivalent mutants.
 
 ## What Changes
 
-- Add targeted unit tests (doctest) to kill survivors, grouped by module and complexity:
-  - **Peephole code optimizer** (`compiler_code_optimizer.cpp`): dedicated tests for each peephole pattern and immediate-value branch (the largest single gap, ~56 survivors at 6.7% score).
-  - **Cross-segment relocation** (`compiler.cpp` `write()` fixup): tests that exercise the reachable conditional `jp z`/`jp nz`/`jp`/`0xFF` opcode variants (the conditional `call` and `jp m/pe/p/po` variants are never emitted and are left unreachable).
-  - **Complex binary readers** (`resource_akm_reader.cpp`, `resource_akx_reader.cpp`, `resource_mtf_map_reader.cpp`, `resource_spr_reader.cpp`): boundary and error-path fixtures.
-  - **Scattered semantic helpers**: both-sides coverage of `==`/`!=` guards in `compiler_expression_evaluator.cpp`, `compiler_symbol_resolver.cpp`, `compiler_variable_emitter.cpp`, `compiler_float_converter.cpp`.
-- Optimize the Mull configuration and runtime (replaces the original "graphics strategies" phase, whose survivors were dominated by equivalent and byte-exact-required mutants):
-  - **Narrow the mutation scope** via `mull.yml` `excludePaths` (third-party `pletter.cpp`), so the 85% score covers project-owned code.
-  - **Silence the JIT library warnings** via `--ld-search-path` in the `mutation-run` target (cosmetic).
-  - **Confirm doctest/test code is already excluded** from mutation (test objects compile without `-fpass-plugin`).
-  - **Reduce the mull baseline** by excluding the slow 8 KB-boundary blob test from mutation runs (tag it `Slow` and pass `--test-suite-exclude=Slow`), while it still runs in the normal unit-test suite.
-- Reconcile the stale Mull timeout assumption in the spec (the suite baseline is ~27 s in mull, not the assumed 10–15 s).
-- No production source changes; this change touches tests, `mull.yml`, and the `Makefile` `mutation-run` target.
+- Add **exhaustive** targeted unit tests (doctest), ordered easiest → hardest and driven by the survivor locations in `mutation_report.json` (mutator + line, not "more subtype tests"):
+  - **Phase 1 — easy (counters & boundary arithmetic on already-tested paths):** `CompilerFloatConverter::getUsingFormat` format-bit assertions; graphics-strategy byte/entity counts; `resource_manager` map-limit arithmetic; `rom.cpp` layout offsets; and the long tail of single inc/relational mutants across parser/lexer/domain/symbols.
+  - **Phase 2 — medium (binary readers & strategies):** exhaustive boundary/malformed fixtures for AKM/AKX/MTF/SPR/CSV readers; both-sides sub-command tests for SET/COLOR/ON strategies; equality coverage for `compiler_symbol_resolver` and `compiler_variable_emitter`.
+  - **Phase 3 — hard (type dispatch & relocation):** drive every type/subtype pair in `compiler_expression_evaluator` and the graphics copy/line/put/circle/get strategies; complete every peephole pattern in `compiler_code_optimizer`; exercise every reachable relocation opcode in `compiler.cpp`.
+- **Fallback scope narrowing (only if equivalent mutants block 85%):** extend `mull.yml` `excludePaths` for defensive/unreachable code that no test can distinguish — documented as a last resort, not the primary lever.
+- No production source changes; this change touches tests and, only if the fallback is needed, `mull.yml`. The `Makefile` `mutation-run` target is unchanged (Round 1 already added `--ld-search-path` and `--test-suite-exclude=Slow`).
 
 ## Capabilities
 
@@ -25,11 +19,11 @@ The mutation score is stuck at **66%** (1704 detected / 2549 mutants: 1695 kille
 
 ### Modified Capabilities
 
-- `mutation-testing`: Add requirements for peephole-optimizer coverage, cross-segment relocation opcode coverage, complex binary-reader coverage, a project-owned mutation scope (`excludePaths`), and exclusion of slow tests from mutation runs; correct the stale timeout baseline; amend the "existing tests remain unchanged" requirement to permit tagging the slowest tests with a slow suite and excluding them from mutation runs.
+- `mutation-testing`: Strengthen the coverage requirements from *representative* to *exhaustive enumeration* (every reachable relocation opcode, every reader boundary, every peephole pattern, every type/subtype pair); add a requirement permitting further `excludePaths` narrowing when mutants are provably equivalent; record that mull-runner 0.34.0 exposes no per-mutant filter, so incremental verification is via the unit suite and the full `make mutation-run` is a user-managed step.
 
 ## Impact
 
-- `tests/unit/src/*.cpp`: new test cases (primarily `test_compiler_expressions.cpp`, `test_compiler.cpp`, `test_resources.cpp`, `test_resources_extra.cpp`), plus a new `test_code_optimizer.cpp`.
-- `mull.yml`: add `excludePaths` for `src/infrastructure/compression/pletter.cpp`.
-- `Makefile`: add `--ld-search-path` to the `mutation-run` target; possible `mutation-run` timeout adjustment only if the baseline-verification task confirms the suite exceeds the current 32 s cap (to be decided during implementation, not pre-applied).
+- `tests/unit/src/*.cpp`: new exhaustive test cases, primarily in `test_compiler_expressions.cpp`, `test_compiler.cpp`, `test_resources.cpp`, `test_resources_extra.cpp`, and `test_code_optimizer.cpp`.
+- `mull.yml`: only if the Phase-4 fallback is needed (add `excludePaths` for defensive/unreachable code).
+- `Makefile`: no change.
 - No production code, APIs, or dependencies change.

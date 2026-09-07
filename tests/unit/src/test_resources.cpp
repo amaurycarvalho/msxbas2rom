@@ -131,6 +131,37 @@ TEST_SUITE("ResourceManager suite") {
     resourceManager.clear();
     CHECK(resourceManager.buildMap(0, 0) == true);
   }
+
+  TEST_CASE("ResourceManager: buildMap writes exact map table bytes") {
+    std::string fname = "tmp/temp_map_bytes.bin";
+    std::string fakeData = "0123456789";
+    createTempFile(fname, fakeData);
+
+    resourceManager.clear();
+    resourceManager.addFile(fname, "./tmp");
+    REQUIRE(resourceManager.resources.size() == 1);
+    REQUIRE(resourceManager.buildMap(0, 0) == true);
+
+    REQUIRE(resourceManager.pages.size() == 1);
+    // map table at 0x10: WORD count, then GROUP { WORD offset, BYTE segment,
+    // WORD size } per resource. mapSize = 0x10 + 2 + 1*5 = 0x17.
+    CHECK(resourceManager.pages[0][0x10] == 0x01);  // resource count low
+    CHECK(resourceManager.pages[0][0x11] == 0x00);  // resource count high
+    CHECK(resourceManager.pages[0][0x12] == 0x17);  // offset low
+    CHECK(resourceManager.pages[0][0x13] == 0x00);  // offset high
+    CHECK(resourceManager.pages[0][0x14] == 0x00);  // segment
+    CHECK(resourceManager.pages[0][0x15] == 0x0A);  // size low (10)
+    CHECK(resourceManager.pages[0][0x16] == 0x00);  // size high
+    // resource data copied right after the map table
+    CHECK(resourceManager.pages[0][0x17] == '0');
+    CHECK(resourceManager.pages[0][0x17 + 9] == '9');
+    // packed == unpacked for a raw blob, so the compression rate is 0
+    CHECK(resourceManager.resourcesPackedSize ==
+          resourceManager.resourcesUnpackedSize);
+    CHECK(resourceManager.packedRate == 0.0f);
+
+    deleteTempFile(fname);
+  }
 }
 
 // ------------------------------------------------------------------
@@ -302,6 +333,19 @@ TEST_SUITE("ResourceReader suite") {
     deleteTempFile(fname);
   }
 
+  TEST_CASE("ResourceTxtReader computes exact unpacked size") {
+    std::string fname = "tmp/temp_txt_size.txt";
+    createTempFile(fname, "Hello World\nLine2\nLine3");
+
+    ResourceTxtReader reader(fname);
+    CHECK(reader.load() == true);
+    // header (1) + (11+1) + (5+1) + (5+1) = 25
+    CHECK(reader.unpackedSize == 25);
+    CHECK(reader.packedSize == 25);
+
+    deleteTempFile(fname);
+  }
+
   TEST_CASE("ResourceTxtReader truncates long lines to 255 characters") {
     std::string fname = "tmp/temp_long.txt";
     std::string longLine(300, 'x');
@@ -445,6 +489,45 @@ TEST_SUITE("ResourceReader suite") {
     CHECK(reader1.packedSize == reader2.packedSize);
     CHECK(reader1.unpackedSize == reader2.unpackedSize);
     CHECK(reader1.unpackedSize > 0);
+
+    deleteTempFile(fname);
+  }
+
+  TEST_CASE("ResourceSprReader loads msx2 sprite with mixed hex digits") {
+    std::string fname = "tmp/temp_spr_msx2.spr";
+    std::string spr = "!type\nmsx2\n#Slot 0\n";
+    for (int i = 0; i < 16; i++) {
+      spr += "123456789abcdef0\n";
+    }
+    createTempFile(fname, spr);
+
+    ResourceSprReader reader(fname);
+    CHECK_VALID_READER(reader);
+    CHECK(reader.unpackedSize > 0);
+
+    deleteTempFile(fname);
+  }
+
+  TEST_CASE("ResourceSprReader loads multiple sprite slots") {
+    std::string fname = "tmp/temp_spr_multi.spr";
+    std::string spr = "!type\nmsx1\n#Slot 0\n";
+    for (int i = 0; i < 16; i++) spr += "FFFFFFFFFFFFFFFF\n";
+    spr += "#Slot 1\n";
+    for (int i = 0; i < 16; i++) spr += "0000000000000000\n";
+    createTempFile(fname, spr);
+
+    ResourceSprReader reader(fname);
+    CHECK_VALID_READER(reader);
+
+    deleteTempFile(fname);
+  }
+
+  TEST_CASE("ResourceSprReader rejects unknown sprite type") {
+    std::string fname = "tmp/temp_spr_badtype.spr";
+    createTempFile(fname, "!type\nmsx9\n#Slot 0\n");
+
+    ResourceSprReader reader(fname);
+    CHECK(reader.load() == false);
 
     deleteTempFile(fname);
   }

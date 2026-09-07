@@ -78,6 +78,37 @@ static int compiledCodeSize(const std::string& filename,
   return ok ? compiler->getCodeSize() : -1;
 }
 
+static std::string compiledCodeHex(const std::string& filename,
+                                    const std::string& program) {
+  const std::string path = createTempBas(filename, program);
+
+  shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
+  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Parser> parser = make_shared<Parser>();
+
+  bool ok = false;
+  if (lexer->load(path) && lexer->evaluate() && parser->evaluate(lexer)) {
+    ok = compiler->build(parser);
+  }
+
+  std::remove(path.c_str());
+
+  if (!ok) return std::string();
+
+  int n = compiler->getCodeSize();
+  std::vector<unsigned char> buffer(n);
+  compiler->write(buffer.data(), 0);
+
+  std::string out;
+  char byte[4];
+  for (int i = 0; i < n; i++) {
+    snprintf(byte, sizeof(byte), "%02X", buffer[i]);
+    out += byte;
+  }
+  return out;
+}
+
 static shared_ptr<CompilerContext> createGraphicsContext() {
   shared_ptr<CpuWorkspaceContext> workspace =
       make_shared<CpuWorkspaceContext>(COMPILE_CODE_SIZE, COMPILE_RAM_SIZE,
@@ -1051,6 +1082,33 @@ TEST_SUITE("CompilerGraphicsOmittedArguments") {
     CHECK(null_src_x != null_dst_x);
   }
 
+  TEST_CASE("COPY each omitted parameter reaches its null branch") {
+    int full = compiledCodeSize(
+        "gfx_copy_a.bas", "10 COPY (1,5)-(2,6) TO (3,7),4,5\n20 END\n");
+    int null_src_y = compiledCodeSize(
+        "gfx_copy_b.bas", "10 COPY (1,)-(2,6) TO (3,7),4,5\n20 END\n");
+    int null_dst_x = compiledCodeSize(
+        "gfx_copy_c.bas", "10 COPY (1,5)-(2,6) TO (,7),4,5\n20 END\n");
+    int null_dst_y = compiledCodeSize(
+        "gfx_copy_d.bas", "10 COPY (1,5)-(2,6) TO (3,),4,5\n20 END\n");
+    int null_page = compiledCodeSize(
+        "gfx_copy_e.bas", "10 COPY (1,5)-(2,6) TO (3,7),,5\n20 END\n");
+    int null_op = compiledCodeSize(
+        "gfx_copy_f.bas", "10 COPY (1,5)-(2,6) TO (3,7),4,\n20 END\n");
+
+    CHECK(full > 0);
+    CHECK(null_src_y > 0);
+    CHECK(null_dst_x > 0);
+    CHECK(null_dst_y > 0);
+    CHECK(null_page > 0);
+    CHECK(null_op > 0);
+    CHECK(full != null_src_y);
+    CHECK(full != null_dst_x);
+    CHECK(full != null_dst_y);
+    CHECK(full != null_page);
+    CHECK(full != null_op);
+  }
+
   TEST_CASE("LINE omitted coordinates reach the null branch") {
     int plain =
         compiledCodeSize("gfx_null_j.bas", "10 LINE (1,5)-(2,6)\n20 END\n");
@@ -1082,6 +1140,33 @@ TEST_SUITE("CompilerGraphicsOmittedArguments") {
     CHECK(with_coord != null_x);
   }
 
+  TEST_CASE("CIRCLE each omitted parameter reaches its null branch") {
+    int full = compiledCodeSize(
+        "gfx_c0.bas", "10 CIRCLE (1,5),2,1,2,3,4\n20 END\n");
+    int null_radius = compiledCodeSize(
+        "gfx_c2.bas", "10 CIRCLE (1,5),,1,2,3,4\n20 END\n");
+    int null_color = compiledCodeSize(
+        "gfx_c3.bas", "10 CIRCLE (1,5),2,,2,3,4\n20 END\n");
+    int null_start = compiledCodeSize(
+        "gfx_c4.bas", "10 CIRCLE (1,5),2,1,,3,4\n20 END\n");
+    int null_end = compiledCodeSize(
+        "gfx_c5.bas", "10 CIRCLE (1,5),2,1,2,,4\n20 END\n");
+    int null_aspect = compiledCodeSize(
+        "gfx_c6.bas", "10 CIRCLE (1,5),2,1,2,3,\n20 END\n");
+
+    CHECK(full > 0);
+    CHECK(null_radius > 0);
+    CHECK(null_color > 0);
+    CHECK(null_start > 0);
+    CHECK(null_end > 0);
+    CHECK(null_aspect > 0);
+    CHECK(full != null_radius);
+    CHECK(full != null_color);
+    CHECK(full != null_start);
+    CHECK(full != null_end);
+    CHECK(full != null_aspect);
+  }
+
   TEST_CASE("PUT SPRITE omitted sprite and coordinates reach null branches") {
     int plain = compiledCodeSize(
         "gfx_null_q.bas", "10 PUT SPRITE 0,(1,2),15,0\n20 END\n");
@@ -1097,6 +1182,37 @@ TEST_SUITE("CompilerGraphicsOmittedArguments") {
     CHECK(plain != null_coord_x);
   }
 
+  TEST_CASE("PUT SPRITE each omitted parameter reaches its null branch") {
+    int full = compiledCodeSize(
+        "gfx_put_a.bas", "10 PUT SPRITE 0,(1,2),15,0\n20 END\n");
+    int null_sprite = compiledCodeSize(
+        "gfx_put_b.bas", "10 PUT SPRITE ,(1,2),15,0\n20 END\n");
+    int null_y = compiledCodeSize(
+        "gfx_put_c.bas", "10 PUT SPRITE 0,(1,),15,0\n20 END\n");
+    int null_step_x = compiledCodeSize(
+        "gfx_put_d.bas", "10 PUT SPRITE 0,STEP(,5),15,0\n20 END\n");
+    int null_step_y = compiledCodeSize(
+        "gfx_put_e.bas", "10 PUT SPRITE 0,STEP(1,),15,0\n20 END\n");
+    int null_color = compiledCodeSize(
+        "gfx_put_f.bas", "10 PUT SPRITE 0,(1,2),,0\n20 END\n");
+    int null_pattern = compiledCodeSize(
+        "gfx_put_g.bas", "10 PUT SPRITE 0,(1,2),15,\n20 END\n");
+
+    CHECK(full > 0);
+    CHECK(null_sprite > 0);
+    CHECK(null_y > 0);
+    CHECK(null_step_x > 0);
+    CHECK(null_step_y > 0);
+    CHECK(null_color > 0);
+    CHECK(null_pattern > 0);
+    CHECK(full != null_sprite);
+    CHECK(full != null_y);
+    CHECK(full != null_step_x);
+    CHECK(full != null_step_y);
+    CHECK(full != null_color);
+    CHECK(full != null_pattern);
+  }
+
   TEST_CASE("COLOR RGB argument counts compile") {
     int rgb1 =
         compiledCodeSize("gfx_null_t.bas", "10 COLOR RGB 1\n20 END\n");
@@ -1108,6 +1224,52 @@ TEST_SUITE("CompilerGraphicsOmittedArguments") {
     CHECK(rgb1 != rgb2);
   }
 
+  TEST_CASE("COLOR RGB sub-command argument counts emit distinct code") {
+    int rgb2 =
+        compiledCodeSize("gfx_rgb_2.bas", "10 COLOR=(1,2)\n20 END\n");
+    int rgb3 =
+        compiledCodeSize("gfx_rgb_3.bas", "10 COLOR=(1,2,3)\n20 END\n");
+    int rgb4 =
+        compiledCodeSize("gfx_rgb_4.bas", "10 COLOR=(1,2,3,4)\n20 END\n");
+
+    CHECK(rgb2 > 0);
+    CHECK(rgb3 > 0);
+    CHECK(rgb4 > 0);
+    CHECK(rgb2 != rgb3);
+    CHECK(rgb3 != rgb4);
+  }
+
+  TEST_CASE("COLOR RGB sub-command null parameters") {
+    int full =
+        compiledCodeSize("gfx_rgbn_f.bas", "10 COLOR=(1,2,3)\n20 END\n");
+    int null_mid =
+        compiledCodeSize("gfx_rgbn_m.bas", "10 COLOR=(1,,3)\n20 END\n");
+    int null_first =
+        compiledCodeSize("gfx_rgbn_0.bas", "10 COLOR=(,2,3)\n20 END\n");
+
+    CHECK(full > 0);
+    CHECK(null_mid > 0);
+    CHECK(null_first > 0);
+    CHECK(full != null_mid);
+    CHECK(full != null_first);
+  }
+
+  TEST_CASE("COLOR keyword sub-commands emit distinct code") {
+    int newc = compiledCodeSize("gfx_color_new.bas", "10 COLOR NEW\n20 END\n");
+    int restore =
+        compiledCodeSize("gfx_color_restore.bas", "10 COLOR RESTORE\n20 END\n");
+    int sprite = compiledCodeSize(
+        "gfx_color_sprite.bas", "10 COLOR SPRITE(1)=2\n20 END\n");
+    int sprite_s = compiledCodeSize(
+        "gfx_color_sprites.bas", "10 COLOR SPRITE$(1)=2\n20 END\n");
+
+    CHECK(newc > 0);
+    CHECK(restore > 0);
+    CHECK(sprite > 0);
+    CHECK(sprite_s > 0);
+    CHECK(sprite != sprite_s);
+  }
+
   TEST_CASE("COLOR null middle argument compiles and emits less code") {
     int plain =
         compiledCodeSize("gfx_null_w.bas", "10 COLOR 1,2,3\n20 END\n");
@@ -1116,6 +1278,65 @@ TEST_SUITE("CompilerGraphicsOmittedArguments") {
     CHECK(plain > 0);
     CHECK(null_mid > 0);
     CHECK(null_mid < plain);
+  }
+}
+
+TEST_SUITE("CompilerGraphicsParameterCounts") {
+  TEST_CASE("PSET operator code zero (PSET mode) is accepted") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "pset_op0.bas", "10 PSET (1,1),2,PSET\n20 END\n", &errors);
+    CHECK(ok == true);
+    CHECK(errors.empty());
+  }
+
+  TEST_CASE("LINE operator code zero (PSET mode) is accepted") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "line_op0.bas", "10 LINE (0,0)-(1,1),15,PSET\n20 END\n", &errors);
+    CHECK(ok == true);
+    CHECK(errors.empty());
+  }
+
+  TEST_CASE("COPY operator code zero (PSET mode) is accepted") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "copy_op0.bas", "10 COPY (0,0)-(1,1) TO (2,2),PSET\n20 END\n", &errors);
+    CHECK(ok == true);
+    CHECK(errors.empty());
+  }
+
+  TEST_CASE("LINE box and fill operators emit distinct code bytes") {
+    std::string plain =
+        compiledCodeHex("gfx_pc_a.bas", "10 LINE (0,0)-(1,1),15\n20 END\n");
+    std::string box =
+        compiledCodeHex("gfx_pc_b.bas", "10 LINE (0,0)-(1,1),15,B\n20 END\n");
+    std::string filled =
+        compiledCodeHex("gfx_pc_c.bas", "10 LINE (0,0)-(1,1),15,BF\n20 END\n");
+    std::string orm =
+        compiledCodeHex("gfx_pc_h.bas", "10 LINE (0,0)-(1,1),15,OR\n20 END\n");
+    std::string psetm =
+        compiledCodeHex("gfx_pc_i.bas", "10 LINE (0,0)-(1,1),15,PSET\n20 END\n");
+
+    CHECK(!plain.empty());
+    CHECK(!box.empty());
+    CHECK(!filled.empty());
+    CHECK(!orm.empty());
+    CHECK(!psetm.empty());
+    CHECK(plain != box);
+    CHECK(box != filled);
+    CHECK(psetm == plain);
+    CHECK(orm == filled);
+  }
+
+  TEST_CASE("LINE three-parameter identifier reaches the box branch") {
+    std::string box =
+        compiledCodeHex("gfx_pc_j.bas", "10 LINE (0,0)-(1,1),B\n20 END\n");
+    std::string filled =
+        compiledCodeHex("gfx_pc_k.bas", "10 LINE (0,0)-(1,1),BF\n20 END\n");
+    CHECK(!box.empty());
+    CHECK(!filled.empty());
+    CHECK(box != filled);
   }
 }
 

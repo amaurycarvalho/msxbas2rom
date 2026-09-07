@@ -137,6 +137,39 @@ TEST_SUITE("Domain") {
 
     std::string overridden = lex.toString(1);
     CHECK(overridden.find(" -->") != std::string::npos);
+
+    std::string zero = lex.toString(0);
+    CHECK(zero.find("-->") == 0);
+  }
+
+  TEST_CASE("TagNode toString appends newline only when missing") {
+    TagNode tag;
+    tag.name = "10";
+    tag.value = "10";
+
+    LexerLineContext line;
+    line.lineText = "10 PRINT";
+    tag.lexerLine = make_shared<LexerLineContext>(line);
+    std::string t1 = tag.toString();
+    CHECK(t1.find("10 PRINT\n") != std::string::npos);
+
+    LexerLineContext line2;
+    line2.lineText = "10 PRINT\n";
+    tag.lexerLine = make_shared<LexerLineContext>(line2);
+    std::string t2 = tag.toString();
+    CHECK(t2.find("10 PRINT\n\n") == std::string::npos);
+  }
+
+  TEST_CASE("LexerLineContext getLastLexeme returns last lexeme") {
+    LexerLineContext line;
+    line.addLexeme(make_shared<Lexeme>(Lexeme::type_literal,
+                                       Lexeme::subtype_numeric, "1"));
+    line.addLexeme(make_shared<Lexeme>(Lexeme::type_literal,
+                                       Lexeme::subtype_numeric, "2"));
+
+    shared_ptr<Lexeme> last = line.getLastLexeme();
+    REQUIRE(last.get() != nullptr);
+    CHECK(last->value == "2");
   }
 
   TEST_CASE("Lexeme isKeyword/isSeparator/isOperator compare by type") {

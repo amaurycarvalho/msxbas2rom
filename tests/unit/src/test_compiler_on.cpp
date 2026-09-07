@@ -58,6 +58,56 @@ static bool compileStatementProgram(const std::string& filename,
   return ok;
 }
 
+static int compiledCodeSize(const std::string& filename,
+                            const std::string& program) {
+  const std::string path = createTempBas(filename, program);
+
+  shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
+  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Parser> parser = make_shared<Parser>();
+
+  bool ok = false;
+  if (lexer->load(path) && lexer->evaluate() && parser->evaluate(lexer)) {
+    ok = compiler->build(parser);
+  }
+
+  std::remove(path.c_str());
+
+  return ok ? compiler->getCodeSize() : -1;
+}
+
+static std::string compiledCodeHex(const std::string& filename,
+                                   const std::string& program) {
+  const std::string path = createTempBas(filename, program);
+
+  shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
+  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Parser> parser = make_shared<Parser>();
+
+  bool ok = false;
+  if (lexer->load(path) && lexer->evaluate() && parser->evaluate(lexer)) {
+    ok = compiler->build(parser);
+  }
+
+  std::remove(path.c_str());
+
+  if (!ok) return std::string();
+
+  int n = compiler->getCodeSize();
+  std::vector<unsigned char> buffer(n);
+  compiler->write(buffer.data(), 0);
+
+  std::string out;
+  char byte[4];
+  for (int i = 0; i < n; i++) {
+    snprintf(byte, sizeof(byte), "%02X", buffer[i]);
+    out += byte;
+  }
+  return out;
+}
+
 static shared_ptr<CompilerContext> createOnContext() {
   shared_ptr<CpuWorkspaceContext> workspace = make_shared<CpuWorkspaceContext>(
       COMPILE_CODE_SIZE, COMPILE_RAM_SIZE, def_RAM_BOTTOM);
@@ -122,6 +172,31 @@ TEST_SUITE("CompilerOnStatementStrategy") {
         CHECK(errors.empty());
       }
     }
+  }
+
+  TEST_CASE("ON handlers literal vs dummy emit distinct code sizes") {
+    std::string literal = compiledCodeHex(
+        "on_hand_lit.bas", "10 ON KEY GOSUB 100,200\n20 END\n100 RETURN\n200 RETURN\n");
+    std::string dummy = compiledCodeHex(
+        "on_hand_dummy.bas",
+        "10 ON KEY GOSUB \"X\",\"Y\"\n20 END\n100 RETURN\n200 RETURN\n");
+
+    CHECK(!literal.empty());
+    CHECK(!dummy.empty());
+    CHECK(literal != dummy);
+  }
+
+  TEST_CASE("ON GOTO single and multi-digit targets emit distinct code") {
+    std::string single = compiledCodeHex(
+        "on_goto_1.bas", "2 END\n3 END\n10 ON 1 GOTO 2,3\n20 END\n");
+    std::string multi = compiledCodeHex(
+        "on_goto_2.bas", "50 END\n60 END\n10 ON 1 GOTO 50,60\n20 END\n");
+    int expr = compiledCodeSize(
+        "on_goto_3.bas", "50 END\n60 END\n10 A=1\n20 ON A GOTO 50,60\n30 END\n");
+
+    CHECK(!single.empty());
+    CHECK(!multi.empty());
+    CHECK(expr > 0);
   }
 
   TEST_CASE("ON statement with MegaROM option compiles") {

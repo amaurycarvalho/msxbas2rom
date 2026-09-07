@@ -76,6 +76,25 @@ static bool compileStatementProgram(const std::string& filename,
   return ok;
 }
 
+static int compiledCodeSize(const std::string& filename,
+                            const std::string& program) {
+  const std::string path = createTempBas(filename, program);
+
+  shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
+  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Parser> parser = make_shared<Parser>();
+
+  bool ok = false;
+  if (lexer->load(path) && lexer->evaluate() && parser->evaluate(lexer)) {
+    ok = compiler->build(parser);
+  }
+
+  std::remove(path.c_str());
+
+  return ok ? compiler->getCodeSize() : -1;
+}
+
 TEST_SUITE("CompilerStringFunctions") {
   TEST_CASE("MID$ function variants compile") {
     SUBCASE("MID$ with two arguments") {
@@ -223,6 +242,107 @@ TEST_SUITE("CompilerFunctionNumericSubtypes") {
         }
       }
     }
+  }
+
+  TEST_CASE("Graphics and I/O functions emit distinct code by subtype") {
+    struct FnCase {
+      const char* name;
+      const char* call;
+    };
+
+    const FnCase cases[] = {
+        {"SIN", "SIN"}, {"BASE", "BASE"}, {"PDL", "PDL"},
+        {"LOC", "LOC"}, {"PSG", "PSG"},
+    };
+
+    for (const auto& c : cases) {
+      SUBCASE(c.name) {
+        int integer = compiledCodeSize(
+            "fn_sub_int.bas", "10 A=" + std::string(c.call) + "(2)\n20 END\n");
+        int single = compiledCodeSize(
+            "fn_sub_sng.bas", "10 A=" + std::string(c.call) + "(2.5)\n20 END\n");
+        CHECK(integer > 0);
+        CHECK(single > 0);
+        CHECK(integer != single);
+      }
+    }
+  }
+
+  TEST_CASE("COLLISION argument subtype combinations emit distinct code") {
+    int none =
+        compiledCodeSize("fn_col_none.bas", "10 A=COLLISION\n20 END\n");
+    int one =
+        compiledCodeSize("fn_col_one.bas", "10 A=COLLISION(1)\n20 END\n");
+    int int_int =
+        compiledCodeSize("fn_col_ii.bas", "10 A=COLLISION(1,2)\n20 END\n");
+    int sng_int =
+        compiledCodeSize("fn_col_si.bas", "10 A=COLLISION(1.5,2)\n20 END\n");
+    int dbl_int =
+        compiledCodeSize("fn_col_di.bas", "10 A=COLLISION(1.5#,2)\n20 END\n");
+    int int_sng =
+        compiledCodeSize("fn_col_is.bas", "10 A=COLLISION(1,2.5)\n20 END\n");
+    int int_dbl = compiledCodeSize(
+        "fn_col_id.bas", "10 A=COLLISION(1,2.5#)\n20 END\n");
+    int sng_sng = compiledCodeSize(
+        "fn_col_ss.bas", "10 A=COLLISION(1.5,2.5)\n20 END\n");
+
+    CHECK(none > 0);
+    CHECK(one > 0);
+    CHECK(int_int > 0);
+    CHECK(sng_int > 0);
+    CHECK(dbl_int > 0);
+    CHECK(int_sng > 0);
+    CHECK(int_dbl > 0);
+    CHECK(sng_sng > 0);
+
+    CHECK(none != one);
+    CHECK(one != int_int);
+    CHECK(int_int != sng_int);
+    CHECK(int_int != dbl_int);
+    CHECK(int_int != int_sng);
+    CHECK(int_int != int_dbl);
+    CHECK(sng_int != int_sng);
+    CHECK(sng_int == dbl_int);  // both cast to numeric
+    CHECK(int_sng == int_dbl);
+  }
+
+  TEST_CASE("CSRLIN and FRE argument counts") {
+    int csrlin0 =
+        compiledCodeSize("fn_csr0.bas", "10 A=CSRLIN\n20 END\n");
+    int csrlin1 =
+        compiledCodeSize("fn_csr1.bas", "10 A=CSRLIN(0)\n20 END\n");
+    int csrlin2 =
+        compiledCodeSize("fn_csr2.bas", "10 A=CSRLIN(0,1)\n20 END\n");
+    int fre1 = compiledCodeSize("fn_fre1.bas", "10 A=FRE(0)\n20 END\n");
+    int fre2 = compiledCodeSize("fn_fre2.bas", "10 A=FRE(0,1)\n20 END\n");
+
+    CHECK(csrlin0 > 0);
+    CHECK(csrlin1 > 0);
+    CHECK(csrlin2 == -1);
+    CHECK(fre1 > 0);
+    CHECK(fre2 == -1);
+  }
+
+  TEST_CASE("MAKER TURBO VDP functions compile") {
+    int maker = compiledCodeSize("fn_maker.bas", "10 A=MAKER\n20 END\n");
+    int turbo = compiledCodeSize("fn_turbo.bas", "10 A=TURBO\n20 END\n");
+    int vdp = compiledCodeSize("fn_vdp.bas", "10 A=VDP(1)\n20 END\n");
+
+    CHECK(maker > 0);
+    CHECK(turbo > 0);
+    CHECK(vdp > 0);
+  }
+
+  TEST_CASE("USING$ literal vs variable format emit distinct code") {
+    int literal = compiledCodeSize(
+        "fn_using_lit.bas", "10 PRINT USING$(\"###\", 12.5)\n20 END\n");
+    int variable = compiledCodeSize(
+        "fn_using_var.bas",
+        "10 A$=\"###\"\n20 PRINT USING$(A$, 12.5)\n30 END\n");
+
+    CHECK(literal > 0);
+    CHECK(variable > 0);
+    CHECK(literal != variable);
   }
 
   TEST_CASE("String functions compile with numeric/single/double lengths") {
