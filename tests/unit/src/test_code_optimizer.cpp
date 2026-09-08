@@ -222,6 +222,29 @@ TEST_SUITE("CompilerCodeOptimizer") {
     CHECK(code[0] == 0xCD);  // call
     CHECK(code[3] == 0xC4);  // call nz
   }
+
+  TEST_CASE("Pop-de optimization shifts subsequent fix addresses") {
+    auto ctx = makeOptimizerContext();
+    auto& cpu = *ctx->cpu;
+    cpu.addLdHL(0x1234);
+    cpu.addPushHL();
+    cpu.addLdHL(0x5678);
+
+    auto sym = make_shared<SymbolNode>();
+    sym->lexeme = make_shared<Lexeme>(Lexeme::type_keyword,
+                                      Lexeme::subtype_any, "100");
+    sym->address = 0x1000;
+    auto fix = make_shared<FixNode>();
+    fix->symbol = sym;
+    fix->address = cpu.context->code_pointer;  // after the three instructions
+    fix->step = 0;
+    ctx->fixes.push_back(fix);
+
+    ctx->codeOptimizer->addByteOptimized(0xD1);  // pop de -> reduces code by 1
+
+    CHECK(fix->address == cpu.context->code_pointer);  // shifted down by 1
+    CHECK(ctx->cpu->context->code_size == 6);
+  }
 }
 
 TEST_SUITE("CompilerFixupResolver") {

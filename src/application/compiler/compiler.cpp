@@ -61,6 +61,10 @@ Compiler::Compiler(shared_ptr<ICpuOpcodeWriter> cpu) {
 
 Compiler::~Compiler() = default;
 
+shared_ptr<CompilerContext> Compiler::getContext() const {
+  return context;
+}
+
 int Compiler::getCodeSize() const {
   return context->cpu->context->code_size;
 }

@@ -18,6 +18,7 @@ The cross-segment symbol fixup performed during code output SHALL have tests exe
 - **THEN** the corresponding rewrite branch SHALL be executed
 - **THEN** the emitted byte sequence SHALL differ from the unrewritten sequence
 - **THEN** the arithmetic and boundary mutants in that branch SHALL be killed
+- **AND** the expected byte assertions SHALL assert Z80 opcode constants and compiler-owned layout arithmetic literally, while kernel-resolved addresses (`mr_call_target`/`mr_jump_target`/`mr_get_data_target`) SHALL be derived at test runtime from `bin_header_bin[DISP_MR_* *2]` rather than hardcoded, so the test does not break when the kernel assembly is reassembled
 
 ### Requirement: Complex binary readers cover every boundary and error path
 

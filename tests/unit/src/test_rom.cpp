@@ -11,12 +11,15 @@
 
 #include "build_options.h"
 #include "compiler.h"
+#include "compiler_hooks.h"
 #include "doctest/doctest.h"
 #include "lexer.h"
 #include "logger.h"
 #include "parser.h"
 #include "rom.h"
 #include "z80.h"
+
+extern unsigned char bin_header_bin[];
 
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {
@@ -167,6 +170,48 @@ TEST_SUITE("Rom") {
     std::remove(opts->outputFilename.c_str());
   }
 
+  TEST_CASE("Konami4 patches exact bytes at kernel-derived offsets") {
+    const std::string filename =
+        createTempBas("rom_konami4_exact.bas", "10 PRINT \"HI\"\n20 END\n");
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->compileMode = BuildOptions::CompileMode::Konami4;
+    opts->megaROM = true;
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+
+    REQUIRE(compileWithOpts(filename, compiler, opts) == true);
+
+    shared_ptr<Rom> rom = make_shared<Rom>();
+    REQUIRE(rom->build(compiler) == true);
+
+    std::ifstream out(opts->outputFilename, std::ios::binary);
+    REQUIRE(out.good());
+
+    // fixKonamiMapper writes newByte at page[0][kernelAddr - 0x4000 + 2].
+    auto patchByte = [&](int dispIndex) -> unsigned char {
+      int tableAddr = def_wrapper_routines_map_table + dispIndex * 2;
+      int kernelAddr =
+          bin_header_bin[tableAddr] | (bin_header_bin[tableAddr + 1] << 8);
+      int offset = kernelAddr - 0x4000;
+      unsigned char b = 0;
+      out.seekg(offset + 2, std::ios::beg);
+      out.read(reinterpret_cast<char*>(&b), 1);
+      return b;
+    };
+
+    CHECK(patchByte(DISP_KONAMI_PATCH_SGM_8000) == 0x80);
+    CHECK(patchByte(DISP_KONAMI_PATCH_SGM_A000) == 0xA0);
+    CHECK(patchByte(DISP_KONAMI_PATCH_BUGFIX_6800) == 0x70);
+    CHECK(patchByte(DISP_KONAMI_PATCH_BUGFIX_8000) == 0x80);
+    CHECK(patchByte(DISP_KONAMI_PATCH_VERIFY_RESTORE) == 0x80);
+    out.close();
+
+    std::remove(filename.c_str());
+    std::remove(opts->outputFilename.c_str());
+  }
+
   TEST_CASE("Builds ASCII16 ROM with patched kernel") {
     const std::string filename =
         createTempBas("rom_ascii16.bas", "10 PRINT \"HI\"\n20 END\n");
@@ -187,6 +232,53 @@ TEST_SUITE("Rom") {
     REQUIRE(out.good());
     out.seekg(0, std::ios::end);
     CHECK(out.tellg() > 0);
+    out.close();
+
+    std::remove(filename.c_str());
+    std::remove(opts->outputFilename.c_str());
+  }
+
+  TEST_CASE("ASCII16 patches exact srl-a sequence at kernel-derived offset") {
+    const std::string filename =
+        createTempBas("rom_ascii16_exact.bas", "10 PRINT \"HI\"\n20 END\n");
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->compileMode = BuildOptions::CompileMode::ASCII16;
+    opts->megaROM = true;
+    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
+        make_shared<Z80OpcodeWriter>();
+    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+
+    REQUIRE(compileWithOpts(filename, compiler, opts) == true);
+
+    shared_ptr<Rom> rom = make_shared<Rom>();
+    REQUIRE(rom->build(compiler) == true);
+
+    std::ifstream out(opts->outputFilename, std::ios::binary);
+    REQUIRE(out.good());
+
+    // fixAscii16Mapper writes seq_mr_change_sgm (9 bytes) at
+    // DISP_KONAMI_PATCH_SGM_8000: push af; srl a; ld (0x7000),a; pop af; ret
+    auto readAt = [&](int dispIndex, unsigned char* buf, int n) {
+      int tableAddr = def_wrapper_routines_map_table + dispIndex * 2;
+      int kernelAddr =
+          bin_header_bin[tableAddr] | (bin_header_bin[tableAddr + 1] << 8);
+      int offset = kernelAddr - 0x4000;
+      out.seekg(offset, std::ios::beg);
+      out.read(reinterpret_cast<char*>(buf), n);
+    };
+
+    unsigned char seq[9] = {};
+    readAt(DISP_KONAMI_PATCH_SGM_8000, seq, 9);
+    const unsigned char expected[] = {0xF5, 0xCB, 0x3F, 0x32, 0x00,
+                                      0x70, 0xF1, 0xC9, 0x00};
+    for (int i = 0; i < 9; i++) CHECK(seq[i] == expected[i]);
+
+    unsigned char omsx[3] = {};
+    readAt(DISP_KONAMI_PATCH_OMSX_3, omsx, 3);
+    CHECK(omsx[0] == 0x32);
+    CHECK(omsx[1] == 0xFF);
+    CHECK(omsx[2] == 0x77);
     out.close();
 
     std::remove(filename.c_str());

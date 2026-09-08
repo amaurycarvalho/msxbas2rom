@@ -532,6 +532,104 @@ TEST_SUITE("ResourceReader suite") {
     deleteTempFile(fname);
   }
 
+  // Exact decoded-byte assertions: unpack via a fresh Pletter instance and
+  // compare against the reader's packed output.
+  static void checkSprDecoded(const std::string& fname,
+                              const std::vector<unsigned char>& expected) {
+    ResourceSprReader reader(fname);
+    REQUIRE(reader.load() == true);
+    REQUIRE(reader.unpackedSize == (int)expected.size());
+
+    Pletter pl;
+    std::vector<unsigned char> packed(expected.size() * 2);
+    int bytesPacked = pl.pack(expected.data(), (int)expected.size(), packed.data());
+    REQUIRE(bytesPacked > 0);
+    REQUIRE(reader.packedSize == bytesPacked);
+    REQUIRE(reader.data.size() == 1);
+    REQUIRE((int)reader.data[0].size() == bytesPacked);
+    for (int i = 0; i < bytesPacked; i++) {
+      CHECK(reader.data[0][i] == packed[i]);
+    }
+  }
+
+  TEST_CASE("ResourceSprReader decodes a single MSX1 pixel exactly") {
+    std::string fname = "tmp/temp_spr_decoded.spr";
+    std::string spr = "!type\nmsx1\n#Slot 0\n";
+    spr += "1000000000000000\n";
+    for (int i = 0; i < 15; i++) spr += "................\n";
+    createTempFile(fname, spr);
+
+    // type=0, count=1, 32-byte pattern (plane0 row0 = 0x80), color=1
+    std::vector<unsigned char> expected = {0x00, 0x01};
+    expected.push_back(0x80);
+    for (int i = 0; i < 31; i++) expected.push_back(0x00);
+    expected.push_back(0x01);
+
+    checkSprDecoded(fname, expected);
+    deleteTempFile(fname);
+  }
+
+  TEST_CASE("ResourceSprReader decodes uppercase and lowercase hex equally") {
+    std::vector<unsigned char> expected = {0x00, 0x01};
+    expected.push_back(0x80);
+    for (int i = 0; i < 31; i++) expected.push_back(0x00);
+    expected.push_back(0x0A);  // color 10
+
+    std::string upper = "!type\nmsx1\n#Slot 0\nA000000000000000\n";
+    for (int i = 0; i < 15; i++) upper += "................\n";
+    std::string lower = "!type\nmsx1\n#Slot 0\na000000000000000\n";
+    for (int i = 0; i < 15; i++) lower += "................\n";
+
+    std::string f1 = "tmp/temp_spr_upper.spr";
+    createTempFile(f1, upper);
+    checkSprDecoded(f1, expected);
+    deleteTempFile(f1);
+
+    std::string f2 = "tmp/temp_spr_lower.spr";
+    createTempFile(f2, lower);
+    checkSprDecoded(f2, expected);
+    deleteTempFile(f2);
+  }
+
+  TEST_CASE("ResourceSprReader decodes pixels into all four quadrants") {
+    std::string fname = "tmp/temp_spr_quad.spr";
+    std::string spr = "!type\nmsx1\n#Slot 0\n";
+    // Pixels at x=0 and x=8 on row 0 and row 8 -> planes 0/1/2/3 row 0.
+    spr += "1000000010000000\n";
+    for (int i = 0; i < 7; i++) spr += "................\n";
+    spr += "1000000010000000\n";
+    for (int i = 0; i < 7; i++) spr += "................\n";
+    createTempFile(fname, spr);
+
+    std::vector<unsigned char> expected = {0x00, 0x01};
+    for (int plane = 0; plane < 4; plane++) {
+      expected.push_back(0x80);
+      for (int i = 0; i < 7; i++) expected.push_back(0x00);
+    }
+    expected.push_back(0x01);
+
+    checkSprDecoded(fname, expected);
+    deleteTempFile(fname);
+  }
+
+  TEST_CASE("ResourceSprReader caps the sprite pattern table at 64 sprites") {
+    std::string fname = "tmp/temp_spr_64.spr";
+    std::string spr = "!type\nmsx1\n";
+    for (int slot = 0; slot < 70; slot++) {
+      spr += "#Slot " + std::to_string(slot) + "\n";
+      spr += "1000000000000000\n";
+      for (int i = 0; i < 15; i++) spr += "................\n";
+    }
+    createTempFile(fname, spr);
+
+    ResourceSprReader reader(fname);
+    REQUIRE(reader.load() == true);
+    // 64 sprites * 32 pattern bytes + 64 color bytes + 2 header bytes.
+    CHECK(reader.unpackedSize == 2 + 64 * 32 + 64);
+
+    deleteTempFile(fname);
+  }
+
   // ------------------------------------------------------------------
   // ResourceAkmReader (AKM custom format stub)
   TEST_CASE("ResourceAkmReader loads AKM file") {

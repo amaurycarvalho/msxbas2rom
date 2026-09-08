@@ -256,7 +256,7 @@ $(MUTATION_BINDIR)/test_unit: $(OBJ_MUTATION) $(OBJ_MUTATION_TEST) | $(MUTATION_
 mutation-build: $(MUTATION_OUT)
 	@echo "✅ Mutation test binary ready: $(MUTATION_OUT)"
 
-mutation-run:
+mutation-run: mutation-build
 	@echo "🔄 Running mull-runner over the doctest unit suite..."
 	@mkdir -p tests/unit/tmp
 	@cd tests/unit && MULL_CONFIG="$(CURDIR)/mull.yml" mull-runner-18 \

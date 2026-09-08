@@ -12,6 +12,7 @@
 
 #include "action_node.h"
 #include "build_options.h"
+#include "code_node.h"
 #include "compiler.h"
 #include "compiler_cmd_handler_factory.h"
 #include "compiler_context.h"
@@ -20,12 +21,18 @@
 #include "compiler_statement_strategy_factory.h"
 #include "cpu_workspace_context.h"
 #include "doctest/doctest.h"
+#include "fix_node.h"
 #include "lexeme.h"
 #include "lexer.h"
 #include "logger.h"
 #include "parser.h"
 #include "resources.h"
+#include "symbol_export_context.h"
+#include "symbol_manager.h"
+#include "symbol_node.h"
 #include "z80.h"
+
+extern unsigned char bin_header_bin[];
 
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {
@@ -445,6 +452,357 @@ TEST_SUITE("Compiler") {
     CHECK(written > 0x4000);
 
     std::remove(filename.c_str());
+  }
+
+  // White-box MegaROM relocation tests: seed a single cross-segment fix with a
+  // crafted opcode at dest[address-1] and assert the exact emitted bytes. The
+  // kernel-resolved MR targets are derived from bin_header_bin at runtime, so a
+  // kernel reassembly does not break these assertions (Decision 11).
+  struct RelocationHarness {
+    shared_ptr<Compiler> compiler;
+    shared_ptr<CompilerContext> ctx;
+    int mr_call_target;
+    int mr_jump_target;
+    int mr_get_data_target;
+  };
+
+  static RelocationHarness makeRelocationHarness() {
+    RelocationHarness h;
+    h.mr_call_target =
+        bin_header_bin[DISP_MR_CALL * 2] | (bin_header_bin[DISP_MR_CALL * 2 + 1] << 8);
+    h.mr_jump_target =
+        bin_header_bin[DISP_MR_JUMP * 2] | (bin_header_bin[DISP_MR_JUMP * 2 + 1] << 8);
+    h.mr_get_data_target =
+        bin_header_bin[DISP_MR_GET_DATA * 2] | (bin_header_bin[DISP_MR_GET_DATA * 2 + 1] << 8);
+
+    shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
+    opts->megaROM = true;
+
+    shared_ptr<Z80OpcodeWriter> cpu = make_shared<Z80OpcodeWriter>();
+    h.compiler = make_shared<Compiler>(cpu);
+    h.ctx = h.compiler->getContext();
+    h.ctx->opts = opts;
+    return h;
+  }
+
+  // Primes the emitted-code buffer with a realistic fixup preamble around the
+  // fix and seeds one code item plus one non-identifier fix.
+  static void seedFix(RelocationHarness& h, unsigned char opcode,
+                      int fix_address, int symbol_address) {
+    auto& code = h.ctx->cpu->context->code;
+    int n = fix_address + 2;
+    code.assign(n, 0);
+
+    // Matches CompilerFixupResolver::addFix preamble layout.
+    code[fix_address - 10] = 0x00;  // nop
+    code[fix_address - 9] = 0x00;   // nop
+    code[fix_address - 8] = 0x08;   // ex af,af'
+    code[fix_address - 7] = 0xD9;   // exx
+    code[fix_address - 6] = 0x3E;   // ld a,<segm>
+    code[fix_address - 5] = 0x00;   // segm (patched by write)
+    code[fix_address - 4] = 0x21;   // ld hl,<address>
+    code[fix_address - 3] = 0x00;   // addr lo (patched by write)
+    code[fix_address - 2] = 0x00;   // addr hi (patched by write)
+    code[fix_address - 1] = opcode;
+    code[fix_address] = 0x00;
+    code[fix_address + 1] = 0x00;
+    h.ctx->cpu->context->code_size = n;
+
+    auto item = make_shared<CodeNode>();
+    item->name = "FIX";
+    item->start = 0;
+    item->length = n;
+    item->is_code = true;
+    auto& codeList = h.ctx->symbolManager->context->codeList;
+    codeList.clear();
+    codeList.push_back(item);
+
+    auto fix = make_shared<FixNode>();
+    auto sym = make_shared<SymbolNode>();
+    sym->lexeme =
+        make_shared<Lexeme>(Lexeme::type_keyword, Lexeme::subtype_any, "100");
+    sym->address = symbol_address;
+    fix->symbol = sym;
+    fix->address = fix_address;
+    fix->step = 0;
+    h.ctx->fixes.clear();
+    h.ctx->fixes.push_back(fix);
+  }
+
+  // Seeds one code item per length (contiguous code) and no fixes.
+  static void seedCodeItems(RelocationHarness& h, std::vector<int> lengths) {
+    auto& code = h.ctx->cpu->context->code;
+    int total = 0;
+    for (int l : lengths) total += l;
+    code.assign(total, 0);
+
+    int start = 0;
+    auto& codeList = h.ctx->symbolManager->context->codeList;
+    codeList.clear();
+    for (int l : lengths) {
+      auto item = make_shared<CodeNode>();
+      item->name = "ITEM";
+      item->start = start;
+      item->length = l;
+      item->is_code = true;
+      codeList.push_back(item);
+      start += l;
+    }
+    h.ctx->fixes.clear();
+    h.ctx->cpu->context->code_size = total;
+  }
+
+  TEST_SUITE("MegaROM relocation byte-exact") {
+    // fix_address=0x10, symbol_address=0x4000 => segm_from=2, segm_to=4
+    // (cross-segment), new_address = 0x8000.
+    TEST_CASE("Rewrites conditional call nc with jr c + call") {
+      auto h = makeRelocationHarness();
+      seedFix(h, 0xD4, 0x10, 0x4000);
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      CHECK(out[0x0B] == 0x04);  // ld a, segm_to
+      CHECK(out[0x0D] == 0x00);  // ld hl, 0x8000
+      CHECK(out[0x0E] == 0x80);
+      CHECK(out[0x06] == 0x38);  // jr c, $+11
+      CHECK(out[0x07] == 0x0A);
+      CHECK(out[0x0F] == 0xCD);  // changed to call
+      CHECK(out[0x10] == (h.mr_call_target & 0xFF));
+      CHECK(out[0x11] == ((h.mr_call_target >> 8) & 0xFF));
+    }
+
+    TEST_CASE("Rewrites conditional call nz with jr z + call") {
+      auto h = makeRelocationHarness();
+      seedFix(h, 0xC4, 0x10, 0x4000);
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      CHECK(out[0x06] == 0x28);  // jr z, $+11
+      CHECK(out[0x07] == 0x0A);
+      CHECK(out[0x0F] == 0xCD);
+      CHECK(out[0x10] == (h.mr_call_target & 0xFF));
+      CHECK(out[0x11] == ((h.mr_call_target >> 8) & 0xFF));
+    }
+
+    TEST_CASE("Rewrites conditional call c with jr nc + call") {
+      auto h = makeRelocationHarness();
+      seedFix(h, 0xDC, 0x10, 0x4000);
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      CHECK(out[0x06] == 0x30);  // jr nc, $+11
+      CHECK(out[0x07] == 0x0A);
+      CHECK(out[0x0F] == 0xCD);
+      CHECK(out[0x10] == (h.mr_call_target & 0xFF));
+      CHECK(out[0x11] == ((h.mr_call_target >> 8) & 0xFF));
+    }
+
+    TEST_CASE("Rewrites conditional call z with jr nz + call") {
+      auto h = makeRelocationHarness();
+      seedFix(h, 0xCC, 0x10, 0x4000);
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      CHECK(out[0x06] == 0x20);  // jr nz, $+11
+      CHECK(out[0x07] == 0x0A);
+      CHECK(out[0x0F] == 0xCD);
+      CHECK(out[0x10] == (h.mr_call_target & 0xFF));
+      CHECK(out[0x11] == ((h.mr_call_target >> 8) & 0xFF));
+    }
+
+    TEST_CASE("Rewrites unconditional call with MR_CALL target") {
+      auto h = makeRelocationHarness();
+      seedFix(h, 0xCD, 0x10, 0x4000);
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      CHECK(out[0x0B] == 0x04);  // ld a, segm_to
+      CHECK(out[0x0D] == 0x00);  // ld hl, 0x8000
+      CHECK(out[0x0E] == 0x80);
+      CHECK(out[0x0F] == 0xCD);
+      CHECK(out[0x10] == (h.mr_call_target & 0xFF));
+      CHECK(out[0x11] == ((h.mr_call_target >> 8) & 0xFF));
+    }
+
+    TEST_CASE("Rewrites conditional jp nc with jr c + jp") {
+      auto h = makeRelocationHarness();
+      seedFix(h, 0xD2, 0x10, 0x4000);
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      CHECK(out[0x06] == 0x38);  // jr c, $+11
+      CHECK(out[0x07] == 0x0A);
+      CHECK(out[0x0F] == 0xC3);  // changed to jp
+      CHECK(out[0x10] == (h.mr_jump_target & 0xFF));
+      CHECK(out[0x11] == ((h.mr_jump_target >> 8) & 0xFF));
+    }
+
+    TEST_CASE("Rewrites conditional jp nz with jr z + jp") {
+      auto h = makeRelocationHarness();
+      seedFix(h, 0xC2, 0x10, 0x4000);
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      CHECK(out[0x06] == 0x28);  // jr z, $+11
+      CHECK(out[0x07] == 0x0A);
+      CHECK(out[0x0F] == 0xC3);
+      CHECK(out[0x10] == (h.mr_jump_target & 0xFF));
+      CHECK(out[0x11] == ((h.mr_jump_target >> 8) & 0xFF));
+    }
+
+    TEST_CASE("Rewrites conditional jp c with jr nc + jp") {
+      auto h = makeRelocationHarness();
+      seedFix(h, 0xDA, 0x10, 0x4000);
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      CHECK(out[0x06] == 0x30);  // jr nc, $+11
+      CHECK(out[0x07] == 0x0A);
+      CHECK(out[0x0F] == 0xC3);
+      CHECK(out[0x10] == (h.mr_jump_target & 0xFF));
+      CHECK(out[0x11] == ((h.mr_jump_target >> 8) & 0xFF));
+    }
+
+    TEST_CASE("Rewrites conditional jp z with jr nz + jp") {
+      auto h = makeRelocationHarness();
+      seedFix(h, 0xCA, 0x10, 0x4000);
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      CHECK(out[0x06] == 0x20);  // jr nz, $+11
+      CHECK(out[0x07] == 0x0A);
+      CHECK(out[0x0F] == 0xC3);
+      CHECK(out[0x10] == (h.mr_jump_target & 0xFF));
+      CHECK(out[0x11] == ((h.mr_jump_target >> 8) & 0xFF));
+    }
+
+    TEST_CASE("Rewrites unconditional jp with MR_JUMP target") {
+      auto h = makeRelocationHarness();
+      seedFix(h, 0xC3, 0x10, 0x4000);
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      CHECK(out[0x0B] == 0x04);  // ld a, segm_to
+      CHECK(out[0x0D] == 0x00);  // ld hl, 0x8000
+      CHECK(out[0x0E] == 0x80);
+      CHECK(out[0x0F] == 0xC3);
+      CHECK(out[0x10] == (h.mr_jump_target & 0xFF));
+      CHECK(out[0x11] == ((h.mr_jump_target >> 8) & 0xFF));
+    }
+
+    TEST_CASE("Rewrites 0xFF special load into ld a,segm / ld hl,addr + jr") {
+      auto h = makeRelocationHarness();
+      seedFix(h, 0xFF, 0x10, 0x4000);
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      // Shifted "ld a,segm / ld hl,address" into the 5-byte preamble.
+      CHECK(out[0x06] == 0x3E);  // ld a,<segm>
+      CHECK(out[0x07] == 0x04);  // segm_to
+      CHECK(out[0x08] == 0x21);  // ld hl,<address>
+      CHECK(out[0x09] == 0x00);
+      CHECK(out[0x0A] == 0x80);
+      CHECK(out[0x0B] == 0x18);  // jr $+6
+      CHECK(out[0x0C] == 0x05);
+      CHECK(out[0x0D] == 0x00);
+      CHECK(out[0x0E] == 0x00);
+      CHECK(out[0x0F] == 0x00);
+      CHECK(out[0x10] == 0x00);
+      CHECK(out[0x11] == 0x00);
+    }
+
+    TEST_CASE("Rewrites default LOAD with MR_GET_DATA call") {
+      auto h = makeRelocationHarness();
+      seedFix(h, 0x21, 0x10, 0x4000);  // ld hl,nn => is_load
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      CHECK(out[0x0B] == 0x04);  // ld a, segm_to
+      CHECK(out[0x0D] == 0x00);  // ld hl, 0x8000
+      CHECK(out[0x0E] == 0x80);
+      CHECK(out[0x0F] == 0xCD);  // changed to call
+      CHECK(out[0x10] == (h.mr_get_data_target & 0xFF));
+      CHECK(out[0x11] == ((h.mr_get_data_target >> 8) & 0xFF));
+    }
+
+    TEST_CASE("Rewrites same-segment jump to jr $+8") {
+      auto h = makeRelocationHarness();
+      seedFix(h, 0xC3, 0x10, 0x0000);  // segm_to == segm_from == 2
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      CHECK(out[0x06] == 0x18);  // jr $+8
+      CHECK(out[0x07] == 0x07);
+      CHECK(out[0x08] == 0x00);  // 7 nops
+      CHECK(out[0x09] == 0x00);
+      CHECK(out[0x0A] == 0x00);
+      CHECK(out[0x0B] == 0x00);
+      CHECK(out[0x0C] == 0x00);
+      CHECK(out[0x0D] == 0x00);
+      CHECK(out[0x0E] == 0x00);
+      CHECK(out[0x0F] == 0xC3);  // opcode untouched
+      CHECK(out[0x10] == 0x00);  // new_address 0x8000
+      CHECK(out[0x11] == 0x80);
+    }
+  }
+
+  TEST_SUITE("MegaROM layout arithmetic") {
+    TEST_CASE("Marks code items in the A000 page with the next segment") {
+      auto h = makeRelocationHarness();
+      seedCodeItems(h, {0x2000, 0x10});
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      auto& codeList = h.ctx->symbolManager->context->codeList;
+      REQUIRE(codeList.size() == 2);
+      CHECK(codeList[0]->segm == 2);
+      CHECK(codeList[0]->addr_within_segm == 0x8000);
+      CHECK(codeList[1]->segm == 3);  // addr_within_segm >= 0xA000
+      CHECK(codeList[1]->addr_within_segm == 0xA000);
+    }
+
+    TEST_CASE("Emits a segment-skip trampoline when code crosses 16K") {
+      auto h = makeRelocationHarness();
+      seedCodeItems(h, {0x3FF0, 0x20});
+      std::vector<unsigned char> out(0x8000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      // trampoline at dest[0x3FF0]: ld a,segm; ld hl,0x8000; jp MR_JUMP
+      CHECK(out[0x3FF0] == 0x3E);
+      CHECK(out[0x3FF1] == 0x04);  // segm_last after increment = 4
+      CHECK(out[0x3FF2] == 0x21);
+      CHECK(out[0x3FF3] == 0x00);
+      CHECK(out[0x3FF4] == 0x80);
+      CHECK(out[0x3FF5] == 0xC3);
+      CHECK(out[0x3FF6] == (h.mr_jump_target & 0xFF));
+      CHECK(out[0x3FF7] == ((h.mr_jump_target >> 8) & 0xFF));
+
+      auto& codeList = h.ctx->symbolManager->context->codeList;
+      CHECK(codeList[1]->segm == 4);
+      CHECK(codeList[1]->addr_within_segm == 0x8000);
+    }
+
+    TEST_CASE("segm_total accounts for 16K pages across crossings") {
+      auto h = makeRelocationHarness();
+      seedCodeItems(h, {0x3FF0, 0x3FF0, 0x3FF0, 0x3FF0, 0x3FF0, 0x3FF0, 0x3FF0,
+                        0x3FF0});
+      std::vector<unsigned char> out(0x20000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      CHECK(h.ctx->cpu->context->segm_last == 16);
+      CHECK(h.ctx->cpu->context->segm_total == 32);
+    }
+
+    TEST_CASE("cross-segment target address wraps modulo 0x4000") {
+      auto h = makeRelocationHarness();
+      seedFix(h, 0xCD, 0x10, 0x5000);  // new_address = 0xD000 -> 0x9000
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      CHECK(out[0x0B] == 0x04);  // segm_to = 4
+      CHECK(out[0x0D] == 0x00);  // 0x9000 lo
+      CHECK(out[0x0E] == 0x90);  // 0x9000 hi
+    }
   }
 
   TEST_CASE("Fails when compiled code exceeds maximum ROM limit") {

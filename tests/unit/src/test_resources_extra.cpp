@@ -202,10 +202,15 @@ TEST_SUITE("ResourceReadersExtra") {
     REQUIRE(reader.load() == true);
     CHECK(reader.remapTo(0, 0, 0x8000) == true);
     REQUIRE(reader.data.size() >= 1);
+    CHECK(reader.data[0][0] == 0x08);  // instrumentIndexTable lo
     CHECK(reader.data[0][1] == 0x80);  // instrumentIndexTable remapped
+    CHECK(reader.data[0][2] == 0x10);  // arpeggioIndexTable lo
     CHECK(reader.data[0][3] == 0x80);  // arpeggioIndexTable remapped
+    CHECK(reader.data[0][4] == 0x12);  // pitchIndexTable lo
     CHECK(reader.data[0][5] == 0x80);  // pitchIndexTable remapped
+    CHECK(reader.data[0][6] == 0x0C);  // subsongIndexTable lo
     CHECK(reader.data[0][7] == 0x80);  // subsongIndexTable remapped
+    CHECK(reader.data[0][8] == 0x0A);  // instrument entry lo
     CHECK(reader.data[0][9] == 0x80);  // instrument entry remapped
 
     deleteTempFile(fname);
@@ -228,6 +233,7 @@ TEST_SUITE("ResourceReadersExtra") {
     ResourceAkmReader reader(fname);
     REQUIRE(reader.load() == true);
     CHECK(reader.remapTo(0, 0, 0x8000) == true);
+    CHECK(reader.data[0][0] == 0x08);
     CHECK(reader.data[0][1] == 0x80);
 
     deleteTempFile(fname);
@@ -654,6 +660,35 @@ TEST_SUITE("ResourceReadersExtra") {
     ResourceCsvReader reader(fname);
     CHECK(reader.load() == true);
     CHECK(reader.unpackedSize > 0);
+
+    deleteTempFile(fname);
+  }
+
+  TEST_CASE("ResourceCsvReader produces byte-exact field layout") {
+    std::string fname = "tmp/temp_exact.csv";
+    std::string csv = "a,b\n";
+    createTempFile(fname, csv);
+
+    ResourceCsvReader reader(fname);
+    REQUIRE(reader.load() == true);
+    REQUIRE(reader.data.size() == 3);
+    CHECK(reader.unpackedSize == 8);
+    CHECK(reader.packedSize == 8);
+
+    // Header: type(1) + line count(2) + field count(1)
+    REQUIRE(reader.data[0].size() == 4);
+    CHECK(reader.data[0][0] == 1);  // CSV resource type
+    CHECK(reader.data[0][1] == 1);  // line count lo
+    CHECK(reader.data[0][2] == 0);  // line count hi
+    CHECK(reader.data[0][3] == 2);  // field count
+
+    // Field blocks: size byte + content
+    REQUIRE(reader.data[1].size() == 2);
+    CHECK(reader.data[1][0] == 1);
+    CHECK(reader.data[1][1] == 'a');
+    REQUIRE(reader.data[2].size() == 2);
+    CHECK(reader.data[2][0] == 1);
+    CHECK(reader.data[2][1] == 'b');
 
     deleteTempFile(fname);
   }

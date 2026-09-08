@@ -534,6 +534,71 @@ TEST_SUITE("CompilerExpressionEvaluator") {
     }
   }
 
+  // Both-sides type dispatch: each operator must emit different code per
+  // operand type, so an eq_to_ne mutant on the subtype checks changes the
+  // emitted bytes and fails the assertion.
+  TEST_CASE("Type dispatch emits distinct code per operand type") {
+    SUBCASE("Addition") {
+      std::string integer =
+          compiledCodeHex("disp_add_int.bas", "10 A=1+2\n20 END\n");
+      std::string floating =
+          compiledCodeHex("disp_add_flt.bas", "10 A=1.0+2.0\n20 END\n");
+      std::string stringy =
+          compiledCodeHex("disp_add_str.bas", "10 A$=\"a\"+\"b\"\n20 END\n");
+      REQUIRE_FALSE(integer.empty());
+      REQUIRE_FALSE(floating.empty());
+      REQUIRE_FALSE(stringy.empty());
+      CHECK(integer != floating);
+      CHECK(integer != stringy);
+      CHECK(floating != stringy);
+    }
+
+    SUBCASE("Subtraction") {
+      std::string integer =
+          compiledCodeHex("disp_sub_int.bas", "10 A=5-2\n20 END\n");
+      std::string floating =
+          compiledCodeHex("disp_sub_flt.bas", "10 A=5.0-2.0\n20 END\n");
+      REQUIRE_FALSE(integer.empty());
+      REQUIRE_FALSE(floating.empty());
+      CHECK(integer != floating);
+    }
+
+    SUBCASE("Multiplication") {
+      std::string integer =
+          compiledCodeHex("disp_mul_int.bas", "10 A=5*2\n20 END\n");
+      std::string floating =
+          compiledCodeHex("disp_mul_flt.bas", "10 A=5.0*2.0\n20 END\n");
+      REQUIRE_FALSE(integer.empty());
+      REQUIRE_FALSE(floating.empty());
+      CHECK(integer != floating);
+    }
+
+    SUBCASE("Division") {
+      std::string integer =
+          compiledCodeHex("disp_div_int.bas", "10 A=5/2\n20 END\n");
+      std::string floating =
+          compiledCodeHex("disp_div_flt.bas", "10 A=5.0/2.0\n20 END\n");
+      REQUIRE_FALSE(integer.empty());
+      REQUIRE_FALSE(floating.empty());
+      CHECK(integer != floating);
+    }
+
+    SUBCASE("Greater-or-equal comparison") {
+      std::string integer =
+          compiledCodeHex("disp_ge_int.bas", "10 A=1>=2\n20 END\n");
+      std::string floating =
+          compiledCodeHex("disp_ge_flt.bas", "10 A=1.0>=2.0\n20 END\n");
+      std::string stringy =
+          compiledCodeHex("disp_ge_str.bas", "10 A=\"a\">=\"b\"\n20 END\n");
+      REQUIRE_FALSE(integer.empty());
+      REQUIRE_FALSE(floating.empty());
+      REQUIRE_FALSE(stringy.empty());
+      CHECK(integer != floating);
+      CHECK(integer != stringy);
+      CHECK(floating != stringy);
+    }
+  }
+
   TEST_CASE("Arithmetic optimizations in MegaROM mode") {
     SUBCASE("Multiply by constant in MegaROM") {
       const std::string path =

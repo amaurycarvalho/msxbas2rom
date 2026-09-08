@@ -59,6 +59,8 @@ class Compiler {
   bool build(shared_ptr<Parser> parser);
   int write(unsigned char* dest, int start_address);
 
+  shared_ptr<CompilerContext> getContext() const;
+
   int getCodeSize() const;
   float getRamMemoryPerc() const;
   bool getPt3() const;
