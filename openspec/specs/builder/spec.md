@@ -1,4 +1,10 @@
-## ADDED Requirements
+# ROM Builder
+
+## Purpose
+
+Defines ROM image building: packaging compiled code and resources into valid plain ROM or MegaROM cartridge images.
+
+## Requirements
 
 ### Requirement: Package compiled code and resources into valid ROM images
 As a ROM producer, the system SHALL package compiled code and resources into valid plain ROM or MegaROM pages so that the output cartridge image can run on target MSX hardware or emulators.

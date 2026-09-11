@@ -1,4 +1,10 @@
-## ADDED Requirements
+# ASCII16 Mapper
+
+## Purpose
+
+Defines ASCII16 MegaROM mapper support: 16KB pages with single-bank switching, up to 2048KB ROM size.
+
+## Requirements
 
 ### Requirement: ASCII16 MegaROM mapper with 16KB pages
 

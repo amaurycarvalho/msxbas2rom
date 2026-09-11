@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Glossary
+
+## Purpose
+
+Provides a shared glossary of project terms and component definitions to ensure consistent communication.
+
+## Requirements
 
 ### Requirement: Provide a shared glossary of project terms
 The system SHALL maintain a glossary of terms and concepts used across the project to ensure consistent communication.

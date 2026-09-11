@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Compiler
+
+## Purpose
+
+Defines the compiler contract: converting parsed BASIC actions into Z80 machine code, kernel calls, and symbol/resource metadata.
+
+## Requirements
 
 ### Requirement: Convert parsed BASIC actions into Z80 machine code
 As a ROM builder user, the system SHALL convert parsed BASIC actions into Z80 machine code and symbol/resource metadata so that the ROM image can be generated reliably.

@@ -42,6 +42,39 @@ ROM build SHALL run only when compiler output is marked as compiled. Kernel/star
 - **WHEN** a ROM exceeds the per-mapper size limit during resource map building
 - **THEN** build fails with error indicating the mode-specific limit (2048K for ASCII8/Konami, 4096K for ASCII16, 8192K for ASCII16-X)
 
+#### Scenario: Build Konami4 MegaROM with patched kernel
+- **WHEN** a compilation result is built in Konami4 mode
+- **THEN** the kernel binary is patched with Konami4 segment-switch addresses (0x7000 for the 0x6000-0x7FFF page, 0x8000 for the 0x8000-0x9FFF page, 0xA000 for the 0xA000-0xBFFF page) at all 14 patch points via dispatch table lookup
+- **AND** all 14 segment-switch locations are modified in the kernel
+- **AND** ROM is padded to a multiple of 128KB (8 pages)
+
+#### Scenario: Build ASCII16 MegaROM with patched kernel
+- **WHEN** a compilation result is built in ASCII16 mode
+- **THEN** `MR_CHANGE_SGM` SHALL be rewritten with `push af; srl a; ld (0x7000),a; pop af; ret` via dispatch-table SeqReplace
+- **AND** the ASCII8 boot bugfix SHALL be patched to a single `ld (0x7000),1` via ByteReplace + NOP operations
+- **AND** the 4th and 5th OPENMSX autodetection writes SHALL be patched to 0x77FF for mapper identification
+- **AND** `resourceSegment` SHALL equal `pages.size() * 2` (8KB-pair convention, same as other MegaROM modes)
+- **AND** ROM is padded to a multiple of 128KB
+
+#### Scenario: Verify ASCII16 kernel patch point count
+- **WHEN** an ASCII16 ROM is built
+- **THEN** all 7 ASCII16 patch points SHALL be applied (1 SeqReplace MR_CHANGE_SGM + 2 SeqReplace OMSX + 1 ByteReplace + 3 NOPs)
+- **AND** the patched kernel SHALL contain the `srl a` sequence in MR_CHANGE_SGM, 0x7000 writes from omsx_0-2, 0x77FF writes from omsx_3-4, and NOPs at the expected boot bugfix locations
+
+#### Scenario: Build ASCII16-X MegaROM with patched kernel
+- **WHEN** a compilation result is built in ASCII16-X mode
+- **THEN** `MR_CHANGE_SGM` SHALL be rewritten with `push af; srl a; ld (0x7000),a; pop af; ret` via dispatch-table SeqReplace
+- **AND** the ASCII8 boot bugfix SHALL be patched to a single `ld (0x7000),1` via ByteReplace + NOP operations
+- **AND** the 14-byte bugfix `AB` check SHALL be NOPped via dispatch table entry `DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK`
+- **AND** all 7 ASCII16 patch points SHALL be applied
+- **AND** `resourceSegment` SHALL equal `pages.size() * 2` (8KB-pair convention, same as other MegaROM modes)
+- **AND** ROM is padded to a multiple of 128KB
+
+#### Scenario: ASCII16-X signature written at ROM offset 0x0010
+- **WHEN** an ASCII16-X ROM is built
+- **THEN** `pages[0].data() + 0x0010` through `pages[0].data() + 0x0017` SHALL contain `A S C I I 1 6 X` (hex 41 53 43 49 49 31 36 58)
+- **AND** the signature SHALL NOT be present for non-ASCII16X modes (bytes remain 0x00 from ASM `ds 8`)
+
 ## ADDED Requirements
 
 ### Requirement: Kernel binary is patched for 16-bit segment routines in ASCII16/ASCII16-X modes

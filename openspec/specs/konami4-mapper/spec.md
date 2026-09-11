@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Konami4 Mapper
+
+## Purpose
+
+Defines Konami4 MegaROM (without SCC) mapper support: 8KB segments with 4-bank switching.
+
+## Requirements
 
 ### Requirement: Konami4 MegaROM without SCC mapper
 

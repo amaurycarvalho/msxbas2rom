@@ -1,4 +1,10 @@
-## ADDED Requirements
+# ON Statements
+
+## Purpose
+
+Defines the ON statement family for indexed branching and event-driven control flow.
+
+## Requirements
 
 ### Requirement: Support multi-branch and event-driven control flow with ON statements
 As an MSX-BASIC developer, the system SHALL support ON statement variants for indexed branching and event-driven control flow so that developers can implement indexed jumps and reactive behaviors based on runtime conditions, input devices, and system events.
@@ -43,7 +49,7 @@ The compiler SHALL support indexed branching using `ON <expr> GOTO` and `ON <exp
 - **WHEN** ON SPRITE GOSUB 9999 is compiled and line 9999 does not exist
 - **THEN** a compilation error is raised
 
-### Technical Specification — ON Statement Syntax
+## Technical Specification — ON Statement Syntax
 
 ```
 ON <expression> GOTO <line1>, <line2>, ..., <lineN>
@@ -74,7 +80,7 @@ ON ERROR GOTO <line>
 - ON ERROR not implemented yet
 - STOP statement works like END
 
-### References
+## References
 - [ON..GOTO](https://www.msx.org/wiki/ON...GOTO)
 - [ON..GOSUB](https://www.msx.org/wiki/ON...GOSUB)
 - [ON INTERVAL](https://www.msx.org/wiki/ON_INTERVAL_GOSUB)

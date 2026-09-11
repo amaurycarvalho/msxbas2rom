@@ -17,6 +17,10 @@ Compilation SHALL start only when parser output contains tags/actions. The compi
 - **THEN** compilation fails
 - **AND** error message indicates line number already declared
 
+#### Scenario: Register DATA and IDATA resources
+- **WHEN** parser output has `has_data` and `has_idata` enabled and semantic analysis is executed
+- **THEN** the compiler adds data and idata resources to the resource manager
+
 #### Scenario: Array reference before DIM line compiles correctly
 - **WHEN** a program uses an array on a line before its DIM declaration (e.g., `20 PRINT A%(1)` before `100 DIM A%(2)`)
 - **THEN** the compiler emits correct Z80 code for the array access

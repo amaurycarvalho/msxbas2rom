@@ -45,3 +45,10 @@
 
 - [x] 9.1 Build kernel and confirm it fits (kernel-size-check); run `make test-unit`
 - [x] 9.2 Run lint/typecheck per project Makefile
+
+## 10. Bug fix — wrong collision distance and transposed margins
+
+- [x] 10.1 Fix `SUB_SPRCOL_CHECK` candidate Y base: advance `x0 -> x1 -> y0` before the Y section (retarget Y-failure branches to `skip_2`) so collision uses the candidate's real Y bounds (Decision 9)
+- [x] 10.2 Fix `SUB_SETSPRTBL_XY` X/Y swap: `push iy; push ix` so `SPRTBL` stores `x0 = X` and `y0 = Y`; margins now shrink the intended axis (Decision 10)
+- [x] 10.3 Regenerate `header.h` and verify with the `msx-memory-debug` skill: 16x16 default collides at ~16 px, horizontal margins shrink the X gap, vertical margins do not
+

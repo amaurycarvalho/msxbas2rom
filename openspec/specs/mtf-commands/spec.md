@@ -1,4 +1,10 @@
-## ADDED Requirements
+# MTF Commands
+
+## Purpose
+
+Defines the MTF (map/tileset) commands for loading palette and tileset resources and copying maps into VRAM.
+
+## Requirements
 
 ### Requirement: MTF loads palette resources into VRAM
 The system SHALL load a palette resource into VDP palette registers when CMD MTF is called with a palette resource number and no map operation.

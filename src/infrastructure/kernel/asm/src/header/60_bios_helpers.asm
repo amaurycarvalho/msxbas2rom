@@ -686,8 +686,8 @@ SUB_GET_HITBOX_ADDR:
 ; iy = y
 ;
 SUB_SETSPRTBL_XY:
-  push ix
   push iy
+  push ix
   exx
     ld c, a              ; save a
       call SUB_GETSPRTBL_ADDR
@@ -925,20 +925,20 @@ SUB_SPRCOL_CHECK:
   jr c, SUB_SPRCOL_CHECK.skip_4
   jr z, SUB_SPRCOL_CHECK.skip_4
 
+  inc hl                 ; hl = x1
   inc hl                 ; hl = y0
   ld a, (ix+2)           ; Y0
   add a, (hl)            ; by0 = y0 + Y0
   cp b                   ; compare with ay1
-  jr nc, SUB_SPRCOL_CHECK.skip_3
+  jr nc, SUB_SPRCOL_CHECK.skip_2
 
   ld a, (ix+3)           ; Y1
   add a, (hl)            ; by1 = y0 + Y1
   cp c                   ; compare with ay0
-  jr c, SUB_SPRCOL_CHECK.skip_3
-  jr z, SUB_SPRCOL_CHECK.skip_3
+  jr c, SUB_SPRCOL_CHECK.skip_2
+  jr z, SUB_SPRCOL_CHECK.skip_2
 
   inc hl                 ; hl = y1
-  inc hl
   inc hl                 ; hl = next entry
 
 SUB_SPRCOL_CHECK.true:

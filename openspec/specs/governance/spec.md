@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Governance
+
+## Purpose
+
+Defines project governance rules: common mistakes and confusion points, dependency policy, security, ADR/RFC consultation, changelog automation, and asynchronous builds.
+
+## Requirements
 
 ### Requirement: Document common mistakes and confusion points
 The role of this file is to describe common mistakes and confusion points that agents might encounter as they work in this project. If any agent encounters something in the project that surprises them, they SHALL alert the developer working with them and propose a change to this file to help prevent future agents from having the same issue. These principles are not optional.

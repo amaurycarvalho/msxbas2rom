@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Sprites Handling
+
+## Purpose
+
+Defines the contract for sprite handling in compiled MSX-BASIC programs: sprite activation and collision traps, sprite pattern and color definition, `PUT SPRITE` placement, Tiny Sprite resources, and the `COLLISION()` function.
+
+## Requirements
 
 ### Requirement: Support sprite management commands and functions
 As an MSX-BASIC developer, the system SHALL support SPRITE ON, SPRITE OFF, SPRITE STOP, SPRITE LOAD, PUT SPRITE, SPRITE$ assignment, COLOR SPRITE, COLOR SPRITE$, SET/GET SPRITE PATTERN, SET/GET SPRITE COLOR, SET SPRITE FLIP, SET SPRITE ROTATE, and COLLISION() function so that developers can manage sprite assets on screen.
@@ -65,7 +71,7 @@ As an MSX-BASIC developer, the system SHALL support SPRITE ON, SPRITE OFF, SPRIT
 - **WHEN** COLLISION(4, 5) is evaluated
 - **THEN** it returns 5 if sprite 4 collided with sprite 5, otherwise -1
 
-### Technical Specification — Sprites
+## Technical Specification — Sprites
 
 **Tiny Sprite Support:**
 - Syntax: `SPRITE LOAD <resource number>` with `.SPR` files in plain text format
@@ -134,7 +140,7 @@ IF SN% >= 0 THEN BEEP
 - `SET SPRITE FLIP <n>, <dir>` where dir: 0=horizontal, 1=vertical, 2=both
 - `SET SPRITE ROTATE <n>, <dir>` where dir: 0=left, 1=right, 2=180 degrees
 
-### References
+## References
 - [SPRITE$()](<https://www.msx.org/wiki/SPRITE$()>)
 - [COLOR SPRITE()](<https://www.msx.org/wiki/COLOR_SPRITE()>)
 - [COLOR SPRITE$()](<https://www.msx.org/wiki/COLOR_SPRITE$()>)

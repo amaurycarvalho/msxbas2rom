@@ -1,4 +1,10 @@
-## ADDED Requirements
+# File Handling
+
+## Purpose
+
+Defines file I/O operations for compiled MSX-BASIC programs: OPEN, READ#, PRINT#, INPUT#, LINE INPUT#, MAXFILES, CLOSE, and file state functions.
+
+## Requirements
 
 ### Requirement: Support file I/O operations for MSX-BASIC programs
 As an MSX-BASIC developer, the system SHALL support OPEN, READ#, PRINT#, INPUT#, LINE INPUT#, MAXFILES, and CLOSE commands, plus EOF(), LOC(), LOF(), FPOS(), ERR(), and DSKF() functions so that programs can persist and retrieve data from files across MSX devices (disk, cassette, memory, etc.).
@@ -33,7 +39,7 @@ The compiler SHALL support the OPEN instruction with device, path, filename, dir
 - **WHEN** a file opened as #1 is closed via CLOSE #1
 - **THEN** the file is properly closed and the handle becomes available for reuse
 
-### Technical Specification — File I/O
+## Technical Specification — File I/O
 
 **Code reference:**
 - Z80: `src/infrastructure/kernel/asm/src/34_file_handling.asm`, `20_runtime.asm`, `30_basic_helpers.asm`
@@ -115,7 +121,7 @@ FCB scheme:
 **ERR:**
 - Get last error code from `def_ERRFLG` address.
 
-### References
+## References
 - [OPEN statement](https://www.msx.org/wiki/OPEN)
 - [CLOSE statement](https://www.msx.org/wiki/CLOSE)
 - [READ statement](https://www.msx.org/wiki/READ)

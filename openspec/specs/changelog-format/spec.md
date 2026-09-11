@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Changelog Format
+
+## Purpose
+
+Defines the CHANGELOG.md format (Keep a Changelog) and the automated changelog update workflow.
+
+## Requirements
 
 ### Requirement: CHANGELOG.md follows Keep a Changelog format
 The project SHALL maintain `CHANGELOG.md` following the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format, with the following conventions:

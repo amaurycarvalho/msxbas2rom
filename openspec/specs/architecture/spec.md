@@ -1,7 +1,13 @@
-## ADDED Requirements
+# Architecture
+
+## Purpose
+
+Defines the project-wide architecture principles: SDD/DDD/Clean Architecture layering, C++11 cross-platform implementation, TDD/BDD, the mandatory user-story format, semantic versioning, release tagging, and architecture decision records.
 
 **Status:** Accepted
 **Context:** General definitions applicable to the entire project.
+
+## Requirements
 
 ### Requirement: Adopt SDD, DDD, Clean Architecture with layered separation
 The system SHALL adopt Spec Driven Development (SDD), Domain-Driven Design (DDD), Clean Code, SOLID, and Clean Architecture with four layers — CLI, application, domain, infrastructure.
@@ -119,6 +125,8 @@ git switch master
 - **AND** a branch `release/vMAJOR.MINOR.PATCH.BUILD` is created
 - **AND** the tag follows semantic versioning rules
 - **AND** `CONTRIBUTING.md` is consulted for the full release procedure
+
+## Architecture Decision Records
 
 ### ADR: Behavioral polymorphism via Strategy/State patterns
 Behavioral polymorphism SHALL be centralized in the application layer via factories, keeping orchestration classes slim. The lexer SHALL use State + Factory for line state management, and symbol export SHALL use Strategy + Factory for format dispatch.

@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Unit Test Coverage
+
+## Purpose
+
+Defines the unit test coverage requirements for the project.
+
+## Requirements
 
 ### Requirement: Global line coverage must reach 85%
 

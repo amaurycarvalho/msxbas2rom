@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Lexer
+
+## Purpose
+
+Defines the lexer contract: tokenizing MSX-BASIC source code into classified lexemes for the parser.
+
+## Requirements
 
 ### Requirement: Tokenize MSX-BASIC source code into classified lexemes
 As an MSX-BASIC developer, the system SHALL tokenize source code lines into classified lexemes so that the parser can consume a normalized stream of tokens.

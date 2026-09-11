@@ -1,4 +1,10 @@
-## ADDED Requirements
+# ASCII16-X Mapper
+
+## Purpose
+
+Defines ASCII16-X MegaROM mapper support: 16KB pages with mirror address decoding and 12-bit bank registers.
+
+## Requirements
 
 ### Requirement: ASCII16-X MegaROM mapper with 16KB pages and 12-bit bank registers
 

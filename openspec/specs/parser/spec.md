@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Parser
+
+## Purpose
+
+Defines the parser contract: transforming lexed tokens into action and symbol structures for compilation.
+
+## Requirements
 
 ### Requirement: Transform lexed tokens into action and symbol structures
 As an MSX-BASIC developer, the parser SHALL transform lexed tokens into action and symbol structures so that valid programs can be compiled into ROM code.

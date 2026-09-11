@@ -1,4 +1,10 @@
-## ADDED Requirements
+# MegaROM 2MB Max Size
+
+## Purpose
+
+Defines the maximum MegaROM size support: a 2MB compiler code buffer and 8-bit segments reaching the 2048KB limit.
+
+## Requirements
 
 ### Requirement: Compiler code buffer supports up to 2MB of generated Z80 code
 

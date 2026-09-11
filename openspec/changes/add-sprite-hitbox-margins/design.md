@@ -99,6 +99,16 @@ Intensive search confirms the kernel only skips the *same sprite index* (`60_bio
 
 Margins are runtime expressions, so the kernel clamps them: each margin to `[0, SPRSIZ]`, and `RIGHT` to `SPRSIZ - LEFT` (and `BOTTOM` to `SPRSIZ - TOP`) so the resulting bounds never invert. Zero-width/height (e.g. `LEFT+RIGHT = SPRSIZ`) is valid.
 
+### Decision 9: Fix off-by-one candidate Y base in `SUB_SPRCOL_CHECK` (bug fix)
+
+The rewritten collision hot path (Decision 6.2) read both candidate X bounds from the candidate's `x0` byte (`SPRTBL+1`) but then advanced the pointer only **once** before the Y section. Since a `SPRTBL` entry is `active, x0, x1, y0, y1` (5 bytes), a single increment from `x0` lands on `x1`, not on `y0`. The Y comparisons therefore used the candidate's `x1` (= `x0 + SPRSIZ`) as if it were `y0`, so collisions were reported at a wrong, X-dependent distance instead of the true vertical overlap. The old routine was correct because it advanced once per X byte, landing on `y0`.
+
+Fix: advance the candidate pointer twice (`x0 -> x1 -> y0`) before the Y section, and retarget the Y-failure branches to `skip_2` and the success path to two increments so every path still advances exactly 5 bytes per candidate.
+
+### Decision 10: Fix pre-existing X/Y swap in `SUB_SETSPRTBL_XY` (bug fix)
+
+`SUB_SETSPRTBL_XY` does `push ix` (X) then `push iy` (Y), so the first `pop de` yields `iy` (Y); the routine stored that value into `x0` and the second pop (X) into `y0`. `SPRTBL` therefore held `x0 = display Y` and `y0 = display X`. This predates the hitbox change and is invisible to plain collision (the AABB test is invariant under exchanging both axes consistently), but it transposed the new hitbox margins: `LEFT/RIGHT` were applied to the display Y axis and `TOP/BOTTOM` to the display X axis. Fix: swap the two pushes (`push iy; push ix`) so `x0` receives X and `y0` receives Y. Collision results are unchanged for full/symmetric hitboxes; asymmetric margins now shrink the intended axis.
+
 ## Risks / Trade-offs
 
 - **RAM cost** → 160 bytes for `HITBOX_TABLE` shifts `SPRSIZ`/`HEAPEND` down, shrinking the BASIC heap by 160 bytes. Accepted; documented in the spec.

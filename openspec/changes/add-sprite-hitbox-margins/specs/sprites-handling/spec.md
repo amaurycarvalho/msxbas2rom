@@ -48,6 +48,22 @@ Margins SHALL be expressed in pixels and SHALL reduce the sprite collision recta
 - **WHEN** `SET SPRITE HITBOX 1, 20, 5, 0, 0` is executed on a 16x16 sprite
 - **THEN** the margins are clamped so the resulting collision rectangle does not invert
 
+#### Scenario: Horizontal margins shrink the horizontal extent
+- **WHEN** two 16x16 sprites moving horizontally toward each other have `LEFT`/`RIGHT` margins
+- **THEN** the collision is reported only when their shrunken horizontal rectangles overlap, using the sprite's real X axis
+
+#### Scenario: Vertical margins do not affect a horizontal approach
+- **WHEN** two 16x16 sprites at the same Y move horizontally toward each other and have only `TOP`/`BOTTOM` margins
+- **THEN** the horizontal collision distance is unchanged from the zero-margin case
+
+### Requirement: Collision uses the sprite's real X and Y axes
+
+The collision test SHALL combine each sprite's real X position with its relative X bounds and its real Y position with its relative Y bounds. A candidate sprite's vertical bounds SHALL be read from its `y0` field, never from `x1`.
+
+#### Scenario: Full-rectangle collision distance matches the sprite size
+- **WHEN** two 16x16 sprites with default hitboxes approach horizontally
+- **THEN** the collision is reported when their 16-pixel-wide rectangles overlap, not at an offset distance
+
 ### Requirement: Hitboxes persist until explicitly changed
 
 Hitbox configuration SHALL be persistent. Moving a sprite with `PUT SPRITE` SHALL NOT alter its hitbox. Hitbox configuration SHALL remain in effect until another `SET SPRITE HITBOX` command or a sprite clear/size change.
