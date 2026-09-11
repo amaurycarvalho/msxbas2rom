@@ -246,6 +246,7 @@ wrapper_routines_map_table:
   dw ascii16_patch_bugfix_inc1
   dw ascii16_patch_bugfix_nopseq
   dw ascii16x_patch_bugfix_ab_check
+  dw set_sprite_hitbox
 
 	DEFS 0x4000 - $
 

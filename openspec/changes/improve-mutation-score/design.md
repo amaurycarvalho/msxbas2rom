@@ -2,23 +2,24 @@
 
 See `proposal.md` for motivation. Current state relevant to this design:
 
-- Mutation score **70%** (1729 killed + 5 timeout = 1734 detected / 2445 mutants; 711 survivors). Reaching 85% requires **~350** more kills (2445 × 0.85 = 2078 → 2079 killed; today 1729).
-- Survivors (711) split by mutator class: **257** relational (`lt`/`le`/`gt`/`ge`), **165** arithmetic (`add`/`sub`), **164** equality (`eq_to_ne`/`ne_to_eq`), **101** inc/dec (`post`/`pre`), **24** `mul`/`div`/`rem`.
-- Survivors are heavily concentrated by module: `application/compiler` 413, `application/builder` 174, `application/parser` 83, `application/symbols` 20, `application/lexer` 18, and a long tail. `compiler.cpp` (112) and `resource_akm_reader.cpp` (87) alone are ~28% of the survivors.
-- Round 2 implemented the exhaustive-enumeration plan (phases 7–9) but the user-managed run still reported **70%** — only ~16 of the 727 targeted survivors were killed. The root cause is that the Round 2 tests assert high-level properties ("it compiled", `written > 0`, `codeSize > 0x4000`, trampoline signature) rather than the exact byte/value each mutant alters (e.g. `dest[address - 10] = 0x18` mutated to `address + 10` writes elsewhere and no test reads `out[address-10]` back).
+- Mutation score after Round 3 is **73%** (1791 killed + 10 timeout / 2445 mutants; 644 survivors; `mutationScore` 73). Reaching 85% requires **~288** more kills (2445 × 0.85 = 2078.25 → 2079 killed; today 1791). Only `Killed` counts: `check-mutation-score.py` reads Mull's `mutationScore`, which ignores `Timeout`.
+- Survivors (644) split by mutator class: **185** relational (`lt`/`le`/`gt`/`ge`), **174** equality (`eq_to_ne`/`ne_to_eq`), **117** arithmetic (`add`/`sub`/`mul`/`div`/`rem`), **103** inc/dec (`post`/`pre`), and 65 others.
+- Survivors are concentrated by group: `compiler.cpp` relocation/layout 46, builder readers 135 (`resource_akm_reader` 78, `resource_spr_reader` 19, `resource_akx_reader` 12), compiler semantic 98, compiler statements 201, parser 99, symbols 20, lexer 17, cli/domain/infra 7.
+- Round 2 implemented exhaustive enumeration (phases 7–9) but reported **70%** because tests asserted high-level properties. Round 3 rewrote them to assert exact emitted bytes (phases 11–15) and moved to **73%**. A residual class of survivors remains: **index/offset mutants** (`dest[address - N]` → `address + N`, `data[i + 1]` → `i - 1`) whose fixtures use **zeros or equal values**, so reading/writing the wrong offset yields a byte identical to the expected one and the mutant is equivalent *for that fixture* (e.g. `dest[address - 3]` mutated to `dest[address + 3]` reads an all-zero cell while the intended cell is also `0x00`). Round 4 addresses this with **distinct sentinel bytes per offset** (Decision 13).
 - Tests are doctest 2.4.11 in `tests/unit/src/*.cpp`, one `test_unit` binary. `make mutation-run` uses `mull-runner-18 --timeout 32000 --minimum-timeout 32000 --allow-surviving --test-suite-exclude=Slow`.
 - mull-runner 0.34.0 exposes **no per-mutant filter** (only `--dry-run` to enumerate without executing), so incremental verification is `make -C tests/unit run`; the full `make mutation-run` is a user-managed step. New tests compile without `-fpass-plugin`, so they do not change the mutant count.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Kill ~350 survivors (2079 − 1729) with test-only changes, ordered highest-kill-first, driven by the exact survivor locations in the latest `mutation_report.json`.
-- Assert the **exact emitted bytes/values** each mutant alters, rather than merely exercising the branch, so that an output-changing mutation fails a test.
+- Kill ~300 of the 644 survivors (2079 − 1791 = 288 required; ~12 margin) with test-only changes, ordered highest-kill-first, driven by the exact survivor locations in the latest `mutation_report.json`.
+- Assert the **exact emitted bytes/values** each mutant alters, using **distinct sentinel bytes per offset** so that index/arithmetic mutants cannot be equivalent for the fixture (Decision 13).
+- Keep every new test **kernel-reassembly-safe**: kernel-derived values are computed at runtime; only Z80 ISA opcodes, compiler-owned geometry, and the documented compiler↔kernel ABI are asserted literally (Decision 14).
 - Reach 85% via kills; use `excludePaths` narrowing only as a fallback for provably equivalent mutants (in practice inapplicable at sub-file granularity — see Decision 8).
 
 **Non-Goals:**
-- Do NOT change production source code (`.cpp`/`.h` under `src/`), **except** a single minimal `Compiler::getContext()` accessor (see Decision 12), which the white-box relocation tests require to reach the never-emitted opcode cases.
-- Do NOT convert the 5 timeout mutants to killed; they stay "Timeout".
+- Do NOT change production source code (`.cpp`/`.h` under `src/`), **except** the single minimal `Compiler::getContext()` accessor added in Round 3 (Decision 12). Round 4 is test-only.
+- Do NOT convert the 10 timeout mutants to killed; they stay "Timeout".
 - Do NOT run the full mull suite or `mutation-clean` during development (both are slow); verification is `make -C tests/unit run`, and the full `make mutation-run`/`make mutation-check` is the user's final step.
 - Do NOT add `--dry-run`-based mutant enumeration as a workflow; it is unnecessary since the report already gives exact locations.
 
@@ -97,9 +98,10 @@ Excluding any of these whole files would also drop a large number of reachable, 
 
 **Recorded equivalent/unreachable mutants (accepted, not excluded):**
 
-- `compiler.cpp` relocation: `jp m/pe/p/po` (0xFA/0xEA/0xF2/0xE2) and `call p/po/m/pe` (0xF4/0xE4/0xFC/0xEC) are never emitted and are not tested. The conditional `call nc/nz/c/z` (0xD4/0xC4/0xDC/0xCC) and `jp nc/c` (0xD2/0xDA) are **also** never emitted (only `jp z`/`jp nz`/`jp`/`call`/`0xFF` are), but these are now exercised by white-box tests via `getContext()` (Decision 12).
-- `compiler_code_optimizer.cpp:123`: `*cpuctx.code_pipeline[0] == 11` (should be `0x11`) is a dead peephole branch.
+- `compiler.cpp` relocation: `jp m/pe/p/po` (0xFA/0xEA/0xF2/0xE2) and `call p/po/m/pe` (0xF4/0xE4/0xFC/0xEC) are never emitted by the compiler, but **Round 4 exercises them white-box** (Decision 14) because `Compiler::write` reads `dest[address-1]` from a caller-provided buffer and therefore must handle any opcode; they are no longer accepted as survivors. The conditional `call nc/nz/c/z` (0xD4/0xC4/0xDC/0xCC) and `jp nc/c` (0xD2/0xDA) were already exercised via `getContext()` (Decision 12).
+- `compiler_code_optimizer.cpp:123`: `*cpuctx.code_pipeline[0] == 11` (should be `0x11`) is a dead peephole branch — accepted (Round 4 cannot distinguish it).
 - `resource_akm_reader.cpp`: the linker state machine (~43 mutants) is out of scope by user decision.
+- `cliparser.cpp` L37/L60, `fswrapper.cpp` L108, `resource_blob_reader.cpp` L36: reported as `Timeout`/equivalent — accepted.
 
 ### Decision 9: Carry forward Round 1's runtime/scope decisions
 
@@ -144,21 +146,56 @@ The conditional `call nc/nz/c/z` (0xD4/0xC4/0xDC/0xCC) and conditional `jp c/nc`
 - Rationale: without it, the white-box strategy mandated by Decision 4/10 is impossible, and the ~40 conditional-case mutants would remain unreachable.
 - Trade-off: relaxes the "no production changes" non-goal by one trivial, behavior-neutral accessor.
 
+### Decision 13: Sentinel fixtures make index/offset mutants distinguishable (the Round 3 lesson)
+
+Round 3 asserted exact bytes but seeded the buffers with **zeros**. An index mutant such as `dest[address - 3]` → `dest[address + 3]` then reads an all-zero cell while the intended cell is also `0x00`, so the assertion still holds and the mutant survives — it is equivalent *for that fixture*, not equivalent in general. Round 4 changes the fixture contract:
+
+- Every seeded buffer used by an index-sensitive test is filled with a **distinct sentinel per offset** (e.g. `buf[i] = 0xA0 + (i & 0x3F)`), and every byte the code under test reads or writes is asserted at its exact position. Any wrong-offset access then produces a value that differs from the sentinel at the asserted position.
+- The same rule applies to resource readers (AKM/AKX/SPR/MTF/CSV/blob/data), `compiler_variable_emitter` array-index emission, and `rom.cpp` page patches.
+- Rationale: the 73% run shows exact-value assertions alone are insufficient when the fixture's values collide across offsets; sentinel diversity is what converts an index mutant into an observable difference.
+- Trade-off: fixtures are slightly larger, but data-driven and cheap.
+
+### Decision 14: `Compiler::write` relocation switch is tested for every opcode, including never-emitted ones
+
+Round 3 treated the `jp m/pe/p/po` and `call p/po/m/pe` switch cases as unreachable and recorded them. Round 4 instead exercises **every** case of the relocation switch white-box, because:
+
+- `Compiler::write` is the unit under test and its input is a caller-provided `dest[]` buffer; `dest[address-1]` may hold any opcode, so the switch is part of the function's contract even for opcodes the current compiler does not emit.
+- Seeding these cases is deterministic and asserts the exact documented bytes (`F5 08 D9 F1` + `mr_call_target`/`mr_jump_target` for the `p/po/m/pe` families; the conditional `jr cc,$+11` + `call`/`jp` forms for `nc/nz/c/z`). It kills ~8 additional arithmetic mutants with no new fragility.
+- Rationale: "never emitted today" is not "equivalent" — the branch is reachable through the public API and must be covered.
+- This supersedes Decision 4's statement that the never-emitted cases are candidates for scope narrowing rather than white-box tests.
+
+### Decision 15: Round 4 phase ordering and kill budget
+
+Round 4 is ordered highest-kill-first, mirroring the Round 3 shape but with sentinel fixtures and the residual branch gaps:
+
+```
+Phase 11 — relocation + layout sentinel byte-exact (`compiler.cpp`)          ~35 kills
+Phase 12 — reader sentinel fixtures (SPR/AKX/AKM-non-linker/MTF/CSV/blob)    ~55 kills
+Phase 13 — compiler semantic byte-exact (expr/optimizer/var/symbol)          ~60 kills
+Phase 14 — compiler statement strategies both-sides (set/on/gfx/io/cmd/fn)   ~65 kills
+Phase 15 — parser counters & branches (graphics + long tail)                 ~50 kills
+Phase 16 — long tail kernel-safe (rom.cpp/symbols/lexer/cli-domain-infra)    ~40 kills
+Phase 17 — fallback recording + final verification                            0 kills
+```
+
+Budget ≈ 300 kills vs. the 288 required, leaving margin for the ~43 AKM-linker mutants, the dead optimizer branch, and the timeout mutants that are accepted. Phase 17 records, never excludes (Decision 8).
+
 ## Risks / Trade-offs
 
-- [Risk: 85% may still be unreachable purely by tests on equality-heavy and relocation arithmetic code] → Mitigation: Round 3 orders the two largest gaps (relocation, readers) first and asserts exact output; equivalent/unreachable mutants are recorded (Phase 10) since `excludePaths` cannot target sub-file regions.
+- [Risk: 85% may still be unreachable purely by tests on equality-heavy and relocation arithmetic code] → Mitigation: Round 4 orders the largest residual gaps (relocation sentinel fixtures, readers) first and asserts exact output with sentinel-diverse buffers; the AKM linker state machine, the dead optimizer branch, and timeout mutants are recorded (Phase 17) since `excludePaths` cannot target sub-file regions.
 - [Risk: exact-byte fixtures bloat the suite and raise the mull baseline] → Mitigation: keep fixtures minimal and data-driven; the `Slow`-suite exclusion already offsets the single largest test.
-- [Risk: white-box relocation tests couple to internal opcode layout] → Mitigation: assert the documented opcode constants (already in the source comments), not internal indices; further, Decision 11 classifies each byte and derives kernel-resolved addresses from `bin_header_bin` instead of hardcoding them, so a kernel reassembly does not break the tests.
-- [Trade-off: accepting 5 timeout mutants] → They cost < 0.2% of score and are a healthy signal that loops are exercised; not worth eliminating.
+- [Risk: white-box relocation tests couple to internal opcode layout] → Mitigation: assert the documented opcode constants (already in the source comments), not internal indices; further, Decision 11 classifies each byte and derives kernel-resolved addresses from `bin_header_bin` instead of hardcoding them, so a kernel reassembly does not break the tests. Round 4 extends this rule to every new test.
+- [Risk: sentinel fixtures that accidentally collide with a hardcoded expected byte] → Mitigation: choose sentinels outside the Z80 opcode/expected-value space (e.g. base `0xA0`) and assert positions, not just values; verify with `make -C tests/unit run`.
+- [Trade-off: accepting 10 timeout mutants] → They cost < 0.5% of score and are a healthy signal that loops are exercised; not worth eliminating.
 
 ## Migration Plan
 
-1. Phase 5–9 (Round 3): add/rewrite tests to assert exact output, verifying each batch with `make -C tests/unit run`.
+1. Phases 11–16 (Round 4): add new test cases asserting exact output with sentinel fixtures, verifying each batch with `make -C tests/unit run`. Existing test cases are preserved; new coverage is added through new cases (per the `mutation-testing` spec).
 2. After each phase, re-check the surviving list in the latest `mutation_report.json` against the new tests (no full mull run).
-3. If equivalent/unreachable mutants remain, record them (Phase 10); `mull.yml` stays unchanged because `excludePaths` is whole-file (Decision 8).
+3. If equivalent/unreachable mutants remain, record them (Phase 17); `mull.yml` stays unchanged because `excludePaths` is whole-file (Decision 8).
 4. Run the full unit suite and confirm all prior tests pass and the count increased.
 5. User runs `make mutation-run` + `make mutation-check` once at the end to confirm ≥ 85%.
 
 ## Open Questions
 
-None — the exact-output assertion strategy, phase ordering (11–16), verification strategy, and the fallback policy (record, don't exclude) are resolved.
+None — the sentinel-fixture strategy, white-box coverage of every relocation opcode, phase ordering (17–23), verification strategy, and the fallback policy (record, don't exclude) are resolved.

@@ -1876,6 +1876,154 @@ TEST_SUITE("SetStatementStrategy") {
     CHECK(result == true);
   }
 
+  TEST_CASE("Parses SET SPRITE HITBOX global ON/OFF/AUTO") {
+    const char* modes[] = {"ON", "OFF", "AUTO"};
+    for (const char* mode : modes) {
+      shared_ptr<ParserContext> ctx = createContext();
+      SetStatementStrategy strategy;
+
+      shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+      line->addLexeme(kw("SPRITE"));
+      line->addLexeme(kw("HITBOX"));
+      line->addLexeme(kw(mode));
+
+      line->setLexemeBOF();
+
+      bool result = strategy.execute(ctx, line, kw("SET"));
+      CHECK(result == true);
+    }
+  }
+
+  TEST_CASE("Parses SET SPRITE HITBOX bare sprite") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("SPRITE"));
+    line->addLexeme(kw("HITBOX"));
+    line->addLexeme(num("3"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SET SPRITE HITBOX per-sprite ON/OFF/AUTO") {
+    const char* modes[] = {"ON", "OFF", "AUTO"};
+    for (const char* mode : modes) {
+      shared_ptr<ParserContext> ctx = createContext();
+      SetStatementStrategy strategy;
+
+      shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+      line->addLexeme(kw("SPRITE"));
+      line->addLexeme(kw("HITBOX"));
+      line->addLexeme(num("3"));
+      line->addLexeme(kw(mode));
+
+      line->setLexemeBOF();
+
+      bool result = strategy.execute(ctx, line, kw("SET"));
+      CHECK(result == true);
+    }
+  }
+
+  TEST_CASE("Parses SET SPRITE HITBOX explicit margins") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("SPRITE"));
+    line->addLexeme(kw("HITBOX"));
+    line->addLexeme(num("3"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("3"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("4"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Parses SET SPRITE HITBOX omitted trailing margins") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("SPRITE"));
+    line->addLexeme(kw("HITBOX"));
+    line->addLexeme(num("3"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == true);
+  }
+
+  TEST_CASE("Rejects SET SPRITE HITBOX with no parameters") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("SPRITE"));
+    line->addLexeme(kw("HITBOX"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects SET SPRITE HITBOX with too many parameters") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("SPRITE"));
+    line->addLexeme(kw("HITBOX"));
+    line->addLexeme(num("1"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("2"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("3"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("4"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("5"));
+    line->addLexeme(sep(","));
+    line->addLexeme(num("6"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == false);
+  }
+
+  TEST_CASE("Rejects SET SPRITE HITBOX with trailing mode keyword") {
+    shared_ptr<ParserContext> ctx = createContext();
+    SetStatementStrategy strategy;
+
+    shared_ptr<LexerLineContext> line = make_shared<LexerLineContext>();
+    line->addLexeme(kw("SPRITE"));
+    line->addLexeme(kw("HITBOX"));
+    line->addLexeme(num("1"));
+    line->addLexeme(kw("ON"));
+    line->addLexeme(num("2"));
+
+    line->setLexemeBOF();
+
+    bool result = strategy.execute(ctx, line, kw("SET"));
+    CHECK(result == false);
+  }
+
   TEST_CASE("Rejects SET ADJUST without parenthesis") {
     shared_ptr<ParserContext> ctx = createContext();
     SetStatementStrategy strategy;

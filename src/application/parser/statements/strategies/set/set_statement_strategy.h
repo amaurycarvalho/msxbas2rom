@@ -15,6 +15,8 @@ class SetStatementStrategy : public IParserStatementStrategy {
                       shared_ptr<LexerLineContext> statement);
   bool parseSetSpriteColpattra(shared_ptr<ParserContext> context,
                                shared_ptr<LexerLineContext> statement);
+  bool parseSetSpriteHitbox(shared_ptr<ParserContext> context,
+                            shared_ptr<LexerLineContext> statement);
   bool parseStatement(shared_ptr<ParserContext> context,
                       shared_ptr<LexerLineContext> statement);
   bool execute(shared_ptr<ParserContext> context,

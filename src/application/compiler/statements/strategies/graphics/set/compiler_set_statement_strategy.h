@@ -17,6 +17,7 @@ class CompilerSetStatementStrategy : public ICompilerStatementStrategy {
   void cmd_set_tile(shared_ptr<CompilerContext> context);
   void cmd_set_font(shared_ptr<CompilerContext> context);
   void cmd_set_sprite(shared_ptr<CompilerContext> context);
+  void cmd_set_sprite_hitbox(shared_ptr<CompilerContext> context);
   void cmd_set_date(shared_ptr<CompilerContext> context);
   void cmd_set_time(shared_ptr<CompilerContext> context);
 

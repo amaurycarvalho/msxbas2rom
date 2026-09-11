@@ -1254,6 +1254,371 @@ get_sprite_color.msx2:
   ld bc, 16
   jp LDIRMV      ; de = ram data address, hl = vram data address, bc = length
 
+;---------------------------------------------------------------------------------------------------------
+; SET SPRITE HITBOX
+; a = mode: 0=ON all, 1=OFF all, 2=AUTO all,
+;           3=ON one (l=sprite), 4=margins (l=sprite; stack left,top,right,bottom),
+;           5=OFF one (l=sprite), 6=AUTO one (l=sprite)
+;---------------------------------------------------------------------------------------------------------
+set_sprite_hitbox:
+  or a
+  jr z, set_sprite_hitbox.on_all
+  dec a
+  jr z, set_sprite_hitbox.off_all
+  dec a
+  jr z, set_sprite_hitbox.auto_all
+  dec a
+  jr z, set_sprite_hitbox.on_one
+  dec a
+  jr z, set_sprite_hitbox.margins
+  dec a
+  jr z, set_sprite_hitbox.off_one
+  ; mode 6: AUTO one
+  jp set_sprite_hitbox.auto
+
+set_sprite_hitbox.on_all:
+  xor a
+set_sprite_hitbox.on_all.loop:
+  push af
+    call set_sprite_hitbox.default
+  pop af
+  inc a
+  cp 32
+  jr nz, set_sprite_hitbox.on_all.loop
+  ret
+
+set_sprite_hitbox.off_all:
+  xor a
+set_sprite_hitbox.off_all.loop:
+  push af
+    call SUB_GET_HITBOX_ADDR
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    ld (hl), 0
+  pop af
+  inc a
+  cp 32
+  jr nz, set_sprite_hitbox.off_all.loop
+  ret
+
+set_sprite_hitbox.auto_all:
+  xor a
+set_sprite_hitbox.auto_all.loop:
+  push af
+    ld l, a
+    call set_sprite_hitbox.auto
+  pop af
+  inc a
+  cp 32
+  jr nz, set_sprite_hitbox.auto_all.loop
+  ret
+
+set_sprite_hitbox.on_one:
+  ld a, l
+  call set_sprite_hitbox.default
+  ret
+
+set_sprite_hitbox.off_one:
+  ld a, l
+  call SUB_GET_HITBOX_ADDR
+  inc hl
+  inc hl
+  inc hl
+  inc hl
+  ld (hl), 0
+  ret
+
+; default hitbox for sprite in a: zero margins, enabled
+set_sprite_hitbox.default:
+  call SUB_GET_HITBOX_ADDR
+  ld (hl), 0
+  inc hl
+  ld a, (SPRSIZ)
+  ld (hl), a
+  inc hl
+  ld (hl), 0
+  inc hl
+  ld (hl), a
+  inc hl
+  ld (hl), 0xff
+  ret
+
+; set margins
+; l = sprite, stack (top to bottom): left, top, right, bottom
+set_sprite_hitbox.margins:
+  ld a, l
+  ld (STRBUF+8), a         ; save sprite number
+  pop de                   ; return address
+  pop hl
+  ld (STRBUF+0), hl        ; left
+  pop hl
+  ld (STRBUF+2), hl        ; top
+  pop hl
+  ld (STRBUF+4), hl        ; right
+  pop hl
+  ld (STRBUF+6), hl        ; bottom
+  push de                  ; restore return address
+
+  ; hitbox address
+  ld a, (STRBUF+8)
+  call SUB_GET_HITBOX_ADDR
+  push hl
+  pop ix
+
+  ; left
+  ld hl, (STRBUF+0)
+  call clamp_margin
+  ld (ix+0), a
+  ld (STRBUF+0), a
+
+  ; top
+  ld hl, (STRBUF+2)
+  call clamp_margin
+  ld (ix+2), a
+  ld (STRBUF+2), a
+
+  ; right, limited to SPRSIZ - left
+  ld a, (SPRSIZ)
+  ld b, a
+  ld a, (STRBUF+0)
+  ld c, a
+  ld a, b
+  sub c
+  ld b, a
+  ld hl, (STRBUF+4)
+  call clamp_margin_limit
+  ld c, a
+  ld a, (SPRSIZ)
+  sub c
+  ld (ix+1), a
+
+  ; bottom, limited to SPRSIZ - top
+  ld a, (SPRSIZ)
+  ld b, a
+  ld a, (STRBUF+2)
+  ld c, a
+  ld a, b
+  sub c
+  ld b, a
+  ld hl, (STRBUF+6)
+  call clamp_margin_limit
+  ld c, a
+  ld a, (SPRSIZ)
+  sub c
+  ld (ix+3), a
+
+  ld (ix+4), 0xff
+  ret
+
+; clamp 16-bit value in hl to [0, SPRSIZ]; result in a
+clamp_margin:
+  ld a, h
+  or a
+  jr nz, clamp_margin.max
+  ld a, (SPRSIZ)
+  cp l
+  jr nc, clamp_margin.use_l
+  ret
+clamp_margin.use_l:
+  ld a, l
+  ret
+clamp_margin.max:
+  ld a, (SPRSIZ)
+  ret
+
+; clamp 16-bit value in hl to [0, b]; result in a
+clamp_margin_limit:
+  ld a, h
+  or a
+  jr nz, clamp_margin_limit.max
+  ld a, b
+  cp l
+  jr nc, clamp_margin_limit.use_l
+  ret
+clamp_margin_limit.use_l:
+  ld a, l
+  ret
+clamp_margin_limit.max:
+  ld a, b
+  ret
+
+; derive hitbox from sprite pattern (one-shot)
+; l = sprite number
+set_sprite_hitbox.auto:
+  ld a, l
+  ld (STRBUF+40), a        ; save sprite number
+
+  ; read pattern into STRBUF
+  ld a, l
+  call gfxCALPAT           ; hl = vram pattern address
+  ld de, STRBUF
+  ld a, (SPRSIZ)
+  cp 16
+  jr z, set_sprite_hitbox.auto.read32
+  ld bc, 8
+  jr set_sprite_hitbox.auto.read
+set_sprite_hitbox.auto.read32:
+  ld bc, 32
+set_sprite_hitbox.auto.read:
+  call LDIRMV              ; de = ram data address, hl = vram data address, bc = length
+
+  ; init scratch
+  ld a, 0xff
+  ld (STRBUF+34), a        ; miny
+  xor a
+  ld (STRBUF+35), a        ; maxy
+  ld (STRBUF+36), a        ; column mask low (x0..x7)
+  ld (STRBUF+37), a        ; column mask high (x8..x15)
+
+  ld a, (SPRSIZ)
+  cp 16
+  jr z, set_sprite_hitbox.auto.scan16
+  ld b, 8
+  ld c, 1
+  jr set_sprite_hitbox.auto.scan
+set_sprite_hitbox.auto.scan16:
+  ld b, 16
+  ld c, 2
+
+set_sprite_hitbox.auto.scan:
+  ld iy, STRBUF
+  ld d, 0                  ; y
+set_sprite_hitbox.auto.loop:
+  ld a, (iy+0)             ; b0
+  ld e, a                  ; row mask
+  ld hl, STRBUF+36
+  or (hl)
+  ld (hl), a               ; coll |= b0
+  ld a, c
+  cp 2
+  jr nz, set_sprite_hitbox.auto.rowmask
+  ld a, (iy+1)             ; b1
+  or e
+  ld e, a                  ; row mask |= b1
+  ld a, (iy+1)
+  ld hl, STRBUF+37
+  or (hl)
+  ld (hl), a               ; colh |= b1
+set_sprite_hitbox.auto.rowmask:
+  ld a, e
+  or a
+  jr z, set_sprite_hitbox.auto.nextrow
+  ld a, (STRBUF+34)
+  cp 0xff
+  jr nz, set_sprite_hitbox.auto.sety_max
+  ld a, d
+  ld (STRBUF+34), a        ; miny = y
+set_sprite_hitbox.auto.sety_max:
+  ld a, d
+  ld (STRBUF+35), a        ; maxy = y
+set_sprite_hitbox.auto.nextrow:
+  inc iy
+  ld a, c
+  cp 2
+  jr nz, set_sprite_hitbox.auto.no2
+  inc iy
+set_sprite_hitbox.auto.no2:
+  inc d
+  dec b
+  jr nz, set_sprite_hitbox.auto.loop
+
+  ; hitbox address
+  ld a, (STRBUF+40)
+  call SUB_GET_HITBOX_ADDR
+  push hl
+  pop ix
+
+  ; any visible pixel?
+  ld a, (STRBUF+36)
+  ld hl, STRBUF+37
+  or (hl)
+  jr z, set_sprite_hitbox.auto.disabled
+
+  ; minx
+  ld a, (STRBUF+36)
+  or a
+  jr z, set_sprite_hitbox.auto.minx_hi
+  call firstSetBitPos
+  jr set_sprite_hitbox.auto.minx_store
+set_sprite_hitbox.auto.minx_hi:
+  ld a, (STRBUF+37)
+  call firstSetBitPos
+  add a, 8
+set_sprite_hitbox.auto.minx_store:
+  ld (STRBUF+32), a
+
+  ; maxx
+  ld a, (STRBUF+37)
+  or a
+  jr z, set_sprite_hitbox.auto.maxx_lo
+  call lastSetBitPos
+  add a, 8
+  jr set_sprite_hitbox.auto.maxx_store
+set_sprite_hitbox.auto.maxx_lo:
+  ld a, (STRBUF+36)
+  call lastSetBitPos
+set_sprite_hitbox.auto.maxx_store:
+  ld (STRBUF+33), a
+
+  ; write hitbox
+  ld a, (STRBUF+32)
+  ld (ix+0), a             ; X0 = minx
+  ld a, (STRBUF+33)
+  inc a
+  ld (ix+1), a             ; X1 = maxx + 1
+  ld a, (STRBUF+34)
+  ld (ix+2), a             ; Y0 = miny
+  ld a, (STRBUF+35)
+  inc a
+  ld (ix+3), a             ; Y1 = maxy + 1
+  ld (ix+4), 0xff          ; enabled
+  ret
+
+set_sprite_hitbox.auto.disabled:
+  ld (ix+4), 0
+  ret
+
+; input a, output a = leftmost set bit position (0=MSB) or 8 if none
+firstSetBitPos:
+  ld b, 0
+firstSetBitPos.loop:
+  bit 7, a
+  jr nz, firstSetBitPos.found
+  add a, a
+  inc b
+  ld c, a
+  ld a, b
+  cp 8
+  ld a, c
+  jr nz, firstSetBitPos.loop
+  ld a, 8
+  ret
+firstSetBitPos.found:
+  ld a, b
+  ret
+
+; input a, output a = rightmost set bit position (0=MSB) or 0xFF if none
+lastSetBitPos:
+  ld c, 0
+lastSetBitPos.loop:
+  bit 0, a
+  jr nz, lastSetBitPos.found
+  srl a
+  inc c
+  ld d, a
+  ld a, c
+  cp 8
+  ld a, d
+  jr nz, lastSetBitPos.loop
+  ld a, 0xff
+  ret
+lastSetBitPos.found:
+  ld a, 7
+  sub c
+  ret
+
 ; l = mode: 0=swap, 1=wave
 ; e = delay #0
 ; c = delay #1

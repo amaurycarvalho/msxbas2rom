@@ -623,6 +623,24 @@ SUB_CLRSPR:
   inc de
   ld bc, 32*5 - 1    ; 32 sprites * (test, x0, x1, y0, y1)
   ldir
+
+  ; reset hitbox table to default (zero margins, enabled)
+  ld hl, HITBOX_TABLE
+  ld b, 32
+SUB_CLRSPR.hitbox:
+  ld (hl), 0
+  inc hl
+  ld a, (SPRSIZ)
+  ld (hl), a
+  inc hl
+  ld (hl), 0
+  inc hl
+  ld (hl), a
+  inc hl
+  ld (hl), 0xff
+  inc hl
+  djnz SUB_CLRSPR.hitbox
+
   jp CLRSPR
 
 ;
@@ -639,6 +657,24 @@ SUB_GETSPRTBL_ADDR:
     ld h, 0
     ld l, a
     ld de, SPRTBL
+    add hl, de
+  pop de
+  ret
+
+;
+; get hitbox table XY
+; in a = sprite number
+; out hl = hitbox data address
+;
+SUB_GET_HITBOX_ADDR:
+  push de
+    ld e, a
+    add a, a              ; a * 4
+    add a, a
+    add a, e              ; + a
+    ld h, 0
+    ld l, a
+    ld de, HITBOX_TABLE
     add hl, de
   pop de
   ret
@@ -690,21 +726,62 @@ SUB_SETSPRTBL_TEST:
 ;
 ; load sprite data
 ; in a = sprite number
+; out e=ax0, d=ax1, c=ay0, b=ay1; Z set if sprite is inactive or disabled
 ;
 SUB_SPRCOL_LOAD:
-  call SUB_GETSPRTBL_ADDR
-  ld a, (hl)
-  or a                   ; sprite is active?
-  ret z
+  push af
+    call SUB_GETSPRTBL_ADDR
+    ld a, (hl)
+    or a                   ; sprite is active?
+    jr z, SUB_SPRCOL_LOAD.inactive
 
+    inc hl
+    ld e, (hl)             ; x0
+    ld d, e                ; d = x0 (temporary)
+    inc hl                 ; skip x1
+    inc hl
+    ld c, (hl)             ; y0
+    ld b, c                ; b = y0 (temporary)
+  pop af                   ; a = sprite number
+
+  call SUB_GET_HITBOX_ADDR ; hl = hitbox entry
+  push hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    ld a, (hl)             ; enabled flag
+    or a
+    jr z, SUB_SPRCOL_LOAD.disabled
+  pop hl
+
+  ld a, (hl)               ; X0
+  add a, d                 ; x0 + X0
+  ld e, a                  ; ax0
   inc hl
-  ld e, (hl)             ; ax0
+  ld a, (hl)               ; X1
+  add a, d                 ; x0 + X1
+  ld d, a                  ; ax1
   inc hl
-  ld d, (hl)             ; ax1
+  ld a, (hl)               ; Y0
+  add a, b                 ; y0 + Y0
+  ld c, a                  ; ay0
   inc hl
-  ld c, (hl)             ; ay0
-  inc hl
-  ld b, (hl)             ; ay1
+  ld a, (hl)               ; Y1
+  add a, b                 ; y0 + Y1
+  ld b, a                  ; ay1
+  xor a
+  inc a                    ; Z = 0 (active)
+  ret
+
+SUB_SPRCOL_LOAD.inactive:
+  pop af
+  xor a                    ; Z = 1
+  ret
+
+SUB_SPRCOL_LOAD.disabled:
+  pop hl
+  xor a                    ; Z = 1
   ret
 
 ;
@@ -729,7 +806,7 @@ SUB_SPRCOL_ALL.LOOP:
   cp 32
   jr nz, SUB_SPRCOL_ALL.LOOP
 
-  jr SUB_SPRCOL_CHECK.false
+  jp SUB_SPRCOL_CHECK.false
 
 ;
 ; test a sprite collision against all the rest
@@ -743,10 +820,11 @@ SUB_SPRCOL_ONE:
   exx
 SUB_SPRCOL_ONE.1:
   call SUB_SPRCOL_LOAD
-  jr z, SUB_SPRCOL_CHECK.false
+  jp z, SUB_SPRCOL_CHECK.false
 
   xor a
   call SUB_GETSPRTBL_ADDR
+  ld ix, HITBOX_TABLE
 
 SUB_SPRCOL_ONE.LOOP:
   exx
@@ -760,6 +838,13 @@ SUB_SPRCOL_ONE.LOOP:
     cp 0xFF
     ret nz
 
+    ; advance parallel hitbox pointer in lockstep with hl
+    inc ix
+    inc ix
+    inc ix
+    inc ix
+    inc ix
+
     exx
       ld a, c                  ; restore current sprite
     exx
@@ -771,13 +856,18 @@ SUB_SPRCOL_ONE.SKIP:
   inc hl
   inc hl
   inc hl
+  inc ix
+  inc ix
+  inc ix
+  inc ix
+  inc ix
 
 SUB_SPRCOL_ONE.CONT:
   inc a
   cp 32
   jr nz, SUB_SPRCOL_ONE.LOOP
 
-  jr SUB_SPRCOL_CHECK.false
+  jp SUB_SPRCOL_CHECK.false
 
 ;
 ; test two sprites collision
@@ -794,42 +884,62 @@ SUB_SPRCOL_COUPLE:
   ; sprite 1
   ld a, e
   call SUB_SPRCOL_LOAD
-  jr z, SUB_SPRCOL_CHECK.false
+  jp z, SUB_SPRCOL_CHECK.false
 
   ; restore sprite 2
   exx
     ld a, c
   exx
-  call SUB_GETSPRTBL_ADDR
+  push af
+    call SUB_GETSPRTBL_ADDR
+  pop af
+  push hl                  ; save SPRTBL pointer
+    call SUB_GET_HITBOX_ADDR
+    push hl
+    pop ix                 ; ix = hitbox pointer
+  pop hl                   ; hl = SPRTBL pointer
 
 ; e=ax0, d=ax1, c=ay0, b=ay1
+; hl = candidate SPRTBL entry, ix = candidate HITBOX entry
 SUB_SPRCOL_CHECK:
   ; test if sprite is active
   ld a, (hl)
   or a                   ; 0xFF = active
   jr z, SUB_SPRCOL_CHECK.skip_5
-  inc hl
+
+  ; test if hitbox is enabled
+  ld a, (ix+4)
+  or a
+  jr z, SUB_SPRCOL_CHECK.skip_5
 
   ; test if ax1 > bx0 and ax0 < bx1 and ay1 > by0 and ay0 < by1
-  ld a, (hl) ; bx0
-  cp d       ; ax1
+  inc hl                 ; hl = x0
+  ld a, (ix+0)           ; X0
+  add a, (hl)            ; bx0 = x0 + X0
+  cp d                   ; compare with ax1
   jr nc, SUB_SPRCOL_CHECK.skip_4
-  inc hl
 
-  ld a, e    ; ax0
-  cp (hl)    ; bx1
+  ld a, (ix+1)           ; X1
+  add a, (hl)            ; bx1 = x0 + X1
+  cp e                   ; compare with ax0
+  jr c, SUB_SPRCOL_CHECK.skip_4
+  jr z, SUB_SPRCOL_CHECK.skip_4
+
+  inc hl                 ; hl = y0
+  ld a, (ix+2)           ; Y0
+  add a, (hl)            ; by0 = y0 + Y0
+  cp b                   ; compare with ay1
   jr nc, SUB_SPRCOL_CHECK.skip_3
-  inc hl
 
-  ld a, (hl) ; by0
-  cp b       ; ay1
-  jr nc, SUB_SPRCOL_CHECK.skip_2
-  inc hl
+  ld a, (ix+3)           ; Y1
+  add a, (hl)            ; by1 = y0 + Y1
+  cp c                   ; compare with ay0
+  jr c, SUB_SPRCOL_CHECK.skip_3
+  jr z, SUB_SPRCOL_CHECK.skip_3
 
-  ld a, c    ; ay0
-  cp (hl)    ; by1
-  jr nc, SUB_SPRCOL_CHECK.skip_1
+  inc hl                 ; hl = y1
   inc hl
+  inc hl                 ; hl = next entry
 
 SUB_SPRCOL_CHECK.true:
   ; if ok, return collider sprite (c)

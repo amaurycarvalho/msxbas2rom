@@ -9,16 +9,35 @@ The peephole code optimizer SHALL have dedicated tests exercising **every** reco
 - **THEN** every opcode-equality and immediate-value branch SHALL be executed
 - **THEN** the corresponding equality and arithmetic mutants SHALL be killed
 
-### Requirement: Every reachable cross-segment relocation opcode is covered
+### Requirement: Every cross-segment relocation switch opcode is covered
 
-The cross-segment symbol fixup performed during code output SHALL have tests exercising **every reachable** opcode variant it rewrites — the conditional `call` (`nc`/`nz`/`c`/`z`), the conditional `jp` (`nc`/`nz`/`c`/`z`), the unconditional `call` and `jp`, and the segment-relative LOAD (`0xFF`) case — so that the arithmetic and boundary mutants inside those relocation switch branches are killed. The conditional `call p/po/m/pe` and `jp m/pe/p/po` variants are never emitted by the compiler and are not required to be exercised; if they are confirmed unreachable they MAY instead be excluded from the mutation scope.
+The cross-segment symbol fixup performed during code output SHALL have tests exercising **every** opcode variant its relocation switch handles — the conditional `call` (`nc`/`nz`/`c`/`z`/`p`/`po`/`m`/`pe`), the conditional `jp` (`nc`/`nz`/`c`/`z`/`m`/`pe`/`p`/`po`), the unconditional `call` and `jp`, and the segment-relative LOAD (`0xFF`) case — so that the arithmetic and boundary mutants inside those switch branches are killed. The `p`/`po`/`m`/`pe` variants are never emitted by the current compiler, but because `Compiler::write` reads the opcode from a caller-provided buffer it SHALL still be exercised white-box rather than excluded.
 
-#### Scenario: Every reachable fixup opcode is exercised
-- **WHEN** compiled code produces a cross-segment reference to each reachable `call`/`jp`/LOAD opcode variant
+#### Scenario: Every fixup opcode is exercised
+- **WHEN** the fixup is driven with each `call`/`jp`/LOAD opcode variant the switch handles, including the never-emitted `p`/`po`/`m`/`pe` forms
 - **THEN** the corresponding rewrite branch SHALL be executed
 - **THEN** the emitted byte sequence SHALL differ from the unrewritten sequence
 - **THEN** the arithmetic and boundary mutants in that branch SHALL be killed
 - **AND** the expected byte assertions SHALL assert Z80 opcode constants and compiler-owned layout arithmetic literally, while kernel-resolved addresses (`mr_call_target`/`mr_jump_target`/`mr_get_data_target`) SHALL be derived at test runtime from `bin_header_bin[DISP_MR_* *2]` rather than hardcoded, so the test does not break when the kernel assembly is reassembled
+
+### Requirement: Exact-output fixtures use sentinel-diverse data
+
+Tests that assert exact emitted bytes or decoded tables SHALL seed their input buffers with a **distinct sentinel value per offset**, so that an arithmetic or index mutant that reads or writes the wrong offset produces a byte that differs from the asserted one. Fixtures that fill buffers with zeros or repeated values are insufficient, because a wrong-offset access can then be indistinguishable from the intended one.
+
+#### Scenario: Index mutants are observable
+- **WHEN** a test seeds a buffer with a distinct sentinel at every position and asserts the exact bytes read/written by the code under test
+- **THEN** a mutation that changes an index or offset expression SHALL change at least one asserted byte
+- **THEN** the corresponding arithmetic/index mutant SHALL be killed
+
+### Requirement: Kernel-derived expected values are computed at test runtime
+
+Expected values that depend on the embedded kernel assembly (`bin_header_bin`, `DISP_*` dispatch-table entries, `def_wrapper_routines_map_table`, `getKernelCallAddr` results, and `rom.cpp` mapper-patch `kernelAddr`/`offset`) SHALL be derived at test runtime from those same sources, mirroring the production expression, and SHALL NOT be hardcoded. Only Z80 ISA opcodes, compiler-owned geometry/arithmetic constants, and the documented compiler↔kernel ABI byte sequences MAY be asserted literally.
+
+#### Scenario: Kernel reassembly does not break the tests
+- **WHEN** the embedded kernel assembly is reassembled and the kernel-derived addresses change
+- **THEN** the tests SHALL recompute the expected values from `bin_header_bin`/`DISP_*`/`def_wrapper_routines_map_table`
+- **THEN** the tests SHALL still pass without editing their expected values
+- **THEN** the arithmetic mutants in the compiler's own index/offset math SHALL remain killed
 
 ### Requirement: Complex binary readers cover every boundary and error path
 

@@ -62,7 +62,7 @@ check_symbol() {
 
 check_symbol "ARKOS_PLAYER" "ARKOS_PLAYER"
 check_symbol "BASIC_KUN_START_FILLER" "BASIC_KUN_START_FILLER"
-check_symbol "BASIC_KUN_END_FILLER" "BASIC_KUN_END_FILLER"
+check_symbol "KERNEL_END_FILLER" "KERNEL_END_FILLER"
 check_symbol "wrapper_routines_map_table" "wrapper_routines_map_table"
 
 # 5. Check that BASIC_KUN_START_FILLER < ARKOS_PLAYER (there should be filler)
@@ -76,11 +76,11 @@ parse_symbol() {
 
 FILLER_ADDR=$(parse_symbol "BASIC_KUN_START_FILLER")
 ARKOS_ADDR=$(parse_symbol "ARKOS_PLAYER")
-END_FILLER_ADDR=$(parse_symbol "BASIC_KUN_END_FILLER")
+END_FILLER_ADDR=$(parse_symbol "KERNEL_END_FILLER")
 
 echo "BASIC_KUN_START_FILLER = 0x$FILLER_ADDR"
 echo "ARKOS_PLAYER          = 0x$ARKOS_ADDR"
-echo "BASIC_KUN_END_FILLER  = 0x$END_FILLER_ADDR"
+echo "KERNEL_END_FILLER     = 0x$END_FILLER_ADDR"
 
 FILLER_VAL=$((16#$FILLER_ADDR))
 ARKOS_VAL=$((16#$ARKOS_ADDR))

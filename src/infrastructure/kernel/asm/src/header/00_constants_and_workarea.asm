@@ -458,7 +458,8 @@ BASMEM:       equ PLYSGTM+1    ; 40 - RAM starts after compiler internal variabl
 
 PLYBUF:       equ 0xEF00
 SPRTBL:       equ PLYBUF - (32*5)      ; 32 sprites * (test, x0, x1, y0, y1)
-SPRSIZ:       equ SPRTBL - 1
+HITBOX_TABLE: equ SPRTBL - (32*5)      ; 32 sprites * (x0, x1, y0, y1, enabled)
+SPRSIZ:       equ HITBOX_TABLE - 1
 HEAPEND:      equ SPRSIZ - 1
 
 PageSize:	  equ 4000h	               ; 16kB

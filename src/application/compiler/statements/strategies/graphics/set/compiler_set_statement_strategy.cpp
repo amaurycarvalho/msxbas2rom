@@ -1208,12 +1208,108 @@ void CompilerSetStatementStrategy::cmd_set_sprite(
             "Wrong parameters count on SET SPRITE COLOR statement");
       }
 
+    } else if (lexeme->value == "HITBOX") {
+      cmd_set_sprite_hitbox(context);
+
     } else {
       context->syntaxError("Invalid syntax on SET SPRITE statement");
     }
   } else {
     context->syntaxError("Missing parameters on SET SPRITE statement");
   }
+}
+
+void CompilerSetStatementStrategy::cmd_set_sprite_hitbox(
+    shared_ptr<CompilerContext> context) {
+  auto& cpu = *context->cpu;
+  auto& expression = *context->expressionEvaluator;
+  shared_ptr<ActionNode> spriteAction = context->current_action->actions[0];
+  shared_ptr<ActionNode> action = spriteAction->actions[0];
+  shared_ptr<Lexeme> lexeme;
+  unsigned int i, t = action->actions.size();
+  int result_subtype, mode = 3;
+
+  if (t < 1 || t > 5) {
+    context->syntaxError(
+        "Wrong parameters count on SET SPRITE HITBOX statement");
+    return;
+  }
+
+  lexeme = action->actions[0]->lexeme;
+
+  if (lexeme && lexeme->type == Lexeme::type_keyword &&
+      (lexeme->value == "ON" || lexeme->value == "OFF" ||
+       lexeme->value == "AUTO")) {
+    if (t != 1) {
+      context->syntaxError(
+          "Wrong parameters count on SET SPRITE HITBOX statement");
+      return;
+    }
+
+    if (lexeme->value == "ON") {
+      // ld a, 0    ; mode ON (all sprites)
+      cpu.addLdA(0);
+    } else if (lexeme->value == "OFF") {
+      // ld a, 1    ; mode OFF (all sprites)
+      cpu.addLdA(1);
+    } else {
+      // ld a, 2    ; mode AUTO (all sprites)
+      cpu.addLdA(2);
+    }
+
+    // call set_sprite_hitbox
+    context->codeOptimizer->addKernelCall(DISP_set_sprite_hitbox);
+    return;
+  }
+
+  if (t >= 2) {
+    lexeme = action->actions[1]->lexeme;
+    if (lexeme && lexeme->type == Lexeme::type_keyword &&
+        (lexeme->value == "ON" || lexeme->value == "OFF" ||
+         lexeme->value == "AUTO")) {
+      if (t != 2) {
+        context->syntaxError(
+            "Wrong parameters count on SET SPRITE HITBOX statement");
+        return;
+      }
+      if (lexeme->value == "ON") {
+        mode = 3;
+      } else if (lexeme->value == "OFF") {
+        mode = 5;
+      } else {
+        mode = 6;
+      }
+    } else {
+      mode = 4;
+    }
+  }
+
+  if (mode == 4) {
+    // push margins in reverse order (bottom, right, top, left) so that the
+    // kernel can pop them as left, top, right, bottom; omitted trailing
+    // margins default to zero
+    for (i = 4; i >= 1; i--) {
+      if (i < t) {
+        result_subtype = expression.evalExpression(action->actions[i]);
+        expression.addCast(result_subtype, Lexeme::subtype_numeric);
+      } else {
+        // ld hl, 0
+        cpu.addLdHL(0x0000);
+      }
+      // push hl
+      cpu.addPushHL();
+    }
+  }
+
+  // sprite number
+  result_subtype = expression.evalExpression(action->actions[0]);
+  expression.addCast(result_subtype, Lexeme::subtype_numeric);
+
+  // ld a, mode    ; sprite number is already in L
+  cpu.addLdA(mode);
+
+  // call set_sprite_hitbox
+  context->codeOptimizer->addKernelCall(DISP_set_sprite_hitbox);
 }
 
 void CompilerSetStatementStrategy::cmd_set_date(

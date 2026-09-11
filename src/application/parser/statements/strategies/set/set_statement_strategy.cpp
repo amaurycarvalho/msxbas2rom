@@ -208,6 +208,8 @@ bool SetStatementStrategy::parseSetSprite(
       if (next_lexeme->value == "COLOR" || next_lexeme->value == "PATTERN" ||
           next_lexeme->value == "FLIP" || next_lexeme->value == "ROTATE") {
         result = parseSetSpriteColpattra(context, statement);
+      } else if (next_lexeme->value == "HITBOX") {
+        result = parseSetSpriteHitbox(context, statement);
       }
     }
 
@@ -303,6 +305,83 @@ bool SetStatementStrategy::parseSetSpriteColpattra(
 
     if (hasArrayParm) {
       context->popActionRoot();
+    }
+  }
+
+  return true;
+}
+
+bool SetStatementStrategy::parseSetSpriteHitbox(
+    shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
+  shared_ptr<Lexeme> next_lexeme;
+  shared_ptr<LexerLineContext> parm = make_shared<LexerLineContext>();
+  unsigned int t;
+
+  parm->clearLexemes();
+
+  while ((next_lexeme = statement->getNextLexeme())) {
+    next_lexeme = context->coalesceSymbols(next_lexeme);
+
+    if (next_lexeme->isSeparator(",")) {
+      if (parm->getLexemeCount()) {
+        parm->setLexemeBOF();
+        if (!evaluateExpression(context, parm)) {
+          return false;
+        }
+        parm->clearLexemes();
+      } else {
+        context->pushActionFromLexeme(context->lex_null);
+      }
+      continue;
+    }
+
+    if (next_lexeme->type == Lexeme::type_keyword &&
+        (next_lexeme->value == "ON" || next_lexeme->value == "OFF" ||
+         next_lexeme->value == "AUTO")) {
+      if (parm->getLexemeCount()) {
+        parm->setLexemeBOF();
+        if (!evaluateExpression(context, parm)) {
+          return false;
+        }
+        parm->clearLexemes();
+      }
+      parm->addLexeme(next_lexeme);
+      parm->setLexemeBOF();
+      if (!evaluateExpression(context, parm)) {
+        return false;
+      }
+      parm->clearLexemes();
+      continue;
+    }
+
+    parm->addLexeme(next_lexeme);
+  }
+
+  if (parm->getLexemeCount()) {
+    parm->setLexemeBOF();
+    if (!evaluateExpression(context, parm)) {
+      return false;
+    }
+    parm->clearLexemes();
+  }
+
+  t = context->actionRoot->actions.size();
+  if (t < 1 || t > 5) {
+    context->logger->error(
+        "Wrong parameters count on SET SPRITE HITBOX statement");
+    context->eval_expr_error = true;
+    return false;
+  }
+
+  if (t >= 3) {
+    shared_ptr<Lexeme> second = context->actionRoot->actions[1]->lexeme;
+    if (second && second->type == Lexeme::type_keyword &&
+        (second->value == "ON" || second->value == "OFF" ||
+         second->value == "AUTO")) {
+      context->logger->error(
+          "Wrong parameters count on SET SPRITE HITBOX statement");
+      context->eval_expr_error = true;
+      return false;
     }
   }
 

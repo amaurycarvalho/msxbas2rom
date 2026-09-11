@@ -3,7 +3,7 @@
 # by Amaury Carvalho (2022-2026)                                               #
 #------------------------------------------------------------------------------#
 
-.PHONY: all clean debug release lint test coverage lint-full test-clean test-unit test-integration test-coverage test-kernel mutation-clean mutation-build mutation-run mutation-check debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
+.PHONY: all clean debug release lint test coverage lint-full test-clean test-unit test-integration test-coverage test-kernel mutation-clean mutation-build mutation-run mutation-check quality-gate debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
 
 # ----------------------------
 # Variables
@@ -276,6 +276,13 @@ mutation-run: mutation-build
 mutation-check:
 	@echo "🔍 Checking mutation score..."
 	@python3 scripts/check-mutation-score.py "$(MUTATION_REPORT)"
+
+# ----------------------------
+# Quality Gate
+# ----------------------------
+
+quality-gate: lint test-coverage coverage test-kernel test-integration
+	@echo "✅ Quality gate completed"
 
 # -----------------------------------------------
 # Debian package build

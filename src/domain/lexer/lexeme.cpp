@@ -49,7 +49,7 @@ static const map<Lexeme::LexemeSubType, string> subTypeNames = {
 
 const set<string> keywords = {
     "?",         "ABS",       "ADJUST",    "AND",       "APPEND",
-    "ASC",       "ATN",       "BASE",      "BEEP",      "BIN$",
+    "ASC",       "ATN",       "AUTO",      "BASE",      "BEEP",      "BIN$",
     "BLOAD",     "BSAVE",     "CALL",      "CDBL",      "CHR$",
     "CINT",      "CIRCLE",    "CLEAR",     "CLRSCR",    "CLRKEY",
     "CLS",       "CLOAD",     "CLOSE",     "CMD",       "COLLISION",
@@ -60,7 +60,7 @@ const set<string> keywords = {
     "EOF",       "EQV",       "ERASE",     "ERR",       "ERROR",
     "EXP",       "FILES",     "FILE",      "FIX",       "FLIP",
     "FN",        "FONT",      "FOR",       "FPOS",      "FROM",
-    "FRE",       "GET",       "GOSUB",     "GOTO",      "HEAP",
+    "FRE",       "GET",       "GOSUB",     "GOTO",      "HEAP",      "HITBOX",
     "HEX$",      "IDATA",     "IF",        "IMP",       "INCLUDE",
     "INKEY",     "INKEY$",    "INP",       "INPUT",     "INPUT$",
     "INSTR",     "INT",       "INTERVAL",  "IPEEK",     "IPOKE",

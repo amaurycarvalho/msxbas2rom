@@ -35,7 +35,10 @@
 //! @note 32 sprites * (test, x0, x1, y0, y1)
 #define def_SPRTBL (def_PLYBUF - (32 * 5))
 
-#define def_SPRSIZ (def_SPRTBL - 1)
+//! @note 32 sprites * (x0, x1, y0, y1, enabled)
+#define def_HITBOX_TABLE (def_SPRTBL - (32 * 5))
+
+#define def_SPRSIZ (def_HITBOX_TABLE - 1)
 
 //! @brief start of RAM
 #define def_RAM_INIT 0xC010
@@ -362,8 +365,9 @@
 #define DISP_ASCII16_PATCH_BUGFIX_INC1 221
 #define DISP_ASCII16_PATCH_BUGFIX_NOPSEQ 222
 #define DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK 223
+#define DISP_set_sprite_hitbox 224
 
-#define DISP_ENTRIES 224
+#define DISP_ENTRIES 225
 
 //! @remark end of header.symbols adjust
 //! @}
