@@ -39,7 +39,7 @@ Environment variables:
 - `OPENMSX_ARGS` — optional extra launcher arguments, parsed as shell words. Default: empty.
 - `OPENMSX_FLATPAK_APP` — if set, the launcher becomes `flatpak run <value>` and `OPENMSX_EXECUTABLE`/`OPENMSX_ARGS` are ignored. Example: `org.openmsx.openMSX`.
 - `MSX_DEBUG_DELAY` — delay in emulated seconds before capture. Default: `5`.
-- `MSX_DEBUG_MACHINE` — openMSX machine name passed with `-machine`. Default: `Sharp_HB-8000_1.2` (the Brazilian Hotbit), so the emulator never falls back to C-BIOS.
+- `MSX_DEBUG_MACHINE` — openMSX machine name passed with `-machine`. Default: `Sharp_HB-8000_1.2` (the Brazilian Hotbit, MSX1), so the emulator never falls back to C-BIOS. Use `Panasonic_FS-A1WX` when debugging MSX2-oriented BASIC commands.
 - `MSX_DEBUG_SETTINGS` — optional path to an openMSX `settings.xml` to load with `-setting`. When unset, an isolated settings file is generated automatically.
 - `MSX_DEBUG_SCREENSHOT_MODE` — `scaled` (default) or `raw`.
 
@@ -77,11 +77,82 @@ The dump is intended for deterministic post-run inspection by an agent. It shoul
 
 The screenshot is a visual snapshot of the emulated MSX screen at the same capture event.
 
+## Debugging strategies
+
+The launcher captures one RAM dump and one screenshot at a fixed emulated time. Use these
+strategies to turn that into an effective debugging session.
+
+### Freeze the state before capture
+
+A fixed delay does not guarantee the program is at the state of interest. Have the debug
+program compute the values under inspection, `POKE` them into fixed RAM addresses, and then
+halt (for example `GOTO` itself) so every capture sees the same final state. Locate a probe
+byte in the dump at offset `address - 0xC000`.
+
+```basic
+100 POKE 57344, X%
+110 GOTO 110
+```
+
+### Map addresses with symbols
+
+Compile the ROM with `msxbas2rom -s --noi` to get a `.noi` file mapping BASIC variables
+(for example `VAR_X%`) to RAM addresses. Kernel work-area symbols (`SPRTBL`,
+`HITBOX_TABLE`, `SPRSIZ`, ...) are listed in
+`src/infrastructure/kernel/asm/src/header.symbols.asm`.
+
+```bash
+./bin/Release/msxbas2rom -q -s --noi program.bas
+```
+
+### Inspect the artifacts
+
+- RAM: 16384 bytes, byte `0` = `0xC000`. Parse it with a small script (e.g. Python) and
+  search for printable strings to identify variable contents.
+- Screenshot: open the PNG to confirm what is on screen at the capture point.
+
+### Go to CPU level with openMSX breakpoints
+
+When registers or exact instruction flow matter, drive openMSX directly with a Tcl script
+instead of the bulk capture: set a breakpoint with `debug set_bp`, read registers with
+`debug read_block "CPU regs" 0 26`, read memory with
+`debug read_block "Main RAM" <addr> <len>`, and resume with `debug cont`. Callbacks pause
+the CPU, so always call `debug cont`. Write callback output to a file because Tcl `puts` is
+not reliably visible on stdout. Prefer a breakpoint on a success/terminal path to capture
+only the interesting occurrence.
+
+The `CPU regs` block is 26 bytes: `F, A, B, C, D, E, H, L, F', A', B', C', D', E', H', L',
+IXh, IXl, IYh, IYl, SPh, SPl, PCh, PCl, I, R`.
+
+### Rebuild the kernel when debugging kernel behavior
+
+The Z80 kernel is embedded in the compiler as `src/infrastructure/kernel/header.h`. After
+editing `src/infrastructure/kernel/asm/src/header/*.asm`, run:
+
+```bash
+make -C src/infrastructure/kernel/asm
+make release
+```
+
+Referencing absolute RAM addresses inside kernel code for debug stores can make pasmo emit
+a much larger `header.bin`; prefer existing work-area symbols and remove temporary
+instrumentation afterwards.
+
+### MSX2 commands use an MSX2 machine
+
+MSX2-oriented BASIC commands (for example `SCREEN 7`) must be debugged on an MSX2 machine:
+
+```bash
+MSX_DEBUG_MACHINE=Panasonic_FS-A1WX ./scripts/debug-msx-memory.sh program.rom
+```
+
+The default `Sharp_HB-8000_1.2` is an MSX1 machine and remains correct for MSX1 commands.
+
 ## Important behavior
 
 The launcher does not load the user's interactive `settings.xml`. openMSX aborts at startup when that file contains a key binding the installed version does not recognise (for example an unknown `PrintScreen` keycode), which would prevent the capture from running. Instead, the launcher writes a minimal settings file next to the ROM, passes it with `-setting`, and deletes it afterwards.
 
-The machine is selected explicitly with `-machine Sharp_HB-8000_1.2`, so the emulator boots the Sharp HB-8000 (Hotbit) BIOS rather than falling back to C-BIOS. Set `MSX_DEBUG_MACHINE` to use a different machine, or `MSX_DEBUG_SETTINGS` to supply a custom settings file.
+The machine is selected explicitly with `-machine Sharp_HB-8000_1.2`, so the emulator boots the Sharp HB-8000 (Hotbit) BIOS rather than falling back to C-BIOS. Set `MSX_DEBUG_MACHINE` to use a different machine, or `MSX_DEBUG_SETTINGS` to supply a custom settings file. For MSX2-oriented BASIC commands, set `MSX_DEBUG_MACHINE=Panasonic_FS-A1WX`.
 
 The delay uses openMSX's Tcl `after time`, which is based on emulated MSX seconds rather than host wall-clock time. This makes the capture point tied to emulation time.
 

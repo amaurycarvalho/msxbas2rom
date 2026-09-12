@@ -26,6 +26,13 @@ back to C-BIOS instead of the project's target Sharp HB-8000 (Hotbit) machine.
 - Configuration via `OPENMSX_EXECUTABLE`, `OPENMSX_ARGS`, `OPENMSX_FLATPAK_APP`,
   `MSX_DEBUG_DELAY`, `MSX_DEBUG_MACHINE`, `MSX_DEBUG_SETTINGS`,
   `MSX_DEBUG_SCREENSHOT_MODE`.
+- The skill documents reusable debugging strategies: freeze observable state with
+  `POKE` to fixed RAM addresses plus a halt loop; map addresses with `-s --noi` and
+  `header.symbols.asm`; use openMSX breakpoints (`debug set_bp`, `debug read_block
+  "CPU regs"`, `debug read_block "Main RAM"`, `debug cont`) for CPU-level questions;
+  rebuild the embedded kernel header after kernel edits.
+- MSX2-oriented BASIC commands SHALL be debugged on the Panasonic FS-A1WX machine
+  (`MSX_DEBUG_MACHINE=Panasonic_FS-A1WX`); the MSX1 default remains Sharp HB-8000 1.2.
 - Target release `1.3.0.0`.
 
 ## Capabilities

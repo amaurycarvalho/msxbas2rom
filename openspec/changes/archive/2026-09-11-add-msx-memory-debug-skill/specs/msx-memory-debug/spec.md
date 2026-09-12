@@ -137,3 +137,98 @@ be overridable through configuration.
 
 - **WHEN** a machine name is provided through configuration
 - **THEN** openMSX boots the specified machine instead of the default
+
+### Requirement: Debug programs SHALL freeze observable state before capture
+
+Because the capture point is a fixed amount of emulated time, a program that is still
+running at capture time produces a nondeterministic snapshot. A debug build SHALL write
+the values under inspection to fixed RAM addresses and then stop making progress (for
+example, an infinite loop) so the captured RAM and screenshot reflect a known state.
+
+#### Scenario: Fixed-address probe values are readable in the dump
+
+- **WHEN** a debug program pokes an observed value to a fixed RAM address and then loops forever
+- **THEN** the RAM dump contains that value at artifact offset `address - 0xC000`
+
+#### Scenario: Program does not drift past the capture point
+
+- **WHEN** the program reaches its final state before the configured emulated delay
+- **THEN** repeated runs show that final state in the RAM dump and screenshot
+
+### Requirement: Debug builds SHALL be compiled with debugger symbols
+
+The debug workflow SHALL compile the BASIC program with symbol export
+(`msxbas2rom -s --noi`) so BASIC variable names map to RAM addresses in a `.noi` file.
+Kernel work-area symbols (`SPRTBL`, `HITBOX_TABLE`, `SPRSIZ`, etc.) SHALL be read from
+`src/infrastructure/kernel/asm/src/header.symbols.asm`.
+
+#### Scenario: BASIC variable address is known
+
+- **WHEN** the `.noi` file is inspected
+- **THEN** each BASIC variable (for example `VAR_X%`) has a RAM address that can be located in the dump
+
+#### Scenario: Kernel work-area address is known
+
+- **WHEN** kernel behavior is under debug
+- **THEN** the relevant kernel symbol address from `header.symbols.asm` is used to inspect its bytes in the dump
+
+### Requirement: CPU-level debugging SHALL use openMSX breakpoints
+
+When the bulk RAM/screenshot capture is insufficient, the workflow SHALL allow a custom
+openMSX Tcl script that sets breakpoints with `debug set_bp`, reads CPU registers with
+`debug read_block "CPU regs" 0 26` and memory with `debug read_block "Main RAM" <addr> <len>`,
+and resumes execution with `debug cont`. Breakpoint callbacks SHALL write results to a file
+because Tcl `puts` output is not reliably visible on the launcher's stdout. The "CPU regs"
+26-byte layout SHALL be treated as `F, A, B, C, D, E, H, L, F', A', B', C', D', E', H', L',
+IXh, IXl, IYh, IYl, SPh, SPl, PCh, PCl, I, R`.
+
+#### Scenario: Breakpoint captures register and memory state
+
+- **WHEN** a breakpoint fires at a routine of interest
+- **THEN** the callback records the CPU registers and the relevant RAM bytes to a file
+
+#### Scenario: Breakpoint on a success path isolates the interesting case
+
+- **WHEN** a routine is called many times during a run
+- **THEN** the breakpoint is placed on the success/terminal path so only the relevant occurrence is recorded
+
+#### Scenario: CPU is resumed after the callback
+
+- **WHEN** a breakpoint callback has finished recording
+- **THEN** it calls `debug cont` so the emulator continues instead of remaining paused
+
+### Requirement: Kernel behavior changes SHALL rebuild the embedded kernel header
+
+The kernel is embedded in the compiler as a generated C++ header. After editing
+`src/infrastructure/kernel/asm/src/header/*.asm`, the workflow SHALL run
+`make -C src/infrastructure/kernel/asm` (pasmo + `xxd`, regenerating `header.h`) and then
+`make release` before recompiling the ROM under test. Referencing absolute RAM addresses
+inside kernel code for debug stores can make pasmo emit a much larger `header.bin`; existing
+kernel work-area symbols SHOULD be preferred.
+
+#### Scenario: Kernel edit is reflected in the ROM
+
+- **WHEN** a kernel source file is changed and only `make release` is run
+- **THEN** the change is missing from the ROM until the kernel header is regenerated
+
+#### Scenario: Debug stores do not inflate the kernel image
+
+- **WHEN** temporary debug instrumentation is added to kernel code
+- **THEN** it does not cause `header.bin` to grow beyond its expected size
+
+### Requirement: MSX2 BASIC commands SHALL be debugged on an MSX2 machine
+
+MSXBAS2ROM BASIC commands that target MSX2 hardware (for example `SCREEN 7` and MSX2-only
+graphics or VDP features) SHALL be debugged on the Panasonic FS-A1WX machine
+(`MSX_DEBUG_MACHINE=Panasonic_FS-A1WX`) rather than the default Sharp HB-8000 1.2, which is
+an MSX1 machine. MSX1-oriented commands SHALL keep the Sharp HB-8000 default.
+
+#### Scenario: MSX2 command uses FS-A1WX
+
+- **WHEN** an MSX2-specific BASIC command is debugged
+- **THEN** the skill is run with `MSX_DEBUG_MACHINE=Panasonic_FS-A1WX`
+
+#### Scenario: MSX1 command uses the default Hotbit
+
+- **WHEN** an MSX1 BASIC command is debugged
+- **THEN** the default Sharp HB-8000 1.2 machine is used

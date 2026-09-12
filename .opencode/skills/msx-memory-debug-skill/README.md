@@ -58,6 +58,65 @@ openMSX exposes memory and RAM through its debugger as debuggables. The script u
 
 For an MSX program where the CPU-visible page 3 is mapped to another device instead of main RAM, this dump should be understood as the `Main RAM` device contents at those addresses, not necessarily as the currently visible CPU bus contents. If exact CPU-bus mapping is required for a particular machine/mapper, the skill should be extended to capture the relevant mapped memory debuggable as well.
 
+## Debugging strategies
+
+The launcher produces one RAM dump and one screenshot at a fixed emulated time. The
+following practices make that capture useful.
+
+### Freeze the state before capture
+
+Have the debug program compute the values of interest, `POKE` them into fixed RAM
+addresses, and then halt in an infinite loop so every capture sees the same final state:
+
+```basic
+100 POKE 57344, X%
+110 GOTO 110
+```
+
+A probe byte is at offset `address - 0xC000` in the RAM dump.
+
+### Map addresses with symbols
+
+Compile with `-s --noi` to map BASIC variables (for example `VAR_X%`) to RAM addresses:
+
+```bash
+./bin/Release/msxbas2rom -q -s --noi program.bas
+```
+
+Kernel work-area symbols (`SPRTBL`, `HITBOX_TABLE`, `SPRSIZ`, ...) are listed in
+`src/infrastructure/kernel/asm/src/header.symbols.asm`.
+
+### Inspect the artifacts
+
+Parse the 16 KiB RAM dump with a small script (byte `0` is `0xC000`) and search for
+printable strings to identify variable contents. Open the PNG screenshot to confirm the
+on-screen state at the capture point.
+
+### CPU-level debugging with breakpoints
+
+For register or instruction-flow questions, drive openMSX with a custom Tcl script:
+`debug set_bp` to break, `debug read_block "CPU regs" 0 26` for registers,
+`debug read_block "Main RAM" <addr> <len>` for memory, and `debug cont` to resume. Write
+callback output to a file because Tcl `puts` is not reliably visible on stdout. Breakpoints
+pause the CPU, so always call `debug cont`.
+
+The `CPU regs` block is 26 bytes: `F, A, B, C, D, E, H, L, F', A', B', C', D', E', H', L',
+IXh, IXl, IYh, IYl, SPh, SPl, PCh, PCl, I, R`.
+
+### Kernel changes need a kernel rebuild
+
+The Z80 kernel is embedded as `src/infrastructure/kernel/header.h`. After editing
+`src/infrastructure/kernel/asm/src/header/*.asm`:
+
+```bash
+make -C src/infrastructure/kernel/asm
+make release
+```
+
+Referencing absolute RAM addresses inside kernel code for debug stores can make pasmo emit
+a much larger `header.bin`; prefer existing work-area symbols and remove temporary
+instrumentation afterwards.
+
 ## Settings isolation
 
 By default the launcher does **not** load the user's `settings.xml`. openMSX aborts
@@ -79,12 +138,13 @@ selects the target machine explicitly:
 -machine Sharp_HB-8000_1.2
 ```
 
-This boots the Brazilian Sharp HB-8000 (Hotbit) BIOS. Without it openMSX would
-fall back to C-BIOS. Overrides:
+This boots the Brazilian Sharp HB-8000 (Hotbit) BIOS, an MSX1 machine. Without it openMSX
+would fall back to C-BIOS. For MSX2-oriented BASIC commands (for example `SCREEN 7`), use an
+MSX2 machine such as the Panasonic FS-A1WX. Overrides:
 
 ```bash
-# Force a different machine
-MSX_DEBUG_MACHINE=C-BIOS_MSX2+ ./scripts/debug-msx-memory.sh ./program.rom
+# Debug MSX2 commands on a Panasonic FS-A1WX
+MSX_DEBUG_MACHINE=Panasonic_FS-A1WX ./scripts/debug-msx-memory.sh ./program.rom
 
 # Use a custom settings file instead of the generated one
 MSX_DEBUG_SETTINGS=/path/to/settings.xml ./scripts/debug-msx-memory.sh ./program.rom

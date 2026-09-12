@@ -84,6 +84,65 @@ Use `debug read_block "Main RAM" 0xC000 0x4000`.
 - Alternative considered: `after realtime`. Rejected because it drifts with host
   load.
 
+### Capture a frozen state, not a moving target
+
+A fixed emulated delay does not guarantee the program is at the state of interest. The
+recommended workflow is to have the debug program compute the values under inspection,
+`POKE` them into fixed RAM addresses, and then halt in an infinite loop, so every capture
+sees the same final state. The RAM dump is then read with a script and the probe bytes are
+located at `address - 0xC000`.
+
+- Why: a ROM that is still looping or updating when the delay elapses yields a different
+  snapshot on each run, making comparisons unreliable.
+- Alternative considered: raising the delay until the program ends. Rejected because the
+  program may end at an unpredictable time and later state may overwrite the values.
+
+### Map addresses with symbols before interpreting the dump
+
+Compile the ROM with `msxbas2rom -s --noi` to obtain a `.noi` symbol file that maps BASIC
+variables (for example `VAR_X%`) to RAM addresses. Kernel work-area symbols (`SPRTBL`,
+`HITBOX_TABLE`, `SPRSIZ`, and similar) are read from
+`src/infrastructure/kernel/asm/src/header.symbols.asm`. This makes the raw 16 KiB dump
+readable without guessing offsets.
+
+### Use openMSX breakpoints for CPU-level questions
+
+The base skill intentionally only dumps RAM and a screenshot. When the question is about
+register values, exact instruction flow, or a routine that runs many times, a companion
+openMSX Tcl script is used: `debug set_bp` on the address of interest with a callback that
+reads `debug read_block "CPU regs" 0 26` and `debug read_block "Main RAM" ...`, writes the
+result to a file, and calls `debug cont`. Placing the breakpoint on a success/terminal path
+isolates the interesting occurrence. Tcl `puts` is not reliably visible on stdout, so the
+callback writes to a file.
+
+The `CPU regs` debuggable is a 26-byte block whose layout had to be confirmed empirically:
+`F, A, B, C, D, E, H, L, F', A', B', C', D', E', H', L', IXh, IXl, IYh, IYl, SPh, SPl,
+PCh, PCl, I, R`.
+
+- Why: bulk RAM/screenshot capture cannot answer register-level questions.
+- Alternative considered: extend the skill's Tcl script to always set breakpoints. Rejected
+  because breakpoints are question-specific and would complicate the general capture.
+
+### Rebuild the embedded kernel header after kernel edits
+
+The Z80 kernel is embedded in the compiler as the generated `header.h`. Editing
+`src/infrastructure/kernel/asm/src/header/*.asm` requires
+`make -C src/infrastructure/kernel/asm` (pasmo assembles `header.bin`, `xxd` regenerates
+`header.h`) followed by `make release`. Referencing absolute RAM addresses inside kernel
+code for debug stores can make pasmo emit a much larger `header.bin` (observed 32 KiB to
+64 KiB); prefer existing work-area symbols or keep such instrumentation temporary.
+
+### Keep the Sharp HB-8000 default and select an MSX2 machine explicitly
+
+The default `Sharp_HB-8000_1.2` remains the MSX1 target. MSX2-oriented BASIC commands
+(`SCREEN 7`, MSX2-only graphics/VDP features) SHALL be debugged on the Panasonic FS-A1WX
+(`MSX_DEBUG_MACHINE=Panasonic_FS-A1WX`), which boots an MSX2 machine, rather than the MSX1
+Hotbit.
+
+- Why: MSX2-only commands and VDP behavior are not representative on an MSX1 machine.
+- Alternative considered: change the skill default to an MSX2 machine. Rejected because the
+  project's primary target is the Brazilian MSX1 Hotbit.
+
 ## Risks / Trade-offs
 
 - [Risk] The temporary settings file is left behind on `SIGKILL` → Mitigation: the
