@@ -12,49 +12,41 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 
 - [add-16bit-segments-ascii16-4mb-ascii16x-8mb](openspec/changes/add-16bit-segments-ascii16-4mb-ascii16x-8mb) 16-bit segment support enabling ASCII16 up to 4MB and ASCII16X up to 8MB ROMs
 - [add-define-def-fn-preprocessor](openspec/changes/add-define-def-fn-preprocessor) Compile-time macro support via DEFINE and DEF FN preprocessor
-- [add-sprite-hitbox-margins](openspec/changes/add-sprite-hitbox-margins) Add per-sprite configurable collision hitbox margins via SET SPRITE HITBOX
 - [fix-dim-position-order](openspec/changes/fix-dim-position-order) Fix DIM position order so array references before DIM work correctly
 - [implement-double-via-float-float](openspec/changes/implement-double-via-float-float) Double precision operations via float emulation
+- [improve-mutation-score](openspec/changes/improve-mutation-score) Raise the mutation score toward the 85% target with exact-output, sentinel-diverse unit tests
 - [refactor-resource-number-hl-protocol](openspec/changes/refactor-resource-number-hl-protocol) Resource number passing standardized to HL register protocol
 - [set-page-screen4](openspec/changes/set-page-screen4) SET PAGE support for screen 4 compatibility
+- [wishlist](openspec/changes/wishlist) Explore and track potential future improvements not yet scheduled for any sprint
 
-## [1.2.3.0] - 2026-09-05
+## [1.3.0.0] - 2026-09-14
 
-### [2026-08-12-improve-code-coverage](openspec/changes/archive/2026-08-12-improve-code-coverage) Raise unit-test line coverage to ≥ 85% across the codebase
-
-#### Added
-- Add unit tests for the lowest-coverage compiler statements (SET, ON, COPY, PUT, SCREEN, CIRCLE, LET, PAINT, PSET, COLOR, KEY)
-- Expand semantic-helper coverage (expression evaluator, variable emitter, code helper, float converter)
-- Add tests for resource readers with little or no coverage (AKM reader, MTF map reader)
-- Cover untested paths in `compiler.cpp` and `rom.cpp`
-- Add tests for the graphics statement parser (graphics, put, on, set, screen)
-- Add tests for low-coverage function strategies (MID$, INSTR$, STRING$, USING, USR)
-- Add smoke tests for previously 0%-coverage files (`compiler_time_statement`, `compiler_open_grp_statement`, `vscode_helper`)
-- Expand Z80 kernel (`z80.cpp`) coverage on unexercised paths
-
-### [2026-09-05-raise-mutation-score-to-85](openspec/changes/archive/2026-09-05-raise-mutation-score-to-85) Raise the mutation score to ≥ 85% by killing surviving mutants with new unit tests
+### [2026-09-11-add-msx-memory-debug-skill](openspec/changes/archive/2026-09-11-add-msx-memory-debug-skill) Add an agent-driven openMSX memory/screenshot capture skill for deterministic post-run inspection of MSX ROMs
 
 #### Added
-- Add unit tests exercising every function-strategy result subtype (numeric, single, double)
-- Add omitted-argument (null subtype) and boundary tests for statement strategies
-- Add both-side equality and boundary tests across parser, lexer, domain, CLI, and symbols export modules
-- Add exact-size boundary tests for resource readers and `compiler.cpp`/`rom.cpp`
+- Register the `msx-memory-debug` capability and its implementation under `.opencode/skills/msx-memory-debug-skill/`
+- Tcl capture script reads `Main RAM` at `0xC000..0xFFFF` (16384 bytes) with `debug read_block`, saves a PNG screenshot, and exits openMSX
+- Configuration via `OPENMSX_EXECUTABLE`, `OPENMSX_ARGS`, `OPENMSX_FLATPAK_APP`, `MSX_DEBUG_DELAY`, `MSX_DEBUG_MACHINE`, `MSX_DEBUG_SETTINGS`, `MSX_DEBUG_SCREENSHOT_MODE`
 
 #### Changed
-- Raise the mutation-score threshold from 80% to 85% in the mutation run and check script
-- Lower the Mull per-mutant timeout from 60000 ms to 10000 ms
+- Isolate openMSX from the user's interactive `settings.xml` by generating a minimal settings file, passing it with `-setting`, and deleting it on exit, so the skill no longer crashes on host-specific bindings
+- Select the Sharp HB-8000 (Hotbit) machine explicitly with `-machine Sharp_HB-8000_1.2`, preventing a C-BIOS fallback
+- Document reusable debugging strategies: freeze observable state with `POKE` plus a halt loop, map addresses with `-s --noi` and `header.symbols.asm`, use openMSX breakpoints, and rebuild the embedded kernel header after kernel edits
+- Debug MSX2-oriented BASIC commands on the Panasonic FS-A1WX machine; the MSX1 default remains Sharp HB-8000 1.2
 
-### [2026-09-05-vscode-helper-initialize-into](openspec/changes/archive/2026-09-05-vscode-helper-initialize-into) Add VSCode scaffolding into a caller-chosen directory and repair the CLI spec
+### [add-sprite-hitbox-margins](openspec/changes/archive/2026-09-14-add-sprite-hitbox-margins) Add per-sprite configurable collision hitbox margins via SET SPRITE HITBOX
 
 #### Added
-- Add `VSCodeHelper::initializeInto(path)` to scaffold `.vscode` (`launch.json`, `tasks.json`, `debug.tcl`) under a target directory, reporting failure without writes when `.vscode` already exists or cannot be created
+- Add the `SET SPRITE HITBOX` BASIC command family with global and per-sprite `ON`/`OFF`/`AUTO` forms plus explicit `<sprite>, <left>, <top>, <right>, <bottom>` margins
+- Add the `HITBOX_TABLE` runtime table (32 × 5 bytes) storing pre-normalized relative bounds (`X0`, `X1`, `Y0`, `Y1`) and a per-sprite enabled flag
+- Add the single kernel routine `set_sprite_hitbox` with a mode byte implementing all command forms
+- Add the `HITBOX` and `AUTO` lexer keywords
 
 #### Changed
-- Make `initialize()` delegate to `initializeInto(".")`, keeping the `--vscode` CLI behavior unchanged
-- Refactor the CWD-dependent `VSCodeHelper` smoke test into hermetic tests under `tests/unit/tmp/` (content markers, cleanup, already-initialized scenario)
-- Repair `openspec/specs/cli/spec.md` into valid main-spec form and document `--vscode` plus other implemented-but-undescribed CLI flags
+- Make `COLLISION()` combine each sprite's position from `SPRTBL` with its relative bounds from `HITBOX_TABLE`, keeping the public `COLLISION()`/`COLLISION(n)`/`COLLISION(n1,n2)` API unchanged
+- Reset `HITBOX_TABLE` to the default full-rectangle state on sprite clear (`SUB_CLRSPR`), covering the SCREEN sprite-size path
 
-[Unreleased]: https://github.com/amaurycarvalho/msxbas2rom/compare/v1.2.3.0...HEAD
-[1.2.3.0]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.2.3.0
+[Unreleased]: https://github.com/amaurycarvalho/msxbas2rom/compare/v1.3.0.0...HEAD
+[1.3.0.0]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.3.0.0
 
 See [CHANGELOG Archive](CHANGELOG-ARCHIVE.md) for older releases.
