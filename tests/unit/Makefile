@@ -65,7 +65,7 @@ setup:
 	@mkdir -p $(OBJ)
 	@mkdir -p $(BIN)
 
-coverage:
+coverage: run
 	@gcovr --root . --filter "$(SRC_ROOT)/" --filter "$(TEST_SRC)/" --exclude ".*doctest\.h$$" --json-summary=coverage-summary.json --json-summary-pretty --print-summary --fail-under-line 84
 
 $(OBJ)/src_%.o: $(SRC_ROOT)/%.cpp | setup

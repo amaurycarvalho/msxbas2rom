@@ -20,19 +20,19 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcovr
+          sudo apt-get install -y gcovr pasmo
       - name: Linting
         run: |
           make lint
       - name: Architecture boundary check
         run: |
           make test-architecture
-      - name: Unit testing
+      - name: Unit testing with coverage
         run: |
-          make test
-      - name: Code coverage
+          make test-coverage
+      - name: Kernel testing
         run: |
-          make coverage
+          make test-kernel
       - name: Integration testing
         run: |
           make test-integration
