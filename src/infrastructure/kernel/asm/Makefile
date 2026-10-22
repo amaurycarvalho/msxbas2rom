@@ -20,8 +20,11 @@ SRC_FILES = $(shell find $(SRC_DIR)/header -name '*.asm' | sort)
 all: $(INC_DIR)/header.h \
      $(INC_DIR)/start.h 
 
+$(BIN_DIR):
+	@mkdir -p $(BIN_DIR)
+
 # Rule: header.asm → header.bin → header.h
-$(BIN_DIR)/header.bin: $(SRC_DIR)/header.asm $(SRC_FILES)
+$(BIN_DIR)/header.bin: $(SRC_DIR)/header.asm $(SRC_FILES) | $(BIN_DIR)
 	$(PASMO) $< $@ $(SRC_DIR)/header.symbols.asm
 	@SIZE=$$(stat -c%s $@ 2>/dev/null || echo 0); \
 	LIMIT=32768; \
@@ -40,7 +43,7 @@ $(INC_DIR)/header.h: $(BIN_DIR)/header.bin
 	$(XXD) $< > $@
 
 # Rule: start.asm → start.bin → start.h
-$(BIN_DIR)/start.bin: $(SRC_DIR)/start.asm
+$(BIN_DIR)/start.bin: $(SRC_DIR)/start.asm | $(BIN_DIR)
 	$(PASMO) $< $@
 
 $(INC_DIR)/start.h: $(BIN_DIR)/start.bin
