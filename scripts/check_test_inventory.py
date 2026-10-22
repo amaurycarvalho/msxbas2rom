@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Reject temporary .bas file creation in headless unit tests.
+"""Enforce the boundary between unit tests and real filesystem work.
 
-Compilation unit tests must supply source text through an in-memory resolver.
-A test file may opt into filesystem source coverage with the marker:
+Unit tests must use in-memory adapters. A test file may opt into explicit
+file-adapter coverage with the marker:
 
     // test-inventory: file-adapter
 
-Those files are the documented explicit adapter exceptions.
+Marked adapter tests may use the filesystem, but only through an OS temporary
+directory. Project-relative temporary paths are rejected so mutation runs never
+pollute or depend on the repository tree.
 """
 
 import argparse
@@ -15,25 +17,51 @@ import sys
 from pathlib import Path
 
 ADAPTER_MARKER = "test-inventory: file-adapter"
-FILE_ACCESS_PATTERN = re.compile(
-    r"\b(ofstream|fopen|std::remove|unlink)\b"
+DISK_IO_PATTERN = re.compile(
+    r"\b(ofstream|ifstream|fopen|freopen|createPath|unlink|mkdir|_mkdir|rmdir|RemoveDirectoryA|CreateDirectoryA)\b"
 )
+DELETE_PATTERN = re.compile(r"\bstd::remove\b")
+PROJECT_TMP_PATTERN = re.compile(r'["\']tmp[/\\]')
 BAS_LITERAL_PATTERN = re.compile(r"\.bas\b")
 
 
-def scan_file(path: Path):
-    raw = path.read_text(encoding="utf-8", errors="replace")
-    if ADAPTER_MARKER in raw:
-        return []
+def adapter_errors(path: Path, lines):
     errors = []
-    lines = raw.splitlines()
     for index, line in enumerate(lines):
-        if BAS_LITERAL_PATTERN.search(line) and FILE_ACCESS_PATTERN.search(line):
+        if not (DISK_IO_PATTERN.search(line) or DELETE_PATTERN.search(line)):
+            continue
+        if PROJECT_TMP_PATTERN.search(line):
+            errors.append(
+                "%s:%d: file-adapter tests must use an OS temporary "
+                "directory, not project-relative tmp/" % (path, index + 1)
+            )
+    return errors
+
+
+def unit_errors(path: Path, lines):
+    errors = []
+    for index, line in enumerate(lines):
+        disk_io = DISK_IO_PATTERN.search(line)
+        delete = DELETE_PATTERN.search(line)
+        if disk_io:
+            errors.append(
+                "%s:%d: filesystem access requires the '%s' marker"
+                % (path, index + 1, ADAPTER_MARKER)
+            )
+        elif delete and BAS_LITERAL_PATTERN.search(line):
             errors.append(
                 "%s:%d: temporary .bas file use requires the '%s' marker"
                 % (path, index + 1, ADAPTER_MARKER)
             )
     return errors
+
+
+def scan_file(path: Path):
+    raw = path.read_text(encoding="utf-8", errors="replace")
+    lines = raw.splitlines()
+    if ADAPTER_MARKER in raw:
+        return adapter_errors(path, lines)
+    return unit_errors(path, lines)
 
 
 def check(root: Path):
@@ -60,8 +88,8 @@ def main(argv=None):
             print("  - " + error)
         return 1
 
-    print("Test inventory check passed: no temporary .bas files outside "
-          "explicit adapter tests.")
+    print("Test inventory check passed: unit tests use in-memory adapters; "
+          "file-adapter tests use OS temporary directories.")
     return 0
 
 

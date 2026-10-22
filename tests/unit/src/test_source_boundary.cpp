@@ -22,10 +22,12 @@
 #include "parser.h"
 #include "source_document.h"
 #include "source_resolver.h"
+#include "test_temp_dir.h"
 
-static std::string createTempFile(const std::string& filename,
+static std::string createTempFile(const TestTempDir& temp,
+                                  const std::string& filename,
                                   const std::string& content) {
-  const std::string path = "tmp/" + filename;
+  const std::string path = temp.file(filename);
   std::ofstream ofs(path, std::ios::binary);
   ofs.write(content.data(), content.size());
   ofs.close();
@@ -49,9 +51,10 @@ TEST_SUITE("Source boundary") {
   }
 
   TEST_CASE("In-memory and file-backed lexing are equivalent") {
+    TestTempDir temp;
     const std::string content =
         "10 A=32767:B=&HFF\n20 PRINT A;B\n30 REM comment\n";
-    const std::string path = createTempFile("source_boundary.bas", content);
+    const std::string path = createTempFile(temp, "source_boundary.bas", content);
 
     auto fileResolver = std::make_shared<FileSourceResolver>();
     auto memoryResolver = std::make_shared<InMemorySourceResolver>();
@@ -72,36 +75,32 @@ TEST_SUITE("Source boundary") {
     CHECK(fileLexer.evaluate() == true);
     CHECK(memoryLexer.evaluate() == true);
     CHECK(fileLexer.toString() == memoryLexer.toString());
-
-    std::remove(path.c_str());
   }
 
   TEST_CASE("File adapter preserves missing, empty and tokenized diagnostics") {
+    TestTempDir temp;
     FileSourceResolver resolver;
     SourceDocument document;
 
-    CHECK(resolver.resolve("tmp/source_missing.bas", document) == false);
+    CHECK(resolver.resolve(temp.file("source_missing.bas"), document) == false);
     CHECK(resolver.lastError() == "File doesn't exist");
 
-    const std::string empty = createTempFile("source_empty.bas", "");
+    const std::string empty = createTempFile(temp, "source_empty.bas", "");
     CHECK(resolver.resolve(empty, document) == false);
     CHECK(resolver.lastError() == "Empty file");
 
     const std::string tokenized =
-        createTempFile("source_tokenized.bas",
+        createTempFile(temp, "source_tokenized.bas",
                        std::string("\xFF\x00\x80", 3));
     CHECK(resolver.resolve(tokenized, document) == false);
     CHECK(resolver.lastError().find("Tokenized MSX-BASIC") !=
           std::string::npos);
 
     const std::string invalid =
-        createTempFile("source_invalid.bas", std::string("\x01\x02\x03", 3));
+        createTempFile(temp, "source_invalid.bas",
+                       std::string("\x01\x02\x03", 3));
     CHECK(resolver.resolve(invalid, document) == false);
     CHECK(resolver.lastError() == "This is not a MSX-BASIC source code file.");
-
-    std::remove(empty.c_str());
-    std::remove(tokenized.c_str());
-    std::remove(invalid.c_str());
   }
 
   TEST_CASE("INCLUDE is resolved in memory without a temporary .bas file") {

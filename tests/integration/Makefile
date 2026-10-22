@@ -6,12 +6,12 @@
 APP_PATH := ../../bin/Release/msxbas2rom
 BAS_FILES := $(shell find . -type f -name "*.bas")
 
-.PHONY: all run setup build clean
+.PHONY: all run setup build clean cli-characterization
 
 all:
 	@echo "📌 Run integration test: make run"
 
-run: setup build clean
+run: setup cli-characterization build clean
 	@echo "✅ Integration test finished"
 
 setup:
@@ -39,6 +39,10 @@ build:
 		echo "Compiling $$file with --konami"; \
 		$(APP_PATH) -q --konami $$file || exit 1; \
 	done
+
+cli-characterization:
+	@echo "🧭 Running CLI characterization..."
+	@APP_PATH="$(APP_PATH)" ./cli/run_cli_characterization.sh
 
 clean: 
 	@echo "🧹 Cleaning ROM files..."

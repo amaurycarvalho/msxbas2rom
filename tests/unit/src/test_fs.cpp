@@ -20,6 +20,7 @@
 #include "doctest/doctest.h"
 #include "in_memory_source_resolver.h"
 #include "test_support.h"
+#include "test_temp_dir.h"
 #include <fstream>
 #include <iterator>
 #include "fswrapper.h"
@@ -29,171 +30,15 @@
 #include "pletter.h"
 #include "z80.h"
 
-static int COMPILE(string filename, bool megarom = false) {
-  std::ifstream input(filename.c_str());
-  REQUIRE(input.good());
-  const std::string content((std::istreambuf_iterator<char>(input)),
-                            std::istreambuf_iterator<char>());
-
-  auto resolver = make_shared<InMemorySourceResolver>();
-  resolver->add(filename, content);
-
-  shared_ptr<Lexer> lexer = make_shared<Lexer>(resolver);
-  shared_ptr<Parser> parser = make_shared<Parser>();
-  shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
-  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
-  shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
-
-  // build options
-  build_options::setInputFilename(opts, filename);
-  opts->megaROM = megarom;
-
-  // lexing
-  CHECK(lexer->load(opts) == true);
-  CHECK(lexer->evaluate() == true);
-
-  // parsing
-  CHECK(parser->evaluate(lexer) == true);
-
-  // compiling
-  CHECK(compiler->build(parser) == true);
-
-  return 0;
-}
-
-TEST_SUITE("FS suite") {
-  TEST_CASE("PRINT statement") {
-    SUBCASE("hello world") {
-      string filename = "../integration/PRINT/test1.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("numerical constants") {
-      string filename = "../integration/PRINT/test4.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("variables") {
-      string filename = "../integration/PRINT/test7.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-  }
-  TEST_CASE("MATH operators/functions") {
-    SUBCASE("simple operators") {
-      string filename = "../integration/MATH/test1.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("FLOAT operators") {
-      string filename = "../integration/MATH/test10.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("SQR function") {
-      string filename = "../integration/MATH/test11.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("RANDOMIZE functions") {
-      string filename = "../integration/MATH/test13.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("BINARY operators and numeric conditionals") {
-      string filename = "../integration/MATH/test14.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("INTEGER conditionals") {
-      string filename = "../integration/MATH/test16.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("FLOAT conditionals") {
-      string filename = "../integration/MATH/test16F.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("SIN function") {
-      string filename = "../integration/MATH/test22.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("COS function") {
-      string filename = "../integration/MATH/cos.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-  }
-}
-
-TEST_SUITE("GRAPH test") {
-  TEST_CASE("LINE/CIRCLE/PSET/PAINT statements") {
-    SUBCASE("simple plot") {
-      string filename = "../integration/GRAPH/line1.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("complex plot") {
-      string filename = "../integration/GRAPH/line2.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("globe") {
-      string filename = "../integration/GRAPH/globe.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("mexican hat") {
-      string filename = "../integration/GRAPH/mexhat.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("stars") {
-      string filename = "../integration/GRAPH/stars.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("tree") {
-      string filename = "../integration/GRAPH/tree.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-  }
-}
-
-TEST_SUITE("MEGAROM test") {
-  TEST_CASE("PRINT statement") {
-    SUBCASE("simple calculation") {
-      string filename = "../integration/MEGAROM/test51.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("calculation with GOSUBs") {
-      string filename = "../integration/MEGAROM/test53.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-  }
-  TEST_CASE("DATA statement") {
-    SUBCASE("lorem ipsum") {
-      string filename = "../integration/MEGAROM/test54.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-    SUBCASE("resources") {
-      string filename = "../integration/MEGAROM/data.bas";
-      CAPTURE(filename);
-      COMPILE(filename);
-    }
-  }
-}
-
 TEST_SUITE("Fswrapper") {
   TEST_CASE("fileExists detects existing files") {
-    CHECK(fileExists("Makefile") == true);
-    CHECK(fileExists("tmp/nonexistent_file_xyz.bas") == false);
+    TestTempDir temp;
+    const std::string existing = temp.file("exists.bas");
+    std::ofstream out(existing.c_str());
+    out << "10 END\n";
+    out.close();
+    CHECK(fileExists(existing) == true);
+    CHECK(fileExists(temp.file("nonexistent_file_xyz.bas")) == false);
   }
 
   TEST_CASE("pathJoin handles empty and separator edge cases") {
@@ -230,9 +75,14 @@ TEST_SUITE("Fswrapper") {
   }
 
   TEST_CASE("pathExists detects directories only") {
-    CHECK(pathExists("tmp") == true);
-    CHECK(pathExists("tmp/nonexistent_dir_xyz") == false);
-    CHECK(pathExists("Makefile") == false);
+    TestTempDir temp;
+    const std::string file = temp.file("not_a_dir.txt");
+    std::ofstream out(file.c_str());
+    out << "x";
+    out.close();
+    CHECK(pathExists(temp.path()) == true);
+    CHECK(pathExists(temp.file("nonexistent_dir_xyz")) == false);
+    CHECK(pathExists(file) == false);
   }
 
   TEST_CASE("Logger contain filters by level") {

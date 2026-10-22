@@ -35,7 +35,7 @@ class TestInventoryTests(unittest.TestCase):
             'void f() { std::ofstream out("tmp/program.bas"); }\n',
         )
         errors = inventory.check(self.root)
-        self.assertTrue(any(".bas file use" in error for error in errors), errors)
+        self.assertTrue(any("filesystem access" in error for error in errors), errors)
 
     def test_remove_bas_fails(self):
         write(
@@ -46,14 +46,34 @@ class TestInventoryTests(unittest.TestCase):
         errors = inventory.check(self.root)
         self.assertTrue(any(".bas file use" in error for error in errors), errors)
 
-    def test_adapter_marker_allows_file_use(self):
+    def test_adapter_marker_rejects_project_tmp(self):
         write(
             self.root,
             "tests/unit/src/test_source_adapter.cpp",
             "// test-inventory: file-adapter\n"
             'void f() { std::ofstream out("tmp/program.bas"); }\n',
         )
+        errors = inventory.check(self.root)
+        self.assertTrue(any("OS temporary" in error for error in errors), errors)
+
+    def test_adapter_marker_allows_os_temp_directory(self):
+        write(
+            self.root,
+            "tests/unit/src/test_source_adapter.cpp",
+            "// test-inventory: file-adapter\n"
+            'void f() { std::ofstream out(temp.file("program.bas")); }\n',
+        )
         self.assertEqual(inventory.check(self.root), [])
+
+    def test_non_bas_file_io_fails_without_marker(self):
+        write(
+            self.root,
+            "tests/unit/src/test_compile.cpp",
+            'void f() { std::ifstream in("fixture.bin"); }\n',
+        )
+        errors = inventory.check(self.root)
+        self.assertTrue(any("filesystem access" in error for error in errors),
+                        errors)
 
     def test_in_memory_source_passes(self):
         write(

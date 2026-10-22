@@ -95,6 +95,28 @@ TEST_SUITE("Kernel image boundary") {
     CHECK(context->getCodeOptimizer()->getKernelCallAddr(0x4100) == 0x4321);
   }
 
+  TEST_CASE("In-memory image handles empty and boundary call targets") {
+    InMemoryKernelImage empty{std::vector<unsigned char>()};
+    CHECK(empty.size() == 0);
+    CHECK(empty.bytes() == nullptr);
+    CHECK(empty.dispatchAddress(DISP_MR_CALL) == 0);
+    CHECK(empty.resolveCall(0x4000) == 0x4000);
+
+    auto bytes = makeKernelBytes();
+    bytes[0x3FFF] = 0x00;
+    InMemoryKernelImage image(bytes);
+    CHECK(image.resolveCall(0x3FFE) == 0x3FFE);
+    CHECK(image.resolveCall(0x3FFF) == 0x3FFF);
+
+    bytes[0x4100] = 0xC3;
+    bytes[0x4101] = 0x21;
+    bytes[0x4102] = 0x43;
+    InMemoryKernelImage jpImage(bytes);
+    CHECK(jpImage.resolveCall(0x4100) == 0x4321);
+    CHECK(jpImage.resolveCall(0x7FFE) == 0x7FFE);
+    CHECK(jpImage.resolveCall(0x8000) == 0x8000);
+  }
+
   TEST_CASE("Mapper patches use the supplied kernel image offsets") {
     auto bytes = makeKernelBytes();
     auto image = std::make_shared<InMemoryKernelImage>(

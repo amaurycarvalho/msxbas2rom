@@ -3,7 +3,7 @@
 # by Amaury Carvalho (2022-2026)                                               #
 #------------------------------------------------------------------------------#
 
-.PHONY: all clean debug release lint test coverage lint-full test-clean test-unit test-integration test-coverage test-kernel test-architecture mutation-clean mutation-build mutation-run mutation-check quality-gate debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
+.PHONY: all clean build debug release lint test lint-full test-clean test-unit test-integration test-coverage test-kernel test-architecture mutation-clean mutation-build mutation-run mutation-check quality-gate debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
 
 # ----------------------------
 # Variables
@@ -114,9 +114,11 @@ RPM_PACKAGE = msxbas2rom*.rpm
 # Main build
 # ----------------------------
 
-all: clean debug release
+all: clean build
 
 clean: clean_debug clean_release
+
+build: debug release
 
 # ----------------------------
 # Debug build
@@ -201,8 +203,6 @@ lint-full:
 
 test: test-architecture test-unit
 
-coverage: test-coverage
-
 test-unit:
 	@echo "🔍 Running unit testing..."
 	@$(MAKE) -C tests/unit run
@@ -270,8 +270,8 @@ mutation-run: mutation-build
 		--reporters Elements \
 		--report-dir "$(CURDIR)" \
 		--report-name $(MUTATION_REPORT_NAME) \
-		--timeout 32000 \
-		--minimum-timeout 32000 \
+		--timeout 45000 \
+		--minimum-timeout 45000 \
 		--mutation-score-threshold 85 \
 		--allow-surviving \
 		--no-test-output \
@@ -288,7 +288,7 @@ mutation-check:
 # Quality Gate
 # ----------------------------
 
-quality-gate: lint test-architecture test-coverage coverage test-kernel test-integration
+quality-gate: lint test-architecture test-coverage test-kernel test-integration
 	@echo "✅ Quality gate completed"
 
 # -----------------------------------------------

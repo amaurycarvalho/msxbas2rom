@@ -26,7 +26,7 @@ Fall back to grep/glob only when semantic search returns insufficient or irrelev
 
 ## Composition Root and Dependency Injection
 
-- Production adapters are constructed only in `src/cli/runner.cpp`, the CLI
+- Production adapters are constructed only in `src/cli/runner/runner.cpp`, the CLI
   composition root. `main.cpp` only delegates to `runCli`.
 - Application and domain components receive their external collaborators through
   constructors or parameter objects (`CompilationRequest`). Do not add global

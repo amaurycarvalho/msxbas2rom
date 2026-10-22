@@ -14,6 +14,7 @@
 #include "comment_state.h"
 #include "doctest/doctest.h"
 #include "test_support.h"
+#include "test_temp_dir.h"
 
 static std::shared_ptr<TestSourceResolver> testSourceResolver() {
   static auto resolver = std::make_shared<TestSourceResolver>();
@@ -38,9 +39,14 @@ static std::string createTempBas(const std::string& filename,
   return path;
 }
 
+static TestTempDir& lexerTempDir() {
+  static TestTempDir temp;
+  return temp;
+}
+
 static std::string createTempBin(const std::string& filename,
                                  const std::vector<unsigned char>& data) {
-  const std::string path = "tmp/" + filename;
+  const std::string path = lexerTempDir().file(filename);
   std::ofstream ofs(path, std::ios::binary);
   ofs.write(reinterpret_cast<const char*>(data.data()), data.size());
   ofs.close();
@@ -105,17 +111,14 @@ TEST_SUITE("Lexer") {
 
   TEST_CASE("Fails when input file does not exist") {
     Lexer lexer(testSourceResolver());
-    CHECK(lexer.load("tmp/does_not_exist.bas") == false);
+    CHECK(lexer.load(lexerTempDir().file("does_not_exist.bas")) == false);
     CHECK(lexer.getLogger()->trace().toString().find("File doesn't exist") !=
           std::string::npos);
   }
 
   TEST_CASE("Fails for tokenized MSX-BASIC input") {
-    const std::string filename = "tmp/lexer_tokenized.bas";
-    std::ofstream ofs(filename, std::ios::binary);
-    unsigned char data[] = {0xFF, 0x00, 0x80};
-    ofs.write(reinterpret_cast<const char*>(data), sizeof(data));
-    ofs.close();
+    const std::string filename =
+        createTempBin("lexer_tokenized.bas", {0xFF, 0x00, 0x80});
 
     Lexer lexer(testSourceResolver());
     CHECK(lexer.load(filename) == false);

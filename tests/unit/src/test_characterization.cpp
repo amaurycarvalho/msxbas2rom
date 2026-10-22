@@ -4,6 +4,7 @@
  */
 
 // NOLINTBEGIN
+// test-inventory: file-adapter
 
 #include <cstdio>
 #include <fstream>
@@ -20,6 +21,7 @@
 #include "in_memory_rom_writer.h"
 #include "in_memory_source_resolver.h"
 #include "test_support.h"
+#include "test_temp_dir.h"
 #include "in_memory_resource_content_source.h"
 #include "in_memory_symbol_output_sink.h"
 #include "kernel_image.h"
@@ -84,7 +86,8 @@ TEST_SUITE("Characterization") {
   }
 
   TEST_CASE("In-memory and file-backed parsing/compilation are equivalent") {
-    const std::string path = "../integration/PRINT/test1.bas";
+    const std::string path =
+        testFixturePath("tests/integration/PRINT/test1.bas");
     std::ifstream input(path.c_str());
     REQUIRE(input.good());
     const std::string content((std::istreambuf_iterator<char>(input)),
@@ -124,7 +127,8 @@ TEST_SUITE("Characterization") {
   }
 
   TEST_CASE("ROM bytes are equivalent for in-memory and file-backed programs") {
-    const std::string filePath = "../integration/PRINT/test1.bas";
+    const std::string filePath =
+        testFixturePath("tests/integration/PRINT/test1.bas");
     const std::string memoryPath = "tmp/characterization_rom_memory.bas";
     std::ifstream input(filePath.c_str());
     REQUIRE(input.good());

@@ -8,7 +8,7 @@ See `proposal.md` for motivation. Current state relevant to this design:
 - Survivors (733) split by mutator class: **254** relational (`lt`/`le`/`gt`/`ge`), **207** equality (`eq_to_ne`/`ne_to_eq`), **147** arithmetic (`add`/`sub`/`mul`/`div`/`rem`), **113** inc/dec (`post`/`pre`), and 12 others.
 - Survivors are concentrated by group: compiler statements 229, builder readers 145 (`resource_akm_reader` 91 — 65 non-linker + 26 linker —, `resource_spr_reader` 19, `resource_akx_reader` 13), compiler semantic helpers 98, parser 98, `compiler.cpp` relocation/layout 46, and the builder/symbols/lexer/application/kernel/domain/cli tail 117.
 - Round 2 implemented exhaustive enumeration (phases 7–9) but reported **70%** because tests asserted high-level properties. Round 3 rewrote them to assert exact emitted bytes (phases 11–15) and moved to **73%**. A residual class of survivors remains: **index/offset mutants** (`dest[address - N]` → `address + N`, `data[i + 1]` → `i - 1`) whose fixtures use **zeros or equal values**, so reading/writing the wrong offset yields a byte identical to the expected one and the mutant is equivalent *for that fixture* (e.g. `dest[address - 3]` mutated to `dest[address + 3]` reads an all-zero cell while the intended cell is also `0x00`). Round 4 addresses this with **distinct sentinel bytes per offset** (Decision 13).
-- Tests are doctest 2.4.11 in `tests/unit/src/*.cpp`, one `test_unit` binary. `make mutation-run` uses `mull-runner-18 --timeout 32000 --minimum-timeout 32000 --allow-surviving --test-suite-exclude=Slow`.
+- Tests are doctest 2.4.11 in `tests/unit/src/*.cpp`, one `test_unit` binary. `make mutation-run` uses `mull-runner-18 --timeout 45000 --minimum-timeout 45000 --allow-surviving --test-suite-exclude=Slow`.
 - mull-runner 0.34.0 exposes **no per-mutant filter** (only `--dry-run` to enumerate without executing), so incremental verification is `make -C tests/unit run`; the full `make mutation-run` is a user-managed step. New tests compile without `-fpass-plugin`, so they do not change the mutant count.
 
 ## Goals / Non-Goals
@@ -111,7 +111,7 @@ Excluding any of these whole files would also drop a large number of reachable, 
 Decisions already made and implemented in Round 1 remain in force and are not re-decided here:
 
 - Slow-test exclusion: the 8 KB blob test is tagged `TEST_SUITE("Slow")` and skipped during mutation via `--test-suite-exclude=Slow`, but still runs in `make run`.
-- Timeout: `--timeout 32000 --minimum-timeout 32000` (the measured baseline ~27 s mull / ~45 s gcc exceeds the old 10-15 s assumption; no further change needed).
+- Timeout: `--timeout 45000 --minimum-timeout 45000` (the final post-Round-6 baseline excluding `Slow` measured 34.00 s, above the former 32 s cap; raised per the `mutation-testing` timeout requirement).
 - doctest/test code is already out of mutation scope (test objects compile without `-fpass-plugin`).
 - `--ld-search-path /lib/x86_64-linux-gnu:/lib64` silences the JIT library warnings.
 - `pletter.cpp` is already excluded via `excludePaths`.
@@ -236,7 +236,7 @@ at runtime, and explains the ABI reason.
 
 ### Decision 18: Fast mutation coverage is separated from broad end-to-end smoke coverage
 
-The measured post-Phase-A normal suite is 582 tests / 3,997 assertions. The
+The measured post-Phase-A normal suite is 624 tests / 8,991 assertions. The
 slowest cases are the 8K blob pack (9.446 s, already in `Slow`), all statement
 strategies (2.047 s), all function strategies (1.478 s), decimal/string
 function subtypes (1.417 s), the 64-sprite cap fixture (1.017 s), all CMD
@@ -249,9 +249,9 @@ in-memory source setup, compact boundary fixtures, and shared test helpers.
 One representative end-to-end compilation remains per feature family. An
 existing broad aggregate can enter `Slow` for Mull only after fast, focused
 tests cover every mutation-relevant behavior it supplied; it remains in the
-ordinary unit suite. The post-Phase-A baseline (24.95 s excluding `Slow`) is
-well below the 32 s per-run cap, so the current timeout remains valid unless
-Round 6 tests push it past that value.
+ordinary unit suite. The initial post-Phase-A baseline was 24.95 s excluding `Slow`; after Round 6
+it measured 34.00 s, so the Mull timeout was raised to 45000 ms instead of
+tagging broad aggregates that still carry mutation-relevant coverage.
 
 - Rationale: Mull executes the whole test binary for each mutant, so baseline
   duration directly determines mutation feedback cost.
@@ -344,7 +344,7 @@ harness should need edits.
 
 ## Migration Plan
 
-1. Confirm CleanArch Phase A is complete, its normal suite passes, and the boundary check is green. (Verified: `make test-architecture` green; 582 tests / 3,997 assertions pass.)
+1. Confirm CleanArch Phase A is complete, its normal suite passes, and the boundary check is green. (Verified: `make test-architecture` green; 624 tests / 8,991 assertions pass.)
 2. Use the fresh post-Phase-A `make mutation-run` report: 70%, 1,783 killed, 733 survived, 12 timeout out of 2,528; 2,149 killed are required, i.e. 366 additional kills.
 3. Add Round 6 tests in phase order (statements -> semantic/core -> readers -> parser -> long tail), verifying each batch with `make -C tests/unit run`.
 4. Add the Z80 regression fingerprints/dispatch checks (non-scoring) and the slow-test isolation after focused replacements exist.

@@ -4,6 +4,7 @@
  */
 
 // NOLINTBEGIN
+// test-inventory: file-adapter
 
 #include <cstdio>
 #include <cstring>
@@ -23,6 +24,7 @@
 #include "resource_spr_reader.h"
 
 #include "in_memory_resource_content_source.h"
+#include "test_temp_dir.h"
 
 static std::shared_ptr<InMemoryResourceContentSource> resourceSource =
     std::make_shared<InMemoryResourceContentSource>();
@@ -171,7 +173,8 @@ TEST_SUITE("ResourceReadersExtra") {
 
   TEST_CASE("ResourceAkmReader loads real AKM song") {
     resetResourceSource();
-    std::string fname = "../../tests/integration/ARKTRK/songs.akm";
+    std::string fname =
+        testFixturePath("tests/integration/ARKTRK/songs.akm");
     registerResourceFile(fname);
 
     ResourceAkmReader reader(fname, resourceSource);
@@ -278,7 +281,8 @@ TEST_SUITE("ResourceReadersExtra") {
 
   TEST_CASE("ResourceAkmReader produces identical bytes across loads") {
     resetResourceSource();
-    std::string fname = "../../tests/integration/ARKTRK/songs.akm";
+    std::string fname =
+        testFixturePath("tests/integration/ARKTRK/songs.akm");
     registerResourceFile(fname);
 
     ResourceAkmReader reader1(fname, resourceSource);
@@ -296,7 +300,8 @@ TEST_SUITE("ResourceReadersExtra") {
 
   TEST_CASE("ResourceAkxReader loads real AKX effects") {
     resetResourceSource();
-    std::string fname = "../../tests/integration/ARKTRK/effects.akx";
+    std::string fname =
+        testFixturePath("tests/integration/ARKTRK/effects.akx");
     registerResourceFile(fname);
 
     ResourceAkxReader reader(fname, resourceSource);
@@ -322,7 +327,8 @@ TEST_SUITE("ResourceReadersExtra") {
 
   TEST_CASE("ResourceAkxReader produces identical bytes across loads") {
     resetResourceSource();
-    std::string fname = "../../tests/integration/ARKTRK/effects.akx";
+    std::string fname =
+        testFixturePath("tests/integration/ARKTRK/effects.akx");
     registerResourceFile(fname);
 
     ResourceAkxReader reader1(fname, resourceSource);

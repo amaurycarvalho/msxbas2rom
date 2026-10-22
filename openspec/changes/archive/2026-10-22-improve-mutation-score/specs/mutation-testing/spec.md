@@ -186,7 +186,7 @@ sites stable while the cleanarch implementation changes their internals.
 
 ### Requirement: Mutation run timeout is proportionate to test duration
 
-The Mull run SHALL use a timeout of 32 seconds (32000 ms) for both `--timeout` and `--minimum-timeout`, so that the warm-up (baseline) run of the whole doctest suite completes within the per-run timeout. The doctest suite has grown past the previously assumed 10–15 second baseline; the implementation SHALL measure the actual baseline of the mutation test binary and keep `--timeout` above the full-suite wall time. Because Mull executes the entire test binary on each run, `--timeout` is a per-run cap and SHALL stay above the full-suite wall time; per-mutant hangs are then bounded by Mull's effective timeout `max(baseline*10, minimum-timeout)`. After CleanArch Phase A and after adding Round 6 tests, the baseline SHALL be remeasured; if it reaches or exceeds 32 seconds, `--timeout` and `--minimum-timeout` SHALL be raised above the measured baseline before the user's final run.
+The Mull run SHALL use a timeout above the measured full-suite baseline for both `--timeout` and `--minimum-timeout` (currently 45000 ms, after the post-Round-6 baseline measured 34.00 s), so that the warm-up (baseline) run of the whole doctest suite completes within the per-run timeout. The doctest suite has grown past the previously assumed 10–15 second baseline; the implementation SHALL measure the actual baseline of the mutation test binary and keep `--timeout` above the full-suite wall time. Because Mull executes the entire test binary on each run, `--timeout` is a per-run cap and SHALL stay above the full-suite wall time; per-mutant hangs are then bounded by Mull's effective timeout `max(baseline*10, minimum-timeout)`. After CleanArch Phase A and after adding Round 6 tests, the baseline SHALL be remeasured; if it reaches or exceeds 32 seconds, `--timeout` and `--minimum-timeout` SHALL be raised above the measured baseline before the user's final run (implemented as 45000 ms for the 34.00 s baseline).
 
 #### Scenario: Baseline warm-up run completes
 - **WHEN** `make mutation-run` starts and performs its warm-up run of the full doctest suite
@@ -196,7 +196,7 @@ The Mull run SHALL use a timeout of 32 seconds (32000 ms) for both `--timeout` a
 #### Scenario: Hanging mutants are bounded and flagged
 - **WHEN** a mutant causes an infinite loop during mutation testing
 - **THEN** the mutant SHALL be reported with status "Timeout" instead of running indefinitely
-- **AND** the mutation run SHALL NOT wait on a single hanging mutant for more than the effective per-mutant timeout (`max(baseline*10, 32000)`)
+- **AND** the mutation run SHALL NOT wait on a single hanging mutant for more than the effective per-mutant timeout (`max(baseline*10, 45000)`)
 - **AND** a per-run cap below the full-suite duration SHALL NOT be used, because it aborts the warm-up run before any mutant is executed
 
 ### Requirement: Existing tests remain unchanged

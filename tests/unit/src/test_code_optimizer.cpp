@@ -6,6 +6,7 @@
 // NOLINTBEGIN
 
 #include <memory>
+#include <stdexcept>
 
 #include "build_options.h"
 #include "compiler.h"
@@ -223,6 +224,48 @@ TEST_SUITE("CompilerCodeOptimizer") {
     auto& code = ctx->getCpu()->context->getCode();
     CHECK(code[0] == 0xCD);  // call
     CHECK(code[3] == 0xC4);  // call nz
+  }
+
+  TEST_CASE("Dead ld de,/ld hl,(x) branch preserves exact bytes") {
+    for (int value = 1; value <= 3; value++) {
+      auto ctx = makeOptimizerContext();
+      auto& cpu = *ctx->getCpu();
+      cpu.addLdHLii(0x1234);
+      cpu.addLdDE(value);
+      ctx->getCodeOptimizer()->addByteOptimized(0x19);
+      auto& code = ctx->getCpu()->context->getCode();
+      CHECK(code[0] == 0x2A);
+      CHECK(code[3] == 0x11);
+      CHECK(code[6] == 0x19);
+      CHECK(ctx->getCpu()->context->getCodeSize() == 7);
+    }
+  }
+
+  TEST_CASE("addKernelCall rejects indices at and above DISP_ENTRIES") {
+    auto ctx = makeOptimizerContext();
+    CHECK_THROWS_AS(ctx->getCodeOptimizer()->addKernelCall(DISP_ENTRIES),
+                    std::range_error);
+    CHECK_THROWS_AS(ctx->getCodeOptimizer()->addKernelCall(DISP_ENTRIES + 1),
+                    std::range_error);
+  }
+
+  TEST_CASE("Fix shift only touches fixes at or after the saved pointer") {
+    auto ctx = makeOptimizerContext();
+    auto& cpu = *ctx->getCpu();
+    cpu.addLdHL(0x1234);
+    cpu.addPushHL();
+    cpu.addLdHL(0x5678);
+
+    auto before = make_shared<FixNode>();
+    before->address = 0;
+    ctx->getFixes().push_back(before);
+    auto after = make_shared<FixNode>();
+    after->address = cpu.context->getCodePointer();
+    ctx->getFixes().push_back(after);
+
+    ctx->getCodeOptimizer()->addByteOptimized(0xD1);
+    CHECK(before->address == 0);
+    CHECK(after->address == cpu.context->getCodePointer());
   }
 
   TEST_CASE("Pop-de optimization shifts subsequent fix addresses") {

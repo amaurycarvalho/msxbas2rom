@@ -14,7 +14,6 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - [add-define-def-fn-preprocessor](openspec/changes/add-define-def-fn-preprocessor) Compile-time macro support via DEFINE and DEF FN preprocessor
 - [fix-dim-position-order](openspec/changes/fix-dim-position-order) Fix DIM position order so array references before DIM work correctly
 - [implement-double-via-float-float](openspec/changes/implement-double-via-float-float) Double precision operations via float emulation
-- [improve-mutation-score](openspec/changes/improve-mutation-score) Raise the mutation score toward the 85% target with exact-output, sentinel-diverse unit tests
 - [refactor-resource-number-hl-protocol](openspec/changes/refactor-resource-number-hl-protocol) Resource number passing standardized to HL register protocol
 - [set-page-screen4](openspec/changes/set-page-screen4) SET PAGE support for screen 4 compatibility
 - [wishlist](openspec/changes/wishlist) Explore and track potential future improvements not yet scheduled for any sprint
@@ -40,6 +39,31 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - Keep `RESOURCESIZE(n)` and the existing `DISP_cmd_rsctoram` dispatch unchanged
 
 ## [1.3.1.0] - 2026-10-21
+
+### [improve-mutation-score](openspec/changes/archive/2026-10-22-improve-mutation-score) Raise the mutation score with exact-output, sentinel-diverse unit tests
+
+#### Added
+- Add exact-output and sentinel-diverse coverage for MegaROM relocation/layout, resource readers, compiler semantic helpers, statement strategies, parser, symbols, lexer, and builder code
+- Add normalized Z80 generated-code fingerprints and kernel dispatch-layout integrity checks as non-scoring regression coverage
+- Add exhaustive relocation-switch coverage, including never-emitted conditional `call`/`jp` variants
+
+#### Changed
+- Require kernel-derived expected values to be computed at test runtime and compiler/Z80 constants to be asserted literally
+- Raise the Mull timeout to 45000 ms for the measured post-Round-6 baseline
+- Strengthen the mutation-testing spec with fresh-report, sentinel-diverse, C++-scope, and kernel-safe requirements
+
+### [isolate-unit-tests-from-file-io](openspec/changes/archive/2026-10-22-isolate-unit-tests-from-file-io) Move CLI E2E scenarios to integration and isolate file-adapter tests in OS temporary directories
+
+#### Added
+- Add a cross-platform `TestTempDir` RAII helper for OS temporary directories
+- Add an integration CLI characterization script preserving normal, quiet, debug, symbol, missing-input, and ASCII8-retry assertions
+
+#### Changed
+- Move CLI characterization out of the unit/mutation binary into `tests/integration`
+- Remove the compile-based `FS`, `GRAPH`, and `MEGAROM` suites from `tests/unit/src/test_fs.cpp`
+- Convert explicit file-adapter unit tests to OS temporary directories with automatic cleanup
+- Strengthen `check_test_inventory.py` to reject filesystem I/O outside adapter tests and project-relative `tmp/` paths
+- Reduce the plain-ROM overflow fixture from 900 to 200 lines
 
 ### [refactor-clean-architecture-testability](openspec/changes/archive/2026-10-21-refactor-clean-architecture-testability) Refactor compilation boundaries for in-memory testability and enforce Clean Architecture dependency rules
 

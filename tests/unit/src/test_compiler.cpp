@@ -749,6 +749,26 @@ TEST_SUITE("Compiler") {
       CHECK(out[0x10] == 0x00);  // new_address 0x8000
       CHECK(out[0x11] == 0x80);
     }
+
+    TEST_CASE("Sentinel bytes outside the patch window are untouched") {
+      auto h = makeRelocationHarness();
+      seedFix(h, 0xCD, 0x20, 0x4000);
+      auto& code = h.ctx->getCpu()->context->getCode();
+      for (int i = 0; i < (int)code.size(); i++) {
+        code[i] = static_cast<unsigned char>(0xA0 + (i & 0x3F));
+      }
+      code[0x1F] = 0xCD;
+      code[0x20] = 0x00;
+      code[0x21] = 0x00;
+
+      std::vector<unsigned char> out(0x4000, 0);
+      h.compiler->write(out.data(), 0x8000);
+
+      for (int i = 0; i < 0x16; i++) {
+        CHECK(out[i] == static_cast<unsigned char>(0xA0 + (i & 0x3F)));
+      }
+    }
+
   }
 
   TEST_SUITE("MegaROM layout arithmetic") {

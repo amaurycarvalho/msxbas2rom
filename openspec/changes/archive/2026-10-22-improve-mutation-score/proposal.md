@@ -35,7 +35,7 @@ Before Phase A, the Round 3 baseline was **73%** (`mutation_report.json` of set/
   - **Phase 17 — fallback + final verification:** record the accepted equivalents/unreachable mutants (AKM linker, dead optimizer branch, timeouts); `mull.yml` unchanged; user runs the full mull.
 - **Fallback scope narrowing:** kept only for provably equivalent/unreachable mutants, but note that `excludePaths` matches whole files (Decision 8), so it cannot target individual switch cases; `mull.yml` remains unchanged and the accepted-equivalent mutants are recorded instead.
 - **Anti-fragility constraint (Decisions 11/13/14):** exact-output tests use **distinct sentinel bytes per offset** and never hardcode kernel-derived values. Z80 opcodes, compiler-owned layout arithmetic, and the documented compiler↔kernel ABI are asserted literally; kernel-resolved addresses (`mr_call_target`/`mr_jump_target`/`mr_get_data_target`, `getKernelCallAddr`, `rom.cpp` mapper-patch `kernelAddr`/`offset`) are derived at test runtime from `bin_header_bin`/`DISP_*`/`def_wrapper_routines_map_table`, so the suite does not break when the embedded kernel assembly is reassembled.
-- No production source changes; this change touches tests only (the sole production change, `Compiler::getContext()`, was added in Round 3). The `Makefile` `mutation-run` target is unchanged (Round 1 already added `--ld-search-path` and `--test-suite-exclude=Slow`).
+- No production source changes; this change touches tests only (the sole production change, `Compiler::getContext()`, was added in Round 3). The `Makefile` `mutation-run` timeout is raised from 32000 to 45000 ms after the Round 6 baseline measured 34.20 s excluding `Slow`; `--ld-search-path` and `--test-suite-exclude=Slow` remain from Round 1.
 
 - **Round 6 (after CleanArch Phase A, target >85%)** replaces the Round 5
   plan and does not reopen completed Rounds 1-4:
@@ -85,5 +85,5 @@ Before Phase A, the Round 3 baseline was **73%** (`mutation_report.json` of set/
 - New test-only files: `tests/unit/src/test_support.h` (shared `compileSource()`/`kernelImage()` seams), `tests/unit/src/test_generated_z80.cpp` (normalised fragment fingerprint), and `tests/unit/src/test_kernel_layout.cpp` (dispatch integrity and limited declared ABI spans).
 - Depends on Phase A of `refactor-clean-architecture-testability`; the old `mutation_report.json` line targets are invalidated by that phase and must be regenerated.
 - `mull.yml`: no change — the fallback is not viable at sub-file granularity (Decision 8).
-- `Makefile`: no change.
+- `Makefile`: raise `--timeout`/`--minimum-timeout` to 45000 ms per the remeasured post-Round-6 baseline.
 - No production code, APIs, or dependencies change in this change; the Phase A production refactor belongs to `refactor-clean-architecture-testability`.

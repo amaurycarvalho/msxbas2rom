@@ -99,7 +99,7 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 
 ## [1.2.0.0] - 2026-06-25
 
-### mtf-enhancements MTF window-copy support with extended parameter handling
+### [2026-06-25-mtf-enhancements](openspec/changes/archive/2026-06-25-mtf-enhancements) Add MTF window-copy and extended parameter handling
 
 #### Added
 - Add MTF operation 2: window-copy (partial map copy with configurable source rectangle and screen destination — preserves tiles outside the window via LDIRMV+LDIRVM, only 2 VDP transfers regardless of window size)
@@ -114,6 +114,58 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - Use incremental builds — no forced `make clean`
 
 ## [1.1.0.0] - 2026-06-23
+
+### [2026-06-23-add-ascii16-mapper](openspec/changes/archive/2026-06-23-add-ascii16-mapper) Add ASCII16 MegaROM mapper support
+
+#### Added
+- Add ASCII16 compile mode to the CompileMode enum
+- Add CLI flags -6 and --ascii16 for ASCII16 MegaROM selection
+- Add dispatch-table-guided kernel binary patching via new fixAscii16Mapper() method: rewrites MR_CHANGE_SGM with push af; srl a; ld (0x7000),a; pop af; ret (SeqReplace, 9 bytes), patches boot bugfix to single ld (0x7000),1 write (1 ByteReplace + 3 NOPs), patches 4th/5th OPENMSX autodetection writes to 0x77FF (2× SeqReplace, 3 bytes each). Total: 7 patch points.
+- Add dispatch table entries for new kernel patch-point labels (ascii16_patch_bugfix_inc1, ascii16_patch_bugfix_nopseq)
+- Add unit tests for ASCII16 CLI parsing and ROM building
+- Add integration test coverage using existing MEGAROM test programs compiled with --ascii16
+
+#### Changed
+- The compiler is unchanged — the kernel converts 8KB segment numbers to 16KB page numbers via srl a at runtime
+- resourceSegment stays at pages.size() * 2 (8KB-pair convention unchanged across all MegaROM modes)
+- Update output filename suffix to [ASCII16]
+- Update status messages and help text in CLI
+
+### [2026-06-23-add-ascii16x-mapper](openspec/changes/archive/2026-06-23-add-ascii16x-mapper) Add ASCII16-X MegaROM mapper support and signature
+
+#### Added
+- Add ASCII16X compile mode to the CompileMode enum
+- Add CLI flags -7 and --ascii16x for ASCII16-X MegaROM selection
+- Write the ASCII16-X autodetection signature ASCII16X at ROM offset 0x0010 in fixAscii16Mapper() for ASCII16X mode only
+- Add unit tests for ASCII16X CLI parsing, ROM building, and signature byte verification
+
+#### Changed
+- Reserve 8 bytes in the kernel ROM header (via ds 8 between db 'MSXB2R' and INIT1:) shifting the entry point from 0x4010 to 0x4018; the KERNEL_END_FILLER absorbs the size delta keeping BIN_HEADER_BIN_LEN at 32768
+- Update the hardcoded "LOADER" kernel symbol address from "4010" to "4018" in symbol_export_context.cpp
+- Extend fixAscii16Mapper() guard to also apply kernel patching for ASCII16X mode (7 identical patch points: 1 SeqReplace + 3 NOP + 1 ByteReplace + 2 OMSX SeqReplace)
+- Update output filename suffix to [ASCII16X]
+- Update status messages and help text in CLI
+- Regenerate header.h and header.symbols.asm via make header
+- The compiler's segment math requires zero changes — kernel-side srl a conversion handles all MegaROM modes uniformly (only a code size overflow guard was added to ICpuOpcodeWriter::addCodeByte())
+
+### [2026-06-23-add-konami4-mapper](openspec/changes/archive/2026-06-23-add-konami4-mapper) Add Konami4 MegaROM mapper support
+
+#### Added
+- Add Konami4 compile mode to the CompileMode enum
+- Add CLI flags -4 and --konami for Konami4 MegaROM selection
+- Add unit tests for Konami4 CLI parsing and ROM building
+- Add integration test coverage using existing MEGAROM test programs compiled with --konami
+
+#### Changed
+- Reuse existing kernel segment-switch patching (Konami4 uses 0x8000/0xA000 upper-bank switch addresses, patched via dispatch table)
+- Rename fixIfKonamiSCC() to fixKonamiMapper() with updated method comment and error message text; extend condition to include Konami4
+- Update output filename suffix to [Konami]
+- Update status messages in main.cpp to distinguish Konami4 from KonamiSCC
+
+### [2026-06-23-expand-megarom-limit-to-2mb](openspec/changes/archive/2026-06-23-expand-megarom-limit-to-2mb) Expand the MegaROM compile limit from 1 MB to 2 MB
+
+#### Changed
+- #define COMPILE_MAX_PAGES em compiler.h passa de (16 * 4) para (16 * 8), dobrando COMPILE_CODE_SIZE de 1MB para 2MB
 
 ### Added
 
@@ -135,6 +187,114 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - Regenerate header artifacts (header.h, header.symbols.asm) for shifted kernel layout
 
 ## [1.0.1.0] - 2026-06-23
+
+### [2026-06-22-kernel-call-indirection](openspec/changes/archive/2026-06-22-kernel-call-indirection) Route XBASIC kernel calls through indirect dispatch entries
+
+#### Added
+- Adicionar ~55 novas entradas dw na tabela wrapper_routines_map_table em 20_runtime.asm, cobrindo todas as rotinas XBASIC atualmente chamadas com endereço direto (math, string, graphics, traps, casts, I/O)
+- Adicionar ~55 novas constantes DISP_XBASIC_* em compiler_hooks.h, estendendo a cadeia de índices até DISP_ENTRIES = ~181
+
+#### Changed
+- Substituir ~117 chamadas cpu.addCall(def_XBASIC_*) por optimizer.addKernelCall(DISP_XBASIC_*) em todos os arquivos C++ que emitem código para essas rotinas (expression evaluator, math/string/graphics functions, statements)
+- Substituir ~12 magic numbers (0x009C, 0x009F, 0x00C0, etc.) por constantes nomeadas def_CHSNS, def_CHGET, etc. em compiler_hooks.h
+- Substituir todas as chamadas cpu.addCall(def_XBASIC_*) remanescentes (já há entradas na tabela para algumas rotinas XBASIC como XBASIC_CLS, XBASIC_PLAY, XBASIC_PRINT_*, etc.) por optimizer.addKernelCall(DISP_XBASIC_*)
+
+### [2026-06-22-optimize-kernel-space](openspec/changes/archive/2026-06-22-optimize-kernel-space) Optimize and shrink the embedded kernel implementation
+
+#### Added
+- Add kernel regression tests that verify ROM binary integrity after optimizations
+
+#### Changed
+- Consolidate 4 consecutive ld (ENDPRG+n),a zero-stores into a loop/ldir (20_runtime.asm)
+- Compact player idle-state initialization across 4 occurrences using sequential writes (33_player.asm)
+- Replace 126-entry jp jump table with word-pointer dispatch table (20_runtime.asm)
+- Update compiler_hooks.h C-side dispatch offsets to match new wrapper table layout
+
+#### Fixed
+- Fix GICINI double-call bug in cmd_mute — calls GICINI twice when only once is needed (31_cmd.asm)
+- Fix MegaROM mode restore bug in verify.slots.test.ram — writes wrong value to mapper port (60_bios_helpers.asm)
+- Fix missing carry clear before sbc hl,de in cmd_fopen heap calculation (34_file_handling.asm)
+- Fix hardcoded 255-byte copy in resource.get_data that ignores real resource size (80_resources.asm)
+
+#### Removed
+- Remove the fully commented-out BDOS fallback block (90 lines, ~250 bytes) from 34_file_handling.asm
+- Remove dead inc de in XBASIC_INIT function key loop (30_basic_helpers.asm)
+- Remove dead ld a, 2 in cmd_finput state machine (34_file_handling.asm)
+- Remove redundant push de/pop de guard in cmd_preflight_disk (34_file_handling.asm)
+- Remove duplicate ld a, (STARTUP_CFG_FILEIO) load in run_user_basic_code_on_rom (20_runtime.asm)
+- Remove redundant xor a in resource.address (80_resources.asm)
+
+### [2026-06-22-split-header-bin-virtual-table](openspec/changes/archive/2026-06-22-split-header-bin-virtual-table) Split header.bin into a virtual dispatch table and kernel image
+
+#### Added
+- Build size check updates: LIMIT=16384 → LIMIT=32768 for the full binary.
+
+#### Changed
+- header.bin doubles from 0x4000 to 0x8000 bytes: First half (0x0000-0x3FFF) becomes a virtual compile-time-only section containing the dispatch table + zero-fill padding. Second half (0x4000-0x7FFF) is the actual kernel ROM image.
+- Dispatch table moves to logical address 0x0000: wrapper_routines_map_table uses org 0000h and DEFS 0x4000 - $ to pad to the second half boundary. No second org needed — the padding naturally lands at logical address 0x4000.
+- C++ address resolution adapts: getKernelCallAddr() handles the 0x0000-0x3FFF range for table lookups (reading bin_header_bin[address] directly) and the 0x4000-0x7FFF range for kernel addresses (also using bin_header_bin[address] directly — no - 0x4000 offset needed).
+- ROM builder writes only the second half: addKernel() copies bin_header_bin + 0x4000 instead of the full binary.
+- 5 nops removed from 20_runtime.asm (they existed only to align the table to 0x4102).
+
+### [2026-06-22-wrapper-dispatch-table](openspec/changes/archive/2026-06-22-wrapper-dispatch-table) Replace wrapper addresses with DISP_ dispatch indices
+
+#### Changed
+- Q1 resolution: All dispatch index constants in compiler_hooks.h use the DISP_ prefix (e.g., DISP_cmd_clrkey, DISP_castParamFloatInt) — BREAKING renaming from def_* address constants
+- Q2 resolution: getKernelCallAddr() is updated to resolve targets through the dw dispatch table instead of checking for 0xC3 (jp) opcode bytes. All C-side wrapper calls go through a single helper (addKernelCall()) using the dispatch index and calculating the real call address at compile time instead of runtime. Also, it eliminates the need for a separate addKernelDispatch() emission method and a wrapper_routines_map_start routine (20_runtime.asm).
+- Kernel size constraint: The final kernel ROM SHALL NOT exceed 0x4000 bytes; a build-time check alerts if this limit is breached and an unit test must be written to test it.
+- def_wrapper_routines_map_start must be removed.
+
+### [2026-06-22-wrapper-table-restructure](openspec/changes/archive/2026-06-22-wrapper-table-restructure) Replace the jp jump table with compact word-pointer dispatch
+
+#### Changed
+- Replace the 126-entry jp jump table in 20_runtime.asm with a dw word-pointer table and a small dispatcher routine (~5 bytes)
+- Update compiler_hooks.h C-side #define constants to emit dispatch indexes instead of the +3 byte-offset chain
+- Update compiler_code_optimizer.cpp to resolve targets through the new dispatch mechanism
+- Update all cpu.addCall(def_xxx) call sites (~100+ files) across the C++ compiler to use a new addKernelDispatch() helper that emits the dispatch sequence
+
+#### Removed
+- Remove the 5-byte padding introduced by the prior optimization to reclaim those bytes
+
+### [2026-06-23-disable-unused-90-support-code](openspec/changes/archive/2026-06-23-disable-unused-90-support-code) Disable unreachable 90_support.asm labels while preserving offsets
+
+#### Changed
+- Desativar 58 labels em 90_support.asm que não possuem caminho de execução a partir de nenhum entry point externo (C++ via def_* macros ou outros .asm)
+- Substituir cada bloco desativado por DEFS <tamanho>, 0x00 para manter endereços absolutos dos labels subsequentes
+- Blocos a desativar (agrupados por proximidade):
+- NÃO alterar (conforme solicitado): BASIC_KUN_START_FILLER, ARKOS_PLAYER, I7EA8 (CHR$), I7EC3 (HEX$), I7EC6 (OCT$), I7EC9 (BIN$), I7EEF (SPACE$), BASIC_KUN_END_FILLER
+
+### [2026-06-23-extend-kernel-optimizations](openspec/changes/archive/2026-06-23-extend-kernel-optimizations) Extend kernel micro-optimizations across runtime and command routines
+
+#### Changed
+- Collapse intCompareGT into a delegation to intCompareLT via operand swap (ex de,hl + jp), eliminating 9 bytes of duplicated xor-bias logic in 21_logic_pack.asm
+- Collapse intCompareGE into a delegation to intCompareLE via operand swap, eliminating another 9 bytes in 21_logic_pack.asm
+- Replace four consecutive sla a instructions with add a, a in cmd_setfnt.default_colors.1 (31_cmd.asm lines 498-502), saving 4 bytes and 16 cycles
+- Replace ld (MV_DPTR),hl / ld hl,(MV_DPTR) with push hl / pop hl in XBASIC_COPY_TO (30_basic_helpers.asm lines 441, 458), saving 4 bytes and 11 cycles
+- Replace 4× sla e with ld a,e / 4× add a,a / ld e,a in FloatToBCD.add.2 (21_logic_pack.asm lines 246-249), saving 2 bytes
+- Replace ld a,h / res 7,a / ld h,a with res 7,h in FloatToBCD (21_logic_pack.asm lines 175-177), saving 2 bytes
+- Replace cpl + 2× ld (CURLIN),a with ld hl,0xFFFF / ld (CURLIN),hl in XBASIC_END (30_basic_helpers.asm lines 157-159), saving 1 byte
+- Replace bit 7,h / jr z with jp p in XBASIC_TAB (30_basic_helpers.asm lines 635-636), saving 1 byte
+- Replace 2× sla a with 2× add a,a in cmd_play (31_cmd.asm lines 14-15), saving 2 bytes
+- Replace 4× sla a with 4× add a,a in cmd_page.delay (31_cmd.asm lines 1284-1287), saving 4 bytes
+- Replace 4× sla a with 4× add a,a in cmd_mtf.palette.copy.to_vram.loop (31_cmd.asm lines 1716-1719), saving 4 bytes
+- Replace 7× inc hl with ld de,7 / add hl,de in cmd_wrtfnt (31_cmd.asm lines 90-96), saving 3 bytes
+
+#### Removed
+- Remove commented-out Panasonic turbo check dead code in cmd_turbo (31_cmd.asm lines 534-536) and usr2_turbo (32_usr.asm lines 108-110)
+- Remove commented-out MSX2 VDP fallback dead code in gfxVDP.set (60_bios_helpers.asm lines 913-917)
+- Remove dead xor a from intSHR.1 shift loop (21_logic_pack.asm line 111), saving 1 byte and 4 cycles/iteration
+- Remove dead commented-out source lines in XBASIC_END / XBASIC_INIT (30_basic_helpers.asm lines 153-154, 160, 201-202), zero bytes (cleanup)
+
+### [2026-06-23-refactor-xbx-equ-indirection](openspec/changes/archive/2026-06-23-refactor-xbx-equ-indirection) Point XBASIC EQUs at native kernel labels
+
+#### Added
+- Adicionar label C7F44: em 90_support.asm no entry point mid-routine do XBASIC_COPY_STRING (offset +4 de C7F40)
+
+#### Changed
+- Alterar 80 EQUs XBASIC_*: equ 0xXXXX em 00_constants_and_workarea.asm para XBASIC_*: equ <label-nativo>, onde <label-nativo> é o label CXXXX/IXXXX/JXXXX já existente no mesmo endereço
+
+#### Removed
+- Remover o EQU redundante WriteParamBCD: equ 0x6C0B (conflito com label homônimo em 90_support.asm:190)
 
 ### Added
 
@@ -185,6 +345,129 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - Remove 5 alignment `nop` instructions from `20_runtime.asm` (no longer needed after dispatch table move)
 
 ## [1.0.0.0] - 2026-06-19
+
+### [2026-06-18-changelog-standardization](openspec/changes/archive/2026-06-18-changelog-standardization) Standardize CHANGELOG.md on Keep a Changelog and ISO dates
+
+#### Changed
+- Convert CHANGELOG.md to Keep a Changelog format with categorized sections (Added, Changed, Fixed, Removed, Security)
+- Migrate date format from (YYYY/MM/DD) to ISO YYYY-MM-DD
+- Convert placeholder #.#.#.# entries into ## [Unreleased] sections
+- Update info_history (in appinfo.h) to contain only: current release details + summary of the last 2 releases + link to the current release on GitHub
+- Update the architecture spec to document the new changelog format and sync conventions
+- Update appinfo.h comments to reflect the new sync rule
+
+### [2026-06-18-import-existing-specs](openspec/changes/archive/2026-06-18-import-existing-specs) Import existing user stories, ADRs, glossary, and governance into OpenSpec
+
+#### Added
+- Create archived changes for completed sprints (1-3 from plan.md)
+- Create active changes for pending sprints (4-7 from plan.md)
+
+#### Changed
+- Migrate 8 user stories from specs/user-stories/ into capability specs under openspec/specs/<capability>/spec.md
+- Migrate ADR-001 (architecture foundations) into openspec/specs/architecture/spec.md
+- Migrate constitution.md into openspec/specs/governance/spec.md
+- Migrate glossary.md into openspec/specs/glossary/spec.md
+- Promote stable insights from insights.md into the architecture spec as ADR entries
+- Update CHANGELOG.md to reference OpenSpec changes
+- Update README.md to reference openspec/ as the spec source of truth
+
+#### Removed
+- Remove the old specs/ directory only after: (a) 3 verification rounds confirming nothing was left behind, and (b) explicit formal confirmation from the project maintainer
+
+### [2026-06-18-refactor-free-ram-magic-constants](openspec/changes/archive/2026-06-18-refactor-free-ram-magic-constants) Replace free-RAM magic numbers with named compiler constants
+
+#### Changed
+- Replace inline magic constants in compiler.cpp:314-319 with named constants defined in compiler_hooks.h
+- Document each constant's purpose and relationship to the kernel's assembly-level memory layout
+- Preserve all existing numeric values exactly (no behavioral change to the percentage calculation)
+
+### [2026-06-18-sprint-1-sdd-refactoring](openspec/changes/archive/2026-06-18-sprint-1-sdd-refactoring) Restructure the codebase into Clean Architecture layers and establish SDD
+
+#### Added
+- Introduce unit testing infrastructure with TDD
+- Create the initial specs/ directory with user stories, ADRs, and supporting documents
+
+#### Changed
+- Restructure source code into Clean Architecture layers: src/cli, src/application, src/domain, src/infrastructure
+- Apply SOLID principles across the codebase (especially Single Responsibility Principle)
+- Establish SDD as the specification methodology
+
+### [2026-06-18-sprint-2-on-stmts](openspec/changes/archive/2026-06-18-sprint-2-on-stmts) Add event-driven ON statements and fix boot initialization order
+
+#### Added
+- Add event-driven control flow support (ON INTERVAL, ON SPRITE, ON STRIG, ON KEY, ON STOP, ON ERROR)
+
+#### Changed
+- Refactor ON statement handling in compiler
+
+#### Fixed
+- Fix ON statement boot initialization order
+
+### [2026-06-18-sprint-3-file-handling](openspec/changes/archive/2026-06-18-sprint-3-file-handling) Implement disk file-handling statements, functions, and runtime
+
+#### Added
+- Implement OPEN, CLOSE, PRINT#, INPUT#, LINE INPUT#, MAXFILES commands
+- Implement EOF(), LOC(), LOF(), FPOS(), ERR(), DSKF() functions
+- Add BDOS-based file I/O runtime in kernel assembly
+- Implement disk vs non-disk memory profile switching
+- Add INPUT#/LINE INPUT# field and line parsing modes
+
+### [2026-06-19-cross-platform-fixes](openspec/changes/archive/2026-06-19-cross-platform-fixes) Fix Windows startup and cross-platform path/argument handling
+
+#### Added
+- Implement pathExists() for Windows (currently returns false — a known TODO)
+- Add -- (end-of-options) support to CommandLineParser so filenames starting with - can be passed
+- Add Windows Unicode filename support via wargv to UTF-8 conversion at startup
+
+#### Changed
+- Normalize Windows detection from #ifdef Win to standard #ifdef _WIN32 across all platform-guarded blocks
+
+#### Fixed
+- Fix uninitialized vscode bool in BuildOptions constructor (root cause of the "VSCode already initialized" error on Windows)
+
+#### Removed
+- Remove dead #include <malloc.h> from main.cpp (glibc-only, no symbols used)
+- Remove -? help option (glob expansion risk in POSIX shells outweighs convenience)
+
+### [2026-06-19-tile-color-pattern](openspec/changes/archive/2026-06-19-tile-color-pattern) Add SET/GET TILE COLOR syntax variants and kernel routines
+
+#### Added
+- Implement SET TILE COLOR with 3 syntax forms: simple (fc, bc), array (fc0..fc7 with optional bc0..bc7), and buffer (4-integer array)
+- Implement GET TILE COLOR with buffer syntax and optional bank parameter
+- Implement the Z80 kernel routines for buffer-based SET and GET (currently stub/missing)
+- Add unit tests in tests/unit/ covering all syntax forms for both SET and GET TILE COLOR (compiler translation layer)
+- Add integration test program in tests/integration/graph/ similar to test94.bas to exercise all syntaxes on real/virtual hardware
+
+#### Changed
+- Optionally accept bank parameter (0-2, default 3=all for SET, default 0 for GET)
+- Buffer uses MSX native color table format: each 16-bit integer packs two rows (low byte = row N, high byte = row N+1), each byte = FC<<4 | BC
+- Use LDIRVM/LDIRMV for block transfer (3 calls for 3 banks)
+
+#### Fixed
+- Fix the SET TILE COLOR buffer form calling convention (currently generates wrong Z80 code)
+
+### [2026-06-19-tile-flip-rotate](openspec/changes/archive/2026-06-19-tile-flip-rotate) Add SET TILE FLIP/ROTATE with bank selection and kernel routines
+
+#### Added
+- Implement SET TILE FLIP <n>, <dir>[, <bank>]
+- Implement SET TILE ROTATE <n>, <dir>[, <bank>]
+- Add assembly-level tile flip/rotate routines in kernel (screen 2, text modes 0-1)
+- Add unit tests (parser + compiler) and integration test (GRAPH/)
+
+### [2026-06-19-tile-pattern-syntax](openspec/changes/archive/2026-06-19-tile-pattern-syntax) Add SET/GET TILE PATTERN inline, array, and bank forms
+
+#### Added
+- Add SET TILE PATTERN <n>, <4-int-array> [, <bank>] — DIM array of 4 integers, with optional bank select
+- Add GET TILE PATTERN <n>, <4-int-array> [, <bank>] — read tile pattern into DIM array of 4 integers, with optional bank select
+- Implement Z80 kernel bulk set_tile_pattern_buffer routine (LDIRVM block copy)
+- Implement Z80 kernel get_tile_pattern routine (LDIRMV block read)
+
+#### Changed
+- Formalize SET TILE PATTERN <n>, (<l0>,...,<l7>) [, <bank>] — inline 8 bytes with optional bank select
+
+#### Fixed
+- Fix the calling convention mismatch in the compiler's buffer form path
+- Fix broken jump table entries
 
 ### Added
 

@@ -19,19 +19,22 @@
 #include "resource_blob_reader.h"
 #include "resource_content_source.h"
 #include "resource_txt_reader.h"
+#include "test_temp_dir.h"
 
-static std::string createTempBinary(const std::string& filename,
+static std::string createTempBinary(const TestTempDir& temp,
+                                    const std::string& filename,
                                     const std::vector<unsigned char>& data) {
-  const std::string path = "tmp/" + filename;
+  const std::string path = temp.file(filename);
   std::ofstream ofs(path, std::ios::binary);
   ofs.write(reinterpret_cast<const char*>(data.data()), data.size());
   ofs.close();
   return path;
 }
 
-static std::string createTempText(const std::string& filename,
+static std::string createTempText(const TestTempDir& temp,
+                                  const std::string& filename,
                                   const std::string& content) {
-  const std::string path = "tmp/" + filename;
+  const std::string path = temp.file(filename);
   std::ofstream ofs(path);
   ofs << content;
   ofs.close();
@@ -95,10 +98,11 @@ TEST_SUITE("Resource content boundary") {
   }
 
   TEST_CASE("File adapter keeps the same content as the in-memory adapter") {
+    TestTempDir temp;
     std::vector<unsigned char> bytes = {0xDE, 0xAD, 0xBE, 0xEF};
-    const std::string binaryPath = createTempBinary("boundary.bin", bytes);
+    const std::string binaryPath = createTempBinary(temp, "boundary.bin", bytes);
     const std::string textPath =
-        createTempText("boundary.txt", "alpha\nbeta\n");
+        createTempText(temp, "boundary.txt", "alpha\nbeta\n");
 
     auto source = std::make_shared<InMemoryResourceContentSource>();
     source->addBinary(binaryPath, bytes);
@@ -126,9 +130,6 @@ TEST_SUITE("Resource content boundary") {
     REQUIRE(memoryReader.load() == true);
     REQUIRE(fileReader.load() == true);
     CHECK(memoryReader.data == fileReader.data);
-
-    std::remove(binaryPath.c_str());
-    std::remove(textPath.c_str());
   }
 }
 

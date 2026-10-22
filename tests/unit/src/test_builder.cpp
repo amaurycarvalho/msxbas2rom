@@ -4,6 +4,7 @@
  */
 
 // NOLINTBEGIN
+// test-inventory: file-adapter
 
 #include <cstdio>
 #include <fstream>
@@ -17,9 +18,11 @@
 #include "logger.h"
 #include "resources.h"
 #include "test_support.h"
+#include "test_temp_dir.h"
 
-static std::string createTempBin(const std::string& filename, int size) {
-  const std::string path = "tmp/" + filename;
+static std::string createTempBin(const TestTempDir& temp,
+                                 const std::string& filename, int size) {
+  const std::string path = temp.file(filename);
   std::ofstream ofs(path, std::ios::binary);
   std::string data(size, static_cast<char>(0xAA));
   ofs.write(data.data(), data.size());
@@ -102,23 +105,22 @@ TEST_SUITE("Builder") {
   }
 
   TEST_CASE("File adapter reports missing, empty and truncated resources") {
+    TestTempDir temp;
     auto fileSource = std::make_shared<FileResourceContentSource>();
     std::vector<unsigned char> content;
     std::string error;
 
-    CHECK(fileSource->readBinary("tmp/builder_missing.bin", content, error) ==
-          false);
-    CHECK(fileSource->exists("tmp/builder_missing.bin") == false);
+    CHECK(fileSource->readBinary(temp.file("builder_missing.bin"), content,
+                                 error) == false);
+    CHECK(fileSource->exists(temp.file("builder_missing.bin")) == false);
 
-    const std::string empty = createTempBin("builder_empty.bin", 0);
+    const std::string empty = createTempBin(temp, "builder_empty.bin", 0);
     CHECK(fileSource->readBinary(empty, content, error) == false);
     CHECK(error.find("empty") != std::string::npos);
-    std::remove(empty.c_str());
 
-    const std::string truncated = createTempBin("builder_truncated.bin", 4);
+    const std::string truncated = createTempBin(temp, "builder_truncated.bin", 4);
     CHECK(fileSource->readBinary(truncated, content, error) == true);
     CHECK(content.size() == 4);
-    std::remove(truncated.c_str());
   }
 }
 

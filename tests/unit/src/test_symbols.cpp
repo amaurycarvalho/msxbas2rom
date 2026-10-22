@@ -4,6 +4,7 @@
  */
 
 // NOLINTBEGIN
+// test-inventory: file-adapter
 
 #include <cstdio>
 #include <fstream>
@@ -28,14 +29,7 @@
 #include "symbol_export_context.h"
 #include "symbol_export_strategy_factory.h"
 #include "symbol_manager.h"
-
-static void ensureTmpDir() {
-#ifdef _WIN32
-  _mkdir("tmp");
-#else
-  mkdir("tmp", 0755);
-#endif
-}
+#include "test_temp_dir.h"
 
 struct SymbolsFixture {
   std::shared_ptr<InMemorySymbolOutputSink> sink;
@@ -296,19 +290,19 @@ TEST_SUITE("Symbols") {
   }
 
   TEST_CASE("File sink writes and fails explicitly") {
-    ensureTmpDir();
+    TestTempDir temp;
     SymbolsFixture fixture;
     auto fileSink = std::make_shared<FileSymbolOutputSink>();
     SymbolManager fileManager(fileSink);
 
     shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
-    build_options::setInputFilename(opts, "tmp/file_sink_test.bas");
+    build_options::setInputFilename(opts, temp.file("file_sink_test.bas"));
     opts->symbols = BuildOptions::SymbolsMode::Symbol;
     REQUIRE(fileManager.saveSymbol(opts) == true);
     CHECK(fileExists(fileManager.context->getExportFilename()) == true);
-    std::remove(fileManager.context->getExportFilename().c_str());
 
-    CHECK(fileSink->writeText("tmp/no_such_dir/file.sym", "x") == false);
+    CHECK(fileSink->writeText(temp.file("no_such_dir/file.sym"), "x") ==
+          false);
   }
 
   TEST_CASE("Symbol manager returns false when symbols mode is none") {

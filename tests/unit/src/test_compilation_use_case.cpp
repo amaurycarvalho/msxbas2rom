@@ -60,6 +60,36 @@ TEST_SUITE("Compilation use case") {
     CHECK(result.diagnosticsText.size() > 0);
   }
 
+  TEST_CASE("Plain-ROM overflow without auto retry fails explicitly") {
+    std::string content;
+    int line = 10;
+    for (int i = 0; i < 200; i++) {
+      content += std::to_string(line++) + " A=" + std::to_string(i) + "\n";
+      content += std::to_string(line++) + " B=A+" + std::to_string(i) + "\n";
+      content += std::to_string(line++) + " C=A*B\n";
+      content += std::to_string(line++) + " PRINT C\n";
+    }
+    content += std::to_string(line) + " END\n";
+
+    auto source = std::make_shared<InMemorySourceResolver>();
+    source->add("overflow.bas", content);
+    auto resources = std::make_shared<InMemoryResourceContentSource>();
+    auto sink = std::make_shared<InMemorySymbolOutputSink>();
+    auto writer = std::make_shared<InMemoryRomWriter>();
+
+    CompilationRequest request(makeOptions("overflow.bas", false), source,
+                               makeTestKernelImage(), resources, sink, writer);
+    CompilationUseCase useCase;
+    CompilationResult result = useCase.execute(request);
+
+    CHECK(result.success == false);
+    CHECK(result.exitCode == 1);
+    CHECK(result.retriedWithAscii8 == false);
+    CHECK(result.output.find("plain ROM limit") != std::string::npos);
+    CHECK(result.artifact.get() == nullptr);
+    CHECK(writer->hasArtifact() == false);
+  }
+
   TEST_CASE("Failed source resolution returns structured failure") {
     auto source = std::make_shared<InMemorySourceResolver>();
     auto resources = std::make_shared<InMemoryResourceContentSource>();

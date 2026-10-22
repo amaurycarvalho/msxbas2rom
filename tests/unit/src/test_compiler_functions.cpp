@@ -4,6 +4,7 @@
  */
 
 // NOLINTBEGIN
+// test-inventory: file-adapter
 
 #include <cstdio>
 #include <fstream>
@@ -16,6 +17,7 @@
 #include "cpu_workspace_context.h"
 #include "doctest/doctest.h"
 #include "test_support.h"
+#include "test_temp_dir.h"
 
 static std::shared_ptr<TestSourceResolver> testSourceResolver() {
   static auto resolver = std::make_shared<TestSourceResolver>();
@@ -41,9 +43,15 @@ static std::string readFileContent(const std::string& path) {
                      std::istreambuf_iterator<char>());
 }
 
+static TestTempDir& vscodeTempDir() {
+  static TestTempDir temp;
+  return temp;
+}
+
 static std::string uniqueVscodeTargetDir() {
   static int counter = 0;
-  return std::string("tmp/vscode_initialize_") + std::to_string(++counter);
+  return vscodeTempDir().file("vscode_initialize_" +
+                              std::to_string(++counter));
 }
 
 static void removeVscodeScaffold(const std::string& target) {
