@@ -21,7 +21,8 @@
 class ResourceStringReader : public ResourceReader {
  public:
   bool load();
-  ResourceStringReader(string text);
+  ResourceStringReader(string text,
+                       shared_ptr<ResourceContentSource> contentSource);
 };
 
 #endif  // RESOURCE_STRING_READER_H_INCLUDED

@@ -13,8 +13,9 @@
 #include "logger.h"
 #include "resource_txt_reader.h"
 
-ResourceSprReader::ResourceSprReader(string filename)
-    : ResourceBlobPackedReader(filename) {};
+ResourceSprReader::ResourceSprReader(
+    string filename, shared_ptr<ResourceContentSource> contentSource)
+    : ResourceBlobPackedReader(filename, contentSource) {};
 
 bool ResourceSprReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".SPR") == 0);
@@ -35,7 +36,7 @@ bool ResourceSprReader::load() {
 ///   [type=1][sprite count][sprites patterns=collection of 32 bytes][sprites
 ///   colors=16 bytes per sprite]
 bool ResourceSprReader::parseTinySpriteFile() {
-  ResourceTxtReader txtReader(filename);
+  ResourceTxtReader txtReader(filename, contentSource);
   enum class ParseState { Header, Type, Slot, SpriteData };
   ParseState state = ParseState::Header;
   int length, sizeRead;

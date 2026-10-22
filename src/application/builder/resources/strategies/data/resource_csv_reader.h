@@ -40,7 +40,8 @@ class ResourceCsvReader : public ResourceTxtReader {
  public:
   static bool isIt(string fileext);
   bool load();
-  ResourceCsvReader(string filename);
+  ResourceCsvReader(string filename,
+                    shared_ptr<ResourceContentSource> contentSource);
 };
 
 #endif  // RESOURCE_CSV_READER_H_INCLUDED

@@ -12,10 +12,10 @@ void CompilerGetStatementStrategy::cmd_get(
     shared_ptr<CompilerContext> context) {
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> next_lexeme;
-  unsigned int t = context->current_action->actions.size();
+  unsigned int t = context->getCurrentAction()->actions.size();
 
   if (t == 1) {
-    action = context->current_action->actions[0];
+    action = context->getCurrentAction()->actions[0];
     next_lexeme = action->lexeme;
 
     if (next_lexeme->type == Lexeme::type_keyword) {
@@ -41,14 +41,14 @@ void CompilerGetStatementStrategy::cmd_get(
 
 void CompilerGetStatementStrategy::cmd_get_date(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
   shared_ptr<Lexeme> lexeme;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
 
   if (t >= 3 && t <= 5) {
-    context->codeOptimizer->addKernelCall(DISP_get_date);
+    context->getCodeOptimizer()->addKernelCall(DISP_get_date);
     cpu.addLdB(0);
     if (t > 4) {
       cpu.addExAF();
@@ -73,7 +73,7 @@ void CompilerGetStatementStrategy::cmd_get_date(
       if (lexeme) {
         if (lexeme->type == Lexeme::type_identifier) {
           if (lexeme->subtype == Lexeme::subtype_numeric) {
-            context->variableEmitter->addVarAddress(sub_action);
+            context->getVariableEmitter()->addVarAddress(sub_action);
             cpu.addPopDE();
             cpu.addLdiHLE();
             cpu.addIncHL();
@@ -105,14 +105,14 @@ void CompilerGetStatementStrategy::cmd_get_date(
 
 void CompilerGetStatementStrategy::cmd_get_time(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
   shared_ptr<Lexeme> lexeme;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
 
   if (t == 3) {
-    context->codeOptimizer->addKernelCall(DISP_get_time);
+    context->getCodeOptimizer()->addKernelCall(DISP_get_time);
     cpu.addLdB(0);
     cpu.addLdCA();
     cpu.addPushBC();  // seconds
@@ -127,7 +127,7 @@ void CompilerGetStatementStrategy::cmd_get_time(
       if (lexeme) {
         if (lexeme->type == Lexeme::type_identifier) {
           if (lexeme->subtype == Lexeme::subtype_numeric) {
-            context->variableEmitter->addVarAddress(sub_action);
+            context->getVariableEmitter()->addVarAddress(sub_action);
             cpu.addPopDE();
             cpu.addLdiHLE();
             cpu.addIncHL();
@@ -157,10 +157,10 @@ void CompilerGetStatementStrategy::cmd_get_time(
 
 void CompilerGetStatementStrategy::cmd_get_tile(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& expression = *context->expressionEvaluator;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& expression = *context->getExpressionEvaluator();
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int t;
@@ -217,7 +217,7 @@ void CompilerGetStatementStrategy::cmd_get_tile(
         //   a = tile number
         //   hl = pointer to an 8 bytes buffer
         //   b = bank (0-2)
-        context->codeOptimizer->addKernelCall(DISP_get_tile_pattern);
+        context->getCodeOptimizer()->addKernelCall(DISP_get_tile_pattern);
 
       } else {
         context->syntaxError(
@@ -258,7 +258,7 @@ void CompilerGetStatementStrategy::cmd_get_tile(
           cpu.addPopAF();
         }
 
-        context->codeOptimizer->addKernelCall(DISP_get_tile_color);
+        context->getCodeOptimizer()->addKernelCall(DISP_get_tile_color);
 
       } else {
         context->syntaxError(
@@ -275,10 +275,10 @@ void CompilerGetStatementStrategy::cmd_get_tile(
 
 void CompilerGetStatementStrategy::cmd_get_sprite(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& expression = *context->expressionEvaluator;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& expression = *context->getExpressionEvaluator();
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int t;
@@ -317,7 +317,7 @@ void CompilerGetStatementStrategy::cmd_get_sprite(
         // call get_sprite_pattern
         //   a = sprite number
         //   hl = pointer to a 32 bytes buffer
-        context->codeOptimizer->addKernelCall(DISP_get_sprite_pattern);
+        context->getCodeOptimizer()->addKernelCall(DISP_get_sprite_pattern);
 
       } else {
         context->syntaxError(
@@ -351,7 +351,7 @@ void CompilerGetStatementStrategy::cmd_get_sprite(
         // call get_sprite_color
         //   a = sprite number
         //   hl = pointer to a 16 bytes buffer
-        context->codeOptimizer->addKernelCall(DISP_get_sprite_color);
+        context->getCodeOptimizer()->addKernelCall(DISP_get_sprite_color);
 
       } else {
         context->syntaxError(
@@ -369,5 +369,5 @@ void CompilerGetStatementStrategy::cmd_get_sprite(
 bool CompilerGetStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_get(context);
-  return context->compiled;
+  return context->getCompiled();
 }

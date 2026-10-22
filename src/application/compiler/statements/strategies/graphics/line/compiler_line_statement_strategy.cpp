@@ -11,23 +11,23 @@
 
 void CompilerLineStatementStrategy::cmd_line(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& optimizer = *context->getCodeOptimizer();
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> action, sub_action;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int line_type = 0, result_subtype, state;
   bool has_x0_coord = false, has_x1_coord = false, has_y0_coord = false,
        has_y1_coord = false;
   bool has_color = false, has_line_type = false, has_operator = false;
 
   if (t) {
-    action = context->current_action->actions[0];
+    action = context->getCurrentAction()->actions[0];
     lexeme = action->lexeme;
     if (lexeme->type == Lexeme::type_keyword && lexeme->value == "INPUT") {
       CompilerInputStatementStrategy inputStmt;
-      context->current_action = action;
+      context->getCurrentAction() = action;
       if (!inputStmt.executeLineInput(context)) {
         if (!context->containErrors())
           context->syntaxError("Error on LINE INPUT");
@@ -38,7 +38,7 @@ void CompilerLineStatementStrategy::cmd_line(
     state = 0;
 
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
 
       switch (state) {
         case 0: {
@@ -272,7 +272,7 @@ void CompilerLineStatementStrategy::cmd_line(
             try {
               line_type = stoi(lexeme->value);
             } catch (exception& e) {
-              context->logger->warning(
+              context->getLogger()->warning(
                   "Error while converting numeric constant " + lexeme->value);
               line_type = 0;
             }
@@ -371,5 +371,5 @@ void CompilerLineStatementStrategy::cmd_line(
 bool CompilerLineStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_line(context);
-  return context->compiled;
+  return context->getCompiled();
 }

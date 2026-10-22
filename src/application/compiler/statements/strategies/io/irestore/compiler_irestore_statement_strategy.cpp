@@ -8,11 +8,11 @@
 
 void CompilerIrestoreStatementStrategy::cmd_irestore(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> lexeme;
-  int t = context->current_action->actions.size();
+  int t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
   if (t == 0) {
@@ -22,7 +22,7 @@ void CompilerIrestoreStatementStrategy::cmd_irestore(
     cpu.addLdiiHL(def_DATPTR);
 
   } else if (t == 1) {
-    action = context->current_action->actions[0];
+    action = context->getCurrentAction()->actions[0];
 
     lexeme = action->lexeme;
     if (lexeme) {
@@ -49,5 +49,5 @@ void CompilerIrestoreStatementStrategy::cmd_irestore(
 bool CompilerIrestoreStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_irestore(context);
-  return context->compiled;
+  return context->getCompiled();
 }

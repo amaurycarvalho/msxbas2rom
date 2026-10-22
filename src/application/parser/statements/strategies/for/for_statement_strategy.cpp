@@ -21,9 +21,9 @@ bool ForStatementStrategy::parseStatement(
       case 0: {
         if (next_lexeme->isKeyword("TO")) {
           parm->setLexemeBOF();
-          if (!context->assignEval->evaluate(parm)) {
-            context->logger->error("FOR command without a valid assignment");
-            context->eval_expr_error = true;
+          if (!context->getAssignEval()->evaluate(parm)) {
+            context->getLogger()->error("FOR command without a valid assignment");
+            context->getEvalExprError() = true;
             return false;
           }
 
@@ -44,15 +44,15 @@ bool ForStatementStrategy::parseStatement(
       case 1: {
         if (next_lexeme->isKeyword("STEP")) {
           if (last_lexeme->value != "TO") {
-            context->logger->error("STEP without a TO clausule");
-            context->eval_expr_error = true;
+            context->getLogger()->error("STEP without a TO clausule");
+            context->getEvalExprError() = true;
             return false;
           }
 
           parm->setLexemeBOF();
           if (!evaluateExpression(context, parm)) {
-            context->logger->error("FOR with an invalid TO/STEP");
-            context->eval_expr_error = true;
+            context->getLogger()->error("FOR with an invalid TO/STEP");
+            context->getEvalExprError() = true;
             return false;
           }
 
@@ -77,15 +77,15 @@ bool ForStatementStrategy::parseStatement(
 
   if (parm->getLexemeCount() && last_lexeme) {
     if (last_lexeme->value != "TO" && last_lexeme->value != "STEP") {
-      context->logger->error("FOR command without a TO/STEP complement.");
-      context->eval_expr_error = true;
+      context->getLogger()->error("FOR command without a TO/STEP complement.");
+      context->getEvalExprError() = true;
       return false;
     }
 
     parm->setLexemeBOF();
     if (!evaluateExpression(context, parm)) {
-      context->logger->error("FOR with an invalid TO/STEP");
-      context->eval_expr_error = true;
+      context->getLogger()->error("FOR with an invalid TO/STEP");
+      context->getEvalExprError() = true;
       return false;
     }
 
@@ -93,7 +93,7 @@ bool ForStatementStrategy::parseStatement(
     parm->clearLexemes();
 
   } else {
-    context->logger->error("Invalid FOR statement (empty)");
+    context->getLogger()->error("Invalid FOR statement (empty)");
     return false;
   }
 
@@ -104,8 +104,8 @@ bool ForStatementStrategy::execute(shared_ptr<ParserContext> context,
                                    shared_ptr<LexerLineContext> statement,
                                    shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
-  if (!context->assignEval) {
-    context->logger->error(
+  if (!context->getAssignEval()) {
+    context->getLogger()->error(
         "FOR statement internal error (parser context not initialized)");
     return false;
   }

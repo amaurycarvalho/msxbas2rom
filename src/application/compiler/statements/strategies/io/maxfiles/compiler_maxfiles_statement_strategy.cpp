@@ -11,14 +11,14 @@
 
 void CompilerMaxfilesStatementStrategy::cmd_fmaxfiles(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<ActionNode> action;
-  unsigned int t = context->current_action->actions.size();
+  unsigned int t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
   if (t) {
-    action = context->current_action->actions[0];
+    action = context->getCurrentAction()->actions[0];
     result_subtype = expression.evalExpression(action);
     expression.addCast(result_subtype, Lexeme::subtype_numeric);
 
@@ -29,7 +29,7 @@ void CompilerMaxfilesStatementStrategy::cmd_fmaxfiles(
     // ld a, l
     cpu.addLdAL();
     // dispatch to cmd_fmaxfiles if not zero
-    context->codeOptimizer->addKernelCallNZ(DISP_cmd_fmaxfiles);
+    context->getCodeOptimizer()->addKernelCallNZ(DISP_cmd_fmaxfiles);
 
   } else {
     context->syntaxError("Empty MAXFILES assignment");
@@ -39,5 +39,5 @@ void CompilerMaxfilesStatementStrategy::cmd_fmaxfiles(
 bool CompilerMaxfilesStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_fmaxfiles(context);
-  return context->compiled;
+  return context->getCompiled();
 }

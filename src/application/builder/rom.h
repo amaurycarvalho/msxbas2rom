@@ -20,6 +20,8 @@ class Compiler;
 class BuildOptions;
 class ResourceManager;
 class Logger;
+class RomArtifact;
+class RomWriter;
 
 using namespace std;
 
@@ -33,6 +35,8 @@ class Rom {
   shared_ptr<BuildOptions> opts;
   shared_ptr<ResourceManager> resourceManager;
   shared_ptr<Logger> logger;
+  shared_ptr<RomWriter> writer;
+  shared_ptr<RomArtifact> artifact;
 
   int resourceAddress, resourceSegment;
 
@@ -63,18 +67,19 @@ class Rom {
   /// @brief Set resource map start address
   void setResourceMapStartAddress();
 
-  /// @brief Write pages to ROM file
-  bool writeRom(string filename);
+  /// @brief Assemble the in-memory artifact before persistence
+  bool assembleArtifact();
 
  public:
   int romSize;
   int codeSize, resourcesSize;
   double codeShare, resourcesShare, kernelShare;
 
-  Rom();
+  explicit Rom(shared_ptr<RomWriter> writer);
   ~Rom();
 
   shared_ptr<Logger> getLogger();
+  shared_ptr<RomArtifact> getArtifact() const;
 
   /***
    * @brief Creates a MSX-BASIC ROM based on a compiled source code

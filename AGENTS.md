@@ -23,3 +23,19 @@ Use `glob` only when:
 - Discovering directory structure
 
 Fall back to grep/glob only when semantic search returns insufficient or irrelevant results.
+
+## Composition Root and Dependency Injection
+
+- Production adapters are constructed only in `src/cli/runner.cpp`, the CLI
+  composition root. `main.cpp` only delegates to `runCli`.
+- Application and domain components receive their external collaborators through
+  constructors or parameter objects (`CompilationRequest`). Do not add global
+  `getDefault*`/`setDefault*` providers, mutable process-wide state, or
+  service-locator fallbacks.
+- Tests compose their own collaborators. Use `CompilationHarness` from
+  `tests/unit/src/test_support.h` for headless compilation and ROM inspection.
+  File-backed adapters are covered only by explicit adapter tests marked with
+  `// test-inventory: file-adapter`.
+- Run `make test-architecture` to enforce the inward dependency rule, reject
+  global composition providers, and reject temporary `.bas` files in headless
+  unit tests.

@@ -10,11 +10,11 @@
 
 void CompilerCircleStatementStrategy::cmd_circle(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& optimizer = *context->getCodeOptimizer();
   shared_ptr<ActionNode> action, sub_action;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
   bool has_x_coord = false, has_y_coord = false, has_radius = false,
        has_color = false;
@@ -22,7 +22,7 @@ void CompilerCircleStatementStrategy::cmd_circle(
 
   if (t) {
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
 
       switch (i) {
         // coord
@@ -124,8 +124,8 @@ void CompilerCircleStatementStrategy::cmd_circle(
 
           if (result_subtype == Lexeme::subtype_null) {
             if (has_radius) {
-              cpu.context->code_pointer--;
-              cpu.context->code_size--;
+              cpu.context->getCodePointer()--;
+              cpu.context->getCodeSize()--;
             }
             continue;
           }
@@ -197,8 +197,8 @@ void CompilerCircleStatementStrategy::cmd_circle(
           result_subtype = expression.evalExpression(action);
 
           if (result_subtype == Lexeme::subtype_null) {
-            cpu.context->code_pointer--;
-            cpu.context->code_size--;
+            cpu.context->getCodePointer()--;
+            cpu.context->getCodeSize()--;
             continue;
           }
 
@@ -227,8 +227,8 @@ void CompilerCircleStatementStrategy::cmd_circle(
           result_subtype = expression.evalExpression(action);
 
           if (result_subtype == Lexeme::subtype_null) {
-            cpu.context->code_pointer--;
-            cpu.context->code_size--;
+            cpu.context->getCodePointer()--;
+            cpu.context->getCodeSize()--;
             continue;
           }
 
@@ -256,8 +256,8 @@ void CompilerCircleStatementStrategy::cmd_circle(
           result_subtype = expression.evalExpression(action);
 
           if (result_subtype == Lexeme::subtype_null) {
-            cpu.context->code_pointer -= 3;
-            cpu.context->code_size -= 3;
+            cpu.context->getCodePointer() -= 3;
+            cpu.context->getCodeSize() -= 3;
             continue;
           }
 
@@ -327,5 +327,5 @@ void CompilerCircleStatementStrategy::cmd_circle(
 bool CompilerCircleStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_circle(context);
-  return context->compiled;
+  return context->getCompiled();
 }

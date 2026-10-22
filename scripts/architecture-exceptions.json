@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "exceptions": [
+    {
+      "id": "B3",
+      "kind": "include",
+      "paths": [
+        "src/application/builder/resources/resources.h",
+        "src/application/builder/resources/strategies/blob/resource_blob_packed_reader.h"
+      ],
+      "patterns": [
+        "pletter.h"
+      ],
+      "owner": "permanent",
+      "removal": "Permanent exception: pletter is a pure compression algorithm without OS, kernel, or presentation dependencies."
+    }
+  ]
+}

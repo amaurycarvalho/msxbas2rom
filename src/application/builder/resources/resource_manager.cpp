@@ -14,14 +14,16 @@
 #include <sstream>
 #include <utility>
 
-#include "fswrapper.h"
+#include "build_path_policy.h"
 #include "logger.h"
+#include "resource_content_source.h"
 #include "resource_data_reader.h"
 #include "resource_factory.h"
 #include "resource_idata_reader.h"
 #include "resource_string_reader.h"
 
-ResourceManager::ResourceManager() {
+ResourceManager::ResourceManager(shared_ptr<ResourceContentSource> source)
+    : contentSource(source), resourceFactory(source) {
   logger = make_shared<Logger>();
 }
 
@@ -47,12 +49,13 @@ string ResourceManager::toString() {
 
 bool ResourceManager::addFile(string filename, string inputPath) {
   /// if file not found, try search it at input path
-  if (!fileExists(filename)) {
-    filename = pathJoin(inputPath, filename);
+  if ((!contentSource || !contentSource->exists(filename)) &&
+      !inputPath.empty()) {
+    filename = build_path::pathJoin(inputPath, filename);
   }
 
   /// create the resource and add to the list
-  auto resourceReader = ResourceFactory::create(filename);
+  auto resourceReader = resourceFactory.create(filename);
   if (resourceReader) {
     resources.push_back(std::move(resourceReader));
     return true;
@@ -62,15 +65,15 @@ bool ResourceManager::addFile(string filename, string inputPath) {
 }
 
 void ResourceManager::addText(string text) {
-  resources.emplace_back(new ResourceStringReader(text));
+  resources.emplace_back(new ResourceStringReader(text, contentSource));
 }
 
 void ResourceManager::addDataResource(shared_ptr<Parser> parser) {
-  resources.emplace_back(new ResourceDataReader(parser));
+  resources.emplace_back(new ResourceDataReader(parser, contentSource));
 }
 
 void ResourceManager::addIDataResource(shared_ptr<Parser> parser) {
-  resources.emplace_back(new ResourceIDataReader(parser));
+  resources.emplace_back(new ResourceIDataReader(parser, contentSource));
 }
 
 bool ResourceManager::buildMap(int baseSegment, int baseAddress) {

@@ -11,11 +11,18 @@
 #include <string>
 
 #include "build_options.h"
+#include "build_options_resolver.h"
 #include "compiler.h"
 #include "compiler_context.h"
 #include "compiler_statement_strategy_factory.h"
 #include "cpu_workspace_context.h"
 #include "doctest/doctest.h"
+#include "test_support.h"
+
+static std::shared_ptr<TestSourceResolver> testSourceResolver() {
+  static auto resolver = std::make_shared<TestSourceResolver>();
+  return resolver;
+}
 #include "lexer.h"
 #include "logger.h"
 #include "parser.h"
@@ -24,9 +31,7 @@
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {
   const std::string path = "tmp/" + filename;
-  std::ofstream ofs(path);
-  ofs << content;
-  ofs.close();
+  testSourceResolver()->add(path, content);
   return path;
 }
 
@@ -36,8 +41,8 @@ static bool compileStatementProgram(const std::string& filename,
   const std::string path = createTempBas(filename, program);
 
   shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
-  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
   shared_ptr<Parser> parser = make_shared<Parser>();
 
   bool ok = false;
@@ -57,10 +62,10 @@ static bool compileStatementProgram(const std::string& filename,
 static bool compileWithOpts(const std::string& filename,
                             shared_ptr<Compiler> compiler,
                             shared_ptr<BuildOptions> opts) {
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
   shared_ptr<Parser> parser = make_shared<Parser>();
 
-  opts->setInputFilename(filename);
+  build_options::setInputFilename(opts, filename);
 
   if (!lexer->load(opts)) return false;
   if (!lexer->evaluate()) return false;
@@ -131,7 +136,7 @@ TEST_SUITE("CompilerControlStrategies") {
 
       shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
           make_shared<Z80OpcodeWriter>();
-      shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+      shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
       CHECK(compileWithOpts(path, compiler, opts) == true);
       std::remove(path.c_str());
     }

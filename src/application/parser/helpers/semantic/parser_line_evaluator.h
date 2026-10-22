@@ -10,6 +10,7 @@ class ParserStatementStrategyFactory;
 class ExpressionEvaluator;
 class AssignmentEvaluator;
 class IncludeLoader;
+class SourceResolver;
 
 using namespace std;
 
@@ -28,6 +29,7 @@ class ParserLineEvaluator {
 
   shared_ptr<ParserContext> getContext();
   void setContext(shared_ptr<ParserContext> context);
+  void setSourceResolver(shared_ptr<SourceResolver> resolver);
 
  private:
   shared_ptr<ParserContext> ctx;

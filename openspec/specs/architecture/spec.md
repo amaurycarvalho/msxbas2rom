@@ -10,7 +10,9 @@ Defines the project-wide architecture principles: SDD/DDD/Clean Architecture lay
 ## Requirements
 
 ### Requirement: Adopt SDD, DDD, Clean Architecture with layered separation
-The system SHALL adopt Spec Driven Development (SDD), Domain-Driven Design (DDD), Clean Code, SOLID, and Clean Architecture with four layers — CLI, application, domain, infrastructure.
+The system SHALL adopt Spec Driven Development (SDD), Domain-Driven Design
+(DDD), Clean Code, SOLID, and Clean Architecture with four layers — CLI,
+application, domain, infrastructure.
 
 Architecture reference structure:
 ```
@@ -25,12 +27,29 @@ MSXBAS2ROM
     └── kernel
 ```
 
-The deliverable SHALL be a CLI tool.
+The deliverable SHALL be a CLI tool. Dependencies SHALL flow inward: domain
+shall not depend on application, CLI, or infrastructure; application shall
+depend on domain and abstractions it owns, not concrete filesystem, generated
+kernel, output, or presentation implementations; CLI and infrastructure shall
+implement and compose those abstractions. Application state exposed to
+strategies SHALL be encapsulated behind narrow collaborators rather than a
+public all-purpose context.
 
 #### Scenario: Source code follows layered structure
 - **WHEN** the source code is inspected
-- **THEN** it SHALL be organized as `src/cli`, `src/application`, `src/domain`, and `src/infrastructure`
-- **AND** dependencies flow inward (outer layers depend on inner layers)
+- **THEN** it SHALL be organized as `src/cli`, `src/application`, `src/domain`,
+  and `src/infrastructure`
+- **AND** dependencies shall flow inward
+- **AND** domain and application behavior shall not directly perform
+  filesystem persistence or access the generated kernel representation
+
+#### Scenario: Application behavior is tested through ports
+- **WHEN** an application-level lexer, parser, compiler, ROM builder, resource
+  reader, or symbol exporter is tested
+- **THEN** its external source, kernel, output, and diagnostic collaborators
+  can be replaced by in-memory implementations
+- **AND** the test shall not require an OS file or CLI process unless it is
+  specifically testing an infrastructure or CLI adapter
 
 ### Requirement: Implement in C++11 with cross-platform support
 The system SHALL be implemented in C++11 and be compatible with Linux, Windows, and macOS.
@@ -125,6 +144,73 @@ git switch master
 - **AND** a branch `release/vMAJOR.MINOR.PATCH.BUILD` is created
 - **AND** the tag follows semantic versioning rules
 - **AND** `CONTRIBUTING.md` is consulted for the full release procedure
+
+### Requirement: Application dependencies are composed explicitly
+
+Application and domain components SHALL receive their external collaborators
+through constructors or parameter objects. They SHALL NOT resolve process-wide
+default services, use mutable global providers, or create concrete outer-layer
+adapters internally. Production composition SHALL be confined to the CLI
+composition root.
+
+#### Scenario: Application component receives its ports
+
+- **WHEN** an application component needs a source, kernel, resource, symbol,
+  or ROM persistence collaborator
+- **THEN** the collaborator SHALL be supplied by the caller as an owned
+  abstraction
+- **AND** the component SHALL NOT look up a process-wide default
+- **AND** the component SHALL NOT construct a concrete infrastructure adapter
+
+#### Scenario: Production composition is centralized
+
+- **WHEN** the CLI application starts
+- **THEN** the CLI SHALL construct the concrete file, kernel, symbol, and ROM
+  adapters
+- **AND** it SHALL pass them to the application workflow explicitly
+- **AND** no application entry point SHALL depend on global initialization
+  order
+
+#### Scenario: Tests compose their own collaborators
+
+- **WHEN** a unit test exercises an application workflow
+- **THEN** the test SHALL provide its own in-memory adapters
+- **AND** it SHALL NOT require global adapter setup before the test runs
+
+### Requirement: Automated architecture boundary check with approved exceptions
+
+The build/test pipeline SHALL run an automated architecture-boundary check that
+enforces the inward dependency rule and detects direct filesystem,
+generated-kernel, and concrete-diagnostics access in `domain` and
+`application`. A violation SHALL be permitted only when it matches an entry in
+a version-controlled exception list containing the exact path, the forbidden
+dependency or pattern, the owning migration task, and the removal criterion.
+
+#### Scenario: A new inward-dependency violation fails the check
+- **WHEN** a `domain` source includes an `application`, `cli`, or
+  `infrastructure` header, or an `application` source includes a `cli` header
+- **THEN** the boundary check SHALL fail
+- **AND** the failure SHALL identify the source file and the forbidden include
+
+#### Scenario: Direct I/O or kernel access fails without an exception
+- **WHEN** an `application` or `domain` source directly uses
+  `fopen`/`ifstream`/`ofstream`/`remove`, `bin_header_bin`, `header.h`, or
+  `start.h`
+- **THEN** the boundary check SHALL fail unless the exact file and pattern are
+  listed in the approved exception file
+
+#### Scenario: Approved exceptions are explicit and temporary
+- **WHEN** an exception entry names its owning migration task and removal
+  criterion
+- **THEN** the boundary check SHALL pass while the violation still exists
+- **AND** the entry SHALL be removed when the owning task eliminates the
+  violation
+- **AND** a stale entry that no longer matches a violation SHALL fail the check
+
+#### Scenario: The check runs in the normal quality gate
+- **WHEN** `make test`, `make quality-gate`, or CI runs
+- **THEN** the boundary check and its fixture-based self-tests SHALL run
+- **AND** a violation outside the approved list SHALL fail the command
 
 ## Architecture Decision Records
 

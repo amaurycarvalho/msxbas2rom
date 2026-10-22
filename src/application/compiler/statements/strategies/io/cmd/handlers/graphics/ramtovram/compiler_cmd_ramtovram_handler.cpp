@@ -8,8 +8,8 @@
 
 bool CompilerCmdRamToVramHandler::execute(shared_ptr<CompilerContext> context,
                                           shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
 
   if (action->actions.size() == 3) {
     auto sub = action->actions[0];
@@ -34,11 +34,11 @@ bool CompilerCmdRamToVramHandler::execute(shared_ptr<CompilerContext> context,
     cpu.addLdiiHL(def_ARG2);
 
     // call cmd_ramtovram
-    context->codeOptimizer->addKernelCall(DISP_cmd_ramtovram);
+    context->getCodeOptimizer()->addKernelCall(DISP_cmd_ramtovram);
 
   } else {
     context->syntaxError("CMD RAMTOVRAM syntax error");
   }
 
-  return context->compiled;
+  return context->getCompiled();
 }

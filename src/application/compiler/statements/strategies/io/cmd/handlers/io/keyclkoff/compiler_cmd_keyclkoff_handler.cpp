@@ -7,7 +7,7 @@
 bool CompilerCmdKeyClkOffHandler::execute(shared_ptr<CompilerContext> context,
                                           shared_ptr<ActionNode> action) {
   // call cmd_keyclkoff
-  context->codeOptimizer->addKernelCall(DISP_cmd_keyclkoff);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_keyclkoff);
 
-  return context->compiled;
+  return context->getCompiled();
 }

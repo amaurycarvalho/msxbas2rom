@@ -9,12 +9,12 @@
 int AbsCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                          shared_ptr<ActionNode> action,
                                          int* result, unsigned int parmCount) {
-  auto& optimizer = *context->codeOptimizer;
+  auto& optimizer = *context->getCodeOptimizer();
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "ABS") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
 
   if (result[0] == Lexeme::subtype_numeric) {
     // call 0x5b36         ; xbasic ABS (in hl, out hl)

@@ -8,8 +8,6 @@
 #ifndef RESOURCES_H_INCLUDED
 #define RESOURCES_H_INCLUDED
 
-#include <fstream>
-
 #include "pletter.h"
 #include "symbols.h"
 

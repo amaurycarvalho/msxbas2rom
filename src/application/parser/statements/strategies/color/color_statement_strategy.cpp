@@ -15,7 +15,7 @@ bool ColorStatementStrategy::parseColorRgb(
     switch (state) {
       case 0: {
         if (next_lexeme->isSeparator("(")) {
-          context->pushActionFromLexeme(context->lex_rgb);
+          context->pushActionFromLexeme(context->getLexRgb());
 
           state++;
           sepCount++;
@@ -149,7 +149,7 @@ bool ColorStatementStrategy::parseStatement(
       return genericStrategy.parseStatement(context, statement);
     }
   } else {
-    context->logger->error("Invalid COLOR statement");
+    context->getLogger()->error("Invalid COLOR statement");
   }
 
   return false;

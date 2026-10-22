@@ -9,7 +9,7 @@
 int IntCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                          shared_ptr<ActionNode> action,
                                          int* result, unsigned int parmCount) {
-  auto& optimizer = *context->codeOptimizer;
+  auto& optimizer = *context->getCodeOptimizer();
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "INT") return Lexeme::subtype_unknown;

@@ -14,19 +14,19 @@
 #include "parser.h"
 
 bool CompilerCodeHelper::addCheckTraps() {
-  auto& parser = *context->parser;
+  auto& parser = *context->getParser();
   if (parser.getHasTraps()) {
     // call 0x6c25   ; xbasic check traps
-    context->codeOptimizer->addKernelCall(DISP_XBASIC_TRAP_CHECK);
+    context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_TRAP_CHECK);
   }
 
-  return context->parser->getHasTraps();
+  return context->getParser()->getHasTraps();
 }
 
 void CompilerCodeHelper::addEnableBasicSlot() {
-  auto& cpu = *context->cpu;
-  auto& opts = *context->opts;
-  auto& fix = *context->fixupResolver;
+  auto& cpu = *context->getCpu();
+  auto& opts = *context->getOpts();
+  auto& fix = *context->getFixupResolver();
   cpu.addExAF();
   cpu.addExx();
   if (opts.megaROM) {
@@ -40,10 +40,10 @@ void CompilerCodeHelper::addEnableBasicSlot() {
     cpu.addEI();
   } else {
     // call enable basic slot function
-    if (context->enableRomBasicMark) {
-      fix.addFix(context->enableRomBasicMark->symbol);
+    if (context->getEnableRomBasicMark()) {
+      fix.addFix(context->getEnableRomBasicMark()->symbol);
     } else {
-      context->enableRomBasicMark = fix.addMark();
+      context->getEnableRomBasicMark() = fix.addMark();
     }
     cpu.addCall(0x0000);
   }
@@ -52,15 +52,15 @@ void CompilerCodeHelper::addEnableBasicSlot() {
 }
 
 void CompilerCodeHelper::addCallBDOS() {
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
 
   // call BDOS
   cpu.addCall(def_DSKBAS);
 }
 
 void CompilerCodeHelper::addCallBDOSWE() {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
   shared_ptr<FixNode> errorMark;
   shared_ptr<FixNode> abortMark;
   shared_ptr<FixNode> doneMark;
@@ -116,9 +116,9 @@ void CompilerCodeHelper::addCallBDOSWE() {
 }
 
 void CompilerCodeHelper::addDisableBasicSlot() {
-  auto& cpu = *context->cpu;
-  auto& opts = *context->opts;
-  auto& fix = *context->fixupResolver;
+  auto& cpu = *context->getCpu();
+  auto& opts = *context->getOpts();
+  auto& fix = *context->getFixupResolver();
   cpu.addExAF();
   cpu.addExx();
   if (opts.megaROM) {
@@ -132,10 +132,10 @@ void CompilerCodeHelper::addDisableBasicSlot() {
     cpu.addEI();
   } else {
     // call disable basic slot function
-    if (context->disableRomBasicMark)
-      fix.addFix(context->disableRomBasicMark->symbol);
+    if (context->getDisableRomBasicMark())
+      fix.addFix(context->getDisableRomBasicMark()->symbol);
     else
-      context->disableRomBasicMark = fix.addMark();
+      context->getDisableRomBasicMark() = fix.addMark();
     cpu.addCall(0x0000);
   }
   cpu.addExx();
@@ -143,7 +143,7 @@ void CompilerCodeHelper::addDisableBasicSlot() {
 }
 
 void CompilerCodeHelper::beginBasicSetStmt(string name) {
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
   int i, l = name.size();
   char* s = (char*)name.c_str();
 
@@ -159,7 +159,7 @@ void CompilerCodeHelper::beginBasicSetStmt(string name) {
 }
 
 void CompilerCodeHelper::endBasicSetStmt() {
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
   //   xor a
   cpu.addXorA();
   //   ld (hl), a
@@ -192,7 +192,7 @@ void CompilerCodeHelper::endBasicSetStmt() {
 }
 
 void CompilerCodeHelper::addBasicChar(unsigned char c) {
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
   // ld (hl), char
   cpu.addLdiHL(c);
   // inc hl

@@ -38,8 +38,8 @@
 
 bool CompilerCmdMtfHandler::execute(shared_ptr<CompilerContext> context,
                                     shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   bool isARegNotZero[2];
   bool isHLRegNotZero[3];
 
@@ -47,11 +47,11 @@ bool CompilerCmdMtfHandler::execute(shared_ptr<CompilerContext> context,
 
   if (!n) {
     context->syntaxError("CMD MTF parameters is missing");
-    return context->compiled;
+    return context->getCompiled();
   }
   if (n > 9) {
     context->syntaxError("CMD MTF syntax error");
-    return context->compiled;
+    return context->getCompiled();
   }
 
   // Param 1: resource number (always present, stored as word)
@@ -147,7 +147,7 @@ bool CompilerCmdMtfHandler::execute(shared_ptr<CompilerContext> context,
   }
   cpu.addLdiiHL(def_MTF_WIN_H_PARM);
 
-  context->codeOptimizer->addKernelCall(DISP_cmd_mtf);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_mtf);
 
-  return context->compiled;
+  return context->getCompiled();
 }

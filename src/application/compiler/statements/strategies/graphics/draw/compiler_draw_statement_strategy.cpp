@@ -9,27 +9,27 @@
 
 void CompilerDrawStatementStrategy::cmd_draw(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> action;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
   if (t == 1) {
     i = 0;
-    action = context->current_action->actions[i];
+    action = context->getCurrentAction()->actions[i];
     lexeme = action->lexeme;
     if (lexeme) {
       result_subtype = expression.evalExpression(action);
 
       if (result_subtype == Lexeme::subtype_string) {
         // call draw function
-        if (context->drawStmtMark)
-          fixup.addFix(context->drawStmtMark->symbol);
+        if (context->getDrawStmtMark())
+          fixup.addFix(context->getDrawStmtMark()->symbol);
         else
-          context->drawStmtMark = fixup.addMark();
+          context->getDrawStmtMark() = fixup.addMark();
         cpu.addCall(0x0000);
 
       } else {
@@ -46,5 +46,5 @@ void CompilerDrawStatementStrategy::cmd_draw(
 bool CompilerDrawStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_draw(context);
-  return context->compiled;
+  return context->getCompiled();
 }

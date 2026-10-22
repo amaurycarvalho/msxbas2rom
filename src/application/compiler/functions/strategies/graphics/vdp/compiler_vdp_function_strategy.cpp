@@ -13,8 +13,8 @@ int VdpCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "VDP") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& optimizer = *context->getCodeOptimizer();
 
   switch (parmCount) {
     case 0: {
@@ -22,12 +22,12 @@ int VdpCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
       // ld a, 4
       cpu.addLdA(4);
       // CALL USR2
-      cpu.addCall(context->codeOptimizer->getKernelCallAddr(DISP_usr2) + 1);
+      cpu.addCall(context->getCodeOptimizer()->getKernelCallAddr(DISP_usr2) + 1);
       return Lexeme::subtype_numeric;
     }
 
     case 1: {
-      auto& expression = *context->expressionEvaluator;
+      auto& expression = *context->getExpressionEvaluator();
 
       if (result[0] == Lexeme::subtype_single_decimal ||
           result[0] == Lexeme::subtype_double_decimal) {

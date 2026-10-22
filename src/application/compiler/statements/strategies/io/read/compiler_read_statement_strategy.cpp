@@ -9,15 +9,15 @@
 
 void CompilerReadStatementStrategy::cmd_read(
     shared_ptr<CompilerContext> context) {
-  auto& expression = *context->expressionEvaluator;
-  auto& variable = *context->variableEmitter;
+  auto& expression = *context->getExpressionEvaluator();
+  auto& variable = *context->getVariableEmitter();
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> lexeme;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
 
   if (t) {
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
       lexeme = action->lexeme;
 
       if (lexeme->type != Lexeme::type_identifier) {
@@ -26,7 +26,7 @@ void CompilerReadStatementStrategy::cmd_read(
       }
 
       // call read
-      context->codeOptimizer->addKernelCall(DISP_XBASIC_READ);
+      context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_READ);
 
       expression.addCast(Lexeme::subtype_string, lexeme->subtype);
 
@@ -43,5 +43,5 @@ void CompilerReadStatementStrategy::cmd_read(
 bool CompilerReadStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_read(context);
-  return context->compiled;
+  return context->getCompiled();
 }

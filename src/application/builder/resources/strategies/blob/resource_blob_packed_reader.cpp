@@ -9,8 +9,9 @@
 
 #include "logger.h"
 
-ResourceBlobPackedReader::ResourceBlobPackedReader(string filename)
-    : ResourceBlobReader(filename) {};
+ResourceBlobPackedReader::ResourceBlobPackedReader(
+    string filename, shared_ptr<ResourceContentSource> contentSource)
+    : ResourceBlobReader(filename, contentSource) {};
 
 bool ResourceBlobPackedReader::pack() {
   int bytesPacked = 0;

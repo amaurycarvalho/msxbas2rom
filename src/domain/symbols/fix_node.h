@@ -11,7 +11,6 @@
 #include <memory>
 
 class SymbolNode;
-class ICpuOpcodeWriter;
 
 using namespace std;
 
@@ -21,7 +20,7 @@ using namespace std;
  */
 class FixNode {
  private:
-  shared_ptr<ICpuOpcodeWriter> cpu;
+  int* codePointer;
 
  public:
   shared_ptr<SymbolNode> symbol;
@@ -30,7 +29,7 @@ class FixNode {
   void aimHere();
 
   FixNode();
-  FixNode(shared_ptr<ICpuOpcodeWriter> cpu);
+  explicit FixNode(int* codePointer);
   ~FixNode();
 };
 

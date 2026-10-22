@@ -34,6 +34,9 @@ class ResourceManager;
 class BuildOptions;
 class TagNode;
 class Logger;
+class KernelImage;
+class ResourceContentSource;
+class SymbolOutputSink;
 
 using namespace std;
 
@@ -48,7 +51,10 @@ class Compiler {
   shared_ptr<CpuWorkspaceContext> workspace;
 
  public:
-  explicit Compiler(shared_ptr<ICpuOpcodeWriter> cpu);
+  Compiler(shared_ptr<ICpuOpcodeWriter> cpu,
+           shared_ptr<KernelImage> kernelImage,
+           shared_ptr<ResourceContentSource> resourceContentSource,
+           shared_ptr<SymbolOutputSink> symbolOutputSink);
   ~Compiler();
 
   /***
@@ -81,6 +87,7 @@ class Compiler {
 
   shared_ptr<Parser> getParser() const;
   shared_ptr<BuildOptions> getOpts() const;
+  shared_ptr<KernelImage> getKernelImage() const;
 
   bool isCompiled() const;
 };

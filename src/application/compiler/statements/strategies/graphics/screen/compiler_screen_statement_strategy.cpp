@@ -10,45 +10,45 @@
 
 void CompilerScreenStatementStrategy::cmd_screen(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& optimizer = *context->getCodeOptimizer();
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> lexeme;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
   if (t) {
-    action = context->current_action->actions[0];
+    action = context->getCurrentAction()->actions[0];
     lexeme = action->lexeme;
     if (lexeme->value == "COPY") {
-      context->current_action = action;
+      context->getCurrentAction() = action;
       cmd_screen_copy(context);
       return;
     } else if (lexeme->value == "PASTE") {
-      context->current_action = action;
+      context->getCurrentAction() = action;
       cmd_screen_paste(context);
       return;
     } else if (lexeme->value == "SCROLL") {
-      context->current_action = action;
+      context->getCurrentAction() = action;
       cmd_screen_scroll(context);
       return;
     } else if (lexeme->value == "LOAD") {
-      context->current_action = action;
+      context->getCurrentAction() = action;
       cmd_screen_load(context);
       return;
     } else if (lexeme->value == "ON") {
-      context->current_action = action;
+      context->getCurrentAction() = action;
       cmd_screen_on(context);
       return;
     } else if (lexeme->value == "OFF") {
-      context->current_action = action;
+      context->getCurrentAction() = action;
       cmd_screen_off(context);
       return;
     }
 
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
       result_subtype = expression.evalExpression(action);
 
       if (result_subtype == Lexeme::subtype_null) continue;
@@ -65,7 +65,7 @@ void CompilerScreenStatementStrategy::cmd_screen(
         case 0: {
           // call XBASIC_SCREEN ; xbasic SCREEN change mode (in: a, l = screen
           // mode)
-          context->codeOptimizer->addKernelCall(DISP_XBASIC_SCREEN);
+          context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_SCREEN);
         } break;
 
         // sprite size
@@ -164,12 +164,12 @@ void CompilerScreenStatementStrategy::cmd_screen(
 
 void CompilerScreenStatementStrategy::cmd_screen_copy(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> action;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
   if (t) {
@@ -179,7 +179,7 @@ void CompilerScreenStatementStrategy::cmd_screen_copy(
     }
 
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
       lexeme = action->lexeme;
 
       if (i) {
@@ -212,7 +212,7 @@ void CompilerScreenStatementStrategy::cmd_screen_copy(
     }
 
     // call screen_copy
-    context->codeOptimizer->addKernelCall(DISP_cmd_screen_copy);
+    context->getCodeOptimizer()->addKernelCall(DISP_cmd_screen_copy);
 
   } else {
     context->syntaxError("SCREEN COPY with empty parameters");
@@ -221,12 +221,12 @@ void CompilerScreenStatementStrategy::cmd_screen_copy(
 
 void CompilerScreenStatementStrategy::cmd_screen_paste(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> action;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
   if (t) {
@@ -236,7 +236,7 @@ void CompilerScreenStatementStrategy::cmd_screen_paste(
     }
 
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
       lexeme = action->lexeme;
 
       if (lexeme->type == Lexeme::type_identifier) {
@@ -251,7 +251,7 @@ void CompilerScreenStatementStrategy::cmd_screen_paste(
     }
 
     // call screen_paste
-    context->codeOptimizer->addKernelCall(DISP_cmd_screen_paste);
+    context->getCodeOptimizer()->addKernelCall(DISP_cmd_screen_paste);
 
   } else {
     context->syntaxError("SCREEN PASTE with empty parameters");
@@ -260,10 +260,10 @@ void CompilerScreenStatementStrategy::cmd_screen_paste(
 
 void CompilerScreenStatementStrategy::cmd_screen_scroll(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<ActionNode> action;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
   if (t) {
@@ -273,7 +273,7 @@ void CompilerScreenStatementStrategy::cmd_screen_scroll(
     }
 
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
       result_subtype = expression.evalExpression(action);
       expression.addCast(result_subtype, Lexeme::subtype_numeric);
 
@@ -287,13 +287,13 @@ void CompilerScreenStatementStrategy::cmd_screen_scroll(
       cpu.addPushHL();
 
       // call screen_copy
-      context->codeOptimizer->addKernelCall(DISP_cmd_screen_copy);
+      context->getCodeOptimizer()->addKernelCall(DISP_cmd_screen_copy);
 
       // pop hl
       cpu.addPopHL();
 
       // call screen_paste
-      context->codeOptimizer->addKernelCall(DISP_cmd_screen_paste);
+      context->getCodeOptimizer()->addKernelCall(DISP_cmd_screen_paste);
     }
 
   } else {
@@ -303,15 +303,15 @@ void CompilerScreenStatementStrategy::cmd_screen_scroll(
 
 void CompilerScreenStatementStrategy::cmd_screen_load(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<ActionNode> action;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
   if (t) {
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
       result_subtype = expression.evalExpression(action);
       expression.addCast(result_subtype, Lexeme::subtype_numeric);
 
@@ -319,7 +319,7 @@ void CompilerScreenStatementStrategy::cmd_screen_load(
       cpu.addLdiiHL(def_DAC);
 
       // call screen_load
-      context->codeOptimizer->addKernelCall(DISP_cmd_screen_load);
+      context->getCodeOptimizer()->addKernelCall(DISP_cmd_screen_load);
     }
 
   } else {
@@ -330,17 +330,17 @@ void CompilerScreenStatementStrategy::cmd_screen_load(
 void CompilerScreenStatementStrategy::cmd_screen_on(
     shared_ptr<CompilerContext> context) {
   // call cmd_enascr
-  context->codeOptimizer->addKernelCall(DISP_cmd_enascr);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_enascr);
 }
 
 void CompilerScreenStatementStrategy::cmd_screen_off(
     shared_ptr<CompilerContext> context) {
   // call cmd_disscr
-  context->codeOptimizer->addKernelCall(DISP_cmd_disscr);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_disscr);
 }
 
 bool CompilerScreenStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_screen(context);
-  return context->compiled;
+  return context->getCompiled();
 }

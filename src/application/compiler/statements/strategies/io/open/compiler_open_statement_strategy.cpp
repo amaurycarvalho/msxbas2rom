@@ -15,15 +15,15 @@
 
 void CompilerOpenStatementStrategy::cmd_open(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> lexeme;
-  unsigned int t = context->current_action->actions.size();
+  unsigned int t = context->getCurrentAction()->actions.size();
   int result_subtype;
   unsigned char direction = 0x04;  // RANDOM (default)
 
-  context->file_support = true;
+  context->getFileSupport() = true;
 
   if (t < 2 || t > 4) {
     context->syntaxError("Invalid OPEN parameters count");
@@ -31,7 +31,7 @@ void CompilerOpenStatementStrategy::cmd_open(
   }
 
   // filename
-  action = context->current_action->actions[0];
+  action = context->getCurrentAction()->actions[0];
   result_subtype = expression.evalExpression(action);
   if (result_subtype != Lexeme::subtype_string) {
     context->syntaxError("OPEN filename must be a string");
@@ -42,7 +42,7 @@ void CompilerOpenStatementStrategy::cmd_open(
 
   // optional direction
   if (t == 3 || t == 4) {
-    action = context->current_action->actions[1];
+    action = context->getCurrentAction()->actions[1];
     lexeme = action->lexeme;
     if (!lexeme) {
       context->syntaxError("Invalid OPEN direction");
@@ -61,7 +61,7 @@ void CompilerOpenStatementStrategy::cmd_open(
   }
 
   // file number (always present)
-  action = context->current_action->actions[(t == 2) ? 1 : 2];
+  action = context->getCurrentAction()->actions[(t == 2) ? 1 : 2];
   result_subtype = expression.evalExpression(action);
   expression.addCast(result_subtype, Lexeme::subtype_numeric);
   // a = file number
@@ -70,7 +70,7 @@ void CompilerOpenStatementStrategy::cmd_open(
   // optional LEN
   if (t == 4) {
     cpu.addPushAF();
-    action = context->current_action->actions[3];
+    action = context->getCurrentAction()->actions[3];
     result_subtype = expression.evalExpression(action);
     expression.addCast(result_subtype, Lexeme::subtype_numeric);
     cpu.addLdCL();
@@ -88,11 +88,11 @@ void CompilerOpenStatementStrategy::cmd_open(
   // bc = record length
   // a = file number
   // call cmd_fopen
-  context->codeOptimizer->addKernelCall(DISP_cmd_fopen);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_fopen);
 }
 
 bool CompilerOpenStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_open(context);
-  return context->compiled;
+  return context->getCompiled();
 }

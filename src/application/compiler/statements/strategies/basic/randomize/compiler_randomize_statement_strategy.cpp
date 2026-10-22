@@ -4,7 +4,7 @@
 
 void CompilerRandomizeStatementStrategy::cmd_randomize(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
   // ld hl, 0x3579      ; RANDOMIZE 1 - FIX
   cpu.addLdHL(0x3579);
   // ld (0xF7BC+0), hl  ; SWPTMP+0
@@ -19,5 +19,5 @@ void CompilerRandomizeStatementStrategy::cmd_randomize(
 bool CompilerRandomizeStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_randomize(context);
-  return context->compiled;
+  return context->getCompiled();
 }

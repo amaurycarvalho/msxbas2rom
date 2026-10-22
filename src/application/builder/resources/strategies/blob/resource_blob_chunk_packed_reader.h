@@ -26,7 +26,8 @@ class ResourceBlobChunkPackedReader : public ResourceBlobPackedReader {
  public:
   static bool isIt(string fileext);
   bool load();
-  ResourceBlobChunkPackedReader(string filename);
+  ResourceBlobChunkPackedReader(string filename,
+                                shared_ptr<ResourceContentSource> contentSource);
 };
 
 #endif  // RESOURCE_BLOB_CHUNK_PACKED_READER_H_INCLUDED

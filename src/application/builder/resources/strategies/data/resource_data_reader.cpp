@@ -11,8 +11,9 @@
 #include "logger.h"
 #include "parser.h"
 
-ResourceDataReader::ResourceDataReader(shared_ptr<Parser> parser)
-    : ResourceCsvReader(string("_DATA_")) {
+ResourceDataReader::ResourceDataReader(
+    shared_ptr<Parser> parser, shared_ptr<ResourceContentSource> contentSource)
+    : ResourceCsvReader(string("_DATA_"), contentSource) {
   this->parser = parser;
   resourceType = 0;  //! DATA resource type
 };

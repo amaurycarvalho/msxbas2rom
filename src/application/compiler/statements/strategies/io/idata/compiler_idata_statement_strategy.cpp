@@ -5,7 +5,7 @@
 
 void CompilerIdataStatementStrategy::cmd_idata(
     shared_ptr<CompilerContext> context) {
-  if (!context->current_action->actions.size()) {
+  if (!context->getCurrentAction()->actions.size()) {
     context->syntaxError("IDATA with empty parameters");
   }
 }
@@ -13,5 +13,5 @@ void CompilerIdataStatementStrategy::cmd_idata(
 bool CompilerIdataStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_idata(context);
-  return context->compiled;
+  return context->getCompiled();
 }

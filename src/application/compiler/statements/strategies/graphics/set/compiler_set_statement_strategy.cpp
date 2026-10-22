@@ -13,15 +13,15 @@
 
 void CompilerSetStatementStrategy::cmd_set(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> next_lexeme;
-  unsigned int t = context->current_action->actions.size();
+  unsigned int t = context->getCurrentAction()->actions.size();
   shared_ptr<FixNode> skipMsx1Mark;
 
   if (t == 1) {
-    action = context->current_action->actions[0];
+    action = context->getCurrentAction()->actions[0];
     next_lexeme = action->lexeme;
 
     if (next_lexeme->type == Lexeme::type_keyword) {
@@ -92,10 +92,10 @@ void CompilerSetStatementStrategy::cmd_set(
 
 void CompilerSetStatementStrategy::cmd_set_video(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  auto& codeHelper = *context->codeHelper;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& codeHelper = *context->getCodeHelper();
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
   int result_subtype;
@@ -121,8 +121,8 @@ void CompilerSetStatementStrategy::cmd_set_video(
       result_subtype = expression.evalExpression(sub_action);
 
       if (result_subtype == Lexeme::subtype_null) {
-        cpu.context->code_pointer--;
-        cpu.context->code_size--;
+        cpu.context->getCodePointer()--;
+        cpu.context->getCodeSize()--;
         continue;
       }
 
@@ -155,10 +155,10 @@ void CompilerSetStatementStrategy::cmd_set_video(
 
 void CompilerSetStatementStrategy::cmd_set_adjust(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  auto& codeHelper = *context->codeHelper;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& codeHelper = *context->getCodeHelper();
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
   int result_subtype;
@@ -226,8 +226,8 @@ void CompilerSetStatementStrategy::cmd_set_adjust(
 
 void CompilerSetStatementStrategy::cmd_set_screen(
     shared_ptr<CompilerContext> context) {
-  auto& codeHelper = *context->codeHelper;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  auto& codeHelper = *context->getCodeHelper();
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   unsigned int t = action->actions.size();
 
   if (t == 0) {
@@ -245,10 +245,10 @@ void CompilerSetStatementStrategy::cmd_set_screen(
 
 void CompilerSetStatementStrategy::cmd_set_beep(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  auto& codeHelper = *context->codeHelper;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& codeHelper = *context->getCodeHelper();
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
   int result_subtype;
@@ -303,10 +303,10 @@ void CompilerSetStatementStrategy::cmd_set_beep(
 
 void CompilerSetStatementStrategy::cmd_set_title(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  auto& codeHelper = *context->codeHelper;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& codeHelper = *context->getCodeHelper();
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action;
   unsigned int t = action->actions.size();
   int result_subtype;
@@ -376,10 +376,10 @@ void CompilerSetStatementStrategy::cmd_set_title(
 
 void CompilerSetStatementStrategy::cmd_set_prompt(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  auto& codeHelper = *context->codeHelper;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& codeHelper = *context->getCodeHelper();
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action;
   unsigned int t = action->actions.size();
   int result_subtype;
@@ -425,10 +425,10 @@ void CompilerSetStatementStrategy::cmd_set_prompt(
 
 void CompilerSetStatementStrategy::cmd_set_page(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  auto& optimizer = *context->codeOptimizer;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& optimizer = *context->getCodeOptimizer();
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action;
   shared_ptr<Lexeme> lexeme;
   unsigned int t = action->actions.size();
@@ -469,10 +469,10 @@ void CompilerSetStatementStrategy::cmd_set_page(
 
 void CompilerSetStatementStrategy::cmd_set_scroll(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  auto& optimizer = *context->codeOptimizer;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& optimizer = *context->getCodeOptimizer();
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action;
   shared_ptr<Lexeme> lexeme;
   unsigned int i, t = action->actions.size();
@@ -539,10 +539,10 @@ void CompilerSetStatementStrategy::cmd_set_scroll(
 
 void CompilerSetStatementStrategy::cmd_set_tile(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& expression = *context->expressionEvaluator;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& expression = *context->getExpressionEvaluator();
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action, sub_sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int i, t, tt;
@@ -571,13 +571,13 @@ void CompilerSetStatementStrategy::cmd_set_tile(
       // ld e, l
       cpu.addLdEL();
       // call XBASIC_LOCATE    ; hl = y, de = x
-      context->codeOptimizer->addKernelCall(DISP_XBASIC_LOCATE);
+      context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_LOCATE);
       // ld a, 0xff                ; it means all screen banks
       cpu.addLdA(0xFF);
       // ld (ARG), a
       cpu.addLdiiA(def_ARG);
       // call cmd_setfnt
-      context->codeOptimizer->addKernelCall(DISP_cmd_setfnt);
+      context->getCodeOptimizer()->addKernelCall(DISP_cmd_setfnt);
 
     } else if (lexeme->value == "OFF") {
       // ld a, 1      ; graphical mode
@@ -619,7 +619,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
           cpu.addLdB(0x03);
         }
 
-        context->codeOptimizer->addKernelCall(DISP_set_tile_flip);
+        context->getCodeOptimizer()->addKernelCall(DISP_set_tile_flip);
 
       } else {
         context->syntaxError(
@@ -660,7 +660,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
           cpu.addLdB(0x03);
         }
 
-        context->codeOptimizer->addKernelCall(DISP_set_tile_rotate);
+        context->getCodeOptimizer()->addKernelCall(DISP_set_tile_rotate);
 
       } else {
         context->syntaxError(
@@ -729,7 +729,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
           //   a = tile number
           //   hl = pointer to an 8 bytes buffer
           //   b = bank (0-2 specific, 3=all)
-          context->codeOptimizer->addKernelCall(DISP_set_tile_pattern_buffer);
+          context->getCodeOptimizer()->addKernelCall(DISP_set_tile_pattern_buffer);
           } else {
           context->syntaxError(
               "Wrong parameters count on SET TILE PATTERN statement");
@@ -784,7 +784,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
 
               // call set_tile_pattern ; hl = tile number, de = line number, b
               // = bank number (3=all), c = pattern data
-              context->codeOptimizer->addKernelCall(DISP_set_tile_pattern);
+              context->getCodeOptimizer()->addKernelCall(DISP_set_tile_pattern);
             }
           }
           }
@@ -846,7 +846,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
               cpu.addPopAF();
             }
 
-            context->codeOptimizer->addKernelCall(DISP_set_tile_color_buf);
+            context->getCodeOptimizer()->addKernelCall(DISP_set_tile_color_buf);
 
           } else {
             context->syntaxError(
@@ -946,7 +946,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
 
               // call set_tile_color ; hl = tile number, de = line number
               // (15=all), b = bank number (3=all), c = color data (FC,BC)
-              context->codeOptimizer->addKernelCall(DISP_set_tile_color);
+              context->getCodeOptimizer()->addKernelCall(DISP_set_tile_color);
             }
           }
 
@@ -998,7 +998,7 @@ void CompilerSetStatementStrategy::cmd_set_tile(
 
           // call set_tile_color ; hl = tile number, de = line number
           // (15=all), b = bank number (3=all), c = color data (FC,BC)
-          context->codeOptimizer->addKernelCall(DISP_set_tile_color);
+          context->getCodeOptimizer()->addKernelCall(DISP_set_tile_color);
         }
 
       } else {
@@ -1018,16 +1018,16 @@ void CompilerSetStatementStrategy::cmd_set_tile(
 
 void CompilerSetStatementStrategy::cmd_set_font(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action1, sub_action2;
   unsigned int t;
   int result_subtype;
 
   t = action->actions.size();
   if (t) {
-    context->font = true;
+    context->getFont() = true;
 
     if (t == 1) {
       sub_action1 = action->actions[0];
@@ -1043,7 +1043,7 @@ void CompilerSetStatementStrategy::cmd_set_font(
       cpu.addLdiiA(def_ARG);
 
       // call cmd_setfnt
-      context->codeOptimizer->addKernelCall(DISP_cmd_setfnt);
+      context->getCodeOptimizer()->addKernelCall(DISP_cmd_setfnt);
 
     } else if (t == 2) {
       sub_action1 = action->actions[0];
@@ -1061,7 +1061,7 @@ void CompilerSetStatementStrategy::cmd_set_font(
       cpu.addLdiiHL(def_ARG);
 
       // call cmd_setfnt
-      context->codeOptimizer->addKernelCall(DISP_cmd_setfnt);
+      context->getCodeOptimizer()->addKernelCall(DISP_cmd_setfnt);
 
     } else {
       context->syntaxError("Wrong number of parameters on SET FONT");
@@ -1074,10 +1074,10 @@ void CompilerSetStatementStrategy::cmd_set_font(
 
 void CompilerSetStatementStrategy::cmd_set_sprite(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  auto& fixup = *context->fixupResolver;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& fixup = *context->getFixupResolver();
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int t;
@@ -1107,7 +1107,7 @@ void CompilerSetStatementStrategy::cmd_set_sprite(
         // pop de
         cpu.addPopDE();
 
-        context->codeOptimizer->addKernelCall(DISP_set_sprite_flip);
+        context->getCodeOptimizer()->addKernelCall(DISP_set_sprite_flip);
 
       } else {
         context->syntaxError(
@@ -1133,7 +1133,7 @@ void CompilerSetStatementStrategy::cmd_set_sprite(
         // pop de
         cpu.addPopDE();
 
-        context->codeOptimizer->addKernelCall(DISP_set_sprite_rotate);
+        context->getCodeOptimizer()->addKernelCall(DISP_set_sprite_rotate);
 
       } else {
         context->syntaxError(
@@ -1167,7 +1167,7 @@ void CompilerSetStatementStrategy::cmd_set_sprite(
         // call set_sprite_pattern
         //   a = sprite number
         //   hl = pointer to a 32 bytes buffer
-        context->codeOptimizer->addKernelCall(DISP_set_sprite_pattern);
+        context->getCodeOptimizer()->addKernelCall(DISP_set_sprite_pattern);
 
       } else {
         context->syntaxError(
@@ -1201,7 +1201,7 @@ void CompilerSetStatementStrategy::cmd_set_sprite(
         // call set_sprite_color
         //   a = sprite number
         //   hl = pointer to a 16 bytes buffer
-        context->codeOptimizer->addKernelCall(DISP_set_sprite_color);
+        context->getCodeOptimizer()->addKernelCall(DISP_set_sprite_color);
 
       } else {
         context->syntaxError(
@@ -1221,9 +1221,9 @@ void CompilerSetStatementStrategy::cmd_set_sprite(
 
 void CompilerSetStatementStrategy::cmd_set_sprite_hitbox(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  shared_ptr<ActionNode> spriteAction = context->current_action->actions[0];
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  shared_ptr<ActionNode> spriteAction = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> action = spriteAction->actions[0];
   shared_ptr<Lexeme> lexeme;
   unsigned int i, t = action->actions.size();
@@ -1258,7 +1258,7 @@ void CompilerSetStatementStrategy::cmd_set_sprite_hitbox(
     }
 
     // call set_sprite_hitbox
-    context->codeOptimizer->addKernelCall(DISP_set_sprite_hitbox);
+    context->getCodeOptimizer()->addKernelCall(DISP_set_sprite_hitbox);
     return;
   }
 
@@ -1309,15 +1309,15 @@ void CompilerSetStatementStrategy::cmd_set_sprite_hitbox(
   cpu.addLdA(mode);
 
   // call set_sprite_hitbox
-  context->codeOptimizer->addKernelCall(DISP_set_sprite_hitbox);
+  context->getCodeOptimizer()->addKernelCall(DISP_set_sprite_hitbox);
 }
 
 void CompilerSetStatementStrategy::cmd_set_date(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<Lexeme> lexeme;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
   int result_subtype;
@@ -1347,7 +1347,7 @@ void CompilerSetStatementStrategy::cmd_set_date(
       }
     }
 
-    context->codeOptimizer->addKernelCall(DISP_set_date);
+    context->getCodeOptimizer()->addKernelCall(DISP_set_date);
 
   } else {
     context->syntaxError(
@@ -1358,10 +1358,10 @@ void CompilerSetStatementStrategy::cmd_set_date(
 
 void CompilerSetStatementStrategy::cmd_set_time(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<Lexeme> lexeme;
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
   int result_subtype;
@@ -1392,7 +1392,7 @@ void CompilerSetStatementStrategy::cmd_set_time(
       }
     }
 
-    context->codeOptimizer->addKernelCall(DISP_set_time);
+    context->getCodeOptimizer()->addKernelCall(DISP_set_time);
 
   } else {
     context->syntaxError(
@@ -1404,5 +1404,5 @@ void CompilerSetStatementStrategy::cmd_set_time(
 bool CompilerSetStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_set(context);
-  return context->compiled;
+  return context->getCompiled();
 }

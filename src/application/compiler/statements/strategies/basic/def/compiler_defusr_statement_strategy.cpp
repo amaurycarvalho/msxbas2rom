@@ -8,17 +8,17 @@
 
 void CompilerDefUsrStatementStrategy::cmd_defusr(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<ActionNode> action, subaction;
   unsigned int t;
   int result_subtype;
 
-  action = context->current_action->actions[0];
+  action = context->getCurrentAction()->actions[0];
   t = action->actions.size();
 
   if (t == 2) {
-    context->has_defusr = true;
+    context->getHasDefusr() = true;
 
     subaction = action->actions[0];
     result_subtype = expression.evalExpression(subaction);
@@ -57,5 +57,5 @@ void CompilerDefUsrStatementStrategy::cmd_defusr(
 bool CompilerDefUsrStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_defusr(context);
-  return context->compiled;
+  return context->getCompiled();
 }

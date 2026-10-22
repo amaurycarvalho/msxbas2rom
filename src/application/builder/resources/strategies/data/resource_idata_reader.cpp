@@ -9,8 +9,9 @@
 
 #include "parser.h"
 
-ResourceIDataReader::ResourceIDataReader(shared_ptr<Parser> parser)
-    : ResourceDataReader(parser) {
+ResourceIDataReader::ResourceIDataReader(
+    shared_ptr<Parser> parser, shared_ptr<ResourceContentSource> contentSource)
+    : ResourceDataReader(parser, contentSource) {
   filename = "_IDATA_";
   resourceType = 3;  //! IDATA resource type
   isIntegerData = true;

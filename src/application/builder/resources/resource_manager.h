@@ -10,10 +10,12 @@
 
 #include <memory>
 
+#include "resource_factory.h"
 #include "resource_reader.h"
 
 class Parser;
 class Logger;
+class ResourceContentSource;
 
 using namespace std;
 
@@ -27,12 +29,14 @@ class ResourceManager {
   vector<vector<unsigned char>> pages;
 
   shared_ptr<Logger> logger;
+  shared_ptr<ResourceContentSource> contentSource;
+  ResourceFactory resourceFactory;
 
   int resourcesPackedSize;
   int resourcesUnpackedSize;
   float packedRate;
 
-  ResourceManager();
+  explicit ResourceManager(shared_ptr<ResourceContentSource> source);
   ~ResourceManager();
 
   /***

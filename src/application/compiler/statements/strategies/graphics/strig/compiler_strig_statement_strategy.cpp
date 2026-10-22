@@ -9,20 +9,20 @@
 
 void CompilerStrigStatementStrategy::cmd_strig(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& optimizer = *context->getCodeOptimizer();
   shared_ptr<ActionNode> action1, action2;
   shared_ptr<Lexeme> next_lexeme;
-  unsigned int t = context->current_action->actions.size();
+  unsigned int t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
   if (t == 2) {
-    action2 = context->current_action->actions[1];
+    action2 = context->getCurrentAction()->actions[1];
     next_lexeme = action2->lexeme;
 
     // ld hl, strig number
-    action1 = context->current_action->actions[0];
+    action1 = context->getCurrentAction()->actions[0];
     result_subtype = expression.evalExpression(action1);
     expression.addCast(result_subtype, Lexeme::subtype_numeric);
 
@@ -68,5 +68,5 @@ void CompilerStrigStatementStrategy::cmd_strig(
 bool CompilerStrigStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_strig(context);
-  return context->compiled;
+  return context->getCompiled();
 }

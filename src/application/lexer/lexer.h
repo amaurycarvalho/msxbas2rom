@@ -16,6 +16,8 @@
 class LexerLineEvaluator;
 class BuildOptions;
 class Logger;
+class SourceResolver;
+class SourceDocument;
 
 using namespace std;
 
@@ -26,6 +28,7 @@ using namespace std;
 class Lexer {
  private:
   shared_ptr<Logger> logger;
+  shared_ptr<SourceResolver> sourceResolver;
 
  public:
   vector<shared_ptr<LexerLineEvaluator>> lines;
@@ -34,12 +37,14 @@ class Lexer {
   void clear();
   bool load(string filename);
   bool load(shared_ptr<BuildOptions> opts);
+  bool loadDocument(const SourceDocument& document);
   bool evaluate();
   string toString();
 
   shared_ptr<Logger> getLogger();
+  shared_ptr<SourceResolver> getSourceResolver();
 
-  Lexer();
+  explicit Lexer(shared_ptr<SourceResolver> resolver);
   ~Lexer();
 };
 

@@ -12,8 +12,8 @@ int AscCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "ASC") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& optimizer = *context->getCodeOptimizer();
 
   if (result[0] == Lexeme::subtype_string) {
     // ex de, hl

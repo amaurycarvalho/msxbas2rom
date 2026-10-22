@@ -9,22 +9,22 @@
 
 void CompilerSwapStatementStrategy::cmd_swap(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& optimizer = *context->codeOptimizer;
-  auto& variable = *context->variableEmitter;
+  auto& cpu = *context->getCpu();
+  auto& optimizer = *context->getCodeOptimizer();
+  auto& variable = *context->getVariableEmitter();
   shared_ptr<Lexeme> lexeme1, lexeme2;
   shared_ptr<ActionNode> action1, action2;
-  unsigned int t = context->current_action->actions.size();
+  unsigned int t = context->getCurrentAction()->actions.size();
 
   if (t == 2) {
-    action1 = context->current_action->actions[0];
+    action1 = context->getCurrentAction()->actions[0];
     lexeme1 = action1->lexeme;
     if (lexeme1->type != Lexeme::type_identifier) {
       context->syntaxError("Invalid parameter type in SWAP (1st)");
       return;
     }
 
-    action2 = context->current_action->actions[1];
+    action2 = context->getCurrentAction()->actions[1];
     lexeme2 = action2->lexeme;
     if (lexeme2->type != Lexeme::type_identifier) {
       context->syntaxError("Invalid parameter type in SWAP (2nd)");
@@ -64,5 +64,5 @@ void CompilerSwapStatementStrategy::cmd_swap(
 bool CompilerSwapStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_swap(context);
-  return context->compiled;
+  return context->getCompiled();
 }

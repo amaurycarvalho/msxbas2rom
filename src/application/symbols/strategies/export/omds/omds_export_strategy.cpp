@@ -10,10 +10,12 @@
 #include "build_options.h"
 #include "code_node.h"
 #include "symbol_export_context.h"
+#include "symbol_output_sink.h"
 
 bool OmdsExportStrategy::save(shared_ptr<SymbolExportContext> context,
-                              shared_ptr<BuildOptions> opts) {
-  FILE* file;
+                              shared_ptr<BuildOptions> opts,
+                              shared_ptr<SymbolOutputSink> sink) {
+  string output;
   shared_ptr<CodeNode> codeItem;
   int i, t, size;
   char s[255];
@@ -33,10 +35,12 @@ bool OmdsExportStrategy::save(shared_ptr<SymbolExportContext> context,
   auto& codeList = context->codeList;
   auto& dataList = context->dataList;
 
+  if (!sink) return false;
+
   context->exportFilename = opts->baseFilename + ".omds";
 
-  if ((file = fopen(context->exportFilename.c_str(), "w"))) {
-    fwrite(omds_header, 1, sizeof(omds_header) - 1, file);
+  {
+    output.append(omds_header, sizeof(omds_header) - 1);
 
     t = kernelSymbols.size();
     for (i = 0; i < t; i++) {
@@ -44,10 +48,9 @@ bool OmdsExportStrategy::save(shared_ptr<SymbolExportContext> context,
                       kernelSymbols[i][0].c_str(),
                       stoi(kernelSymbols[i][1].c_str(), nullptr, 16), "");
       if (size <= 0) {
-        fclose(file);
         return false;
       }
-      fwrite(s, 1, size, file);
+      output.append(s, size);
     }
 
     t = codeList.size();
@@ -60,10 +63,9 @@ bool OmdsExportStrategy::save(shared_ptr<SymbolExportContext> context,
             snprintf(s, sizeof(s), omds_format, "jump", codeItem->name.c_str(),
                      codeItem->addr_within_segm, segmString.c_str());
         if (size <= 0) {
-          fclose(file);
           return false;
         }
-        fwrite(s, 1, size, file);
+        output.append(s, size);
       }
     }
 
@@ -75,17 +77,15 @@ bool OmdsExportStrategy::save(shared_ptr<SymbolExportContext> context,
         size = snprintf(s, sizeof(s), omds_format, "variable",
                         codeItem->name.c_str(), codeItem->addr_within_segm, "");
         if (size <= 0) {
-          fclose(file);
           return false;
         }
-        fwrite(s, 1, size, file);
+        output.append(s, size);
       }
     }
 
-    fwrite(omds_footer, 1, sizeof(omds_footer) - 1, file);
+    output.append(omds_footer, sizeof(omds_footer) - 1);
 
-    fclose(file);
-    return true;
+    return sink->writeText(context->exportFilename, output);
   }
   return false;
 }

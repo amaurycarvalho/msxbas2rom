@@ -9,14 +9,14 @@ void CompilerDimStatementStrategy::cmd_dim(
     shared_ptr<CompilerContext> context) {
   shared_ptr<Lexeme> lexeme, parm_lexeme;
   shared_ptr<ActionNode> action;
-  unsigned int i, k, w, tt, t = context->current_action->actions.size();
+  unsigned int i, k, w, tt, t = context->getCurrentAction()->actions.size();
   int new_size;
 
   if (!t) {
     context->syntaxError("DIM parameters is missing");
   } else {
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
       lexeme = action->lexeme;
 
       if (lexeme->type == Lexeme::type_identifier) {
@@ -48,7 +48,7 @@ void CompilerDimStatementStrategy::cmd_dim(
             try {
               lexeme->x_size = stoi(parm_lexeme->value) + 1;
             } catch (exception& e) {
-              context->logger->warning(
+              context->getLogger()->warning(
                   "Error while converting numeric constant " +
                   parm_lexeme->value);
               lexeme->x_size = 0;
@@ -70,7 +70,7 @@ void CompilerDimStatementStrategy::cmd_dim(
               try {
                 lexeme->y_size = stoi(parm_lexeme->value) + 1;
               } catch (exception& e) {
-                context->logger->warning(
+                context->getLogger()->warning(
                     "Error while converting numeric constant " +
                     parm_lexeme->value);
                 lexeme->y_size = 0;
@@ -109,5 +109,5 @@ void CompilerDimStatementStrategy::cmd_dim(
 bool CompilerDimStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_dim(context);
-  return context->compiled;
+  return context->getCompiled();
 }

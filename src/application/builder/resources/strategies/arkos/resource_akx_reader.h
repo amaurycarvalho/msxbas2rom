@@ -26,7 +26,8 @@ class ResourceAkxReader : public ResourceBlobReader {
  public:
   static bool isIt(string fileext);
   bool remapTo(int index, int mappedSegm, int mappedAddress);
-  ResourceAkxReader(string filename);
+  ResourceAkxReader(string filename,
+                    shared_ptr<ResourceContentSource> contentSource);
 };
 
 #endif  // RESOURCE_AKX_READER_H_INCLUDED

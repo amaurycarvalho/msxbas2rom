@@ -2,9 +2,11 @@
 
 See `proposal.md` for motivation. Current state relevant to this design:
 
-- Mutation score after Round 3 is **73%** (1791 killed + 10 timeout / 2445 mutants; 644 survivors; `mutationScore` 73). Reaching 85% requires **~288** more kills (2445 × 0.85 = 2078.25 → 2079 killed; today 1791). Only `Killed` counts: `check-mutation-score.py` reads Mull's `mutationScore`, which ignores `Timeout`.
-- Survivors (644) split by mutator class: **185** relational (`lt`/`le`/`gt`/`ge`), **174** equality (`eq_to_ne`/`ne_to_eq`), **117** arithmetic (`add`/`sub`/`mul`/`div`/`rem`), **103** inc/dec (`post`/`pre`), and 65 others.
-- Survivors are concentrated by group: `compiler.cpp` relocation/layout 46, builder readers 135 (`resource_akm_reader` 78, `resource_spr_reader` 19, `resource_akx_reader` 12), compiler semantic 98, compiler statements 201, parser 99, symbols 20, lexer 17, cli/domain/infra 7.
+- The fresh post-Phase-A report for Round 6 is **70%**: 1,783 killed, 733 survived, and 12 timeout out of 2,528. Reaching 85% requires **2,149 killed** (`ceil(2,528 × 0.85)`), or **366 additional kills**; only `Killed` counts (`check-mutation-score.py` reads Mull's `mutationScore`, which ignores `Timeout`). The recomputed budget is **~415 kills** (minimum 366).
+- Round 6 is sequenced after **Phase A** of `refactor-clean-architecture-testability` (boundary check, in-memory source, kernel image, resource/symbol boundaries). Phase A invalidated the old line targets; the post-Phase-A `make mutation-run` has now produced the fresh report above, and the inventory is regenerated before Round 6 starts.
+- Historical Round 3 baseline for context: 73% (1,791 killed + 10 timeout / 2,445 mutants; 644 survivors). Historical pre-Phase-A Round 6 estimate: 74% (1,827 killed, 615 survived, 26 timeout out of 2,468; 271 additional kills). Both are superseded by the fresh report.
+- Survivors (733) split by mutator class: **254** relational (`lt`/`le`/`gt`/`ge`), **207** equality (`eq_to_ne`/`ne_to_eq`), **147** arithmetic (`add`/`sub`/`mul`/`div`/`rem`), **113** inc/dec (`post`/`pre`), and 12 others.
+- Survivors are concentrated by group: compiler statements 229, builder readers 145 (`resource_akm_reader` 91 — 65 non-linker + 26 linker —, `resource_spr_reader` 19, `resource_akx_reader` 13), compiler semantic helpers 98, parser 98, `compiler.cpp` relocation/layout 46, and the builder/symbols/lexer/application/kernel/domain/cli tail 117.
 - Round 2 implemented exhaustive enumeration (phases 7–9) but reported **70%** because tests asserted high-level properties. Round 3 rewrote them to assert exact emitted bytes (phases 11–15) and moved to **73%**. A residual class of survivors remains: **index/offset mutants** (`dest[address - N]` → `address + N`, `data[i + 1]` → `i - 1`) whose fixtures use **zeros or equal values**, so reading/writing the wrong offset yields a byte identical to the expected one and the mutant is equivalent *for that fixture* (e.g. `dest[address - 3]` mutated to `dest[address + 3]` reads an all-zero cell while the intended cell is also `0x00`). Round 4 addresses this with **distinct sentinel bytes per offset** (Decision 13).
 - Tests are doctest 2.4.11 in `tests/unit/src/*.cpp`, one `test_unit` binary. `make mutation-run` uses `mull-runner-18 --timeout 32000 --minimum-timeout 32000 --allow-surviving --test-suite-exclude=Slow`.
 - mull-runner 0.34.0 exposes **no per-mutant filter** (only `--dry-run` to enumerate without executing), so incremental verification is `make -C tests/unit run`; the full `make mutation-run` is a user-managed step. New tests compile without `-fpass-plugin`, so they do not change the mutant count.
@@ -12,14 +14,15 @@ See `proposal.md` for motivation. Current state relevant to this design:
 ## Goals / Non-Goals
 
 **Goals:**
-- Kill ~300 of the 644 survivors (2079 − 1791 = 288 required; ~12 margin) with test-only changes, ordered highest-kill-first, driven by the exact survivor locations in the latest `mutation_report.json`.
+- Reach 85% after CleanArch Phase A with test-only changes, ordered highest-kill-first and driven by the fresh post-Phase-A survivor inventory; the required count is 366 kills (2,149 total) and the planned budget is ~415 kills.
 - Assert the **exact emitted bytes/values** each mutant alters, using **distinct sentinel bytes per offset** so that index/arithmetic mutants cannot be equivalent for the fixture (Decision 13).
+- Target C++ sources only; Z80/kernel tests are regression safety and do not count toward the mutation score.
 - Keep every new test **kernel-reassembly-safe**: kernel-derived values are computed at runtime; only Z80 ISA opcodes, compiler-owned geometry, and the documented compiler↔kernel ABI are asserted literally (Decision 14).
 - Reach 85% via kills; use `excludePaths` narrowing only as a fallback for provably equivalent mutants (in practice inapplicable at sub-file granularity — see Decision 8).
 
 **Non-Goals:**
-- Do NOT change production source code (`.cpp`/`.h` under `src/`), **except** the single minimal `Compiler::getContext()` accessor added in Round 3 (Decision 12). Round 4 is test-only.
-- Do NOT convert the 10 timeout mutants to killed; they stay "Timeout".
+- Do NOT change production source code (`.cpp`/`.h` under `src/`) in this change. The Phase A production refactor is owned by `refactor-clean-architecture-testability`; `Compiler::getContext()` already exists from Round 3 (Decision 12). Round 6 is test-only.
+- Do NOT convert timeout mutants to killed; they stay "Timeout".
 - Do NOT run the full mull suite or `mutation-clean` during development (both are slow); verification is `make -C tests/unit run`, and the full `make mutation-run`/`make mutation-check` is the user's final step.
 - Do NOT add `--dry-run`-based mutant enumeration as a workflow; it is unnecessary since the report already gives exact locations.
 
@@ -180,22 +183,176 @@ Phase 17 — fallback recording + final verification                            
 
 Budget ≈ 300 kills vs. the 288 required, leaving margin for the ~43 AKM-linker mutants, the dead optimizer branch, and the timeout mutants that are accepted. Phase 17 records, never excludes (Decision 8).
 
+### Decision 16: Round 6 uses a fresh post-Phase-A report and prioritises C++
+
+The fresh report is the **post-Phase-A** baseline: 2,528 mutants comprise
+1,783 Killed, 733 Survived and 12 Timeout, producing 70%; 85% requires 2,149
+killed, or 366 further kills. No survivor is in an ASM/Z80 file. The budget is
+~415 kills, ordered by C++ survivor concentration:
+
+```
+C++ statement strategies                         229
+binary resource readers (AKM/AKX/SPR/others)     145
+C++ semantic helpers and optimizer                98
+parser                                            98
+compiler.cpp relocation and layout                46
+builder/symbols/lexer/application/kernel tail    117
+```
+
+The Phase A architecture is already in the report, so these per-module targets
+are current. The implementation uses them directly, but still regenerates the
+mutator/line inventory from `mutation_report.json` when a phase starts so it
+does not hardcode stale line numbers. The phase strategy remains statements ->
+semantic/core -> readers -> parser -> long tail.
+
+- Rationale: it maximises kills per new test, honours the requested C++
+  emphasis, and avoids targeting lines moved by the refactor.
+- Alternative: start Round 6 immediately on the old report. Rejected because
+  Phase A invalidates its line targets and adds new mutants.
+- Alternative: invest in kernel assembly coverage first. Rejected because the
+  report has no ASM survivors and such tests are disproportionally fragile.
+
+### Decision 17: Generated Z80 is checked through normalised fragments, not whole-ROM hashes
+
+For compiler-generated Z80, a test may calculate a stable FNV-1a fingerprint
+of the emitted fragment after replacing bytes that encode runtime-derived
+kernel addresses or relocation targets with a fixed mask. The test also
+asserts fragment size and selected Z80 opcodes/ABI bytes literally. It never
+hashes a complete ROM nor embeds absolute kernel addresses.
+
+Kernel dispatch-table tests must validate that selected entries resolve inside
+the kernel code range and satisfy documented ordering/ABI relations. Tests
+must not assert distances between every routine start: a legitimate change in
+one routine's body would otherwise fail unrelated work. A distance assertion
+is allowed only for adjacent named anchors whose span is explicitly declared
+stable by the spec being changed; it documents the span, derives both starts
+at runtime, and explains the ABI reason.
+
+- Rationale: normalisation catches regressions in C++ code generation while a
+  kernel reassembly or relocation remains harmless.
+- Alternative: full binary hashes or global routine-distance snapshots.
+  Rejected because both cause widespread failures after harmless address or
+  implementation changes.
+
+### Decision 18: Fast mutation coverage is separated from broad end-to-end smoke coverage
+
+The measured post-Phase-A normal suite is 582 tests / 3,997 assertions. The
+slowest cases are the 8K blob pack (9.446 s, already in `Slow`), all statement
+strategies (2.047 s), all function strategies (1.478 s), decimal/string
+function subtypes (1.417 s), the 64-sprite cap fixture (1.017 s), all CMD
+handlers (0.853 s), MegaROM conditional jumps (0.815 s), MegaROM GOSUB
+(0.754 s), MegaROM PRINT (0.705 s), and the ASCII8 retry test (0.573 s).
+The mutation baseline excludes `Slow` and measures **24.95 s**.
+
+New mutation-focused cases use direct strategy/evaluator/context harnesses,
+in-memory source setup, compact boundary fixtures, and shared test helpers.
+One representative end-to-end compilation remains per feature family. An
+existing broad aggregate can enter `Slow` for Mull only after fast, focused
+tests cover every mutation-relevant behavior it supplied; it remains in the
+ordinary unit suite. The post-Phase-A baseline (24.95 s excluding `Slow`) is
+well below the 32 s per-run cap, so the current timeout remains valid unless
+Round 6 tests push it past that value.
+
+- Rationale: Mull executes the whole test binary for each mutant, so baseline
+  duration directly determines mutation feedback cost.
+- Alternative: remove or weaken broad tests. Rejected because normal-suite
+  coverage and end-to-end confidence must be retained.
+
+### Decision 19: Tests compile BASIC source from strings, never temporary `.bas` files
+
+New and existing tests in scope must provide BASIC program text through the
+shared `compileSource(logicalName, source)` seam backed by CleanArch Phase A's
+source boundary. They must not create, load, or remove a temporary `.bas`
+file. The seam must exercise the same lexer/parser/compiler behavior as
+file-backed input, including a stable logical source name when an error
+reports one. Kernel-dependent tests use `kernelImage()` from the same support
+header instead of reading the global array directly.
+
+- Rationale: repeated file creation and deletion is a measurable baseline
+  cost, makes tests dependent on the working directory, and is unnecessary
+  for source-content scenarios. A single seam lets the Phase B refactor
+  replace the helper internals without rewriting test call sites.
+- Alternative: retain a shared fixture directory. Rejected because it still
+  performs filesystem I/O and permits new tests to reintroduce that cost.
+- Alternative: a temporary test-only overload that production does not use.
+  Rejected for the final state; Phase A provides the production source
+  boundary, and the test seam simply delegates to it.
+
+### Decision 20: CleanArch Phase A is the prerequisite; Phase B follows Round 6
+
+Round 6 does not start until Phase A of
+`refactor-clean-architecture-testability` is complete and its normal suite
+passes. The sequence is:
+
+```
+Phase A (source/kernel/resource/symbol boundaries + boundary check)
+    -> user runs make mutation-run
+    -> regenerate survivor inventory
+    -> Round 6 mutation-killing tests
+    -> Phase B (diagnostics/ROM/CLI/contexts)
+    -> user runs the final mutation baseline
+```
+
+- Rationale: Phase A gives faster, deterministic tests and stable source/kernel
+  APIs; the fresh report prevents targeting stale lines.
+- Alternative: full CleanArch first. Rejected because it delays the 85% gate
+  and changes the mutant denominator twice.
+- Alternative: mutation before any refactor. Rejected because temporary files
+  and direct global/context access would be rewritten by Phase A.
+
+### Decision 21: Z80 work is regression safety, never mutation-score work
+
+No ASM/Z80 mutant is reported; all kill work targets C++. Z80 coverage is
+limited to:
+
+- dispatch-table integrity: each `DISP_*` entry resolves to a runtime-derived
+  address in the kernel range;
+- normalised generated-code fingerprints: FNV-1a over emitted fragments after
+  masking kernel-derived operands, plus fragment size and selected opcode/ABI
+  assertions; never a full-ROM hash;
+- distance assertions only for the small declared-stable MR ABI anchor set
+  (`DISP_MR_CALL` through `DISP_MR_JUMP`), derived at runtime; no global
+  routine-distance snapshots.
+
+- Rationale: catches unrelated Z80/codegen regressions without breaking a
+  legitimate kernel reassembly or an unrelated routine-size change.
+- Alternative: hash full ROMs or snapshot every routine distance. Rejected as
+  mass-fragile.
+
+### Decision 22: Tests use stable seams that survive Context decomposition
+
+Relocation/layout white-box tests keep their context manipulation in one
+harness file and use `Compiler::write` as the public surface. Kernel access
+goes through `kernelImage()`; source compilation goes through
+`compileSource()`. When CleanArch Phase B decomposes `CompilerContext` or
+replaces `bin_header_bin`, only the seam implementations and the single
+harness should need edits.
+
+- Rationale: minimizes rework after the Phase B context migration.
+- Alternative: write tests directly against current public fields. Rejected
+  because Phase B intentionally encapsulates them.
+
 ## Risks / Trade-offs
 
-- [Risk: 85% may still be unreachable purely by tests on equality-heavy and relocation arithmetic code] → Mitigation: Round 4 orders the largest residual gaps (relocation sentinel fixtures, readers) first and asserts exact output with sentinel-diverse buffers; the AKM linker state machine, the dead optimizer branch, and timeout mutants are recorded (Phase 17) since `excludePaths` cannot target sub-file regions.
-- [Risk: exact-byte fixtures bloat the suite and raise the mull baseline] → Mitigation: keep fixtures minimal and data-driven; the `Slow`-suite exclusion already offsets the single largest test.
-- [Risk: white-box relocation tests couple to internal opcode layout] → Mitigation: assert the documented opcode constants (already in the source comments), not internal indices; further, Decision 11 classifies each byte and derives kernel-resolved addresses from `bin_header_bin` instead of hardcoding them, so a kernel reassembly does not break the tests. Round 4 extends this rule to every new test.
-- [Risk: sentinel fixtures that accidentally collide with a hardcoded expected byte] → Mitigation: choose sentinels outside the Z80 opcode/expected-value space (e.g. base `0xA0`) and assert positions, not just values; verify with `make -C tests/unit run`.
-- [Trade-off: accepting 10 timeout mutants] → They cost < 0.5% of score and are a healthy signal that loops are exercised; not worth eliminating.
+- [Risk: 85% may still be unreachable purely by tests on equality-heavy and relocation arithmetic code] -> Mitigation: order the largest residual gaps first (statements, readers, semantic/core, parser), assert exact output with sentinel-diverse buffers, and record the AKM linker, dead optimizer branch, and 12 timeouts instead of hiding them. The ~415-kill budget leaves only ~49 kills of margin; if it falls short, expand the long tail rather than excluding whole files.
+- [Risk: the post-Phase-A baseline added new mutants and lowered the score from the pre-refactor estimate] -> Mitigation: the fresh baseline is already measured (70%, 733 survivors); budget 415 kills against it, not the former 345/271 figures.
+- [Risk: the survivor map changes again before Round 6 completes] -> Mitigation: keep artifact targets at module level and regenerate the mutator/line inventory for each phase; do not hardcode report line numbers in test plans.
+- [Risk: exact-byte fixtures bloat the suite and raise the Mull baseline] -> Mitigation: keep fixtures minimal and data-driven; tag only redundant broad aggregates `Slow` after focused replacements exist; remeasure the baseline.
+- [Risk: white-box relocation tests couple to internal opcode layout] -> Mitigation: assert documented opcode constants, derive kernel-resolved addresses at runtime, and isolate context access in one harness (Decision 22).
+- [Risk: sentinel fixtures accidentally collide with a hardcoded expected byte] -> Mitigation: choose sentinels outside the Z80 opcode/expected-value space (e.g. base `0xA0`) and assert positions, not just values.
+- [Trade-off: timeout mutants remain] -> They are recorded and excluded from kill expectations; do not chase them with fragile loops.
 
 ## Migration Plan
 
-1. Phases 11–16 (Round 4): add new test cases asserting exact output with sentinel fixtures, verifying each batch with `make -C tests/unit run`. Existing test cases are preserved; new coverage is added through new cases (per the `mutation-testing` spec).
-2. After each phase, re-check the surviving list in the latest `mutation_report.json` against the new tests (no full mull run).
-3. If equivalent/unreachable mutants remain, record them (Phase 17); `mull.yml` stays unchanged because `excludePaths` is whole-file (Decision 8).
-4. Run the full unit suite and confirm all prior tests pass and the count increased.
-5. User runs `make mutation-run` + `make mutation-check` once at the end to confirm ≥ 85%.
+1. Confirm CleanArch Phase A is complete, its normal suite passes, and the boundary check is green. (Verified: `make test-architecture` green; 582 tests / 3,997 assertions pass.)
+2. Use the fresh post-Phase-A `make mutation-run` report: 70%, 1,783 killed, 733 survived, 12 timeout out of 2,528; 2,149 killed are required, i.e. 366 additional kills.
+3. Add Round 6 tests in phase order (statements -> semantic/core -> readers -> parser -> long tail), verifying each batch with `make -C tests/unit run`.
+4. Add the Z80 regression fingerprints/dispatch checks (non-scoring) and the slow-test isolation after focused replacements exist.
+5. If equivalent/unreachable mutants remain, record them; `mull.yml` stays unchanged because `excludePaths` is whole-file (Decision 8).
+6. Run the full unit suite and confirm all prior tests pass and the count increased.
+7. User runs `make mutation-run` + `make mutation-check` once at the end to confirm at least 2,149 killed and a Mutation Score >= 85%.
+8. After CleanArch Phase B, regenerate the baseline again and reconcile the score with the refactored source.
 
 ## Open Questions
 
-None — the sentinel-fixture strategy, white-box coverage of every relocation opcode, phase ordering (17–23), verification strategy, and the fallback policy (record, don't exclude) are resolved.
+None — the sequencing (Phase A -> fresh baseline -> Round 6 -> Phase B), sentinel strategy, C++-only targeting, Z80 regression policy, and fallback policy are resolved.

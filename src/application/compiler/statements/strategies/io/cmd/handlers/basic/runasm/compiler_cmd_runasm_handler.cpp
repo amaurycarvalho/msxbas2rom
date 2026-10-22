@@ -8,8 +8,8 @@
 
 bool CompilerCmdRunAsmHandler::execute(shared_ptr<CompilerContext> context,
                                        shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
 
   if (action->actions.size() != 1) {
     context->syntaxError("CMD RUNASM syntax error");
@@ -24,7 +24,7 @@ bool CompilerCmdRunAsmHandler::execute(shared_ptr<CompilerContext> context,
   // ld (DAC), hl
   cpu.addLdiiHL(def_DAC);
   // call cmd_runasm
-  context->codeOptimizer->addKernelCall(DISP_cmd_runasm);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_runasm);
 
-  return context->compiled;
+  return context->getCompiled();
 }

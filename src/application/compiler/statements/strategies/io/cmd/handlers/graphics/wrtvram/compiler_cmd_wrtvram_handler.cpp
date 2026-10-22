@@ -8,8 +8,8 @@
 
 bool CompilerCmdWrtVramHandler::execute(shared_ptr<CompilerContext> context,
                                         shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
 
   if (action->actions.size() != 2) {
     context->syntaxError("CMD WRTVRAM syntax error");
@@ -31,7 +31,7 @@ bool CompilerCmdWrtVramHandler::execute(shared_ptr<CompilerContext> context,
   cpu.addLdiiHL(def_ARG);
 
   // call cmd_runasm
-  context->codeOptimizer->addKernelCall(DISP_cmd_wrtvram);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_wrtvram);
 
-  return context->compiled;
+  return context->getCompiled();
 }

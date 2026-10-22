@@ -13,9 +13,9 @@
 
 bool CompilerInputStatementStrategy::isFileInput(
     shared_ptr<CompilerContext> context) {
-  if (context->current_action->actions.empty()) return false;
+  if (context->getCurrentAction()->actions.empty()) return false;
 
-  shared_ptr<ActionNode> action = context->current_action->actions[0];
+  shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
   shared_ptr<Lexeme> lexeme = action->lexeme;
 
   return lexeme && lexeme->type == Lexeme::type_separator &&
@@ -24,17 +24,17 @@ bool CompilerInputStatementStrategy::isFileInput(
 
 void CompilerInputStatementStrategy::cmd_file_input(
     shared_ptr<CompilerContext> context, bool lineMode) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& expression = *context->expressionEvaluator;
-  auto& variable = *context->variableEmitter;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& variable = *context->getVariableEmitter();
   shared_ptr<ActionNode> action, subaction;
   shared_ptr<Lexeme> lexeme;
   shared_ptr<FixNode> skipInputMark;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
-  action = context->current_action->actions[0];
+  action = context->getCurrentAction()->actions[0];
   if (action->actions.empty()) {
     context->syntaxError("Invalid INPUT# file number");
     return;
@@ -46,9 +46,9 @@ void CompilerInputStatementStrategy::cmd_file_input(
   cpu.addLdAL();  // keep file number in A
   cpu.addPushAF();
 
-  context->file_support = true;
+  context->getFileSupport() = true;
   cpu.addLdA(0x00);  // drive A:
-  context->codeOptimizer->addKernelCall(
+  context->getCodeOptimizer()->addKernelCall(
       DISP_cmd_preflight_disk);  // check disk support
   cpu.addAndA();
   skipInputMark = fixup.addMark();
@@ -58,7 +58,7 @@ void CompilerInputStatementStrategy::cmd_file_input(
   bool expectValue = true;
 
   for (i = 1; i < t; i++) {
-    action = context->current_action->actions[i];
+    action = context->getCurrentAction()->actions[i];
     lexeme = action->lexeme;
 
     if (lexeme && lexeme->type == Lexeme::type_separator) {
@@ -96,11 +96,11 @@ void CompilerInputStatementStrategy::cmd_file_input(
 
   for (i = 0; i < values.size(); i++) {
     lexeme = values[i]->lexeme;
-    context->codeOptimizer->addKernelCall(DISP_GET_NEXT_TEMP_STRING_ADDRESS);
+    context->getCodeOptimizer()->addKernelCall(DISP_GET_NEXT_TEMP_STRING_ADDRESS);
     cpu.addLdDE(lineMode ? 0x0001 : 0x0000);  // e=read mode for cmd_finput
     cpu.addPopAF();
     cpu.addPushAF();
-    context->codeOptimizer->addKernelCall(DISP_cmd_finput);
+    context->getCodeOptimizer()->addKernelCall(DISP_cmd_finput);
 
     expression.addCast(Lexeme::subtype_string, lexeme->subtype);
     if (!variable.addAssignment(values[i])) return;
@@ -112,20 +112,20 @@ void CompilerInputStatementStrategy::cmd_file_input(
 
 void CompilerInputStatementStrategy::cmd_normal_input(
     shared_ptr<CompilerContext> context, bool questionMark) {
-  auto& expression = *context->expressionEvaluator;
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> action;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
   if (t) {
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
       lexeme = action->lexeme;
       if (lexeme) {
         if (lexeme->type == Lexeme::type_separator) {
           if (lexeme->value == ",") {
-            context->codeOptimizer->addKernelCall(
+            context->getCodeOptimizer()->addKernelCall(
                 DISP_XBASIC_PRINT_TAB);  // call print_tab
           } else if (lexeme->value == ";") {
             continue;
@@ -138,31 +138,31 @@ void CompilerInputStatementStrategy::cmd_normal_input(
             // choose between INPUT or LINE INPUT
 
             if (questionMark) {
-              context->codeOptimizer->addKernelCall(DISP_XBASIC_INPUT_1);
+              context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_INPUT_1);
             } else {
-              context->codeOptimizer->addKernelCall(DISP_XBASIC_INPUT_2);
+              context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_INPUT_2);
             }
 
             // do assignment
 
             expression.addCast(Lexeme::subtype_string, lexeme->subtype);
 
-            if (!context->variableEmitter->addAssignment(action)) return;
+            if (!context->getVariableEmitter()->addAssignment(action)) return;
 
           } else {
             result_subtype = expression.evalExpression(action);
 
             if (result_subtype == Lexeme::subtype_string) {
-              context->codeOptimizer->addKernelCall(
+              context->getCodeOptimizer()->addKernelCall(
                   DISP_XBASIC_PRINT_STR);  // call print_str
 
             } else if (result_subtype == Lexeme::subtype_numeric) {
-              context->codeOptimizer->addKernelCall(
+              context->getCodeOptimizer()->addKernelCall(
                   DISP_XBASIC_PRINT_INT);  // call print_int
 
             } else if (result_subtype == Lexeme::subtype_single_decimal ||
                        result_subtype == Lexeme::subtype_double_decimal) {
-              context->codeOptimizer->addKernelCall(
+              context->getCodeOptimizer()->addKernelCall(
                   DISP_XBASIC_PRINT_FLOAT);  // call print_float
 
             } else {
@@ -183,20 +183,20 @@ bool CompilerInputStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   if (isFileInput(context)) {
     cmd_file_input(context, false);
-    return context->compiled;
+    return context->getCompiled();
   }
 
   cmd_normal_input(context, true);
-  return context->compiled;
+  return context->getCompiled();
 }
 
 bool CompilerInputStatementStrategy::executeLineInput(
     shared_ptr<CompilerContext> context) {
   if (isFileInput(context)) {
     cmd_file_input(context, true);
-    return context->compiled;
+    return context->getCompiled();
   }
 
   cmd_normal_input(context, false);
-  return context->compiled;
+  return context->getCompiled();
 }

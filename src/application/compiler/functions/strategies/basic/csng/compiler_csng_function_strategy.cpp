@@ -12,7 +12,7 @@ int CsngCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "CSNG") return Lexeme::subtype_unknown;
 
-  auto& expression = *context->expressionEvaluator;
+  auto& expression = *context->getExpressionEvaluator();
 
   // cast
   expression.addCast(result[0], Lexeme::subtype_single_decimal);

@@ -8,8 +8,8 @@
 
 bool CompilerCmdRscToRamHandler::execute(shared_ptr<CompilerContext> context,
                                          shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
 
   if (action->actions.size() == 2 || action->actions.size() == 3) {
     auto sub = action->actions[0];  // resource number
@@ -47,11 +47,11 @@ bool CompilerCmdRscToRamHandler::execute(shared_ptr<CompilerContext> context,
     cpu.addPopHL();
 
     // call cmd_rsctoram
-    context->codeOptimizer->addKernelCall(DISP_cmd_rsctoram);
+    context->getCodeOptimizer()->addKernelCall(DISP_cmd_rsctoram);
 
   } else {
     context->syntaxError("CMD RSCTORAM syntax error");
   }
 
-  return context->compiled;
+  return context->getCompiled();
 }

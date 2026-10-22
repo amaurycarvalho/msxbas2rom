@@ -26,7 +26,8 @@
 class NoIceExportStrategy : public SymbolExportStrategy {
  public:
   bool save(shared_ptr<SymbolExportContext> context,
-            shared_ptr<BuildOptions> opts);
+            shared_ptr<BuildOptions> opts,
+            shared_ptr<SymbolOutputSink> sink);
 };
 
 #endif  // NOICE_EXPORT_STRATEGY_H_INCLUDED

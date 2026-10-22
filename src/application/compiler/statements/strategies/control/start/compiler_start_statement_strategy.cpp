@@ -10,10 +10,10 @@
 
 void CompilerStartStatementStrategy::cmd_start(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& parser = *context->parser;
-  auto& opts = *context->opts;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& parser = *context->getParser();
+  auto& opts = *context->getOpts();
 
   // ld (SAVSTK), sp
   cpu.addLdiiSP(0xf6b1);
@@ -28,17 +28,17 @@ void CompilerStartStatementStrategy::cmd_start(
   cpu.addCall(def_ENASLT);
 
   // ld hl, HEAP START ADDRESS
-  fixup.addFix(context->heap_mark);
+  fixup.addFix(context->getHeapMark());
   cpu.addLdHL(0x0000);
 
   // ld de, TEMPORARY STRING START ADDRESS
-  fixup.addFix(context->temp_str_mark);
+  fixup.addFix(context->getTempStrMark());
   cpu.addLdDE(0x0000);
 
   if (parser.getHasFont()) {
     // ld ix, FONT BUFFER START ADDRESS
     cpu.addByte(0xDD);
-    fixup.addFix(context->heap_mark)->step = -def_RAM_BUFSIZ;
+    fixup.addFix(context->getHeapMark())->step = -def_RAM_BUFSIZ;
     cpu.addLdHL(0x0000);
   } else {
     // push hl
@@ -49,7 +49,7 @@ void CompilerStartStatementStrategy::cmd_start(
 
   // call XBASIC INIT                  ; hl=heap start address, de=temporary
   // string start address, bc=data address, ix=font address, a=data segment
-  context->codeOptimizer->addKernelCall(DISP_XBASIC_INIT);
+  context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_INIT);
 
   if (parser.getHasTraps()) {
     if (opts.megaROM) {
@@ -68,7 +68,7 @@ void CompilerStartStatementStrategy::cmd_start(
     // ld a, 2
     cpu.addLdA(0x02);
     // call MR_CHANGE_SGM
-    context->codeOptimizer->addKernelCall(DISP_MR_CHANGE_SGM);
+    context->getCodeOptimizer()->addKernelCall(DISP_MR_CHANGE_SGM);
   }
 
   if (parser.getHasData() || parser.getHasIData()) {
@@ -77,12 +77,12 @@ void CompilerStartStatementStrategy::cmd_start(
     // ld (DAC), hl
     cpu.addLdiiHL(def_DAC);
     // call cmd_restore
-    context->codeOptimizer->addKernelCall(DISP_cmd_restore);  // MSXBAS2ROM resource RESTORE statement
+    context->getCodeOptimizer()->addKernelCall(DISP_cmd_restore);  // MSXBAS2ROM resource RESTORE statement
   }
 
   if (parser.getHasAkm()) {
     // initialize akm player
-    context->codeOptimizer->addKernelCall(DISP_player_initialize);
+    context->getCodeOptimizer()->addKernelCall(DISP_player_initialize);
   }
 
   // ei
@@ -92,5 +92,5 @@ void CompilerStartStatementStrategy::cmd_start(
 bool CompilerStartStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_start(context);
-  return context->compiled;
+  return context->getCompiled();
 }

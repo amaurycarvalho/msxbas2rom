@@ -49,9 +49,6 @@ class BuildOptions {
   //! @brief Options error message
   string errorMessage;
 
-  //! @brief Set input filename
-  void setInputFilename(string filename);
-
   //! @brief Get compile mode long name
   string getCompileModeLongName();
 

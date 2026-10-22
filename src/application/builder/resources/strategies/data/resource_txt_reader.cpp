@@ -11,27 +11,33 @@
 #include <strings.h>
 
 #include <algorithm>
-#include <fstream>
+#include <sstream>
 
 #include "logger.h"
+#include "resource_content_source.h"
 
-ResourceTxtReader::ResourceTxtReader(string filename)
-    : ResourceReader(filename) {
+ResourceTxtReader::ResourceTxtReader(
+    string filename, shared_ptr<ResourceContentSource> contentSource)
+    : ResourceReader(filename, contentSource) {
   /// @todo Refactor it implementing resource block linked list
   has1stBlockAnd2ndBlockSegmentDisalignmentBug = true;
 };
 
 bool ResourceTxtReader::populateLines() {
-  ifstream file(filename);
-  if (!file) {
-    logger->error("Resource file not found: " + filename);
+  string content;
+  string error;
+
+  if (!contentSource || !contentSource->readText(filename, content, error)) {
+    logger->error(error.empty() ? "Resource file not found: " + filename
+                                : error);
     return false;
   }
 
   lines.clear();
   string line;
+  istringstream input(content);
 
-  while (getline(file, line)) {
+  while (getline(input, line)) {
     // remove any CR/LF from the end of string
     while (!line.empty() && (line.back() == '\r' || line.back() == '\n')) {
       line.pop_back();

@@ -24,15 +24,33 @@
 #include "parser.h"
 #include "resources.h"
 
+#include "in_memory_resource_content_source.h"
+
+static std::shared_ptr<InMemoryResourceContentSource> resourceSource =
+    std::make_shared<InMemoryResourceContentSource>();
+
+static std::vector<unsigned char> toResourceBytes(const std::string& content) {
+  return std::vector<unsigned char>(content.begin(), content.end());
+}
+
+static void resetResourceSource() {
+  if (!resourceSource) {
+    resourceSource = std::make_shared<InMemoryResourceContentSource>();
+  }
+  resourceSource->clear();
+}
+
 // Utilities
 static void createTempFile(const std::string& filename,
                            const std::string& content) {
-  std::ofstream ofs(filename, std::ios::binary);
-  ofs.write(content.data(), content.size());
-  ofs.close();
+  if (!resourceSource) {
+    resourceSource = std::make_shared<InMemoryResourceContentSource>();
+  }
+  resourceSource->addBinary(filename, toResourceBytes(content));
+  resourceSource->addText(filename, content);
 }
 static void deleteTempFile(const std::string& filename) {
-  std::remove(filename.c_str());
+  (void)filename;
 }
 
 // Helpers
@@ -49,9 +67,10 @@ static void deleteTempFile(const std::string& filename) {
 // ------------------------------------------------------------------
 // ResourceManager suite
 TEST_SUITE("ResourceManager suite") {
-  ResourceManager resourceManager;
+  ResourceManager resourceManager(resourceSource);
 
   TEST_CASE("ResourceManager: basic test cases") {
+    resetResourceSource();
     std::string fname = "tmp/temp_blob.bin";
 
     SUBCASE("Success when loading a resource") {
@@ -100,6 +119,7 @@ TEST_SUITE("ResourceManager suite") {
   }
 
   TEST_CASE("ResourceManager: resource exactly fills a 16K page") {
+    resetResourceSource();
     std::string fname = "tmp/temp_exact16k.bin";
     std::string fakeData(0x4000, '\xBB');
     createTempFile(fname, fakeData);
@@ -113,6 +133,7 @@ TEST_SUITE("ResourceManager suite") {
   }
 
   TEST_CASE("ResourceManager: multiple resources span pages") {
+    resetResourceSource();
     std::string fname = "tmp/temp_page1.bin";
     std::string bigData(0x3000, '\xCC');
     std::string smallData(0x2000, '\xDD');
@@ -128,11 +149,13 @@ TEST_SUITE("ResourceManager suite") {
   }
 
   TEST_CASE("ResourceManager: empty resource list builds successfully") {
+    resetResourceSource();
     resourceManager.clear();
     CHECK(resourceManager.buildMap(0, 0) == true);
   }
 
   TEST_CASE("ResourceManager: buildMap writes exact map table bytes") {
+    resetResourceSource();
     std::string fname = "tmp/temp_map_bytes.bin";
     std::string fakeData = "0123456789";
     createTempFile(fname, fakeData);
@@ -170,13 +193,14 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceBlobReader
   TEST_CASE("ResourceBlobReader loads data") {
+    resetResourceSource();
     // Simulate fake packed file header + data
     std::string fname = "tmp/temp_blob.bin";
     std::string fakeData = "TMP$" + std::string(0x8000, '\xAA');
 
     createTempFile(fname, fakeData);
 
-    ResourceBlobReader reader(fname);
+    ResourceBlobReader reader(fname, resourceSource);
     CHECK_VALID_READER(reader);
     REQUIRE(reader.data.size() == 1);
     CHECK(reader.data[0].size() == 0x8004);
@@ -185,10 +209,11 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   TEST_CASE("ResourceBlobReader rejects an empty file") {
+    resetResourceSource();
     std::string fname = "tmp/temp_empty_blob.bin";
     createTempFile(fname, "");
 
-    ResourceBlobReader reader(fname);
+    ResourceBlobReader reader(fname, resourceSource);
     CHECK(reader.load() == false);
     CHECK(reader.getLogger()->errors().toString().find("empty") !=
           std::string::npos);
@@ -197,11 +222,12 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   TEST_CASE("ResourceBlobReader preserves exact file bytes") {
+    resetResourceSource();
     std::string fname = "tmp/temp_bytes.bin";
     std::string content("\x00\x01\x02\xFE\xFFGAME", 7);
     createTempFile(fname, content);
 
-    ResourceBlobReader reader(fname);
+    ResourceBlobReader reader(fname, resourceSource);
     CHECK_VALID_READER(reader);
     REQUIRE(reader.data.size() == 1);
     REQUIRE(reader.data[0].size() == 7);
@@ -215,11 +241,12 @@ TEST_SUITE("ResourceReader suite") {
   // "Slow" suite below, which is excluded from mutation testing)
 
   TEST_CASE("ResourceBlobPackedReader rejects data over the 8K boundary") {
+    resetResourceSource();
     std::string fname = "tmp/temp_blobpacked_over.bin";
     std::string content(0x2001, '\xAB');
     createTempFile(fname, content);
 
-    ResourceBlobPackedReader reader(fname);
+    ResourceBlobPackedReader reader(fname, resourceSource);
     CHECK(reader.load() == false);
     CHECK(reader.getLogger()->errors().toString().find("Resource size >") !=
           std::string::npos);
@@ -230,13 +257,14 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceBlobPackedReader
   TEST_CASE("ResourceBlobPackedReader loads packed data") {
+    resetResourceSource();
     // Simulate fake packed file header + data
     std::string fname = "tmp/temp_blobpacked.bin";
     std::string fakePacked = "TMP$" + std::string(100, '\xAA');
 
     createTempFile(fname, fakePacked);
 
-    ResourceBlobPackedReader reader(fname);
+    ResourceBlobPackedReader reader(fname, resourceSource);
     CHECK_VALID_READER(reader);
     CHECK(reader.isPacked == true);
 
@@ -244,13 +272,14 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   TEST_CASE("ResourceBlobPackedReader packed data size limit exceeded") {
+    resetResourceSource();
     // Simulate fake packed file header + data
     std::string fname = "tmp/temp_blobpacked.bin";
     std::string fakePacked = "TMP$" + std::string(0x8000, '\xAA');
 
     createTempFile(fname, fakePacked);
 
-    ResourceBlobPackedReader reader(fname);
+    ResourceBlobPackedReader reader(fname, resourceSource);
     CHECK_INVALID_READER(reader);
     CHECK(reader.getLogger()->errors().toString().find("Resource size >") !=
           std::string::npos);
@@ -261,13 +290,14 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceBlobChunkPackedReader
   TEST_CASE("ResourceBlobChunkPackedReader loads chunked packed data") {
+    resetResourceSource();
     std::string fname = "tmp/temp_blobchunk.bin";
     // Simulate a file with 2 "chunks"
     std::string fakeChunk =
         "CHNK" + std::string(64, '\x01') + "CHNK" + std::string(64, '\x02');
     createTempFile(fname, fakeChunk);
 
-    ResourceBlobChunkPackedReader reader(fname);
+    ResourceBlobChunkPackedReader reader(fname, resourceSource);
     CHECK_VALID_READER(reader);
     CHECK(reader.data.size() >= 2);
 
@@ -277,6 +307,7 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceBlobPackedReader (pletter edge cases)
   TEST_CASE("ResourceBlobPackedReader packs varied small data patterns") {
+    resetResourceSource();
     std::string patterns[5];
     patterns[0] = std::string(96, '\x00');
     patterns[1] = std::string(96, '\xAB');
@@ -293,7 +324,7 @@ TEST_SUITE("ResourceReader suite") {
       std::string fname = std::string("tmp/temp_pletter_") + names[i] + ".bin";
       createTempFile(fname, patterns[i]);
 
-      ResourceBlobPackedReader reader(fname);
+      ResourceBlobPackedReader reader(fname, resourceSource);
       CHECK(reader.load() == true);
       CHECK(reader.isPacked == true);
       CHECK(reader.packedSize > 0);
@@ -303,10 +334,11 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   TEST_CASE("ResourceBlobPackedReader round-trips a single byte") {
+    resetResourceSource();
     std::string fname = "tmp/temp_pletter_1byte.bin";
     createTempFile(fname, std::string("\x42", 1));
 
-    ResourceBlobPackedReader reader(fname);
+    ResourceBlobPackedReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     CHECK(reader.isPacked == true);
     CHECK(reader.packedSize > 0);
@@ -317,11 +349,12 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceTxtReader
   TEST_CASE("ResourceTxtReader parses plain text file") {
+    resetResourceSource();
     std::string fname = "tmp/temp_text.txt";
     std::string text = "Hello World\nLine2\nLine3";
     createTempFile(fname, text);
 
-    ResourceTxtReader reader(fname);
+    ResourceTxtReader reader(fname, resourceSource);
     CHECK_VALID_READER(reader);
 
     // Check first block has our text
@@ -334,10 +367,11 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   TEST_CASE("ResourceTxtReader computes exact unpacked size") {
+    resetResourceSource();
     std::string fname = "tmp/temp_txt_size.txt";
     createTempFile(fname, "Hello World\nLine2\nLine3");
 
-    ResourceTxtReader reader(fname);
+    ResourceTxtReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     // header (1) + (11+1) + (5+1) + (5+1) = 25
     CHECK(reader.unpackedSize == 25);
@@ -347,11 +381,12 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   TEST_CASE("ResourceTxtReader truncates long lines to 255 characters") {
+    resetResourceSource();
     std::string fname = "tmp/temp_long.txt";
     std::string longLine(300, 'x');
     createTempFile(fname, longLine);
 
-    ResourceTxtReader reader(fname);
+    ResourceTxtReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     REQUIRE(reader.data.size() == 2);
     CHECK(reader.data[1][0] == 255);
@@ -361,13 +396,14 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   TEST_CASE("ResourceTxtReader replaces control characters with spaces") {
+    resetResourceSource();
     std::string fname = "tmp/temp_ctrl.txt";
     std::string text = "ab\x01"
                        "cd\x07"
                        "ef";
     createTempFile(fname, text);
 
-    ResourceTxtReader reader(fname);
+    ResourceTxtReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     REQUIRE(reader.data.size() == 2);
     REQUIRE(reader.data[1].size() >= 7);
@@ -379,10 +415,11 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   TEST_CASE("ResourceTxtReader strips CRLF at end of lines") {
+    resetResourceSource();
     std::string fname = "tmp/temp_crlf.txt";
     createTempFile(fname, "hello\r\nworld\r\n");
 
-    ResourceTxtReader reader(fname);
+    ResourceTxtReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     REQUIRE(reader.data.size() == 3);
     CHECK(reader.data[1][0] == 5);
@@ -394,8 +431,9 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceStringReader
   TEST_CASE("ResourceStringReader truncates at 255 characters") {
+    resetResourceSource();
     std::string text(300, 'y');
-    ResourceStringReader reader(text);
+    ResourceStringReader reader(text, resourceSource);
 
     CHECK(reader.load() == true);
     REQUIRE(reader.data.size() == 1);
@@ -407,11 +445,12 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceCsvReader
   TEST_CASE("ResourceCsvReader parses CSV data") {
+    resetResourceSource();
     std::string fname = "tmp/temp_csv.csv";
     std::string csv = "id,name\n1,Alice\n2,Bob\n";
     createTempFile(fname, csv);
 
-    ResourceCsvReader reader(fname);
+    ResourceCsvReader reader(fname, resourceSource);
     CHECK_VALID_READER(reader);
 
     REQUIRE(reader.data.size() == 7);
@@ -425,11 +464,12 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceScrReader (MSX screen dump 6144 bytes + 768 color table)
   TEST_CASE("ResourceScrReader loads SCR format") {
+    resetResourceSource();
     std::string fname = "tmp/temp_scr.scr";
     std::string scr(6912, '\xFF');  // 6144+768
     createTempFile(fname, scr);
 
-    ResourceScrReader reader(fname);
+    ResourceScrReader reader(fname, resourceSource);
     CHECK_VALID_READER(reader);
     CHECK(reader.unpackedSize == 6912);
 
@@ -439,6 +479,7 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceSprReader (MSX sprite pattern 512 bytes)
   TEST_CASE("ResourceSprReader loads SPR format") {
+    resetResourceSource();
     std::string fname = "tmp/temp_spr.spr";
     std::string spr =
         "!type\nmsx1\n#Slot 0\n"
@@ -460,7 +501,7 @@ TEST_SUITE("ResourceReader suite") {
         "................";
     createTempFile(fname, spr);
 
-    ResourceSprReader reader(fname);
+    ResourceSprReader reader(fname, resourceSource);
     CHECK_VALID_READER(reader);
     CHECK(reader.unpackedSize == 101);
     CHECK(reader.packedSize == 51);
@@ -469,6 +510,7 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   TEST_CASE("ResourceSprReader produces identical bytes across loads") {
+    resetResourceSource();
     std::string fname = "tmp/temp_spr_exact.spr";
     std::string content = "!type\nmsx1\n#Slot 0\n";
     for (int i = 0; i < 16; i++) {
@@ -476,8 +518,8 @@ TEST_SUITE("ResourceReader suite") {
     }
     createTempFile(fname, content);
 
-    ResourceSprReader reader1(fname);
-    ResourceSprReader reader2(fname);
+    ResourceSprReader reader1(fname, resourceSource);
+    ResourceSprReader reader2(fname, resourceSource);
     REQUIRE(reader1.load() == true);
     REQUIRE(reader2.load() == true);
 
@@ -494,6 +536,7 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   TEST_CASE("ResourceSprReader loads msx2 sprite with mixed hex digits") {
+    resetResourceSource();
     std::string fname = "tmp/temp_spr_msx2.spr";
     std::string spr = "!type\nmsx2\n#Slot 0\n";
     for (int i = 0; i < 16; i++) {
@@ -501,7 +544,7 @@ TEST_SUITE("ResourceReader suite") {
     }
     createTempFile(fname, spr);
 
-    ResourceSprReader reader(fname);
+    ResourceSprReader reader(fname, resourceSource);
     CHECK_VALID_READER(reader);
     CHECK(reader.unpackedSize > 0);
 
@@ -509,6 +552,7 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   TEST_CASE("ResourceSprReader loads multiple sprite slots") {
+    resetResourceSource();
     std::string fname = "tmp/temp_spr_multi.spr";
     std::string spr = "!type\nmsx1\n#Slot 0\n";
     for (int i = 0; i < 16; i++) spr += "FFFFFFFFFFFFFFFF\n";
@@ -516,17 +560,18 @@ TEST_SUITE("ResourceReader suite") {
     for (int i = 0; i < 16; i++) spr += "0000000000000000\n";
     createTempFile(fname, spr);
 
-    ResourceSprReader reader(fname);
+    ResourceSprReader reader(fname, resourceSource);
     CHECK_VALID_READER(reader);
 
     deleteTempFile(fname);
   }
 
   TEST_CASE("ResourceSprReader rejects unknown sprite type") {
+    resetResourceSource();
     std::string fname = "tmp/temp_spr_badtype.spr";
     createTempFile(fname, "!type\nmsx9\n#Slot 0\n");
 
-    ResourceSprReader reader(fname);
+    ResourceSprReader reader(fname, resourceSource);
     CHECK(reader.load() == false);
 
     deleteTempFile(fname);
@@ -536,7 +581,7 @@ TEST_SUITE("ResourceReader suite") {
   // compare against the reader's packed output.
   static void checkSprDecoded(const std::string& fname,
                               const std::vector<unsigned char>& expected) {
-    ResourceSprReader reader(fname);
+    ResourceSprReader reader(fname, resourceSource);
     REQUIRE(reader.load() == true);
     REQUIRE(reader.unpackedSize == (int)expected.size());
 
@@ -553,6 +598,7 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   TEST_CASE("ResourceSprReader decodes a single MSX1 pixel exactly") {
+    resetResourceSource();
     std::string fname = "tmp/temp_spr_decoded.spr";
     std::string spr = "!type\nmsx1\n#Slot 0\n";
     spr += "1000000000000000\n";
@@ -570,6 +616,7 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   TEST_CASE("ResourceSprReader decodes uppercase and lowercase hex equally") {
+    resetResourceSource();
     std::vector<unsigned char> expected = {0x00, 0x01};
     expected.push_back(0x80);
     for (int i = 0; i < 31; i++) expected.push_back(0x00);
@@ -592,6 +639,7 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   TEST_CASE("ResourceSprReader decodes pixels into all four quadrants") {
+    resetResourceSource();
     std::string fname = "tmp/temp_spr_quad.spr";
     std::string spr = "!type\nmsx1\n#Slot 0\n";
     // Pixels at x=0 and x=8 on row 0 and row 8 -> planes 0/1/2/3 row 0.
@@ -613,6 +661,7 @@ TEST_SUITE("ResourceReader suite") {
   }
 
   TEST_CASE("ResourceSprReader caps the sprite pattern table at 64 sprites") {
+    resetResourceSource();
     std::string fname = "tmp/temp_spr_64.spr";
     std::string spr = "!type\nmsx1\n";
     for (int slot = 0; slot < 70; slot++) {
@@ -622,7 +671,7 @@ TEST_SUITE("ResourceReader suite") {
     }
     createTempFile(fname, spr);
 
-    ResourceSprReader reader(fname);
+    ResourceSprReader reader(fname, resourceSource);
     REQUIRE(reader.load() == true);
     // 64 sprites * 32 pattern bytes + 64 color bytes + 2 header bytes.
     CHECK(reader.unpackedSize == 2 + 64 * 32 + 64);
@@ -633,11 +682,12 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceAkmReader (AKM custom format stub)
   TEST_CASE("ResourceAkmReader loads AKM file") {
+    resetResourceSource();
     std::string fname = "tmp/temp.akm";
     std::string akm = "AKM" + std::string(20, '\x01');
     createTempFile(fname, akm);
 
-    ResourceAkmReader reader(fname);
+    ResourceAkmReader reader(fname, resourceSource);
     CHECK_VALID_READER(reader);
 
     deleteTempFile(fname);
@@ -646,11 +696,12 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceAkxReader (AKX custom format stub)
   TEST_CASE("ResourceAkxReader loads AKX file") {
+    resetResourceSource();
     std::string fname = "tmp/temp.akx";
     std::string akx = "AKX" + std::string(30, '\x02');
     createTempFile(fname, akx);
 
-    ResourceAkxReader reader(fname);
+    ResourceAkxReader reader(fname, resourceSource);
     CHECK_VALID_READER(reader);
 
     deleteTempFile(fname);
@@ -659,11 +710,12 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceMtfPaletteReader (MSX palette usually 32 bytes)
   TEST_CASE("ResourceMtfPaletteReader loads palette") {
+    resetResourceSource();
     std::string fname = "tmp/temp_palette.mtf";
     std::string pal(32, '\x0F');
     createTempFile(fname, pal);
 
-    ResourceMtfPaletteReader reader(fname);
+    ResourceMtfPaletteReader reader(fname, resourceSource);
     CHECK_VALID_READER(reader);
     CHECK(reader.unpackedSize == 33);
 
@@ -673,11 +725,12 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceMtfTilesetReader (tile data, e.g. 256 tiles * 8 bytes = 2048)
   TEST_CASE("ResourceMtfTilesetReader loads tileset") {
+    resetResourceSource();
     std::string fname = "tmp/temp_tileset.mtf";
     std::string tiles(2048, '\x04');
     createTempFile(fname, tiles);
 
-    ResourceMtfTilesetReader reader(fname);
+    ResourceMtfTilesetReader reader(fname, resourceSource);
     CHECK_VALID_READER(reader);
     CHECK(reader.unpackedSize == 2049);
 
@@ -687,11 +740,12 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceMtfMapReader (map file, e.g. 32x24 = 768 bytes)
   TEST_CASE("ResourceMtfMapReader loads map") {
+    resetResourceSource();
     std::string fname = "tmp/temp_map.mtf";
     std::string map(768, '\x05');
     createTempFile(fname, map);
 
-    ResourceMtfMapReader reader(fname);
+    ResourceMtfMapReader reader(fname, resourceSource);
     CHECK_INVALID_READER(reader);
 
     deleteTempFile(fname);
@@ -700,9 +754,10 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceStringReader (string table, null-terminated text)
   TEST_CASE("ResourceStringReader loads string table") {
+    resetResourceSource();
     std::string str = "HELLO\0WORLD\0";
 
-    ResourceStringReader reader(str);
+    ResourceStringReader reader(str, resourceSource);
     CHECK_VALID_READER(reader);
 
     REQUIRE(reader.data.size() > 0);
@@ -714,13 +769,14 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceDataReader (generic binary blob)
   TEST_CASE("ResourceDataReader loads binary data") {
+    resetResourceSource();
     shared_ptr<Parser> parser = make_shared<Parser>();
 
     std::string fname = "tmp/temp.dat";
     std::string blob(128, '\x10');
     createTempFile(fname, blob);
 
-    ResourceDataReader reader(parser);
+    ResourceDataReader reader(parser, resourceSource);
     CHECK_VALID_READER(reader);
     CHECK(reader.unpackedSize == 3);
 
@@ -730,6 +786,7 @@ TEST_SUITE("ResourceReader suite") {
   // ------------------------------------------------------------------
   // ResourceIDataReader (indexed data reader, e.g. header + entries)
   TEST_CASE("ResourceIDataReader loads indexed data") {
+    resetResourceSource();
     shared_ptr<Parser> parser = make_shared<Parser>();
 
     std::string fname = "tmp/temp.idat";
@@ -737,7 +794,7 @@ TEST_SUITE("ResourceReader suite") {
     std::string idata = "IDAT" + std::string(16, '\x07');
     createTempFile(fname, idata);
 
-    ResourceIDataReader reader(parser);
+    ResourceIDataReader reader(parser, resourceSource);
     CHECK_VALID_READER(reader);
 
     deleteTempFile(fname);
@@ -749,11 +806,12 @@ TEST_SUITE("ResourceReader suite") {
 // (they still run in the normal `make run`).
 TEST_SUITE("Slow") {
   TEST_CASE("ResourceBlobPackedReader packs data at the 8K boundary") {
+    resetResourceSource();
     std::string fname = "tmp/temp_blobpacked8k.bin";
     std::string content(0x2000, '\xAB');
     createTempFile(fname, content);
 
-    ResourceBlobPackedReader reader(fname);
+    ResourceBlobPackedReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     CHECK(reader.isPacked == true);
     CHECK(reader.packedSize > 0);

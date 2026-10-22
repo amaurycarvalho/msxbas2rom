@@ -29,14 +29,14 @@ bool GraphicsStatementStrategy::parsePset(
       } else if (next_lexeme->isSeparator("(")) {
         state++;
         parmCount++;
-        if (context->actionRoot->lexeme->value != "STEP") {
+        if (context->getActionRoot()->lexeme->value != "STEP") {
           action = make_shared<ActionNode>("COORD");
           context->pushActionRoot(action);
         }
         continue;
       } else {
-        context->logger->error("PSET without a valid complement");
-        context->eval_expr_error = true;
+        context->getLogger()->error("PSET without a valid complement");
+        context->getEvalExprError() = true;
         return false;
       }
     } else if (state == 1) {
@@ -64,7 +64,7 @@ bool GraphicsStatementStrategy::parsePset(
             parmCount++;
         } else {
           parmCount++;
-          next_lexeme = context->lex_null;
+          next_lexeme = context->getLexNull();
           context->pushActionFromLexeme(next_lexeme);
         }
         continue;
@@ -86,9 +86,9 @@ bool GraphicsStatementStrategy::parsePset(
         if (operatorCode >= 0) {
           parmValue = to_string(operatorCode);
         } else {
-          context->logger->error(
+          context->getLogger()->error(
               "Invalid operator parameter in PSET statement");
-          context->eval_expr_error = true;
+          context->getEvalExprError() = true;
           return false;
         }
       }
@@ -129,7 +129,7 @@ bool GraphicsStatementStrategy::parseLine(
     switch (state) {
       case 0: {
         if (next_lexeme->isKeyword("INPUT")) {
-          context->has_input = true;
+          context->getHasInput() = true;
           context->pushActionFromLexeme(next_lexeme);
           PrintStatementStrategy printStrategy;
           return printStrategy.parseStatement(context, statement);
@@ -148,8 +148,8 @@ bool GraphicsStatementStrategy::parseLine(
             state = 3;
           else
             state++;
-          if (context->actionRoot->lexeme->value != "STEP" &&
-              context->actionRoot->lexeme->value != "TO_STEP") {
+          if (context->getActionRoot()->lexeme->value != "STEP" &&
+              context->getActionRoot()->lexeme->value != "TO_STEP") {
             action = make_shared<ActionNode>("COORD");
             if (startAsParm2) action->lexeme->name = "TO_COORD";
             action->lexeme->value = action->lexeme->name;
@@ -160,8 +160,8 @@ bool GraphicsStatementStrategy::parseLine(
           startAsParm2 = true;
           continue;
         } else {
-          context->logger->error("LINE without a valid complement");
-          context->eval_expr_error = true;
+          context->getLogger()->error("LINE without a valid complement");
+          context->getEvalExprError() = true;
           return false;
         }
       } break;
@@ -174,9 +174,9 @@ bool GraphicsStatementStrategy::parseLine(
             sepCount--;
           else {
             if (sepTime) {
-              context->logger->error(
+              context->getLogger()->error(
                   "Invalid parentheses syntax in LINE statement");
-              context->eval_expr_error = true;
+              context->getEvalExprError() = true;
               return false;
             }
             if (parm->getLexemeCount()) {
@@ -213,15 +213,15 @@ bool GraphicsStatementStrategy::parseLine(
           continue;
         } else if (next_lexeme->isSeparator("(")) {
           state++;
-          if (context->actionRoot) {
-            if (context->actionRoot->lexeme->value != "TO_STEP") {
+          if (context->getActionRoot()) {
+            if (context->getActionRoot()->lexeme->value != "TO_STEP") {
               action = make_shared<ActionNode>("TO_COORD");
               context->pushActionRoot(action);
             }
           } else {
-            context->logger->error(
+            context->getLogger()->error(
                 "Invalid parentheses syntax in LINE statement");
-            context->eval_expr_error = true;
+            context->getEvalExprError() = true;
             return false;
           }
           continue;
@@ -237,9 +237,9 @@ bool GraphicsStatementStrategy::parseLine(
             sepCount--;
           else {
             if (parmCount != 2 || mustPopAction) {
-              context->logger->error(
+              context->getLogger()->error(
                   "Invalid parentheses syntax in LINE statement");
-              context->eval_expr_error = true;
+              context->getEvalExprError() = true;
               return false;
             }
             mustPopAction = true;
@@ -283,15 +283,15 @@ bool GraphicsStatementStrategy::parseLine(
             parm->clearLexemes();
 
           } else {
-            next_lexeme = context->lex_null;
+            next_lexeme = context->getLexNull();
             context->pushActionFromLexeme(next_lexeme);
           }
 
           continue;
 
         } else if (mustPopAction) {
-          context->logger->error("Invalid syntax in LINE statement");
-          context->eval_expr_error = true;
+          context->getLogger()->error("Invalid syntax in LINE statement");
+          context->getEvalExprError() = true;
           return false;
         }
 
@@ -326,9 +326,9 @@ bool GraphicsStatementStrategy::parseLine(
           if (operatorCode >= 0) {
             parmValue = to_string(operatorCode);
           } else {
-            context->logger->error(
+            context->getLogger()->error(
                 "Invalid operator parameter in LINE statement.");
-            context->eval_expr_error = true;
+            context->getEvalExprError() = true;
             return false;
           }
         }
@@ -373,14 +373,14 @@ bool GraphicsStatementStrategy::parseCircle(
       } else if (next_lexeme->isSeparator("(")) {
         state++;
         parmCount++;
-        if (context->actionRoot->lexeme->value != "STEP") {
+        if (context->getActionRoot()->lexeme->value != "STEP") {
           action = make_shared<ActionNode>("COORD");
           context->pushActionRoot(action);
         }
         continue;
       } else {
-        context->logger->error("CIRCLE without a valid complement");
-        context->eval_expr_error = true;
+        context->getLogger()->error("CIRCLE without a valid complement");
+        context->getEvalExprError() = true;
         return false;
       }
     } else if (state == 1) {
@@ -408,7 +408,7 @@ bool GraphicsStatementStrategy::parseCircle(
             parmCount++;
         } else {
           parmCount++;
-          next_lexeme = context->lex_null;
+          next_lexeme = context->getLexNull();
           context->pushActionFromLexeme(next_lexeme);
         }
         continue;
@@ -450,14 +450,14 @@ bool GraphicsStatementStrategy::parsePaint(
       } else if (next_lexeme->isSeparator("(")) {
         state++;
         parmCount++;
-        if (context->actionRoot->lexeme->value != "STEP") {
+        if (context->getActionRoot()->lexeme->value != "STEP") {
           action = make_shared<ActionNode>("COORD");
           context->pushActionRoot(action);
         }
         continue;
       } else {
-        context->logger->error("PAINT without a valid complement.");
-        context->eval_expr_error = true;
+        context->getLogger()->error("PAINT without a valid complement.");
+        context->getEvalExprError() = true;
         return false;
       }
     } else if (state == 1) {
@@ -484,7 +484,7 @@ bool GraphicsStatementStrategy::parsePaint(
           } else
             parmCount++;
         } else {
-          next_lexeme = context->lex_null;
+          next_lexeme = context->getLexNull();
           context->pushActionFromLexeme(next_lexeme);
         }
         continue;
@@ -554,7 +554,7 @@ bool GraphicsStatementStrategy::parseCopy(
               }
               parm->clearLexemes();
             } else {
-              next_lexeme = context->lex_null;
+              next_lexeme = context->getLexNull();
               context->pushActionFromLexeme(next_lexeme);
             }
             context->popActionRoot();
@@ -569,7 +569,7 @@ bool GraphicsStatementStrategy::parseCopy(
             }
             parm->clearLexemes();
           } else {
-            next_lexeme = context->lex_null;
+            next_lexeme = context->getLexNull();
             context->pushActionFromLexeme(next_lexeme);
           }
           continue;
@@ -585,7 +585,7 @@ bool GraphicsStatementStrategy::parseCopy(
         } else if (next_lexeme->isSeparator("(")) {
           parmCount++;
           state = 3;
-          if (context->actionRoot->lexeme->value != "TO_STEP") {
+          if (context->getActionRoot()->lexeme->value != "TO_STEP") {
             action = make_shared<ActionNode>("TO_COORD");
             context->pushActionRoot(action);
           }
@@ -608,7 +608,7 @@ bool GraphicsStatementStrategy::parseCopy(
               }
               parm->clearLexemes();
             } else {
-              next_lexeme = context->lex_null;
+              next_lexeme = context->getLexNull();
               context->pushActionFromLexeme(next_lexeme);
             }
 
@@ -627,7 +627,7 @@ bool GraphicsStatementStrategy::parseCopy(
             }
             parm->clearLexemes();
           } else {
-            next_lexeme = context->lex_null;
+            next_lexeme = context->getLexNull();
             context->pushActionFromLexeme(next_lexeme);
           }
 
@@ -645,7 +645,7 @@ bool GraphicsStatementStrategy::parseCopy(
             }
             parm->clearLexemes();
           } else {
-            next_lexeme = context->lex_null;
+            next_lexeme = context->getLexNull();
             context->pushActionFromLexeme(next_lexeme);
           }
 
@@ -689,7 +689,7 @@ bool GraphicsStatementStrategy::parseCopy(
               }
               parm->clearLexemes();
             } else {
-              next_lexeme = context->lex_null;
+              next_lexeme = context->getLexNull();
               context->pushActionFromLexeme(next_lexeme);
             }
 
@@ -707,7 +707,7 @@ bool GraphicsStatementStrategy::parseCopy(
             }
             parm->clearLexemes();
           } else {
-            next_lexeme = context->lex_null;
+            next_lexeme = context->getLexNull();
             context->pushActionFromLexeme(next_lexeme);
           }
 
@@ -734,7 +734,7 @@ bool GraphicsStatementStrategy::parseCopy(
             }
             parm->clearLexemes();
           } else {
-            next_lexeme = context->lex_null;
+            next_lexeme = context->getLexNull();
             context->pushActionFromLexeme(next_lexeme);
           }
 
@@ -754,12 +754,12 @@ bool GraphicsStatementStrategy::parseCopy(
             }
             parm->clearLexemes();
           } else {
-            next_lexeme = context->lex_null;
+            next_lexeme = context->getLexNull();
             context->pushActionFromLexeme(next_lexeme);
           }
 
           if (parmCount == 0) {
-            context->pushActionFromLexeme(context->lex_null);
+            context->pushActionFromLexeme(context->getLexNull());
           }
 
           parmCount++;
@@ -775,7 +775,7 @@ bool GraphicsStatementStrategy::parseCopy(
             }
             parm->clearLexemes();
           } else {
-            next_lexeme = context->lex_null;
+            next_lexeme = context->getLexNull();
             context->pushActionFromLexeme(next_lexeme);
           }
 
@@ -789,7 +789,7 @@ bool GraphicsStatementStrategy::parseCopy(
           state = 2;
           continue;
         } else {
-          context->logger->error("Invalid syntax on COPY statement");
+          context->getLogger()->error("Invalid syntax on COPY statement");
           return false;
         }
       } break;
@@ -812,9 +812,9 @@ bool GraphicsStatementStrategy::parseCopy(
         if (operatorCode >= 0) {
           parmValue = to_string(operatorCode);
         } else {
-          context->logger->error(
+          context->getLogger()->error(
               "Invalid operator parameter in COPY statement");
-          context->eval_expr_error = true;
+          context->getEvalExprError() = true;
           return false;
         }
       }

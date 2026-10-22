@@ -9,10 +9,10 @@ void CompilerDefStatementStrategy::cmd_def(
     shared_ptr<CompilerContext> context) {
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> lexeme;
-  unsigned int t = context->current_action->actions.size();
+  unsigned int t = context->getCurrentAction()->actions.size();
 
   if (t) {
-    action = context->current_action->actions[0];
+    action = context->getCurrentAction()->actions[0];
     lexeme = action->lexeme;
 
     if (lexeme->value == "USR") {
@@ -25,5 +25,5 @@ void CompilerDefStatementStrategy::cmd_def(
 bool CompilerDefStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_def(context);
-  return context->compiled;
+  return context->getCompiled();
 }

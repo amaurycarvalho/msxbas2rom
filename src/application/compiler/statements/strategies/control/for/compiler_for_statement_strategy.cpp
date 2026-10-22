@@ -18,14 +18,14 @@ using namespace std;
 
 void CompilerForStatementStrategy::cmd_for(
     shared_ptr<CompilerContext> context) {
-  auto& optimizer = *context->codeOptimizer;
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& expression = *context->expressionEvaluator;
-  auto& evaluator = *context->evaluator;
+  auto& optimizer = *context->getCodeOptimizer();
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& evaluator = *context->getEvaluator();
   shared_ptr<Lexeme> lexeme, lex_var = nullptr;
   shared_ptr<ActionNode> action, var_action;
-  shared_ptr<ActionNode> saved_action = context->current_action;
+  shared_ptr<ActionNode> saved_action = context->getCurrentAction();
   unsigned int i, t = saved_action->actions.size();
   int result_subtype;
   shared_ptr<ForNextNode> forNext;
@@ -34,26 +34,26 @@ void CompilerForStatementStrategy::cmd_for(
   if (!t) {
     context->syntaxError("FOR parameters is missing");
   } else {
-    context->for_count++;
+    context->getForCount()++;
 
     forNext = make_shared<ForNextNode>();
-    context->forNextStack.push(forNext);
+    context->getForNextStack().push(forNext);
 
-    forNext->index = context->for_count;
-    forNext->tag = context->current_tag;
+    forNext->index = context->getForCount();
+    forNext->tag = context->getCurrentTag();
     forNext->for_to =
         make_shared<Lexeme>(Lexeme::type_identifier, Lexeme::subtype_numeric,
-                            "FOR_TO_" + to_string(context->for_count));
+                            "FOR_TO_" + to_string(context->getForCount()));
     forNext->for_to_action = make_shared<ActionNode>();
     forNext->for_to_action->lexeme = forNext->for_to;
-    context->symbolResolver->addSymbol(forNext->for_to);
+    context->getSymbolResolver()->addSymbol(forNext->for_to);
 
     forNext->for_step =
         make_shared<Lexeme>(Lexeme::type_identifier, Lexeme::subtype_numeric,
-                            "FOR_STEP_" + to_string(context->for_count));
+                            "FOR_STEP_" + to_string(context->getForCount()));
     forNext->for_step_action = make_shared<ActionNode>();
     forNext->for_step_action->lexeme = forNext->for_step;
-    context->symbolResolver->addSymbol(forNext->for_step);
+    context->getSymbolResolver()->addSymbol(forNext->for_step);
 
     for (i = 0; i < t; i++) {
       action = saved_action->actions[i];
@@ -100,7 +100,7 @@ void CompilerForStatementStrategy::cmd_for(
               result_subtype == Lexeme::subtype_double_decimal) {
             expression.addCast(result_subtype, lex_var->subtype);
 
-            context->variableEmitter->addAssignment(forNext->for_to_action);
+            context->getVariableEmitter()->addAssignment(forNext->for_to_action);
 
             has_to = true;
 
@@ -119,7 +119,7 @@ void CompilerForStatementStrategy::cmd_for(
               result_subtype == Lexeme::subtype_double_decimal) {
             expression.addCast(result_subtype, lex_var->subtype);
 
-            context->variableEmitter->addAssignment(forNext->for_step_action);
+            context->getVariableEmitter()->addAssignment(forNext->for_step_action);
 
             has_step = true;
 
@@ -146,7 +146,7 @@ void CompilerForStatementStrategy::cmd_for(
 
         expression.addCast(Lexeme::subtype_numeric, forNext->for_step->subtype);
 
-        context->variableEmitter->addAssignment(forNext->for_step_action);
+        context->getVariableEmitter()->addAssignment(forNext->for_step_action);
       }
 
       if (lex_var->subtype == Lexeme::subtype_numeric) {
@@ -163,7 +163,7 @@ void CompilerForStatementStrategy::cmd_for(
 
         // ;step code
         forNext->forStepMark = fixup.addPreMark();
-        forNext->forStepMark->address = cpu.context->code_pointer;
+        forNext->forStepMark->address = cpu.context->getCodePointer();
 
         // ld hl, (variable)
         fixup.addFix(forNext->for_var);
@@ -211,7 +211,7 @@ void CompilerForStatementStrategy::cmd_for(
 
         // call intCompareGT
         // cpuOpcodeWriter->addCall(DISP_intCompareGT);
-        context->codeOptimizer->addKernelCall(DISP_intCompareGT);
+        context->getCodeOptimizer()->addKernelCall(DISP_intCompareGT);
 
         // jp nz, end_for
         forNext->forEndMark = fixup.addMark();
@@ -225,7 +225,7 @@ void CompilerForStatementStrategy::cmd_for(
 
         // ;step code
         forNext->forStepMark = fixup.addPreMark();
-        forNext->forStepMark->address = cpu.context->code_pointer;
+        forNext->forStepMark->address = cpu.context->getCodePointer();
 
         // ld a, (variable)
         fixup.addFix(forNext->for_var);
@@ -321,5 +321,5 @@ void CompilerForStatementStrategy::cmd_for(
 bool CompilerForStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_for(context);
-  return context->compiled;
+  return context->getCompiled();
 }

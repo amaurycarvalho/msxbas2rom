@@ -11,8 +11,9 @@
 
 #include "logger.h"
 
-ResourceAkxReader::ResourceAkxReader(string filename)
-    : ResourceBlobReader(filename) {};
+ResourceAkxReader::ResourceAkxReader(
+    string filename, shared_ptr<ResourceContentSource> contentSource)
+    : ResourceBlobReader(filename, contentSource) {};
 
 bool ResourceAkxReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".AKX") == 0);

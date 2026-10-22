@@ -11,7 +11,7 @@
 
 bool IfStatementStrategy::evalPhrase(shared_ptr<ParserContext> context,
                                      shared_ptr<LexerLineContext> phrase) {
-  return context->lineEval->evaluatePhrase(phrase);
+  return context->getLineEval()->evaluatePhrase(phrase);
 }
 
 bool IfStatementStrategy::parseStatement(shared_ptr<ParserContext> context,
@@ -36,14 +36,14 @@ bool IfStatementStrategy::parseStatement(shared_ptr<ParserContext> context,
           if (parm->getLexemeCount()) {
             parm->setLexemeBOF();
             if (!evaluateExpression(context, parm)) {
-              context->logger->error("IF command without a valid condition");
-              context->eval_expr_error = true;
+              context->getLogger()->error("IF command without a valid condition");
+              context->getEvalExprError() = true;
               return false;
             }
             parm->clearLexemes();
           } else {
-            context->logger->error("IF command with a empty condition");
-            context->eval_expr_error = true;
+            context->getLogger()->error("IF command with a empty condition");
+            context->getEvalExprError() = true;
             return false;
           }
 
@@ -61,13 +61,13 @@ bool IfStatementStrategy::parseStatement(shared_ptr<ParserContext> context,
           continue;
 
         } else if (next_lexeme->isKeyword("ELSE")) {
-          context->logger->error("ELSE without a THEN/GOTO/GOSUB");
-          context->eval_expr_error = true;
+          context->getLogger()->error("ELSE without a THEN/GOTO/GOSUB");
+          context->getEvalExprError() = true;
           return false;
 
         } else if (next_lexeme->isSeparator(":")) {
-          context->logger->error("Invalid separator on IF statement");
-          context->eval_expr_error = true;
+          context->getLogger()->error("Invalid separator on IF statement");
+          context->getEvalExprError() = true;
           return false;
         }
 
@@ -81,8 +81,8 @@ bool IfStatementStrategy::parseStatement(shared_ptr<ParserContext> context,
             if (parm->getLexemeCount()) {
               parm->setLexemeBOF();
               if (!evaluateExpression(context, parm)) {
-                context->logger->error("Invalid expression before IF command");
-                context->eval_expr_error = true;
+                context->getLogger()->error("Invalid expression before IF command");
+                context->getEvalExprError() = true;
                 return false;
               }
               parm->clearLexemes();
@@ -98,8 +98,8 @@ bool IfStatementStrategy::parseStatement(shared_ptr<ParserContext> context,
             testGotoGosub = false;
             continue;
           } else if (next_lexeme->isKeyword("THEN")) {
-            context->logger->error("Duplicated THEN in an IF command");
-            context->eval_expr_error = true;
+            context->getLogger()->error("Duplicated THEN in an IF command");
+            context->getEvalExprError() = true;
             return false;
           }
         }
@@ -134,8 +134,8 @@ bool IfStatementStrategy::parseStatement(shared_ptr<ParserContext> context,
               context->pushActionFromLexeme(next_lexeme);
               context->popActionRoot();
             } else {
-              context->logger->error("IF with invalid GOTO/GOSUB parameter");
-              context->eval_expr_error = true;
+              context->getLogger()->error("IF with invalid GOTO/GOSUB parameter");
+              context->getEvalExprError() = true;
               return false;
             }
 
@@ -157,8 +157,8 @@ bool IfStatementStrategy::parseStatement(shared_ptr<ParserContext> context,
             if (skipEmptyStmtCheck) {
               skipEmptyStmtCheck = false;
             } else {
-              context->logger->error("IF with an empty statement");
-              context->eval_expr_error = true;
+              context->getLogger()->error("IF with an empty statement");
+              context->getEvalExprError() = true;
               return false;
             }
           }
@@ -178,8 +178,8 @@ bool IfStatementStrategy::parseStatement(shared_ptr<ParserContext> context,
                 statement->getPreviousLexeme();
                 return true;
               }
-              context->logger->error("Duplicated ELSE in an IF command");
-              context->eval_expr_error = true;
+              context->getLogger()->error("Duplicated ELSE in an IF command");
+              context->getEvalExprError() = true;
               return false;
             }
           }
@@ -194,15 +194,15 @@ bool IfStatementStrategy::parseStatement(shared_ptr<ParserContext> context,
   }
 
   if (state == 0) {
-    context->logger->error("IF without a THEN/GOTO/GOSUB/ELSE complement");
-    context->eval_expr_error = true;
+    context->getLogger()->error("IF without a THEN/GOTO/GOSUB/ELSE complement");
+    context->getEvalExprError() = true;
     return false;
   }
 
   if (parm->getLexemeCount()) {
     if (state > 2) {
-      context->logger->error("Code detected after end of an IF statement");
-      context->eval_expr_error = true;
+      context->getLogger()->error("Code detected after end of an IF statement");
+      context->getEvalExprError() = true;
       return false;
     }
 
@@ -236,8 +236,8 @@ bool IfStatementStrategy::execute(shared_ptr<ParserContext> context,
                                   shared_ptr<LexerLineContext> statement,
                                   shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
-  if (!context->lineEval) {
-    context->logger->error(
+  if (!context->getLineEval()) {
+    context->getLogger()->error(
         "IF statement internal error (parser context not initialized)");
     return false;
   }

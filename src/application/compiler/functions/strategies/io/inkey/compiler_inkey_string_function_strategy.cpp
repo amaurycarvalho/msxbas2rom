@@ -17,9 +17,9 @@ int InkeyStringCompilerFunctionStrategy::execute(
 
   if (action->lexeme->value != "INKEY$") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
-  auto& optimizer = *context->codeOptimizer;
-  auto& variable = *context->variableEmitter;
+  auto& cpu = *context->getCpu();
+  auto& optimizer = *context->getCodeOptimizer();
+  auto& variable = *context->getVariableEmitter();
 
   // call 0x009C        ; CHSNS
   cpu.addCall(def_CHSNS);

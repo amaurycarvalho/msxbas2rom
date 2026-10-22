@@ -27,7 +27,7 @@ bool GenericStatementStrategy::parseStatement(
         }
         parm->clearLexemes();
       } else {
-        next_lexeme = context->lex_null;
+        next_lexeme = context->getLexNull();
         context->pushActionFromLexeme(next_lexeme);
       }
 
@@ -52,8 +52,8 @@ bool GenericStatementStrategy::parseStatement(
 bool GenericStatementStrategy::execute(shared_ptr<ParserContext> context,
                                        shared_ptr<LexerLineContext> statement,
                                        shared_ptr<Lexeme> lexeme) {
-  if (lexeme->value == "BLOAD") context->resourceCount++;
-  if (lexeme->value == "PLAY") context->has_play = true;
+  if (lexeme->value == "BLOAD") context->getResourceCount()++;
+  if (lexeme->value == "PLAY") context->getHasPlay() = true;
 
   return parseStatement(context, statement);
 }

@@ -10,10 +10,12 @@
 #include "build_options.h"
 #include "code_node.h"
 #include "symbol_export_context.h"
+#include "symbol_output_sink.h"
 
 bool SymbolFileExportStrategy::save(shared_ptr<SymbolExportContext> context,
-                                    shared_ptr<BuildOptions> opts) {
-  FILE* file;
+                                    shared_ptr<BuildOptions> opts,
+                                    shared_ptr<SymbolOutputSink> sink) {
+  string output;
   shared_ptr<CodeNode> codeItem;
   int i, t, size;
   char s[255];
@@ -22,19 +24,20 @@ bool SymbolFileExportStrategy::save(shared_ptr<SymbolExportContext> context,
   auto& codeList = context->codeList;
   auto& dataList = context->dataList;
 
+  if (!sink) return false;
+
   context->exportFilename = opts->baseFilename + ".symbol";
 
-  if ((file = fopen(context->exportFilename.c_str(), "w"))) {
+  {
     t = kernelSymbols.size();
     for (i = 0; i < t; i++) {
       size =
           snprintf(s, sizeof(s), symbol_format[1], kernelSymbols[i][0].c_str(),
                    stoi(kernelSymbols[i][1], nullptr, 16));
       if (size <= 0) {
-        fclose(file);
         return false;
       }
-      fwrite(s, 1, size, file);
+      output.append(s, size);
     }
 
     t = codeList.size();
@@ -50,10 +53,9 @@ bool SymbolFileExportStrategy::save(shared_ptr<SymbolExportContext> context,
                           codeItem->name.c_str(), codeItem->addr_within_segm);
         }
         if (size <= 0) {
-          fclose(file);
           return false;
         }
-        fwrite(s, 1, size, file);
+        output.append(s, size);
       }
     }
 
@@ -65,15 +67,13 @@ bool SymbolFileExportStrategy::save(shared_ptr<SymbolExportContext> context,
         size = snprintf(s, sizeof(s), symbol_format[1], codeItem->name.c_str(),
                         codeItem->addr_within_segm);
         if (size <= 0) {
-          fclose(file);
           return false;
         }
-        fwrite(s, 1, size, file);
+        output.append(s, size);
       }
     }
 
-    fclose(file);
-    return true;
+    return sink->writeText(context->exportFilename, output);
   }
   return false;
 }

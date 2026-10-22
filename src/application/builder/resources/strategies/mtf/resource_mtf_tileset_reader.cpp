@@ -39,8 +39,9 @@ bool ResourceMtfTilesetReader::load() {
   return false;
 }
 
-ResourceMtfTilesetReader::ResourceMtfTilesetReader(string filename)
-    : ResourceBlobReader(filename) {};
+ResourceMtfTilesetReader::ResourceMtfTilesetReader(
+    string filename, shared_ptr<ResourceContentSource> contentSource)
+    : ResourceBlobReader(filename, contentSource) {};
 
 bool ResourceMtfTilesetReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".SC4Tiles") == 0);

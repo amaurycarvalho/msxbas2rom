@@ -25,7 +25,8 @@ class ResourceSprReader : public ResourceBlobPackedReader {
  public:
   static bool isIt(string fileext);
   bool load();
-  ResourceSprReader(string filename);
+  ResourceSprReader(string filename,
+                    shared_ptr<ResourceContentSource> contentSource);
 };
 
 #endif  // RESOURCE_SPR_READER_H_INCLUDED

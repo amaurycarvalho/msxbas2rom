@@ -7,7 +7,7 @@
 bool CompilerCmdClrKeyHandler::execute(shared_ptr<CompilerContext> context,
                                        shared_ptr<ActionNode> action) {
   // call cmd_clrkey
-  context->codeOptimizer->addKernelCall(DISP_cmd_clrkey);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_clrkey);
 
-  return context->compiled;
+  return context->getCompiled();
 }

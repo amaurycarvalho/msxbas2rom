@@ -13,14 +13,14 @@ int ResourcesizeCompilerFunctionStrategy::execute(
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "RESOURCESIZE") return Lexeme::subtype_unknown;
 
-  auto& expression = *context->expressionEvaluator;
+  auto& expression = *context->getExpressionEvaluator();
 
   // cast
   expression.addCast(result[0], Lexeme::subtype_numeric);
   result[0] = Lexeme::subtype_numeric;
 
   // call usr1
-  context->codeOptimizer->addKernelCall(DISP_usr1);
+  context->getCodeOptimizer()->addKernelCall(DISP_usr1);
 
   return result[0];
 }

@@ -14,10 +14,10 @@
 
 bool CompilerCmdPlySoundHandler::execute(shared_ptr<CompilerContext> context,
                                          shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
 
-  context->akm = true;
+  context->getAkm() = true;
 
   if (action->actions.size()) {
     auto sub = action->actions[0];
@@ -56,7 +56,7 @@ bool CompilerCmdPlySoundHandler::execute(shared_ptr<CompilerContext> context,
   }
 
   // call cmd_plysound
-  context->codeOptimizer->addKernelCall(DISP_cmd_plysound);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_plysound);
 
-  return context->compiled;
+  return context->getCompiled();
 }

@@ -14,7 +14,7 @@ int PlayCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (action->lexeme->value != "PLAY") return Lexeme::subtype_unknown;
 
-  auto& expression = *context->expressionEvaluator;
+  auto& expression = *context->getExpressionEvaluator();
 
   if (result[0] == Lexeme::subtype_single_decimal ||
       result[0] == Lexeme::subtype_double_decimal) {
@@ -25,7 +25,7 @@ int PlayCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (result[0] == Lexeme::subtype_numeric) {
     // call usr2_play
-    context->codeOptimizer->addKernelCall(DISP_usr2_play);
+    context->getCodeOptimizer()->addKernelCall(DISP_usr2_play);
   } else
     result[0] = Lexeme::subtype_unknown;
 

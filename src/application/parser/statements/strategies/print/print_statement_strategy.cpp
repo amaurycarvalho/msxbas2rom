@@ -19,7 +19,7 @@ bool PrintStatementStrategy::parseStatement(
     switch (state) {
       case 0: {
         if (next_lexeme->isSeparator("#") && sepcount == 0) {
-          context->has_file_support = true;
+          context->getHasFileSupport() = true;
           state = 1;
           context->pushActionFromLexeme(next_lexeme);
           continue;
@@ -48,7 +48,7 @@ bool PrintStatementStrategy::parseStatement(
           }
 
           action = make_shared<ActionNode>(next_lexeme);
-          context->actionRoot->actions.push_back(action);
+          context->getActionRoot()->actions.push_back(action);
 
           continue;
         }

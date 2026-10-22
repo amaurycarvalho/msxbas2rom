@@ -16,9 +16,9 @@ int PointCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (action->lexeme->value != "POINT") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
-  auto& optimizer = *context->codeOptimizer;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& optimizer = *context->getCodeOptimizer();
+  auto& expression = *context->getExpressionEvaluator();
 
   if (result[0] == Lexeme::subtype_single_decimal ||
       result[0] == Lexeme::subtype_double_decimal) {

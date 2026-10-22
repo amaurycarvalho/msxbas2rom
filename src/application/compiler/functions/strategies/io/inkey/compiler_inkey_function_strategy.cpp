@@ -17,7 +17,7 @@ int InkeyCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (action->lexeme->value != "INKEY") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
 
   // ld hl, 0
   cpu.addLdHL(0x0000);

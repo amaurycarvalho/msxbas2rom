@@ -15,6 +15,12 @@
 #include "compiler_statement_strategy_factory.h"
 #include "cpu_workspace_context.h"
 #include "doctest/doctest.h"
+#include "test_support.h"
+
+static std::shared_ptr<TestSourceResolver> testSourceResolver() {
+  static auto resolver = std::make_shared<TestSourceResolver>();
+  return resolver;
+}
 #include "lexer.h"
 #include "logger.h"
 #include "parser.h"
@@ -23,9 +29,7 @@
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {
   const std::string path = "tmp/" + filename;
-  std::ofstream ofs(path);
-  ofs << content;
-  ofs.close();
+  testSourceResolver()->add(path, content);
   return path;
 }
 
@@ -35,8 +39,8 @@ static bool compileStatementProgram(const std::string& filename,
   const std::string path = createTempBas(filename, program);
 
   shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
-  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
   shared_ptr<Parser> parser = make_shared<Parser>();
 
   bool ok = false;
@@ -58,8 +62,8 @@ static int compiledCodeSize(const std::string& filename,
   const std::string path = createTempBas(filename, program);
 
   shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
-  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
   shared_ptr<Parser> parser = make_shared<Parser>();
 
   bool ok = false;
@@ -77,8 +81,8 @@ static std::string compiledCodeHex(const std::string& filename,
   const std::string path = createTempBas(filename, program);
 
   shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
-  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
   shared_ptr<Parser> parser = make_shared<Parser>();
 
   bool ok = false;

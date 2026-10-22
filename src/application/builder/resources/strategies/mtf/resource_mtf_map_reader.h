@@ -42,7 +42,8 @@ class ResourceMtfMapReader : public ResourceReader {
   static bool isIt(string fileext);
   bool load();
   bool remapTo(int index, int mappedSegm, int mappedAddress);
-  ResourceMtfMapReader(string filename);
+  ResourceMtfMapReader(string filename,
+                       shared_ptr<ResourceContentSource> contentSource);
 };
 
 #endif  // RESOURCE_MTF_MAP_READER_H_INCLUDED

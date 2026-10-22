@@ -12,10 +12,16 @@
  */
 
 // NOLINTBEGIN
+// test-inventory: file-adapter
 
 #include "build_options.h"
+#include "build_options_resolver.h"
 #include "compiler.h"
 #include "doctest/doctest.h"
+#include "in_memory_source_resolver.h"
+#include "test_support.h"
+#include <fstream>
+#include <iterator>
 #include "fswrapper.h"
 #include "lexer.h"
 #include "logger.h"
@@ -24,14 +30,22 @@
 #include "z80.h"
 
 static int COMPILE(string filename, bool megarom = false) {
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  std::ifstream input(filename.c_str());
+  REQUIRE(input.good());
+  const std::string content((std::istreambuf_iterator<char>(input)),
+                            std::istreambuf_iterator<char>());
+
+  auto resolver = make_shared<InMemorySourceResolver>();
+  resolver->add(filename, content);
+
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(resolver);
   shared_ptr<Parser> parser = make_shared<Parser>();
   shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
-  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
   shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
 
   // build options
-  opts->setInputFilename(filename);
+  build_options::setInputFilename(opts, filename);
   opts->megaROM = megarom;
 
   // lexing

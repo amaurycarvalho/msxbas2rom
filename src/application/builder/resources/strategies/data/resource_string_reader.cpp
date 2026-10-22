@@ -10,8 +10,9 @@
 #include <algorithm>
 #include <string.h>
 
-ResourceStringReader::ResourceStringReader(string text)
-    : ResourceReader(text) {};
+ResourceStringReader::ResourceStringReader(
+    string text, shared_ptr<ResourceContentSource> contentSource)
+    : ResourceReader(text, contentSource) {};
 
 bool ResourceStringReader::load() {
   int lineSize;

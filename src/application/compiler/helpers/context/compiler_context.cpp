@@ -13,6 +13,7 @@
 #include "compiler_float_converter.h"
 #include "compiler_symbol_resolver.h"
 #include "compiler_variable_emitter.h"
+#include "kernel_image.h"
 #include "lexeme.h"
 #include "logger.h"
 #include "parser.h"
@@ -20,10 +21,14 @@
 #include "symbol_export_context.h"
 #include "symbol_manager.h"
 
-CompilerContext::CompilerContext() {
+CompilerContext::CompilerContext(
+    shared_ptr<KernelImage> image,
+    shared_ptr<ResourceContentSource> resourceContentSource,
+    shared_ptr<SymbolOutputSink> symbolOutputSink) {
   logger = make_shared<Logger>();
-  symbolManager = make_shared<SymbolManager>();
-  resourceManager = make_shared<ResourceManager>();
+  kernelImage = image;
+  symbolManager = make_shared<SymbolManager>(symbolOutputSink);
+  resourceManager = make_shared<ResourceManager>(resourceContentSource);
 
   temp_str_mark = make_shared<SymbolNode>();
   if (temp_str_mark) {

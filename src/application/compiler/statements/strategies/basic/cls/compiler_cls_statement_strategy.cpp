@@ -5,11 +5,11 @@
 
 void CompilerClsStatementStrategy::cmd_cls(
     shared_ptr<CompilerContext> context) {
-  context->codeOptimizer->addKernelCall(DISP_XBASIC_CLS);  // call cls
+  context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_CLS);  // call cls
 }
 
 bool CompilerClsStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_cls(context);
-  return context->compiled;
+  return context->getCompiled();
 }

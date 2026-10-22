@@ -8,21 +8,21 @@
 
 void CompilerRestoreStatementStrategy::cmd_restore(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> lexeme;
-  int t = context->current_action->actions.size();
+  int t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
   if (t == 0) {
     // ld hl, 0
     cpu.addLdHL(0x0000);
     // call xbasic_restore
-    context->codeOptimizer->addKernelCall(DISP_XBASIC_RESTORE);  // standard BASIC RESTORE statement
+    context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_RESTORE);  // standard BASIC RESTORE statement
 
   } else if (t == 1) {
-    action = context->current_action->actions[0];
+    action = context->getCurrentAction()->actions[0];
 
     lexeme = action->lexeme;
     if (lexeme) {
@@ -32,7 +32,7 @@ void CompilerRestoreStatementStrategy::cmd_restore(
       expression.addCast(result_subtype, Lexeme::subtype_numeric);
 
       // call restore
-      context->codeOptimizer->addKernelCall(DISP_XBASIC_RESTORE);  // standard BASIC RESTORE statement
+      context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_RESTORE);  // standard BASIC RESTORE statement
     }
 
   } else {
@@ -43,5 +43,5 @@ void CompilerRestoreStatementStrategy::cmd_restore(
 bool CompilerRestoreStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_restore(context);
-  return context->compiled;
+  return context->getCompiled();
 }

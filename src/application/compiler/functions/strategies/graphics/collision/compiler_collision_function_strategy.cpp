@@ -13,18 +13,18 @@ int CollisionCompilerFunctionStrategy::execute(
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "COLLISION") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& optimizer = *context->getCodeOptimizer();
 
   switch (parmCount) {
     case 0: {
       // CALL SUB_SPRCOL_ALL
-      context->codeOptimizer->addKernelCall(DISP_usr3_COLLISION_ALL);
+      context->getCodeOptimizer()->addKernelCall(DISP_usr3_COLLISION_ALL);
       return Lexeme::subtype_numeric;
     }
 
     case 1: {
-      auto& expression = *context->expressionEvaluator;
+      auto& expression = *context->getExpressionEvaluator();
 
       if (result[0] == Lexeme::subtype_unknown) return Lexeme::subtype_unknown;
 
@@ -33,13 +33,13 @@ int CollisionCompilerFunctionStrategy::execute(
       result[0] = Lexeme::subtype_numeric;
 
       // call SUB_SPRCOL_ONE
-      context->codeOptimizer->addKernelCall(DISP_usr3_COLLISION_ONE);
+      context->getCodeOptimizer()->addKernelCall(DISP_usr3_COLLISION_ONE);
 
       return Lexeme::subtype_numeric;
     }
 
     case 2: {
-      auto& expression = *context->expressionEvaluator;
+      auto& expression = *context->getExpressionEvaluator();
 
       if (result[0] == Lexeme::subtype_unknown ||
           result[1] == Lexeme::subtype_unknown) {
@@ -81,7 +81,7 @@ int CollisionCompilerFunctionStrategy::execute(
       if (result[1] == Lexeme::subtype_numeric &&
           result[0] == Lexeme::subtype_numeric) {
         // call SUB_SPRCOL_COUPLE
-        context->codeOptimizer->addKernelCall(DISP_usr3_COLLISION_COUPLE);
+        context->getCodeOptimizer()->addKernelCall(DISP_usr3_COLLISION_COUPLE);
         return Lexeme::subtype_numeric;
       }
 

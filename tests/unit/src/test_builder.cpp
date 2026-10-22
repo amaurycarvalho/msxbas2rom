@@ -12,22 +12,11 @@
 #include "build_options.h"
 #include "compiler.h"
 #include "doctest/doctest.h"
-#include "fswrapper.h"
-#include "lexer.h"
+#include "file_resource_content_source.h"
+#include "in_memory_resource_content_source.h"
 #include "logger.h"
-#include "parser.h"
 #include "resources.h"
-#include "rom.h"
-#include "z80.h"
-
-static std::string createTempBas(const std::string& filename,
-                                 const std::string& content) {
-  const std::string path = "tmp/" + filename;
-  std::ofstream ofs(path);
-  ofs << content;
-  ofs.close();
-  return path;
-}
+#include "test_support.h"
 
 static std::string createTempBin(const std::string& filename, int size) {
   const std::string path = "tmp/" + filename;
@@ -38,99 +27,98 @@ static std::string createTempBin(const std::string& filename, int size) {
   return path;
 }
 
-static bool compileProgram(const std::string& filename,
-                           shared_ptr<Compiler> compiler) {
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
-  shared_ptr<Parser> parser = make_shared<Parser>();
-
-  if (!lexer->load(filename)) return false;
-  if (!lexer->evaluate()) return false;
-  if (!parser->evaluate(lexer)) return false;
-  return compiler->build(parser);
-}
-
 TEST_SUITE("Builder") {
   TEST_CASE("Builds ROM from compiled code") {
-    const std::string filename =
-        createTempBas("builder_valid.bas", "10 PRINT \"ROM\"\n20 END\n");
+    CompilationHarness harness;
+    auto compiler = harness.compileSource(
+        "tmp/builder_valid.bas", "10 PRINT \"ROM\"\n20 END\n");
+    REQUIRE(compiler != nullptr);
 
-    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
-        make_shared<Z80OpcodeWriter>();
-
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-    REQUIRE(compileProgram(filename, compiler) == true);
-
-    Rom rom;
-    CHECK(rom.build(compiler) == true);
-    CHECK(rom.romSize > 0);
-    CHECK(fileExists(compiler->getOpts()->outputFilename) == true);
-
-    std::remove(filename.c_str());
-    std::remove(compiler->getOpts()->outputFilename.c_str());
+    auto artifact = harness.buildRom(compiler);
+    REQUIRE(artifact != nullptr);
+    CHECK(artifact->romSize > 0);
+    CHECK(harness.romWriter->hasArtifact() == true);
+    CHECK(harness.romWriter->artifact().pages.size() == artifact->pages.size());
   }
 
   TEST_CASE("Fails ROM build with non-compiled input") {
-    shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
-        make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-    Rom rom;
+    CompilationHarness harness;
+    auto compiler = harness.makeCompiler();
+    auto artifact = harness.buildRom(compiler);
 
-    CHECK(rom.build(compiler) == false);
+    CHECK(artifact == nullptr);
+    CHECK(harness.romWriter->hasArtifact() == false);
   }
 
   TEST_CASE("Rejects resource block larger than 16K") {
-    const std::string filename =
-        createTempBin("builder_large_resource.bin", 0x4001);
+    auto source = std::make_shared<InMemoryResourceContentSource>();
+    source->addBinary("tmp/builder_large_resource.bin",
+                      std::vector<unsigned char>(0x4001, 0xAA));
 
-    ResourceManager rm;
-    REQUIRE(rm.addFile(filename, "tmp") == true);
+    ResourceManager rm(source);
+    REQUIRE(rm.addFile("tmp/builder_large_resource.bin", "tmp") == true);
     CHECK(rm.buildMap(0, 0) == false);
     CHECK(rm.logger->errors().toString().find("Resource file size exceeds") !=
           std::string::npos);
-
-    std::remove(filename.c_str());
   }
 
   TEST_CASE("Builds resource map with multiple resources") {
-    const std::string f1 = createTempBin("builder_multi_a.bin", 16);
-    const std::string f2 = createTempBin("builder_multi_b.bin", 32);
+    auto source = std::make_shared<InMemoryResourceContentSource>();
+    source->addBinary("tmp/builder_multi_a.bin",
+                      std::vector<unsigned char>(16, 0xAA));
+    source->addBinary("tmp/builder_multi_b.bin",
+                      std::vector<unsigned char>(32, 0xBB));
 
-    ResourceManager rm;
-    REQUIRE(rm.addFile(f1, "tmp") == true);
-    REQUIRE(rm.addFile(f2, "tmp") == true);
+    ResourceManager rm(source);
+    REQUIRE(rm.addFile("tmp/builder_multi_a.bin", "tmp") == true);
+    REQUIRE(rm.addFile("tmp/builder_multi_b.bin", "tmp") == true);
     CHECK(rm.buildMap(0, 0x8000) == true);
     CHECK(rm.pages.size() >= 1);
     CHECK(rm.resourcesPackedSize > 0);
     CHECK(rm.resourcesUnpackedSize > 0);
     CHECK(rm.toString().size() > 0);
-
-    std::remove(f1.c_str());
-    std::remove(f2.c_str());
   }
 
   TEST_CASE("Builds resource map with a multi-block text resource") {
-    const std::string filename = "tmp/builder_txt.txt";
-    std::ofstream ofs(filename);
-    ofs << "line one\nline two\nline three\n";
-    ofs.close();
+    auto source = std::make_shared<InMemoryResourceContentSource>();
+    source->addText("tmp/builder_txt.txt",
+                    "line one\nline two\nline three\n");
 
-    ResourceManager rm;
-    REQUIRE(rm.addFile(filename, "tmp") == true);
+    ResourceManager rm(source);
+    REQUIRE(rm.addFile("tmp/builder_txt.txt", "tmp") == true);
     CHECK(rm.buildMap(0, 0x8000) == true);
     CHECK(rm.pages.size() >= 1);
-
-    std::remove(filename.c_str());
   }
 
   TEST_CASE("Builds resource map spanning multiple segments") {
-    const std::string filename = createTempBin("builder_segment.bin", 0x3FF0);
+    auto source = std::make_shared<InMemoryResourceContentSource>();
+    source->addBinary("tmp/builder_segment.bin",
+                      std::vector<unsigned char>(0x3FF0, 0xCC));
 
-    ResourceManager rm;
-    REQUIRE(rm.addFile(filename, "tmp") == true);
+    ResourceManager rm(source);
+    REQUIRE(rm.addFile("tmp/builder_segment.bin", "tmp") == true);
     CHECK(rm.buildMap(0, 0x8000) == true);
     CHECK(rm.pages.size() >= 2);
+  }
 
-    std::remove(filename.c_str());
+  TEST_CASE("File adapter reports missing, empty and truncated resources") {
+    auto fileSource = std::make_shared<FileResourceContentSource>();
+    std::vector<unsigned char> content;
+    std::string error;
+
+    CHECK(fileSource->readBinary("tmp/builder_missing.bin", content, error) ==
+          false);
+    CHECK(fileSource->exists("tmp/builder_missing.bin") == false);
+
+    const std::string empty = createTempBin("builder_empty.bin", 0);
+    CHECK(fileSource->readBinary(empty, content, error) == false);
+    CHECK(error.find("empty") != std::string::npos);
+    std::remove(empty.c_str());
+
+    const std::string truncated = createTempBin("builder_truncated.bin", 4);
+    CHECK(fileSource->readBinary(truncated, content, error) == true);
+    CHECK(content.size() == 4);
+    std::remove(truncated.c_str());
   }
 }
 

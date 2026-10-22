@@ -8,17 +8,17 @@
 
 void CompilerPlayStatementStrategy::cmd_play(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<ActionNode> action;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
   bool xor_a = true;
 
   if (t >= 1 && t <= 3) {
     for (i = 0; i < 3; i++) {
       if (i < t) {
-        action = context->current_action->actions[i];
+        action = context->getCurrentAction()->actions[i];
         result_subtype = expression.evalExpression(action);
         if (result_subtype != Lexeme::subtype_string) {
           context->syntaxError("Invalid PLAY parameter");
@@ -44,7 +44,7 @@ void CompilerPlayStatementStrategy::cmd_play(
     // pop hl
     cpu.addPopHL();
 
-    context->codeOptimizer->addKernelCall(DISP_XBASIC_PLAY);
+    context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_PLAY);
 
   } else {
     context->syntaxError("Invalid PLAY parameters");
@@ -54,5 +54,5 @@ void CompilerPlayStatementStrategy::cmd_play(
 bool CompilerPlayStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_play(context);
-  return context->compiled;
+  return context->getCompiled();
 }

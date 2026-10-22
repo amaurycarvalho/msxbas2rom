@@ -12,27 +12,32 @@
 #include "rom.h"
 
 #include <cstring>
-#include <fstream>
 
 #include "build_options.h"
 #include "compiler.h"
 #include "compiler_hooks.h"
-#include "header.h"
+#include "kernel_image.h"
 #include "logger.h"
 #include "parser.h"
 #include "resource_manager.h"
-#include "start.h"
+#include "rom_artifact.h"
+#include "rom_writer.h"
 
 //----------------------------------------------------------------------------------------------
 
-Rom::Rom() {
+Rom::Rom(shared_ptr<RomWriter> outputWriter) {
   logger = make_shared<Logger>();
+  writer = outputWriter;
 }
 
 Rom::~Rom() = default;
 
 shared_ptr<Logger> Rom::getLogger() {
   return logger;
+}
+
+shared_ptr<RomArtifact> Rom::getArtifact() const {
+  return artifact;
 }
 
 bool Rom::build(shared_ptr<Compiler> compiler) {
@@ -72,20 +77,48 @@ bool Rom::build(shared_ptr<Compiler> compiler) {
 
   if (!addResources()) return false;
 
-  // save ROM file
+  // assemble in-memory artifact
+
+  logger->debug("Assembling ROM artifact...");
+
+  if (!assembleArtifact()) return false;
+
+  // persist artifact through the outer writer
 
   logger->debug("Writing ROM file...");
 
-  if (!writeRom(opts->outputFilename)) return false;
+  if (!writer) {
+    logger->error("ROM writer is not configured");
+    errorFound = true;
+    return false;
+  }
+
+  string error;
+  if (!writer->write(*artifact, opts->outputFilename, error)) {
+    logger->error(error.empty() ? "Cannot create output file: " +
+                                      opts->outputFilename
+                                : error);
+    errorFound = true;
+    return false;
+  }
 
   // calculate shares
 
   logger->debug("Calculating ROM statistics...");
 
+  romSize = artifact->romSize;
+  codeSize = artifact->codeSize;
+  resourcesSize = artifact->resourcesSize;
+
   romSizeFloat = romSize;
   kernelShare = (0x4000 / romSizeFloat) * 100;
   codeShare = (codeSize / romSizeFloat) * 100;
   resourcesShare = (resourcesSize / romSizeFloat) * 100;
+
+  artifact->kernelShare = kernelShare;
+  artifact->codeShare = codeShare;
+  artifact->resourcesShare = resourcesShare;
+  artifact->diagnostics = logger->trace().toString();
 
   return true;
 }
@@ -109,12 +142,20 @@ bool Rom::addKernel() {
   ///   Free space on kernel:
   ///     ARKOS_PLAYER (06481H) - BASIC_KUN_START_FILLER (05D2EH)
   ///     = 753H = 1875 bytes
+  shared_ptr<KernelImage> kernel = compiler->getKernelImage();
+  if (!kernel || !kernel->bytes() || kernel->size() < 0x8000 ||
+      !kernel->startBytes() || kernel->startSize() > 0x4000) {
+    logger->error("Kernel image is unavailable");
+    errorFound = true;
+    return false;
+  }
+
   pages.emplace_back(0x4000, 0);  // add new page
-  memcpy(pages[0].data(), bin_header_bin + 0x4000, 0x4000);
+  memcpy(pages[0].data(), kernel->bytes() + 0x4000, 0x4000);
 
   /// add start code
   pages.emplace_back(0x4000, 0);  // add new page
-  memcpy(pages[1].data(), bin_start_bin, bin_start_bin_len);
+  memcpy(pages[1].data(), kernel->startBytes(), kernel->startSize());
   pages[1][10] = (compiler->getParser() && compiler->getParser()->getHasFileSupport())
                      ? 0x01
                      : 0x00;
@@ -167,13 +208,16 @@ bool Rom::addCompiledCode() {
   unsigned char* pbuf = buf.data();
   int copyTotalSize, copyChunkSize;
 
+  shared_ptr<KernelImage> kernel = compiler->getKernelImage();
+  int startSize = kernel ? static_cast<int>(kernel->startSize()) : 0;
+
   /// write compiled code to temporary buffer
-  codeSize = compiler->write(pbuf, 0x8000 + bin_start_bin_len);
+  codeSize = compiler->write(pbuf, 0x8000 + startSize);
 
   /// copy compiled code to rom pages
   if (codeSize) {
-    copyChunkSize = min(codeSize, (int)(0x4000 - bin_start_bin_len));
-    memcpy(pages[1].data() + bin_start_bin_len, pbuf, copyChunkSize);
+    copyChunkSize = min(codeSize, (int)(0x4000 - startSize));
+    memcpy(pages[1].data() + startSize, pbuf, copyChunkSize);
     pbuf += copyChunkSize;
     copyTotalSize = codeSize - copyChunkSize;
     while (copyTotalSize) {
@@ -215,6 +259,7 @@ void Rom::setResourceMapStartAddress() {
 bool Rom::fixKonamiMapper() {
   if (opts->compileMode == BuildOptions::CompileMode::KonamiSCC ||
       opts->compileMode == BuildOptions::CompileMode::Konami4) {
+    shared_ptr<KernelImage> kernel = compiler->getKernelImage();
     struct KonamiPatch {
       int dispIndex;
       unsigned char newByte;
@@ -242,10 +287,7 @@ bool Rom::fixKonamiMapper() {
     int patched = 0;
 
     for (int i = 0; i < patchCount; i++) {
-      int tableAddr =
-          def_wrapper_routines_map_table + patches[i].dispIndex * 2;
-      int kernelAddr =
-          bin_header_bin[tableAddr] | (bin_header_bin[tableAddr + 1] << 8);
+      int kernelAddr = kernel->dispatchAddress(patches[i].dispIndex);
       int offset = kernelAddr - 0x4000;
 
       if (offset < 0 || offset > 0x3FFF - 2) {
@@ -275,6 +317,7 @@ bool Rom::fixKonamiMapper() {
 bool Rom::fixAscii16Mapper() {
   if (opts->compileMode == BuildOptions::CompileMode::ASCII16 ||
       opts->compileMode == BuildOptions::CompileMode::ASCII16X) {
+    shared_ptr<KernelImage> kernel = compiler->getKernelImage();
     struct Ascii16Patch {
       int dispIndex;
       unsigned char replaceByte;
@@ -306,10 +349,7 @@ bool Rom::fixAscii16Mapper() {
     int patched = 0;
 
     for (int i = 0; i < patchCount; i++) {
-      int tableAddr =
-          def_wrapper_routines_map_table + patches[i].dispIndex * 2;
-      int kernelAddr =
-          bin_header_bin[tableAddr] | (bin_header_bin[tableAddr + 1] << 8);
+      int kernelAddr = kernel->dispatchAddress(patches[i].dispIndex);
       int offset = kernelAddr - 0x4000;
 
       if (offset < 0 || offset > 0x3FFF) {
@@ -345,10 +385,8 @@ bool Rom::fixAscii16Mapper() {
     if (opts->compileMode == BuildOptions::CompileMode::ASCII16X) {
       memcpy(pages[0].data() + 0x0010, "ASCII16X", 8);
 
-      int tableAddr =
-          def_wrapper_routines_map_table + DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK * 2;
       int kernelAddr =
-          bin_header_bin[tableAddr] | (bin_header_bin[tableAddr + 1] << 8);
+          kernel->dispatchAddress(DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK);
       int offset = kernelAddr - 0x4000;
 
       for (int j = 0; j < 14; j++) {
@@ -361,85 +399,72 @@ bool Rom::fixAscii16Mapper() {
 
 //----------------------------------------------------------------------------------------------
 
-bool Rom::writeRom(string filename) {
-  ofstream file(filename, ios::binary);
+bool Rom::assembleArtifact() {
+  int pageCount = 0;
   vector<unsigned char> fillerPage(0x4000, 0);
-  int i, pageCount, fillerCount;
 
-  if (!file) {
-    logger->error("Cannot create output file: " + filename);
-    errorFound = true;
-    return false;
-  }
+  artifact = make_shared<RomArtifact>();
+  artifact->megaROM = opts->megaROM;
+  artifact->codeSize = codeSize;
+  artifact->resourcesSize = resourcesSize;
+  artifact->resourceMapSegment = resourceSegment;
+  artifact->resourceMapAddress = resourceAddress;
 
-  romSize = 0;
-  pageCount = 0;
-
-  /// write plain ROM resources page
+  /// plain ROM resources page
   if (!opts->megaROM) {
-    if ((pageCount = (int)resourceManager->pages.size())) {
-      if (pageCount > 1) {
+    int resourcePages = (int)resourceManager->pages.size();
+    if (resourcePages) {
+      if (resourcePages > 1) {
         logger->error(
             "Resources exceeded 16k plain ROM limit\n"
             "Try to compile it in MegaROM format by adding the -x parameter");
         errorFound = true;
-        file.close();
-        remove(filename.c_str());
         return false;
       }
-      file.write((char*)resourceManager->pages[0].data(),
-                 resourceManager->pages[0].size());
-      romSize += resourceManager->pages[0].size();
+      artifact->pages.push_back(resourceManager->pages[0]);
+      artifact->romSize += resourceManager->pages[0].size();
+      pageCount++;
     }
   }
 
-  /// write code pages
-  if (!pages.size()) {
+  if (pages.empty()) {
     logger->error(
         "Code is empty!!!\nTry to write some code in your program....");
     errorFound = true;
-    file.close();
-    remove(filename.c_str());
     return false;
   }
-  if (!opts->megaROM) {
-    if (pages.size() > 2) {
-      logger->error(
-          "Code exceeded 16k plain ROM limit\n"
-          "Try to compile it in MegaROM format by adding the -x parameter");
-      errorFound = true;
-      file.close();
-      remove(filename.c_str());
-      return false;
-    }
+
+  if (!opts->megaROM && pages.size() > 2) {
+    logger->error(
+        "Code exceeded 16k plain ROM limit\n"
+        "Try to compile it in MegaROM format by adding the -x parameter");
+    errorFound = true;
+    return false;
   }
 
-  for (i = 0; i < (int)pages.size(); i++) {
-    file.write((char*)pages[i].data(), pages[i].size());
-    romSize += pages[i].size();
+  for (std::size_t i = 0; i < pages.size(); i++) {
+    artifact->pages.push_back(pages[i]);
+    artifact->romSize += pages[i].size();
     pageCount++;
   }
 
-  /// write MegaROM resources pages
+  /// MegaROM resources pages
   if (opts->megaROM) {
-    for (i = 0; i < (int)resourceManager->pages.size(); i++) {
-      file.write((char*)resourceManager->pages[i].data(),
-                 resourceManager->pages[i].size());
-      romSize += resourceManager->pages[i].size();
+    for (std::size_t i = 0; i < resourceManager->pages.size(); i++) {
+      artifact->pages.push_back(resourceManager->pages[i]);
+      artifact->romSize += resourceManager->pages[i].size();
       pageCount++;
     }
-    /// write filler pages if necessary
-    fillerCount = (pageCount % 8);
+    int fillerCount = pageCount % 8;
     if (fillerCount) {
       fillerCount = 8 - fillerCount;
       while (fillerCount--) {
-        file.write((char*)fillerPage.data(), fillerPage.size());
-        romSize += fillerPage.size();
+        artifact->pages.push_back(fillerPage);
+        artifact->romSize += fillerPage.size();
       }
     }
   }
 
-  file.close();
-
+  artifact->diagnostics = logger->trace().toString();
   return true;
 }

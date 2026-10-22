@@ -14,19 +14,19 @@ bool OnStatementStrategy::parseOn(shared_ptr<ParserContext> context,
     if (next_lexeme->isKeyword("ERROR")) {
       return parseOnError(context, statement);
     } else if (next_lexeme->isKeyword("INTERVAL")) {
-      context->has_traps = true;
+      context->getHasTraps() = true;
       return parseOnInterval(context, statement);
     } else if (next_lexeme->isKeyword("KEY")) {
-      context->has_traps = true;
+      context->getHasTraps() = true;
       return parseOnKey(context, statement);
     } else if (next_lexeme->isKeyword("SPRITE")) {
-      context->has_traps = true;
+      context->getHasTraps() = true;
       return parseOnSprite(context, statement);
     } else if (next_lexeme->isKeyword("STOP")) {
-      context->has_traps = true;
+      context->getHasTraps() = true;
       return parseOnStop(context, statement);
     } else if (next_lexeme->isKeyword("STRIG")) {
-      context->has_traps = true;
+      context->getHasTraps() = true;
       return parseOnStrig(context, statement);
     } else {
       return parseOnGotoGosub(context, statement);
@@ -47,7 +47,7 @@ bool OnStatementStrategy::parseOnGotoGosub(
   next_lexeme = statement->getPreviousLexeme();
   if (!next_lexeme) return false;
 
-  action_index = make_shared<ActionNode>(context->lex_index);
+  action_index = make_shared<ActionNode>(context->getLexIndex());
 
   while ((next_lexeme = statement->getNextLexeme())) {
     switch (state) {
@@ -84,7 +84,7 @@ bool OnStatementStrategy::parseOnGotoGosub(
           continue;
         } else if (next_lexeme->isSeparator(",")) {
           if (!next_is_sep) {
-            context->pushActionFromLexeme(context->lex_null);
+            context->pushActionFromLexeme(context->getLexNull());
           }
 
           next_is_sep = false;
@@ -126,7 +126,7 @@ bool OnStatementStrategy::parseOnInterval(
   action = make_shared<ActionNode>(next_lexeme);
   context->pushActionRoot(action);
 
-  action_index = make_shared<ActionNode>(context->lex_index);
+  action_index = make_shared<ActionNode>(context->getLexIndex());
 
   while ((next_lexeme = statement->getNextLexeme())) {
     switch (state) {
@@ -224,7 +224,7 @@ bool OnStatementStrategy::parseOnKey(shared_ptr<ParserContext> context,
           continue;
         } else if (next_lexeme->isSeparator(",")) {
           if (!next_is_sep) {
-            context->pushActionFromLexeme(context->lex_null);
+            context->pushActionFromLexeme(context->getLexNull());
           }
 
           next_is_sep = false;

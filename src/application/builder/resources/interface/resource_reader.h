@@ -13,6 +13,7 @@
 #include <vector>
 
 class Logger;
+class ResourceContentSource;
 
 using namespace std;
 
@@ -24,6 +25,7 @@ class ResourceReader {
  protected:
   string filename;
   shared_ptr<Logger> logger;
+  shared_ptr<ResourceContentSource> contentSource;
 
  public:
   vector<vector<unsigned char>> data;
@@ -39,7 +41,8 @@ class ResourceReader {
   virtual bool remapTo(int index, int mappedSegm, int mappedAddress);
   virtual bool load() = 0;
 
-  ResourceReader(string filename);
+  ResourceReader(string filename,
+                 shared_ptr<ResourceContentSource> contentSource);
   virtual ~ResourceReader();
 };
 

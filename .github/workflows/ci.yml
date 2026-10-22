@@ -24,6 +24,9 @@ jobs:
       - name: Linting
         run: |
           make lint
+      - name: Architecture boundary check
+        run: |
+          make test-architecture
       - name: Unit testing
         run: |
           make test

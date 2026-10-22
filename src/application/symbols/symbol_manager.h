@@ -17,6 +17,7 @@
 
 class BuildOptions;
 class SymbolExportContext;
+class SymbolOutputSink;
 
 using namespace std;
 
@@ -27,13 +28,14 @@ using namespace std;
 class SymbolManager {
  private:
   SymbolExportStrategyFactory symbolExportFactory;
+  shared_ptr<SymbolOutputSink> sink;
 
  public:
   shared_ptr<SymbolExportContext> context;
 
   bool saveSymbol(shared_ptr<BuildOptions> opts);
 
-  SymbolManager();
+  explicit SymbolManager(shared_ptr<SymbolOutputSink> sink);
   ~SymbolManager();
 };
 

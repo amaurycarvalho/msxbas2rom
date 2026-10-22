@@ -9,11 +9,11 @@
 
 void CompilerLetStatementStrategy::cmd_let(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> action, lex_action;
-  unsigned int t = context->current_action->actions.size();
+  unsigned int t = context->getCurrentAction()->actions.size();
   int result_subtype, result[3];
 
   if (t != 2) {
@@ -21,12 +21,12 @@ void CompilerLetStatementStrategy::cmd_let(
     return;
   }
 
-  lex_action = context->current_action->actions[0];
+  lex_action = context->getCurrentAction()->actions[0];
   lexeme = lex_action->lexeme;
 
   // ld hl, data parameter
 
-  action = context->current_action->actions[1];
+  action = context->getCurrentAction()->actions[1];
   result_subtype = expression.evalExpression(action);
 
   // do assignment
@@ -75,7 +75,7 @@ void CompilerLetStatementStrategy::cmd_let(
 
         // call 0x7dd8    ; mid assignment (in: hl=source string, b=size,
         // a=start, de=destination string)
-        context->codeOptimizer->addKernelCall(DISP_XBASIC_MID_ASSIGN);
+        context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_MID_ASSIGN);
 
         return;
       }
@@ -126,7 +126,7 @@ void CompilerLetStatementStrategy::cmd_let(
 
         // call 0x7dd8    ; mid assignment (in: hl=source string, b=size,
         // a=start, de=destination string)
-        context->codeOptimizer->addKernelCall(DISP_XBASIC_MID_ASSIGN);
+        context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_MID_ASSIGN);
 
         return;
       }
@@ -163,7 +163,7 @@ void CompilerLetStatementStrategy::cmd_let(
     cpu.addPopBC();
 
     // call VDP.set     ; VDP assignment (in: bc=data, hl=register)
-    context->codeOptimizer->addKernelCall(DISP_vdp_set);
+    context->getCodeOptimizer()->addKernelCall(DISP_vdp_set);
 
   } else if (lexeme->value == "SPRITE$") {
     // cast
@@ -197,7 +197,7 @@ void CompilerLetStatementStrategy::cmd_let(
 
     // call 0x7143     ; xbasic SPRITE assignment (in: a=sprite pattern,
     // hl=string)
-    context->codeOptimizer->addKernelCall(DISP_XBASIC_SPRITE_ASSIGN);
+    context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_SPRITE_ASSIGN);
 
   } else {
     // cast
@@ -206,12 +206,12 @@ void CompilerLetStatementStrategy::cmd_let(
 
     // do assignment
 
-    context->variableEmitter->addAssignment(lex_action);
+    context->getVariableEmitter()->addAssignment(lex_action);
   }
 }
 
 bool CompilerLetStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_let(context);
-  return context->compiled;
+  return context->getCompiled();
 }

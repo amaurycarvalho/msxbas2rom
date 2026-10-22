@@ -17,7 +17,7 @@
 #include "logger.h"
 
 bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
   shared_ptr<Lexeme> lexeme, lexeme1, lexeme2;
   shared_ptr<ActionNode> action1, action2;
   unsigned int i, t;
@@ -46,13 +46,13 @@ bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
             try {
               i = stoi(lexeme1->value) * lexeme->x_factor;
             } catch (exception& e) {
-              context->logger->warning(
+              context->getLogger()->warning(
                   "Error while converting numeric constant " + lexeme1->value);
               i = 0;
             }
 
             // ld hl, variable_address +  (x_index * x_factor)
-            context->fixupResolver->addFix(lexeme)->step = i;
+            context->getFixupResolver()->addFix(lexeme)->step = i;
             cpu.addLdHL(0x0000);
 
           } else {
@@ -62,8 +62,8 @@ bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
         } else {
           // ld hl, x index
           result_subtype =
-              context->expressionEvaluator->evalExpression(action1);
-          context->expressionEvaluator->addCast(result_subtype,
+              context->getExpressionEvaluator()->evalExpression(action1);
+          context->getExpressionEvaluator()->addCast(result_subtype,
                                                 Lexeme::subtype_numeric);
 
           if (lexeme->x_factor == 2) {
@@ -88,11 +88,11 @@ bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
             cpu.addLdDE(lexeme->x_factor);
 
             // call 0x761b    ; integer multiplication (hl = hl * de)
-            context->codeOptimizer->addKernelCall(DISP_XBASIC_MULTIPLY_INTEGERS);
+            context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_MULTIPLY_INTEGERS);
           }
 
           // ld de, variable
-          context->fixupResolver->addFix(lexeme);
+          context->getFixupResolver()->addFix(lexeme);
           cpu.addLdDE(0x0000);
 
           // add hl, de   ; hl = variable_address +  (x_index * x_factor)
@@ -116,7 +116,7 @@ bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
             try {
               i = stoi(lexeme1->value) * lexeme->x_factor;
             } catch (exception& e) {
-              context->logger->warning(
+              context->getLogger()->warning(
                   "Error while converting numeric constant " + lexeme1->value);
               i = 0;
             }
@@ -127,14 +127,14 @@ bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
               try {
                 i += stoi(lexeme2->value) * lexeme->y_factor;
               } catch (exception& e) {
-                context->logger->warning(
+                context->getLogger()->warning(
                     "Error while converting numeric constant " +
                     lexeme2->value);
               }
 
               // ld hl, variable_address +  (x_index * x_factor) + (y_index *
               // y_factor)
-              context->fixupResolver->addFix(lexeme)->step = i;
+              context->getFixupResolver()->addFix(lexeme)->step = i;
               cpu.addLdHL(0x0000);
 
             } else {
@@ -148,8 +148,8 @@ bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
         } else {
           // ld hl, x index
           result_subtype =
-              context->expressionEvaluator->evalExpression(action1);
-          context->expressionEvaluator->addCast(result_subtype,
+              context->getExpressionEvaluator()->evalExpression(action1);
+          context->getExpressionEvaluator()->addCast(result_subtype,
                                                 Lexeme::subtype_numeric);
 
           if (lexeme->x_factor == 2) {
@@ -174,7 +174,7 @@ bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
             cpu.addLdDE(lexeme->x_factor);
 
             // call 0x761b    ; integer multiplication (hl = hl * de)
-            context->codeOptimizer->addKernelCall(DISP_XBASIC_MULTIPLY_INTEGERS);
+            context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_MULTIPLY_INTEGERS);
           }
 
           // push hl
@@ -182,8 +182,8 @@ bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
 
           // ld hl, y index
           result_subtype =
-              context->expressionEvaluator->evalExpression(action2);
-          context->expressionEvaluator->addCast(result_subtype,
+              context->getExpressionEvaluator()->evalExpression(action2);
+          context->getExpressionEvaluator()->addCast(result_subtype,
                                                 Lexeme::subtype_numeric);
 
           // calculate y factor * index
@@ -254,7 +254,7 @@ bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
           cpu.addAddHLDE();
 
           // ld de, variable
-          context->fixupResolver->addFix(lexeme);
+          context->getFixupResolver()->addFix(lexeme);
           cpu.addLdDE(0x0000);
 
           // add hl, de    ; hl += variable_adress
@@ -275,7 +275,7 @@ bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
       return false;
     } else {
       // ld hl, variable
-      context->fixupResolver->addFix(lexeme);
+      context->getFixupResolver()->addFix(lexeme);
       cpu.addLdHL(0x0000);
     }
   }
@@ -284,22 +284,22 @@ bool CompilerVariableEmitter::addVarAddress(shared_ptr<ActionNode> action) {
 }
 
 void CompilerVariableEmitter::addTempStr(bool atHL) {
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
   if (atHL) {
     // call GET_NEXT_TEMP_STRING_ADDRESS
-    context->codeOptimizer->addKernelCall(DISP_GET_NEXT_TEMP_STRING_ADDRESS);
+    context->getCodeOptimizer()->addKernelCall(DISP_GET_NEXT_TEMP_STRING_ADDRESS);
   } else {
     // ex de, hl
     cpu.addExDEHL();
     // call GET_NEXT_TEMP_STRING_ADDRESS
-    context->codeOptimizer->addKernelCall(DISP_GET_NEXT_TEMP_STRING_ADDRESS);
+    context->getCodeOptimizer()->addKernelCall(DISP_GET_NEXT_TEMP_STRING_ADDRESS);
     // ex de, hl
-    context->codeOptimizer->addByteOptimized(0xEB);
+    context->getCodeOptimizer()->addByteOptimized(0xEB);
   }
 }
 
 bool CompilerVariableEmitter::addAssignment(shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
   if (action->lexeme->type == Lexeme::type_keyword) {
     if (action->lexeme->value == "TIME") {
       // ld (0xFC9E), hl    ; JIFFY
@@ -319,7 +319,7 @@ bool CompilerVariableEmitter::addAssignment(shared_ptr<ActionNode> action) {
       // ld a, l
       cpu.addLdAL();
       // dispatch to cmd_fmaxfiles if not zero
-      context->codeOptimizer->addKernelCallNZ(DISP_cmd_fmaxfiles);
+      context->getCodeOptimizer()->addKernelCallNZ(DISP_cmd_fmaxfiles);
 
     } else {
       context->syntaxError("Invalid KEYWORD/FUNCTION assignment");
@@ -347,7 +347,7 @@ bool CompilerVariableEmitter::addAssignment(shared_ptr<ActionNode> action) {
 
         // call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest; out: hl
         // end of string)
-        context->codeOptimizer->addKernelCall(DISP_XBASIC_COPY_STRING);
+        context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_COPY_STRING);
 
       } else if (action->lexeme->subtype == Lexeme::subtype_numeric) {
         // pop de
@@ -386,7 +386,7 @@ bool CompilerVariableEmitter::addAssignment(shared_ptr<ActionNode> action) {
 
       if (action->lexeme->subtype == Lexeme::subtype_numeric) {
         // ld (var), hl
-        context->fixupResolver->addFix(action->lexeme);
+        context->getFixupResolver()->addFix(action->lexeme);
         cpu.addLdiiHL(0x0000);
 
       } else if (action->lexeme->subtype == Lexeme::subtype_single_decimal ||
@@ -394,10 +394,10 @@ bool CompilerVariableEmitter::addAssignment(shared_ptr<ActionNode> action) {
         // ld a, b
         cpu.addLdAB();
         // ld (var), a
-        context->fixupResolver->addFix(action->lexeme);
+        context->getFixupResolver()->addFix(action->lexeme);
         cpu.addLdiiA(0x0000);
         // ld (var+1), hl
-        context->fixupResolver->addFix(action->lexeme)->step = 1;
+        context->getFixupResolver()->addFix(action->lexeme)->step = 1;
         cpu.addLdiiHL(0x0000);
 
       } else {

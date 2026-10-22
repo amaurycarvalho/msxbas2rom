@@ -27,7 +27,8 @@ class ResourceMtfPaletteReader : public ResourceBlobReader {
  public:
   static bool isIt(string fileext);
   bool load();
-  ResourceMtfPaletteReader(string filename);
+  ResourceMtfPaletteReader(string filename,
+                           shared_ptr<ResourceContentSource> contentSource);
 };
 
 #endif  // RESOURCE_MTF_PALETTE_READER_H_INCLUDED

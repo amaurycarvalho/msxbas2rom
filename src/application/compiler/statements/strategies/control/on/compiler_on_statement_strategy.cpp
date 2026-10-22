@@ -14,10 +14,10 @@
 void CompilerOnStatementStrategy::cmd_on(shared_ptr<CompilerContext> context) {
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> next_lexeme;
-  unsigned int t = context->current_action->actions.size();
+  unsigned int t = context->getCurrentAction()->actions.size();
 
   if (t) {
-    action = context->current_action->actions[0];
+    action = context->getCurrentAction()->actions[0];
     next_lexeme = action->lexeme;
 
     if (next_lexeme->type == Lexeme::type_keyword &&
@@ -57,17 +57,17 @@ void CompilerOnStatementStrategy::cmd_on_error(
 
 void CompilerOnStatementStrategy::cmd_on_interval(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& opts = *context->opts;
-  auto& expression = *context->expressionEvaluator;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& opts = *context->getOpts();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& optimizer = *context->getCodeOptimizer();
   shared_ptr<ActionNode> action, sub_action, parm_action;
   shared_ptr<Lexeme> lexeme, parm_lexeme;
   unsigned int t;
   int result_subtype;
 
-  action = context->current_action->actions[0];
+  action = context->getCurrentAction()->actions[0];
   t = action->actions.size();
 
   if (t == 2) {
@@ -153,15 +153,15 @@ void CompilerOnStatementStrategy::cmd_on_interval(
 
 void CompilerOnStatementStrategy::cmd_on_key(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& opts = *context->opts;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& opts = *context->getOpts();
+  auto& optimizer = *context->getCodeOptimizer();
   shared_ptr<ActionNode> action, sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int i, t;
 
-  action = context->current_action->actions[0];
+  action = context->getCurrentAction()->actions[0];
   if (action->actions.size() != 1) {
     context->syntaxError("Wrong parameters in ON KEY");
     return;
@@ -230,15 +230,15 @@ void CompilerOnStatementStrategy::cmd_on_key(
 
 void CompilerOnStatementStrategy::cmd_on_sprite(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& opts = *context->opts;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& opts = *context->getOpts();
+  auto& optimizer = *context->getCodeOptimizer();
   shared_ptr<ActionNode> action, sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int t, i = 0;
 
-  action = context->current_action->actions[0];
+  action = context->getCurrentAction()->actions[0];
   if (action->actions.size() != 1) {
     context->syntaxError("Wrong parameters in ON SPRITE");
     return;
@@ -294,15 +294,15 @@ void CompilerOnStatementStrategy::cmd_on_sprite(
 
 void CompilerOnStatementStrategy::cmd_on_stop(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& opts = *context->opts;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& opts = *context->getOpts();
+  auto& optimizer = *context->getCodeOptimizer();
   shared_ptr<ActionNode> action, sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int t, i = 0;
 
-  action = context->current_action->actions[0];
+  action = context->getCurrentAction()->actions[0];
   if (action->actions.size() != 1) {
     context->syntaxError("Wrong parameters in ON STOP");
     return;
@@ -358,15 +358,15 @@ void CompilerOnStatementStrategy::cmd_on_stop(
 
 void CompilerOnStatementStrategy::cmd_on_strig(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& opts = *context->opts;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& opts = *context->getOpts();
+  auto& optimizer = *context->getCodeOptimizer();
   shared_ptr<ActionNode> action, sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   unsigned int i, t;
 
-  action = context->current_action->actions[0];
+  action = context->getCurrentAction()->actions[0];
   if (action->actions.size() != 1) {
     context->syntaxError("Wrong parameters in ON STRIG");
     return;
@@ -435,21 +435,21 @@ void CompilerOnStatementStrategy::cmd_on_strig(
 
 void CompilerOnStatementStrategy::cmd_on_goto_gosub(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& opts = *context->opts;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& opts = *context->getOpts();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<ActionNode> action, sub_action;
   shared_ptr<Lexeme> lexeme, sub_lexeme;
   shared_ptr<FixNode> skipIfZeroIndexMark;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
   if (t == 2) {
     // INDEX VARIABLE
     // ld hl, variable
 
-    action = context->current_action->actions[0];
+    action = context->getCurrentAction()->actions[0];
     if (action->actions.size() == 0) {
       context->syntaxError("Empty parameter in ON GOTO/GOSUB");
       return;
@@ -463,7 +463,7 @@ void CompilerOnStatementStrategy::cmd_on_goto_gosub(
 
     // GOTO / GOSUB LIST
 
-    action = context->current_action->actions[1];
+    action = context->getCurrentAction()->actions[1];
     lexeme = action->lexeme;
     t = action->actions.size();
 
@@ -564,7 +564,7 @@ void CompilerOnStatementStrategy::cmd_on_goto_gosub(
 }
 
 bool CompilerOnStatementStrategy::execute(shared_ptr<CompilerContext> context) {
-  context->traps_checked = context->codeHelper->addCheckTraps();
+  context->getTrapsChecked() = context->getCodeHelper()->addCheckTraps();
   cmd_on(context);
-  return context->compiled;
+  return context->getCompiled();
 }

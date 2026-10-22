@@ -10,7 +10,7 @@ bool DefStatementStrategy::parseDefUsr(shared_ptr<ParserContext> context,
   shared_ptr<LexerLineContext> parm = make_shared<LexerLineContext>();
   int state = 0;
 
-  context->has_defusr = true;
+  context->getHasDefusr() = true;
 
   next_lexeme = statement->getCurrentLexeme();
   if (!next_lexeme) {
@@ -20,7 +20,7 @@ bool DefStatementStrategy::parseDefUsr(shared_ptr<ParserContext> context,
   if (next_lexeme->value == "USR0") {
     next_lexeme->name = "USR";
     next_lexeme->value = next_lexeme->name;
-    context->pushActionFromLexeme(context->lex_zero);
+    context->pushActionFromLexeme(context->getLexZero());
     state = 1;
   }
 
@@ -35,9 +35,9 @@ bool DefStatementStrategy::parseDefUsr(shared_ptr<ParserContext> context,
           continue;
         } else if (next_lexeme->isOperator("=")) {
           state = 2;
-          context->pushActionFromLexeme(context->lex_zero);
+          context->pushActionFromLexeme(context->getLexZero());
         } else {
-          context->logger->error("Invalid DEF USR assignment");
+          context->getLogger()->error("Invalid DEF USR assignment");
           return false;
         }
       } break;
@@ -46,7 +46,7 @@ bool DefStatementStrategy::parseDefUsr(shared_ptr<ParserContext> context,
         if (next_lexeme->isOperator("=")) {
           state = 2;
         } else {
-          context->logger->error("DEF USR assignment is missing");
+          context->getLogger()->error("DEF USR assignment is missing");
           return false;
         }
       } break;
@@ -106,9 +106,9 @@ bool DefStatementStrategy::parseWithType(shared_ptr<ParserContext> context,
     if (next_lexeme->isSeparator(",")) {
       if (state) {
         if (c[0] >= 0 && c[1] >= 0)
-          for (i = c[0]; i <= c[1]; i++) context->deftbl[i] = vartype;
+          for (i = c[0]; i <= c[1]; i++) context->getDeftbl()[i] = vartype;
       } else {
-        if (c[0] >= 0) context->deftbl[c[0]] = vartype;
+        if (c[0] >= 0) context->getDeftbl()[c[0]] = vartype;
       }
 
       state = 0;
@@ -126,9 +126,9 @@ bool DefStatementStrategy::parseWithType(shared_ptr<ParserContext> context,
 
   if (state) {
     if (c[0] >= 0 && c[1] >= 0)
-      for (i = c[0]; i <= c[1]; i++) context->deftbl[i] = vartype;
+      for (i = c[0]; i <= c[1]; i++) context->getDeftbl()[i] = vartype;
   } else {
-    if (c[0] >= 0) context->deftbl[c[0]] = vartype;
+    if (c[0] >= 0) context->getDeftbl()[c[0]] = vartype;
   }
 
   return true;

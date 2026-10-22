@@ -8,13 +8,13 @@
 
 void CompilerNextStatementStrategy::cmd_next(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
   shared_ptr<ForNextNode> forNext;
 
-  if (context->forNextStack.size()) {
-    forNext = context->forNextStack.top();
-    context->forNextStack.pop();
+  if (context->getForNextStack().size()) {
+    forNext = context->getForNextStack().top();
+    context->getForNextStack().pop();
 
     // jp step
     fixup.addFix(forNext->forStepMark);
@@ -29,7 +29,7 @@ void CompilerNextStatementStrategy::cmd_next(
 
 bool CompilerNextStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
-  context->traps_checked = context->codeHelper->addCheckTraps();
+  context->getTrapsChecked() = context->getCodeHelper()->addCheckTraps();
   cmd_next(context);
-  return context->compiled;
+  return context->getCompiled();
 }

@@ -9,16 +9,16 @@ void CompilerTextStatementStrategy::cmd_text(
     shared_ptr<CompilerContext> context) {
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> action;
-  unsigned int t = context->current_action->actions.size();
+  unsigned int t = context->getCurrentAction()->actions.size();
 
   if (t == 1) {
-    action = context->current_action->actions[0];
+    action = context->getCurrentAction()->actions[0];
     lexeme = action->lexeme;
 
     if (lexeme->type == Lexeme::type_literal &&
         lexeme->subtype == Lexeme::subtype_string) {
       lexeme->name = "TEXT";
-      context->resourceManager->addText(lexeme->value);
+      context->getResourceManager()->addText(lexeme->value);
     } else {
       context->syntaxError("Invalid parameter in TEXT keyword");
     }
@@ -31,5 +31,5 @@ void CompilerTextStatementStrategy::cmd_text(
 bool CompilerTextStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_text(context);
-  return context->compiled;
+  return context->getCompiled();
 }

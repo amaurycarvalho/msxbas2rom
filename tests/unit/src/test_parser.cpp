@@ -18,6 +18,12 @@
 #include "def_statement_strategy.h"
 #include "dim_statement_strategy.h"
 #include "doctest/doctest.h"
+#include "test_support.h"
+
+static std::shared_ptr<TestSourceResolver> testSourceResolver() {
+  static auto resolver = std::make_shared<TestSourceResolver>();
+  return resolver;
+}
 #include "file_statement_strategy.h"
 #include "for_statement_strategy.h"
 #include "generic_statement_strategy.h"
@@ -48,9 +54,7 @@
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {
   const std::string path = "tmp/" + filename;
-  std::ofstream ofs(path);
-  ofs << content;
-  ofs.close();
+  testSourceResolver()->add(path, content);
   return path;
 }
 
@@ -85,7 +89,7 @@ TEST_SUITE("Parser") {
     const std::string filename =
         createTempBas("parser_valid.bas", "10 LET A=1\n20 PRINT A\n30 END\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -100,7 +104,7 @@ TEST_SUITE("Parser") {
     const std::string filename =
         createTempBas("parser_bad_include.bas", "10 INCLUDE 123\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -114,7 +118,7 @@ TEST_SUITE("Parser") {
     const std::string filename =
         createTempBas("parser_directive.bas", "FILE \"asset.bin\"\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -129,7 +133,7 @@ TEST_SUITE("Parser") {
     const std::string filename =
         createTempBas("parser_split.bas", "10 A=1:PRINT A\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -149,7 +153,7 @@ TEST_SUITE("Parser") {
     const std::string filename =
         createTempBas("parser_comment.bas", "10 PRINT 1 ' PRINT 2\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -171,7 +175,7 @@ TEST_SUITE("Parser") {
                       "INCLUDE \"tmp/parser_include_child.bas\"\n"
                       "10 END\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(mainFile) == true);
@@ -187,7 +191,7 @@ TEST_SUITE("Parser") {
     const std::string filename =
         createTempBas("parser_bad_include_msg.bas", "INCLUDE 123\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -203,7 +207,7 @@ TEST_SUITE("Parser") {
     const std::string filename =
         createTempBas("parser_expr_unary.bas", "10 A=*1\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -219,7 +223,7 @@ TEST_SUITE("Parser") {
     const std::string filename =
         createTempBas("parser_let.bas", "10 LET A=1\n20 B=2\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -239,7 +243,7 @@ TEST_SUITE("Parser") {
     const std::string filename =
         createTempBas("parser_defint.bas", "10 DEFINT A\n20 A=1\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -257,7 +261,7 @@ TEST_SUITE("Parser") {
     const std::string filename =
         createTempBas("parser_dim_invalid.bas", "10 DIM A\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -273,7 +277,7 @@ TEST_SUITE("Parser") {
     const std::string filename =
         createTempBas("parser_data.bas", "10 DATA 1,2,,&H0F\n20 IDATA &B10\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -295,7 +299,7 @@ TEST_SUITE("Parser") {
     const std::string filename =
         createTempBas("parser_if.bas", "10 IF A=1 THEN PRINT A\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -309,7 +313,7 @@ TEST_SUITE("Parser") {
     const std::string filename =
         createTempBas("parser_if_invalid.bas", "10 IF A=1 ELSE PRINT A\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -325,7 +329,7 @@ TEST_SUITE("Parser") {
     const std::string filename = createTempBas(
         "parser_for_next.bas", "10 FOR I=1 TO 10 STEP 2\n20 NEXT I,J\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -340,7 +344,7 @@ TEST_SUITE("Parser") {
         createTempBas("parser_print_input.bas",
                       "10 PRINT USING \"###\";A\n20 INPUT \"A?\";A\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -364,7 +368,7 @@ TEST_SUITE("Parser") {
     const std::string badClose =
         createTempBas("parser_close_bad.bas", "10 CLOSE 1\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(okFile) == true);
@@ -554,14 +558,14 @@ static shared_ptr<Lexeme> op(const std::string& v) {
 
 static shared_ptr<ParserContext> createContext() {
   shared_ptr<ParserContext> ctx = make_shared<ParserContext>();
-  ctx->tag = make_shared<TagNode>();
-  ctx->actionRoot = make_shared<ActionNode>();
+  ctx->getTag() = make_shared<TagNode>();
+  ctx->getActionRoot() = make_shared<ActionNode>();
   return ctx;
 }
 
 static void setActionRoot(shared_ptr<ParserContext> ctx,
                           const std::string& keyword) {
-  ctx->actionRoot->lexeme =
+  ctx->getActionRoot()->lexeme =
       make_shared<Lexeme>(Lexeme::type_keyword, Lexeme::subtype_any, keyword);
 }
 
@@ -757,7 +761,7 @@ TEST_SUITE("TimeStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("TIME"));
 
     CHECK(result == true);
-    CHECK(ctx->has_input == true);
+    CHECK(ctx->getHasInput() == true);
   }
 }
 
@@ -949,7 +953,7 @@ TEST_SUITE("DefStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("DEFINT"));
 
     CHECK(result == true);
-    CHECK(ctx->deftbl[0] == 2);
+    CHECK(ctx->getDeftbl()[0] == 2);
   }
 
   TEST_CASE("Parses DEF USR assignment") {
@@ -966,7 +970,7 @@ TEST_SUITE("DefStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("DEF"));
 
     CHECK(result == true);
-    CHECK(ctx->has_defusr == true);
+    CHECK(ctx->getHasDefusr() == true);
   }
 
   TEST_CASE("Parses DEFINT single letter updates one slot") {
@@ -980,8 +984,8 @@ TEST_SUITE("DefStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("DEFINT"));
 
     CHECK(result == true);
-    CHECK(ctx->deftbl[0] == 2);
-    CHECK(ctx->deftbl[1] == 0);
+    CHECK(ctx->getDeftbl()[0] == 2);
+    CHECK(ctx->getDeftbl()[1] == 0);
   }
 
   TEST_CASE("Parses DEFINT range updates contiguous slots") {
@@ -997,10 +1001,10 @@ TEST_SUITE("DefStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("DEFINT"));
 
     CHECK(result == true);
-    CHECK(ctx->deftbl[2] == 2);
-    CHECK(ctx->deftbl[3] == 2);
-    CHECK(ctx->deftbl[4] == 2);
-    CHECK(ctx->deftbl[1] == 0);
+    CHECK(ctx->getDeftbl()[2] == 2);
+    CHECK(ctx->getDeftbl()[3] == 2);
+    CHECK(ctx->getDeftbl()[4] == 2);
+    CHECK(ctx->getDeftbl()[1] == 0);
   }
 
   TEST_CASE("Parses DEFINT multiple comma separated letters") {
@@ -1016,8 +1020,8 @@ TEST_SUITE("DefStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("DEFINT"));
 
     CHECK(result == true);
-    CHECK(ctx->deftbl[0] == 2);
-    CHECK(ctx->deftbl[25] == 2);
+    CHECK(ctx->getDeftbl()[0] == 2);
+    CHECK(ctx->getDeftbl()[25] == 2);
   }
 
   TEST_CASE("Parses DEFSNG and DEFDBL range") {
@@ -1033,8 +1037,8 @@ TEST_SUITE("DefStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("DEFSNG"));
 
     CHECK(result == true);
-    CHECK(ctx->deftbl[0] == 4);
-    CHECK(ctx->deftbl[1] == 4);
+    CHECK(ctx->getDeftbl()[0] == 4);
+    CHECK(ctx->getDeftbl()[1] == 4);
   }
 }
 
@@ -1090,8 +1094,8 @@ TEST_SUITE("DataStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("DATA"));
 
     CHECK(result == true);
-    CHECK(ctx->has_data == true);
-    CHECK(ctx->datas.size() == 2);
+    CHECK(ctx->getHasData() == true);
+    CHECK(ctx->getDatas().size() == 2);
   }
 
   TEST_CASE("Parses DATA radix literals in both letter cases") {
@@ -1099,7 +1103,7 @@ TEST_SUITE("DataStatementStrategy") {
         "parser_data_radix.bas",
         "10 DATA &H0F,&h1F,&O17,&o11,&B10,&b01,255\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -1122,7 +1126,7 @@ TEST_SUITE("DataStatementStrategy") {
         createTempBas("parser_idata_radix.bas",
                       "10 IDATA &H0F,&O17,&B10,7\n");
 
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     Parser parser;
 
     REQUIRE(lexer->load(filename) == true);
@@ -1156,8 +1160,8 @@ TEST_SUITE("IDataStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("IDATA"));
 
     CHECK(result == true);
-    CHECK(ctx->has_idata == true);
-    CHECK(ctx->datas.size() == 2);
+    CHECK(ctx->getHasIData() == true);
+    CHECK(ctx->getDatas().size() == 2);
   }
 }
 
@@ -1183,7 +1187,7 @@ TEST_SUITE("FileStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("OPEN"));
 
     CHECK(result == true);
-    CHECK(ctx->has_file_support == true);
+    CHECK(ctx->getHasFileSupport() == true);
   }
 
   TEST_CASE("Parses OPEN with OUTPUT and no LEN") {
@@ -1205,7 +1209,7 @@ TEST_SUITE("FileStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("OPEN"));
 
     CHECK(result == true);
-    CHECK(ctx->has_file_support == true);
+    CHECK(ctx->getHasFileSupport() == true);
   }
 
   TEST_CASE("Parses OPEN with inline AS# token") {
@@ -1225,7 +1229,7 @@ TEST_SUITE("FileStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("OPEN"));
 
     CHECK(result == true);
-    CHECK(ctx->has_file_support == true);
+    CHECK(ctx->getHasFileSupport() == true);
   }
 
   TEST_CASE("Parses OPEN with file number boundary 15") {
@@ -1247,7 +1251,7 @@ TEST_SUITE("FileStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("OPEN"));
 
     CHECK(result == true);
-    CHECK(ctx->has_file_support == true);
+    CHECK(ctx->getHasFileSupport() == true);
   }
 
   TEST_CASE("Rejects OPEN with file number out of range") {
@@ -1269,7 +1273,7 @@ TEST_SUITE("FileStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("OPEN"));
 
     CHECK(result == false);
-    CHECK(ctx->logger->errors().toString().find("File number out of range") !=
+    CHECK(ctx->getLogger()->errors().toString().find("File number out of range") !=
           std::string::npos);
   }
 
@@ -1292,7 +1296,7 @@ TEST_SUITE("FileStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("OPEN"));
 
     CHECK(result == false);
-    CHECK(ctx->logger->errors().toString().find("File number out of range") !=
+    CHECK(ctx->getLogger()->errors().toString().find("File number out of range") !=
           std::string::npos);
   }
 
@@ -1502,7 +1506,7 @@ TEST_SUITE("CmdStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("CMD"));
 
     CHECK(result == true);
-    CHECK(ctx->has_font == true);
+    CHECK(ctx->getHasFont() == true);
   }
 }
 
@@ -2783,7 +2787,7 @@ TEST_SUITE("OnStatementStrategy") {
     bool result = strategy.execute(ctx, line, kw("ON"));
 
     CHECK(result == true);
-    CHECK(ctx->has_traps == false);
+    CHECK(ctx->getHasTraps() == false);
   }
 
   TEST_CASE("Parses ON KEY GOSUB") {
@@ -2802,7 +2806,7 @@ TEST_SUITE("OnStatementStrategy") {
 
     bool result = strategy.execute(ctx, line, kw("ON"));
     CHECK(result == true);
-    CHECK(ctx->has_traps == true);
+    CHECK(ctx->getHasTraps() == true);
   }
 
   TEST_CASE("Parses ON KEY GOSUB with several handlers") {
@@ -2825,7 +2829,7 @@ TEST_SUITE("OnStatementStrategy") {
 
     bool result = strategy.execute(ctx, line, kw("ON"));
     CHECK(result == true);
-    CHECK(ctx->has_traps == true);
+    CHECK(ctx->getHasTraps() == true);
   }
 
   TEST_CASE("Parses ON INDEX GOTO with several targets") {
@@ -2846,7 +2850,7 @@ TEST_SUITE("OnStatementStrategy") {
 
     bool result = strategy.execute(ctx, line, kw("ON"));
     CHECK(result == true);
-    CHECK(ctx->has_traps == false);
+    CHECK(ctx->getHasTraps() == false);
   }
 
   TEST_CASE("Parses ON SPRITE GOSUB") {
@@ -2863,7 +2867,7 @@ TEST_SUITE("OnStatementStrategy") {
 
     bool result = strategy.execute(ctx, line, kw("ON"));
     CHECK(result == true);
-    CHECK(ctx->has_traps == true);
+    CHECK(ctx->getHasTraps() == true);
   }
 
   TEST_CASE("Parses ON STOP GOSUB") {
@@ -2880,7 +2884,7 @@ TEST_SUITE("OnStatementStrategy") {
 
     bool result = strategy.execute(ctx, line, kw("ON"));
     CHECK(result == true);
-    CHECK(ctx->has_traps == true);
+    CHECK(ctx->getHasTraps() == true);
   }
 
   TEST_CASE("Parses ON STRIG GOSUB") {
@@ -2899,7 +2903,7 @@ TEST_SUITE("OnStatementStrategy") {
 
     bool result = strategy.execute(ctx, line, kw("ON"));
     CHECK(result == true);
-    CHECK(ctx->has_traps == true);
+    CHECK(ctx->getHasTraps() == true);
   }
 
   TEST_CASE("Parses ON INTERVAL") {
@@ -2918,7 +2922,7 @@ TEST_SUITE("OnStatementStrategy") {
 
     bool result = strategy.execute(ctx, line, kw("ON"));
     CHECK(result == true);
-    CHECK(ctx->has_traps == true);
+    CHECK(ctx->getHasTraps() == true);
   }
 
   TEST_CASE("Parses ON ... GOSUB list") {
@@ -2937,7 +2941,7 @@ TEST_SUITE("OnStatementStrategy") {
 
     bool result = strategy.execute(ctx, line, kw("ON"));
     CHECK(result == true);
-    CHECK(ctx->has_traps == false);
+    CHECK(ctx->getHasTraps() == false);
   }
 }
 

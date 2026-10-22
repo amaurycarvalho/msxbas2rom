@@ -11,13 +11,13 @@
 #include "lexeme.h"
 
 void CompilerIfStatementStrategy::cmd_if(shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& expression = *context->expressionEvaluator;
-  auto& evaluator = *context->evaluator;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& evaluator = *context->getEvaluator();
   shared_ptr<Lexeme> lexeme, last_lexeme;
   shared_ptr<ActionNode> action, last_action;
-  shared_ptr<ActionNode> saved_action = context->current_action;
+  shared_ptr<ActionNode> saved_action = context->getCurrentAction();
   unsigned int i, t = saved_action->actions.size(), tt;
   int result_subtype;
   shared_ptr<FixNode> elseMark = nullptr, endifMark = nullptr;
@@ -97,7 +97,7 @@ void CompilerIfStatementStrategy::cmd_if(shared_ptr<CompilerContext> context) {
               // mark ELSE position
               if (elseMark) {
                 elseMark->symbol =
-                    context->symbolResolver->addSymbol(last_lexeme->value);
+                    context->getSymbolResolver()->addSymbol(last_lexeme->value);
               } else {
                 context->syntaxError("ELSE parameter is missing");
               }
@@ -132,7 +132,7 @@ void CompilerIfStatementStrategy::cmd_if(shared_ptr<CompilerContext> context) {
 }
 
 bool CompilerIfStatementStrategy::execute(shared_ptr<CompilerContext> context) {
-  context->traps_checked = context->codeHelper->addCheckTraps();
+  context->getTrapsChecked() = context->getCodeHelper()->addCheckTraps();
   cmd_if(context);
-  return context->compiled;
+  return context->getCompiled();
 }

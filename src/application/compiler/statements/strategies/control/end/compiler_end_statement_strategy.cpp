@@ -8,9 +8,9 @@
 
 void CompilerEndStatementStrategy::cmd_end(shared_ptr<CompilerContext> context,
                                            bool doCodeRegistering) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& parser = *context->parser;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& parser = *context->getParser();
   if (doCodeRegistering) {
     /// @remark first instruction needs to be a skip to the program start code
     if (parser.getHasAkm()) {
@@ -19,17 +19,17 @@ void CompilerEndStatementStrategy::cmd_end(shared_ptr<CompilerContext> context,
       cpu.addJr(1 + 10);
 
     /// mark the END statement start code
-    context->end_mark = fixup.addPreMark();
-    context->end_mark->address = cpu.context->code_pointer;
+    context->getEndMark() = fixup.addPreMark();
+    context->getEndMark()->address = cpu.context->getCodePointer();
 
     /// write the END statement code
     if (parser.getHasAkm()) {
       // disable akm player
-      context->codeOptimizer->addKernelCall(DISP_player_unhook);
+      context->getCodeOptimizer()->addKernelCall(DISP_player_unhook);
     }
 
     // call XBASIC_END
-    context->codeOptimizer->addKernelCall(DISP_XBASIC_END);
+    context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_END);
 
     // ld sp, (SAVSTK)
     cpu.addLdSPii(0xf6b1);
@@ -43,8 +43,8 @@ void CompilerEndStatementStrategy::cmd_end(shared_ptr<CompilerContext> context,
   } else {
     /// jump to the real END statement
     // jp ctx.end_mark
-    if (context->end_mark) {
-      fixup.addFix(context->end_mark);
+    if (context->getEndMark()) {
+      fixup.addFix(context->getEndMark());
       cpu.addJp(0x0000);
     }
   }
@@ -52,16 +52,16 @@ void CompilerEndStatementStrategy::cmd_end(shared_ptr<CompilerContext> context,
 
 bool CompilerEndStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
-  context->traps_checked = context->codeHelper->addCheckTraps();
+  context->getTrapsChecked() = context->getCodeHelper()->addCheckTraps();
   //! jump to the real END statement
   cmd_end(context, false);
-  return context->compiled;
+  return context->getCompiled();
 }
 
 bool CompilerEndStatementStrategy::registerEndRoutine(
     shared_ptr<CompilerContext> context) {
-  // context->traps_checked = context->codeHelper->addCheckTraps();
+  // context->getTrapsChecked() = context->getCodeHelper()->addCheckTraps();
   //! register END statement code
   cmd_end(context, true);
-  return context->compiled;
+  return context->getCompiled();
 }

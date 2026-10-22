@@ -15,26 +15,26 @@ ICpuOpcodeWriter::ICpuOpcodeWriter(shared_ptr<CpuWorkspaceContext> context) {
 
 void ICpuOpcodeWriter::pushLastCode() {
   if (context)
-    if (!context->code.empty()) {
-      context->code_pipeline.push_front(&context->code[context->code_pointer]);
+    if (!context->getCode().empty()) {
+      context->getCodePipeline().push_front(&context->getCode()[context->getCodePointer()]);
     }
 }
 
 void ICpuOpcodeWriter::popLastCode() {
-  if (context) context->code_pipeline.pop_front();
+  if (context) context->getCodePipeline().pop_front();
 }
 
 void ICpuOpcodeWriter::addCodeByte(unsigned char byte) {
   if (context)
-    if (!context->code.empty()) {
-      if (context->code_pointer >= context->code_size_limit) {
-        if (!context->error) {
-          context->error = true;
+    if (!context->getCode().empty()) {
+      if (context->getCodePointer() >= context->getCodeSizeLimit()) {
+        if (!context->getError()) {
+          context->getError() = true;
         }
         return;
       }
-      context->code[context->code_pointer++] = byte;
-      context->code_size++;
+      context->getCode()[context->getCodePointer()++] = byte;
+      context->getCodeSize()++;
     }
 }
 

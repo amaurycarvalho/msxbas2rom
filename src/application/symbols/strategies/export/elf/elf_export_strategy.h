@@ -39,7 +39,8 @@ class ElfExportStrategy : public SymbolExportStrategy {
    * @return false if an error occurred.
    */
   bool save(shared_ptr<SymbolExportContext> context,
-            shared_ptr<BuildOptions> opts);
+            shared_ptr<BuildOptions> opts,
+            shared_ptr<SymbolOutputSink> sink);
 };
 
 #endif  // ELF_EXPORT_STRATEGY_H

@@ -6,17 +6,17 @@
 
 bool TimeStatementStrategy::parseStatement(
     shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
-  return context->assignEval->evaluate(statement);
+  return context->getAssignEval()->evaluate(statement);
 }
 
 bool TimeStatementStrategy::execute(shared_ptr<ParserContext> context,
                                     shared_ptr<LexerLineContext> statement,
                                     shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
-  context->has_input = true;
+  context->getHasInput() = true;
 
-  if (!context->assignEval) {
-    context->logger->error(
+  if (!context->getAssignEval()) {
+    context->getLogger()->error(
         "TIME assignment internal error (parser context not initialized)");
     return false;
   }

@@ -7,16 +7,16 @@
 
 void CompilerOutStatementStrategy::cmd_out(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> action;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
   if (t == 2) {
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
       lexeme = action->lexeme;
       if (lexeme) {
         result_subtype = expression.evalExpression(action);
@@ -44,5 +44,5 @@ void CompilerOutStatementStrategy::cmd_out(
 bool CompilerOutStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_out(context);
-  return context->compiled;
+  return context->getCompiled();
 }

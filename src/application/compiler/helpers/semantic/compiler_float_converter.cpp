@@ -49,7 +49,7 @@ int CompilerFloatConverter::str2FloatLib(string text) {
   try {
     value = stof(text);
   } catch (exception& e) {
-    context->logger->warning("Error while converting numeric constant " + text);
+    context->getLogger()->warning("Error while converting numeric constant " + text);
     value = 0;
   }
   float2FloatLib(value, (int*)&words);

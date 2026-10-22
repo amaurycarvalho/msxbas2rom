@@ -12,8 +12,9 @@
 #include <string.h>
 #include <strings.h>
 
-ResourceCsvReader::ResourceCsvReader(string filename)
-    : ResourceTxtReader(filename) {
+ResourceCsvReader::ResourceCsvReader(
+    string filename, shared_ptr<ResourceContentSource> contentSource)
+    : ResourceTxtReader(filename, contentSource) {
   resourceType = 1;  //! CSV resource type
   isIntegerData = false;
   /// @todo Refactor it implementing resource block linked list

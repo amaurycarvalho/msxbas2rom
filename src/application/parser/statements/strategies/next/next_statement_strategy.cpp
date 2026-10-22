@@ -7,7 +7,7 @@
 bool NextStatementStrategy::parseStatement(
     shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> next_lexeme;
-  shared_ptr<Lexeme> current_lexeme = context->actionRoot->lexeme;
+  shared_ptr<Lexeme> current_lexeme = context->getActionRoot()->lexeme;
   shared_ptr<ActionNode> action;
   int sepCount = 0;
 

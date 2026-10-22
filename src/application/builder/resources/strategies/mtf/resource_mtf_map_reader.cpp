@@ -43,8 +43,8 @@
  *   https://github.com/DamnedAngel/msx-tile-forge?tab=readme-ov-file#technical-description-of-generated-files
  */
 bool ResourceMtfMapReader::load() {
-  ResourceBlobReader tilemapReader(filename);
-  ResourceBlobReader supertileReader(supertileFilename);
+  ResourceBlobReader tilemapReader(filename, contentSource);
+  ResourceBlobReader supertileReader(supertileFilename, contentSource);
   int tilemapHeightIterator, tilemapWidthIterator;
   int supertileHeightIterator, supertileWidthIterator;
   int tilemapIndex, tilemapBaseIndex, tilemapSaveIndex;
@@ -184,8 +184,9 @@ bool ResourceMtfMapReader::remapTo(int index, int mappedSegm,
   return true;
 }
 
-ResourceMtfMapReader::ResourceMtfMapReader(string filename)
-    : ResourceReader(filename) {
+ResourceMtfMapReader::ResourceMtfMapReader(
+    string filename, shared_ptr<ResourceContentSource> contentSource)
+    : ResourceReader(filename, contentSource) {
   supertileFilename = filename;
   /// remove any trailing space
   while (!filename.empty() && filename.back() == ' ') {

@@ -6,5 +6,5 @@
 bool CompilerPresetStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_pset(context, false);
-  return context->compiled;
+  return context->getCompiled();
 }

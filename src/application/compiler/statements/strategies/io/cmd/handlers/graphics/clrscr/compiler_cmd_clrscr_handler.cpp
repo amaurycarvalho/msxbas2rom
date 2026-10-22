@@ -7,7 +7,7 @@
 bool CompilerCmdClrScrHandler::execute(shared_ptr<CompilerContext> context,
                                        shared_ptr<ActionNode> action) {
   // call cmd_clrscr
-  context->codeOptimizer->addKernelCall(DISP_cmd_clrscr);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_clrscr);
 
-  return context->compiled;
+  return context->getCompiled();
 }

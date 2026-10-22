@@ -11,8 +11,9 @@
 
 #include "logger.h"
 
-ResourceAkmReader::ResourceAkmReader(string filename)
-    : ResourceBlobReader(filename) {};
+ResourceAkmReader::ResourceAkmReader(
+    string filename, shared_ptr<ResourceContentSource> contentSource)
+    : ResourceBlobReader(filename, contentSource) {};
 
 bool ResourceAkmReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".AKM") == 0);

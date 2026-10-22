@@ -9,18 +9,18 @@
 
 void CompilerSpriteStatementStrategy::cmd_sprite(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& optimizer = *context->getCodeOptimizer();
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> next_lexeme;
-  unsigned int t = context->current_action->actions.size();
+  unsigned int t = context->getCurrentAction()->actions.size();
 
   if (t == 1) {
-    action = context->current_action->actions[0];
+    action = context->getCurrentAction()->actions[0];
     next_lexeme = action->lexeme;
 
     if (next_lexeme->value == "LOAD") {
-      context->current_action = action;
+      context->getCurrentAction() = action;
       cmd_sprite_load(context);
       return;
     }
@@ -51,10 +51,10 @@ void CompilerSpriteStatementStrategy::cmd_sprite(
 
 void CompilerSpriteStatementStrategy::cmd_sprite_load(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<ActionNode> action;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
   if (t) {
@@ -64,14 +64,14 @@ void CompilerSpriteStatementStrategy::cmd_sprite_load(
     }
 
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
       result_subtype = expression.evalExpression(action);
       expression.addCast(result_subtype, Lexeme::subtype_numeric);
 
       // ld (DAC), hl
       cpu.addLdiiHL(def_DAC);
       // call cmd_wrtspr                    ; tiny sprite loader
-      context->codeOptimizer->addKernelCall(DISP_cmd_wrtspr);
+      context->getCodeOptimizer()->addKernelCall(DISP_cmd_wrtspr);
     }
 
   } else {
@@ -82,5 +82,5 @@ void CompilerSpriteStatementStrategy::cmd_sprite_load(
 bool CompilerSpriteStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_sprite(context);
-  return context->compiled;
+  return context->getCompiled();
 }

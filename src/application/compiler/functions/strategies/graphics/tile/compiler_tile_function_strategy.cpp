@@ -15,9 +15,9 @@ int TileCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (action->lexeme->value != "TILE") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
-  auto& optimizer = *context->codeOptimizer;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& optimizer = *context->getCodeOptimizer();
+  auto& expression = *context->getExpressionEvaluator();
 
   if (result[0] == Lexeme::subtype_single_decimal ||
       result[0] == Lexeme::subtype_double_decimal) {
@@ -61,7 +61,7 @@ int TileCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
     cpu.addIncH();
 
     // call DISP_tileAddress (in: hl=xy; out: hl=address)
-    context->codeOptimizer->addKernelCall(DISP_tileAddress);
+    context->getCodeOptimizer()->addKernelCall(DISP_tileAddress);
 
     // call 0x70a1    ; xbasic VPEEK (in:hl, out:hl)
     optimizer.addKernelCall(DISP_XBASIC_VPEEK);

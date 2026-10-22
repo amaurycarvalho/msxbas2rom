@@ -12,6 +12,7 @@
 
 #include "action_node.h"
 #include "build_options.h"
+#include "build_options_resolver.h"
 #include "compiler.h"
 #include "compiler_context.h"
 #include "compiler_hooks.h"
@@ -19,6 +20,12 @@
 #include "compiler_statement_strategy_factory.h"
 #include "cpu_workspace_context.h"
 #include "doctest/doctest.h"
+#include "test_support.h"
+
+static std::shared_ptr<TestSourceResolver> testSourceResolver() {
+  static auto resolver = std::make_shared<TestSourceResolver>();
+  return resolver;
+}
 #include "lexeme.h"
 #include "lexer.h"
 #include "logger.h"
@@ -28,9 +35,7 @@
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {
   const std::string path = "tmp/" + filename;
-  std::ofstream ofs(path);
-  ofs << content;
-  ofs.close();
+  testSourceResolver()->add(path, content);
   return path;
 }
 
@@ -40,8 +45,8 @@ static bool compileStatementProgram(const std::string& filename,
   const std::string path = createTempBas(filename, program);
 
   shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
-  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
   shared_ptr<Parser> parser = make_shared<Parser>();
 
   bool ok = false;
@@ -63,8 +68,8 @@ static int compiledCodeSize(const std::string& filename,
   const std::string path = createTempBas(filename, program);
 
   shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
-  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
   shared_ptr<Parser> parser = make_shared<Parser>();
 
   bool ok = false;
@@ -82,8 +87,8 @@ static std::string compiledCodeHex(const std::string& filename,
   const std::string path = createTempBas(filename, program);
 
   shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
-  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
   shared_ptr<Parser> parser = make_shared<Parser>();
 
   bool ok = false;
@@ -114,12 +119,12 @@ static shared_ptr<CompilerContext> createOnContext() {
   workspace->clear();
   shared_ptr<Z80OpcodeWriter> cpu = make_shared<Z80OpcodeWriter>();
   cpu->context = workspace;
-  shared_ptr<CompilerContext> ctx = make_shared<CompilerContext>();
+  shared_ptr<CompilerContext> ctx = makeTestCompilerContext();
   ctx->setHelpers(ctx);
-  ctx->cpu = cpu;
-  ctx->opts = make_shared<BuildOptions>();
-  ctx->parser = make_shared<Parser>();
-  ctx->compiled = true;
+  ctx->getCpu() = cpu;
+  ctx->getOpts() = make_shared<BuildOptions>();
+  ctx->getParser() = make_shared<Parser>();
+  ctx->getCompiled() = true;
   return ctx;
 }
 
@@ -209,12 +214,12 @@ TEST_SUITE("CompilerOnStatementStrategy") {
       shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
       opts->compileMode = BuildOptions::CompileMode::Konami4;
       opts->megaROM = true;
-      opts->setInputFilename(path);
+      build_options::setInputFilename(opts, path);
 
       shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
           make_shared<Z80OpcodeWriter>();
-      shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-      shared_ptr<Lexer> lexer = make_shared<Lexer>();
+      shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+      shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
       shared_ptr<Parser> parser = make_shared<Parser>();
 
       bool ok = false;
@@ -291,12 +296,12 @@ TEST_SUITE("CompilerOnStatementStrategy") {
       shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
       opts->compileMode = BuildOptions::CompileMode::Konami4;
       opts->megaROM = true;
-      opts->setInputFilename(path);
+      build_options::setInputFilename(opts, path);
 
       shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
           make_shared<Z80OpcodeWriter>();
-      shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-      shared_ptr<Lexer> lexer = make_shared<Lexer>();
+      shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+      shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
       shared_ptr<Parser> parser = make_shared<Parser>();
 
       bool ok = false;
@@ -317,12 +322,12 @@ TEST_SUITE("CompilerOnStatementStrategy") {
       shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
       opts->compileMode = BuildOptions::CompileMode::Konami4;
       opts->megaROM = true;
-      opts->setInputFilename(path);
+      build_options::setInputFilename(opts, path);
 
       shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
           make_shared<Z80OpcodeWriter>();
-      shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-      shared_ptr<Lexer> lexer = make_shared<Lexer>();
+      shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+      shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
       shared_ptr<Parser> parser = make_shared<Parser>();
 
       bool ok = false;
@@ -342,12 +347,12 @@ TEST_SUITE("CompilerOnStatementStrategy") {
       shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
       opts->compileMode = BuildOptions::CompileMode::Konami4;
       opts->megaROM = true;
-      opts->setInputFilename(path);
+      build_options::setInputFilename(opts, path);
 
       shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
           make_shared<Z80OpcodeWriter>();
-      shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-      shared_ptr<Lexer> lexer = make_shared<Lexer>();
+      shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+      shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
       shared_ptr<Parser> parser = make_shared<Parser>();
 
       bool ok = false;
@@ -366,12 +371,12 @@ TEST_SUITE("CompilerOnStatementStrategy") {
       shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
       opts->compileMode = BuildOptions::CompileMode::Konami4;
       opts->megaROM = true;
-      opts->setInputFilename(path);
+      build_options::setInputFilename(opts, path);
 
       shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
           make_shared<Z80OpcodeWriter>();
-      shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-      shared_ptr<Lexer> lexer = make_shared<Lexer>();
+      shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+      shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
       shared_ptr<Parser> parser = make_shared<Parser>();
 
       bool ok = false;
@@ -434,10 +439,10 @@ TEST_SUITE("CompilerOnDirect") {
     shared_ptr<ActionNode> action = onAction("ON");
     action->actions.push_back(make_shared<ActionNode>(onKw("ERROR")));
 
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
     strategy.execute(ctx);
 
-    CHECK(ctx->logger->errors().toString().find("Not implemented yet") !=
+    CHECK(ctx->getLogger()->errors().toString().find("Not implemented yet") !=
           std::string::npos);
   }
 
@@ -446,10 +451,10 @@ TEST_SUITE("CompilerOnDirect") {
     shared_ptr<CompilerContext> ctx = createOnContext();
 
     shared_ptr<ActionNode> action = onAction("ON");
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
     strategy.execute(ctx);
 
-    CHECK(ctx->logger->errors().toString().find("Empty ON statement") !=
+    CHECK(ctx->getLogger()->errors().toString().find("Empty ON statement") !=
           std::string::npos);
   }
 
@@ -459,10 +464,10 @@ TEST_SUITE("CompilerOnDirect") {
 
     shared_ptr<ActionNode> action = onAction("ON");
     action->actions.push_back(make_shared<ActionNode>(onKw("FOOBAR")));
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
     strategy.execute(ctx);
 
-    CHECK(ctx->logger->errors().toString().find("Invalid ON statement") !=
+    CHECK(ctx->getLogger()->errors().toString().find("Invalid ON statement") !=
           std::string::npos);
   }
 
@@ -476,10 +481,10 @@ TEST_SUITE("CompilerOnDirect") {
     interval->actions.push_back(make_shared<ActionNode>(onKw("GOSUB")));
     action->actions.push_back(interval);
 
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
     strategy.execute(ctx);
 
-    CHECK(ctx->logger->errors().toString().find("Interval index is missing") !=
+    CHECK(ctx->getLogger()->errors().toString().find("Interval index is missing") !=
           std::string::npos);
   }
 
@@ -496,10 +501,10 @@ TEST_SUITE("CompilerOnDirect") {
     interval->actions.push_back(make_shared<ActionNode>(onKw("GOSUB")));
     action->actions.push_back(interval);
 
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
     strategy.execute(ctx);
 
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "Wrong parameter count in interval index") != std::string::npos);
   }
 
@@ -515,10 +520,10 @@ TEST_SUITE("CompilerOnDirect") {
     interval->actions.push_back(make_shared<ActionNode>(onKw("GOTO")));
     action->actions.push_back(interval);
 
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
     strategy.execute(ctx);
 
-    CHECK(ctx->logger->errors().toString().find("GOSUB is missing") !=
+    CHECK(ctx->getLogger()->errors().toString().find("GOSUB is missing") !=
           std::string::npos);
   }
 
@@ -530,10 +535,10 @@ TEST_SUITE("CompilerOnDirect") {
     shared_ptr<ActionNode> interval = make_shared<ActionNode>(onKw("INTERVAL"));
     action->actions.push_back(interval);
 
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
     strategy.execute(ctx);
 
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "ON INTERVAL with empty parameters") != std::string::npos);
   }
 
@@ -546,10 +551,10 @@ TEST_SUITE("CompilerOnDirect") {
     key->actions.push_back(make_shared<ActionNode>(onNum("100")));
     action->actions.push_back(key);
 
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
     strategy.execute(ctx);
 
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "GOSUB parameters is missing") != std::string::npos);
   }
 
@@ -562,10 +567,10 @@ TEST_SUITE("CompilerOnDirect") {
     sprite->actions.push_back(make_shared<ActionNode>(onNum("100")));
     action->actions.push_back(sprite);
 
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
     strategy.execute(ctx);
 
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "GOSUB parameters is missing") != std::string::npos);
   }
 
@@ -578,10 +583,10 @@ TEST_SUITE("CompilerOnDirect") {
     stop->actions.push_back(make_shared<ActionNode>(onNum("100")));
     action->actions.push_back(stop);
 
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
     strategy.execute(ctx);
 
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "GOSUB parameters is missing") != std::string::npos);
   }
 
@@ -591,10 +596,10 @@ TEST_SUITE("CompilerOnDirect") {
 
     shared_ptr<ActionNode> action = onAction("ON");
     action->actions.push_back(make_shared<ActionNode>(onNum("1")));
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
     strategy.execute(ctx);
 
-    CHECK(ctx->logger->errors().toString().find("Invalid ON statement") !=
+    CHECK(ctx->getLogger()->errors().toString().find("Invalid ON statement") !=
           std::string::npos);
   }
 }

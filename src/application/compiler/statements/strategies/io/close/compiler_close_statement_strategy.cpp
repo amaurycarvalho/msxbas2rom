@@ -9,24 +9,24 @@
 
 void CompilerCloseStatementStrategy::cmd_close(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<ActionNode> action;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
-  context->file_support = true;
+  context->getFileSupport() = true;
 
   if (t) {
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
       result_subtype = expression.evalExpression(action);
       expression.addCast(result_subtype, Lexeme::subtype_numeric);
 
       // ld a, l
       cpu.addLdAL();
       // call cmd_fclose
-      context->codeOptimizer->addKernelCall(DISP_cmd_fclose);
+      context->getCodeOptimizer()->addKernelCall(DISP_cmd_fclose);
     }
 
   } else {
@@ -34,12 +34,12 @@ void CompilerCloseStatementStrategy::cmd_close(
     // ld a, 0xFF
     cpu.addXorA();
     // call cmd_fclose
-    context->codeOptimizer->addKernelCall(DISP_cmd_fclose);
+    context->getCodeOptimizer()->addKernelCall(DISP_cmd_fclose);
   }
 }
 
 bool CompilerCloseStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_close(context);
-  return context->compiled;
+  return context->getCompiled();
 }

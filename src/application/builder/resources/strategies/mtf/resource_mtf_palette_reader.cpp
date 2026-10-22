@@ -30,8 +30,9 @@ bool ResourceMtfPaletteReader::load() {
   return false;
 }
 
-ResourceMtfPaletteReader::ResourceMtfPaletteReader(string filename)
-    : ResourceBlobReader(filename) {};
+ResourceMtfPaletteReader::ResourceMtfPaletteReader(
+    string filename, shared_ptr<ResourceContentSource> contentSource)
+    : ResourceBlobReader(filename, contentSource) {};
 
 bool ResourceMtfPaletteReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".SC4Pal") == 0);

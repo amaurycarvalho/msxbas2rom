@@ -13,15 +13,15 @@ int UsingCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                            shared_ptr<ActionNode> action,
                                            int* result,
                                             unsigned int parmCount) {
-  auto& optimizer = *context->codeOptimizer;
+  auto& optimizer = *context->getCodeOptimizer();
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (parmCount != 2) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "USING$") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
-  auto& variable = *context->variableEmitter;
-  auto& expression = *context->expressionEvaluator;
-  auto& floatConverter = *context->floatConverter;
+  auto& cpu = *context->getCpu();
+  auto& variable = *context->getVariableEmitter();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& floatConverter = *context->getFloatConverter();
 
   // Preprocess format string before parameter evaluation.
   if (parmCount >= 2) {
@@ -63,7 +63,7 @@ int UsingCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
     // call XBASIC_USING    ; hl = item format string, c:de = float, out
     // hl=string
-    context->codeOptimizer->addKernelCall(DISP_XBASIC_USING);
+    context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_USING);
     // ld de, temporary string
     variable.addTempStr(false);
     // push de
@@ -107,7 +107,7 @@ int UsingCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
     // call XBASIC_USING_DO    ; a=format, d=thousand digits, e=decimal digits,
     // b:hl=number, out hl=string
-    context->codeOptimizer->addKernelCall(DISP_XBASIC_USING_DO);
+    context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_USING_DO);
     // ld de, temporary string
     variable.addTempStr(false);
     // push de

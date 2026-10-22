@@ -20,14 +20,14 @@ int UsrCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
     return Lexeme::subtype_unknown;
   }
 
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
 
   // cast
   expression.addCast(result[0], Lexeme::subtype_numeric);
   result[0] = Lexeme::subtype_numeric;
 
-  if (context->has_defusr) {
+  if (context->getHasDefusr()) {
     if (keyword == "USR" || keyword == "USR0") {
       // xor a
       cpu.addXorA();
@@ -61,20 +61,20 @@ int UsrCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
     }
 
     // call XBASIC_USR
-    context->codeOptimizer->addKernelCall(DISP_XBASIC_USR);
+    context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_USR);
   } else {
     if (keyword == "USR" || keyword == "USR0") {
       // call usr0
-      context->codeOptimizer->addKernelCall(DISP_usr0);
+      context->getCodeOptimizer()->addKernelCall(DISP_usr0);
     } else if (keyword == "USR1") {
       // call usr1
-      context->codeOptimizer->addKernelCall(DISP_usr1);
+      context->getCodeOptimizer()->addKernelCall(DISP_usr1);
     } else if (keyword == "USR2") {
       // call usr2
-      context->codeOptimizer->addKernelCall(DISP_usr2);
+      context->getCodeOptimizer()->addKernelCall(DISP_usr2);
     } else if (keyword == "USR3") {
       // call usr3
-      context->codeOptimizer->addKernelCall(DISP_usr3);
+      context->getCodeOptimizer()->addKernelCall(DISP_usr3);
     }
   }
 

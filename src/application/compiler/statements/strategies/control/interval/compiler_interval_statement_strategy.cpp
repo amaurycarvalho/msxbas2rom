@@ -8,14 +8,14 @@
 
 void CompilerIntervalStatementStrategy::cmd_interval(
     shared_ptr<CompilerContext> context) {
-  auto& optimizer = *context->codeOptimizer;
-  auto& cpu = *context->cpu;
+  auto& optimizer = *context->getCodeOptimizer();
+  auto& cpu = *context->getCpu();
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> next_lexeme;
-  unsigned int t = context->current_action->actions.size();
+  unsigned int t = context->getCurrentAction()->actions.size();
 
   if (t == 1) {
-    action = context->current_action->actions[0];
+    action = context->getCurrentAction()->actions[0];
     next_lexeme = action->lexeme;
 
     // ld hl, 0xFC7F    ; INTERVAL state
@@ -45,5 +45,5 @@ void CompilerIntervalStatementStrategy::cmd_interval(
 bool CompilerIntervalStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_interval(context);
-  return context->compiled;
+  return context->getCompiled();
 }

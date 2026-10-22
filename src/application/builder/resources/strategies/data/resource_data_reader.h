@@ -34,7 +34,8 @@ class ResourceDataReader : public ResourceCsvReader {
 
  public:
   bool load();
-  ResourceDataReader(shared_ptr<Parser> parser);
+  ResourceDataReader(shared_ptr<Parser> parser,
+                     shared_ptr<ResourceContentSource> contentSource);
 };
 
 #endif  // RESOURCE_DATA_READER_H_INCLUDED

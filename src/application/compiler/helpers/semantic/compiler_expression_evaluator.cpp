@@ -29,10 +29,10 @@ CompilerExpressionEvaluator::CompilerExpressionEvaluator(
 CompilerExpressionEvaluator::~CompilerExpressionEvaluator() = default;
 
 int CompilerExpressionEvaluator::evalExpression(shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& variable = *context->variableEmitter;
-  auto& floatConverter = *context->floatConverter;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& variable = *context->getVariableEmitter();
+  auto& floatConverter = *context->getFloatConverter();
   int result = Lexeme::subtype_unknown;
   shared_ptr<Lexeme> lexeme;
 
@@ -133,7 +133,7 @@ int CompilerExpressionEvaluator::evalExpression(shared_ptr<ActionNode> action) {
           } else
             cpu.addLdHL(stoi(lexeme->value));  // ld hl, value
         } catch (exception& e) {
-          context->logger->warning("Error while converting numeric constant " +
+          context->getLogger()->warning("Error while converting numeric constant " +
                                    lexeme->value);
           cpu.addLdHL(0x0000);  // ld hl, value
         }
@@ -157,9 +157,9 @@ int CompilerExpressionEvaluator::evalExpression(shared_ptr<ActionNode> action) {
 }
 
 int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-  auto& variable = *context->variableEmitter;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& variable = *context->getVariableEmitter();
+  auto& optimizer = *context->getCodeOptimizer();
   int result = Lexeme::subtype_unknown;
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> next_action;
@@ -181,7 +181,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
         if (result == Lexeme::subtype_numeric) {
           // call intCompareNOT
           // ctx.cpu->addCall(DISP_intCompareNOT);
-          context->codeOptimizer->addKernelCall(DISP_intCompareNOT);
+          context->getCodeOptimizer()->addKernelCall(DISP_intCompareNOT);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -190,13 +190,13 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
         if (result == Lexeme::subtype_numeric) {
           // call intNEG
           // ctx.cpu->addCall(DISP_intNEG);
-          context->codeOptimizer->addKernelCall(DISP_intNEG);
+          context->getCodeOptimizer()->addKernelCall(DISP_intNEG);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
           // call floatNeg
           // ctx.cpu->addCall(DISP_floatNEG);
-          context->codeOptimizer->addKernelCall(DISP_floatNEG);
+          context->getCodeOptimizer()->addKernelCall(DISP_floatNEG);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -219,7 +219,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareAND
           // ctx.cpu->addCall(DISP_intCompareAND);
-          context->codeOptimizer->addKernelCall(DISP_intCompareAND);
+          context->getCodeOptimizer()->addKernelCall(DISP_intCompareAND);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -231,7 +231,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareOR
           // ctx.cpu->addCall(DISP_intCompareOR);
-          context->codeOptimizer->addKernelCall(DISP_intCompareOR);
+          context->getCodeOptimizer()->addKernelCall(DISP_intCompareOR);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -243,7 +243,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareXOR
           // ctx.cpu->addCall(DISP_intCompareXOR);
-          context->codeOptimizer->addKernelCall(DISP_intCompareXOR);
+          context->getCodeOptimizer()->addKernelCall(DISP_intCompareXOR);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -309,7 +309,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareEQ
           // ctx.cpu->addCall(DISP_intCompareEQ);
-          context->codeOptimizer->addKernelCall(DISP_intCompareEQ);
+          context->getCodeOptimizer()->addKernelCall(DISP_intCompareEQ);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -346,7 +346,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareNE
           // ctx.cpu->addCall(DISP_intCompareNE);
-          context->codeOptimizer->addKernelCall(DISP_intCompareNE);
+          context->getCodeOptimizer()->addKernelCall(DISP_intCompareNE);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -383,7 +383,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareLT
           // ctx.cpu->addCall(DISP_intCompareLT);
-          context->codeOptimizer->addKernelCall(DISP_intCompareLT);
+          context->getCodeOptimizer()->addKernelCall(DISP_intCompareLT);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -420,7 +420,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareLE
           // ctx.cpu->addCall(DISP_intCompareLE);
-          context->codeOptimizer->addKernelCall(DISP_intCompareLE);
+          context->getCodeOptimizer()->addKernelCall(DISP_intCompareLE);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -457,7 +457,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareGT
           // ctx.cpu->addCall(DISP_intCompareGT);
-          context->codeOptimizer->addKernelCall(DISP_intCompareGT);
+          context->getCodeOptimizer()->addKernelCall(DISP_intCompareGT);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -494,7 +494,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intCompareGE
           // ctx.cpu->addCall(DISP_intCompareGE);
-          context->codeOptimizer->addKernelCall(DISP_intCompareGE);
+          context->getCodeOptimizer()->addKernelCall(DISP_intCompareGE);
 
         } else if (result == Lexeme::subtype_single_decimal ||
                    result == Lexeme::subtype_double_decimal) {
@@ -565,11 +565,11 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           // ex de,hl
           optimizer.addByteOptimized(0xEB);
 
-          s = cpu.context->code_pipeline[0];
+          s = cpu.context->getCodePipeline()[0];
           i = s[1] | (s[2] << 8);
           if (s[0] == 0x11 && i <= 4) {  // ld de, n
-            cpu.context->code_pointer -= 3;
-            cpu.context->code_size -= 3;
+            cpu.context->getCodePointer() -= 3;
+            cpu.context->getCodeSize() -= 3;
             while (i) {
               // dec hl
               cpu.addDecHL();
@@ -607,26 +607,26 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           /// @remark math optimization when second parameter is a integer
           /// constant
-          if (context->opts->megaROM)
-            s = cpu.context->code_pipeline[1];
+          if (context->getOpts()->megaROM)
+            s = cpu.context->getCodePipeline()[1];
           else
-            s = cpu.context->code_pipeline[0];
+            s = cpu.context->getCodePipeline()[0];
 
           i = s[1] | (s[2] << 8);
 
           if (action->actions[0]->lexeme->type == Lexeme::type_literal &&
               i <= 256) {
-            if (context->opts->megaROM) {
-              cpu.context->code_pointer -= 5;  //! @todo verify if 5 or 6
-              cpu.context->code_size -= 5;
+            if (context->getOpts()->megaROM) {
+              cpu.context->getCodePointer() -= 5;  //! @todo verify if 5 or 6
+              cpu.context->getCodeSize() -= 5;
             } else {
-              cpu.context->code_pointer -= 4;
-              cpu.context->code_size -= 4;
+              cpu.context->getCodePointer() -= 4;
+              cpu.context->getCodeSize() -= 4;
 
               if (action->actions[1]->lexeme->type == Lexeme::type_literal) {
-                cpu.context->code_pointer += 1;
-                cpu.context->code_size += 1;
-                s = &cpu.context->code[cpu.context->code_pointer - 3];
+                cpu.context->getCodePointer() += 1;
+                cpu.context->getCodeSize() += 1;
+                s = &cpu.context->getCode()[cpu.context->getCodePointer() - 3];
                 if (s[0] == 0x11) s[0] = 0x21;  // change "ld de,n" to "ld hl,n"
               }
             }
@@ -703,25 +703,25 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
           optimizer.addByteOptimized(0xEB);
 
           // math optimization when second parameter is a integer constant
-          s = cpu.context->code_pipeline[0];
+          s = cpu.context->getCodePipeline()[0];
           if (s[0] == 0x11) {  // ld de, n
             i = s[1] | (s[2] << 8);
 
             switch (i) {
               case 0: {
-                cpu.context->code_pointer -= 3;
-                cpu.context->code_size -= 3;
+                cpu.context->getCodePointer() -= 3;
+                cpu.context->getCodeSize() -= 3;
                 cpu.addLdHL(0x0000);
               } break;
 
               case 1: {
-                cpu.context->code_pointer -= 3;
-                cpu.context->code_size -= 3;
+                cpu.context->getCodePointer() -= 3;
+                cpu.context->getCodeSize() -= 3;
               } break;
 
               case 2: {
-                cpu.context->code_pointer -= 3;
-                cpu.context->code_size -= 3;
+                cpu.context->getCodePointer() -= 3;
+                cpu.context->getCodeSize() -= 3;
                 // sra h | rr l
                 cpu.addSRAH();
                 cpu.addRRL();
@@ -738,8 +738,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
               } break;
 
               case 4: {
-                cpu.context->code_pointer -= 3;
-                cpu.context->code_size -= 3;
+                cpu.context->getCodePointer() -= 3;
+                cpu.context->getCodeSize() -= 3;
                 // LD A, L
                 cpu.addLdAL();
                 // sra h | rr l (2 times)
@@ -764,8 +764,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
               case 8: {
                 // OLD: LD A, L | SRA H | RRA | SRL H | RRA | SRL H | RRA | LD
                 // L, A
-                cpu.context->code_pointer -= 3;
-                cpu.context->code_size -= 3;
+                cpu.context->getCodePointer() -= 3;
+                cpu.context->getCodeSize() -= 3;
                 // LD A, L
                 cpu.addLdAL();
                 // sra h | rr l (3 times)
@@ -792,8 +792,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
               case 16: {
                 // old: XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | ADD HL, HL
                 // | RLA | ADD HL, HL | RLA | LD L, H | LD H, A
-                cpu.context->code_pointer -= 3;
-                cpu.context->code_size -= 3;
+                cpu.context->getCodePointer() -= 3;
+                cpu.context->getCodeSize() -= 3;
                 // LD A, L
                 cpu.addLdAL();
                 // sra h | rr l (4 times)
@@ -822,8 +822,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
               case 32: {
                 // old: XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | ADD HL, HL
                 // | RLA | LD L, H | LD H, A
-                cpu.context->code_pointer -= 3;
-                cpu.context->code_size -= 3;
+                cpu.context->getCodePointer() -= 3;
+                cpu.context->getCodeSize() -= 3;
                 // LD A, L
                 cpu.addLdAL();
                 // sra h | rr l (5 times)
@@ -854,8 +854,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
               case 64: {
                 // old: XOR A | ADD HL, HL | RLA | ADD HL, HL | RLA | LD L, H |
                 // LD H, A
-                cpu.context->code_pointer -= 3;
-                cpu.context->code_size -= 3;
+                cpu.context->getCodePointer() -= 3;
+                cpu.context->getCodeSize() -= 3;
                 // LD A, L
                 cpu.addLdAL();
                 // sra h | rr l (6 times)
@@ -887,8 +887,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
               case 128: {
                 // old: XOR A | ADD HL, HL | RLA | LD L, H | LD H, A
-                cpu.context->code_pointer -= 3;
-                cpu.context->code_size -= 3;
+                cpu.context->getCodePointer() -= 3;
+                cpu.context->getCodeSize() -= 3;
                 // LD A, L
                 cpu.addLdAL();
                 // sra h | rr l (7 times)
@@ -921,8 +921,8 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
               } break;
 
               case 256: {
-                cpu.context->code_pointer -= 3;
-                cpu.context->code_size -= 3;
+                cpu.context->getCodePointer() -= 3;
+                cpu.context->getCodeSize() -= 3;
                 // LD E, L
                 cpu.addLdEL();
                 // LD L, H
@@ -1096,7 +1096,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intSHR
           // ctx.cpu->addCall(DISP_intSHR);
-          context->codeOptimizer->addKernelCall(DISP_intSHR);
+          context->getCodeOptimizer()->addKernelCall(DISP_intSHR);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -1108,7 +1108,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
           // call intSHL
           // ctx.cpu->addCall(DISP_intSHL);
-          context->codeOptimizer->addKernelCall(DISP_intSHL);
+          context->getCodeOptimizer()->addKernelCall(DISP_intSHL);
 
         } else
           result = Lexeme::subtype_unknown;
@@ -1125,7 +1125,7 @@ int CompilerExpressionEvaluator::evalOperator(shared_ptr<ActionNode> action) {
 
 bool CompilerExpressionEvaluator::evalOperatorParms(
     shared_ptr<ActionNode> action, int parmCount) {
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
   bool result = false;
   int subtype;
   shared_ptr<ActionNode> next_action;
@@ -1158,7 +1158,7 @@ bool CompilerExpressionEvaluator::evalOperatorParms(
 
 int CompilerExpressionEvaluator::evalOperatorCast(
     shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
   int result = Lexeme::subtype_unknown;
   shared_ptr<ActionNode> next_action1, next_action2;
 
@@ -1175,7 +1175,7 @@ int CompilerExpressionEvaluator::evalOperatorCast(
     //     200.0 + 100
 
     // call castParamFloatInt
-    context->codeOptimizer->addKernelCall(DISP_castParamFloatInt);
+    context->getCodeOptimizer()->addKernelCall(DISP_castParamFloatInt);
 
     result = next_action1->subtype;
 
@@ -1244,7 +1244,7 @@ int CompilerExpressionEvaluator::evalOperatorCast(
 }
 
 void CompilerExpressionEvaluator::addCast(int from, int to) {
-  auto& optimizer = *context->codeOptimizer;
+  auto& optimizer = *context->getCodeOptimizer();
   if (from != to) {
     if (from == Lexeme::subtype_numeric) {
       if (to == Lexeme::subtype_numeric) {

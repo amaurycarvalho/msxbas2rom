@@ -15,7 +15,7 @@ int MaxfilesCompilerFunctionStrategy::execute(
 
   if (action->lexeme->value != "MAXFILES") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
 
   // ld hl, (MAXFIL)
   cpu.addLdHLii(def_MAXFIL);

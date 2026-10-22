@@ -16,7 +16,7 @@ int ErrCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (action->lexeme->value != "ERR") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
 
   // ld a, (ERRFLG)
   cpu.addLdAii(def_ERRFLG);

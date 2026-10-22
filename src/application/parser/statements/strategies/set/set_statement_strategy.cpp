@@ -25,8 +25,8 @@ bool SetStatementStrategy::parseSetAdjust(
         state++;
         continue;
       } else {
-        context->logger->error("SET ADJUST without a valid complement");
-        context->eval_expr_error = true;
+        context->getLogger()->error("SET ADJUST without a valid complement");
+        context->getEvalExprError() = true;
         return false;
       }
     } else if (state == 1) {
@@ -51,7 +51,7 @@ bool SetStatementStrategy::parseSetAdjust(
             mustPopAction = false;
           }
         } else {
-          context->pushActionFromLexeme(context->lex_null);
+          context->pushActionFromLexeme(context->getLexNull());
         }
         continue;
       }
@@ -136,7 +136,7 @@ bool SetStatementStrategy::parseSetTileColpat(
             }
             parm->clearLexemes();
           } else {
-            context->pushActionFromLexeme(context->lex_null);
+            context->pushActionFromLexeme(context->getLexNull());
           }
           if (hasArrayParm) {
             context->popActionRoot();
@@ -164,7 +164,7 @@ bool SetStatementStrategy::parseSetTileColpat(
             }
             parm->clearLexemes();
           } else {
-            context->pushActionFromLexeme(context->lex_null);
+            context->pushActionFromLexeme(context->getLexNull());
           }
           continue;
         }
@@ -256,7 +256,7 @@ bool SetStatementStrategy::parseSetSpriteColpattra(
             }
             parm->clearLexemes();
           } else {
-            context->pushActionFromLexeme(context->lex_null);
+            context->pushActionFromLexeme(context->getLexNull());
           }
           if (hasArrayParm) {
             context->popActionRoot();
@@ -284,7 +284,7 @@ bool SetStatementStrategy::parseSetSpriteColpattra(
             }
             parm->clearLexemes();
           } else {
-            context->pushActionFromLexeme(context->lex_null);
+            context->pushActionFromLexeme(context->getLexNull());
           }
           continue;
         }
@@ -330,7 +330,7 @@ bool SetStatementStrategy::parseSetSpriteHitbox(
         }
         parm->clearLexemes();
       } else {
-        context->pushActionFromLexeme(context->lex_null);
+        context->pushActionFromLexeme(context->getLexNull());
       }
       continue;
     }
@@ -365,22 +365,22 @@ bool SetStatementStrategy::parseSetSpriteHitbox(
     parm->clearLexemes();
   }
 
-  t = context->actionRoot->actions.size();
+  t = context->getActionRoot()->actions.size();
   if (t < 1 || t > 5) {
-    context->logger->error(
+    context->getLogger()->error(
         "Wrong parameters count on SET SPRITE HITBOX statement");
-    context->eval_expr_error = true;
+    context->getEvalExprError() = true;
     return false;
   }
 
   if (t >= 3) {
-    shared_ptr<Lexeme> second = context->actionRoot->actions[1]->lexeme;
+    shared_ptr<Lexeme> second = context->getActionRoot()->actions[1]->lexeme;
     if (second && second->type == Lexeme::type_keyword &&
         (second->value == "ON" || second->value == "OFF" ||
          second->value == "AUTO")) {
-      context->logger->error(
+      context->getLogger()->error(
           "Wrong parameters count on SET SPRITE HITBOX statement");
-      context->eval_expr_error = true;
+      context->getEvalExprError() = true;
       return false;
     }
   }

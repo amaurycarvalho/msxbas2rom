@@ -11,7 +11,6 @@
 #include "code_node.h"
 #include "fix_node.h"
 #include "for_next_node.h"
-#include "symbol_manager.h"
 #include "symbol_node.h"
 
 #endif  // SYMBOLS_H_INCLUDED

@@ -26,7 +26,8 @@ class ResourceTxtReader : public ResourceReader {
   static bool isIt(string fileext);
   bool populateLines();
   bool load();
-  ResourceTxtReader(string filename);
+  ResourceTxtReader(string filename,
+                    shared_ptr<ResourceContentSource> contentSource);
 };
 
 #endif  // RESOURCE_TXT_READER_H_INCLUDED

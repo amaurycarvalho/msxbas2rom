@@ -9,18 +9,18 @@
 
 void CompilerPsetStatementStrategy::cmd_pset(
     shared_ptr<CompilerContext> context, bool forecolor) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& optimizer = *context->getCodeOptimizer();
   shared_ptr<ActionNode> action, sub_action;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
   bool has_x_coord = false, has_y_coord = false, has_color = false,
        has_operator = false;
 
   if (t) {
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
 
       switch (i) {
         case 0: {
@@ -209,5 +209,5 @@ void CompilerPsetStatementStrategy::cmd_pset(
 bool CompilerPsetStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_pset(context, true);
-  return context->compiled;
+  return context->getCompiled();
 }

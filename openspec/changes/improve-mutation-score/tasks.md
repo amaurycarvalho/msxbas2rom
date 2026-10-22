@@ -127,7 +127,7 @@ O run do Round 3 reportou **73%** (`mutation_report.json` de set/08: **1791 kill
 - Causa raiz remanescente: os fixtures do Round 3 usam **zeros/valores iguais**, então mutantes de **índice** (`dest[address - N]` → `address + N`, `data[i + 1]` → `i - 1`) leem/escrevem uma posição cujo valor coincide com o esperado — o mutante é equivalente *para aquele fixture*. Ex.: em `compiler.cpp` o mutante de `dest[address - 3]` (lado direito) lê `dest[address + 3]`, ambos 0x00 no seed. Ex. análogo em readers e `compiler_variable_emitter`.
 - A correção é usar **sentinelas distintas por offset** (cada byte semeado com valor único, ex. `0xA0 + (i & 0x3F)`), de modo que qualquer leitura/escrita no offset errado produza um byte observavelmente diferente.
 
-Meta: matar **~300** sobreviventes (folga de ~12 sobre os 288 necessários). Cada tarefa verifica com `make -C tests/unit run` (rápido, incremental); nenhum `mutation-build`/`mutation-run`/`mutation-clean` é executado pelo implementador — o run mull completo é o passo final do usuário (tarefa 23.3).
+Meta histórica (superseded): matar **~300** sobreviventes do relatório de 73%. A verificação do Round 4 era `make -C tests/unit run`; nenhum `mutation-build`/`mutation-run`/`mutation-clean` era executado pelo implementador. O Round 6 abaixo substitui essa meta.
 
 **Critério anti-fragilidade (vale para TODAS as fases do Round 4):** os testes não podem quebrar com uma simples modificação do kernel (`src/infrastructure/kernel/asm/**` → `bin_header_bin`). Portanto:
 - **Valores derivados do kernel** (`bin_header_bin[DISP_*]`, `def_wrapper_routines_map_table`, `getKernelCallAddr(...)`, `mr_call_target`/`mr_jump_target`/`mr_get_data_target`, `kernelAddr`/`offset` de `rom.cpp`) DEVEM ser calculados em runtime a partir de `bin_header_bin[]` + `DISP_*`/`def_*`, espelhando a expressão de produção — NUNCA hardcodados.
@@ -135,48 +135,101 @@ Meta: matar **~300** sobreviventes (folga de ~12 sobre os 288 necessários). Cad
 - **Contratos ABI compilador↔kernel** (`F5 08 D9 F1` = push/ex af,af'/exx/pop; `jr cc,$+11` = `0x38/0x30/0x28/0x20 0x0A`) são assertados literalmente, agrupados e comentados como "kernel ABI" (se `MR_CALL`/`MR_JUMP` mudar, compilador e teste mudam juntos).
 - Fixtures de readers/recursos são bytes sintéticos (não kernel), com sentinela distinta por posição.
 
-## 17. Phase 11 — relocação e layout byte-exact com sentinelas (`compiler.cpp`, ~35 kills)
+## Historical note (superseded)
 
-- [ ] 17.1 Substituir o seed de zeros do harness white-box por **sentinelas distintas por offset** (`code[i] = 0xA0 + (i & 0x3F)`) e assertar **todos** os bytes do preâmbulo e do payload para cada opcode do switch de relocação, incluindo os nunca emitidos `call p/po/m/pe` (0xF4/0xE4/0xFC/0xEC) e `jp m/pe/p/po` (0xFA/0xEA/0xF2/0xE2), agora exercitados porque `Compiler::write` é a unidade sob teste e lê `dest[address-1]` de um buffer fornecido pelo chamador. Cobrir `dest[address ± N]` e `new_address`/`segm_to`/`segm_from`. Alvos: L500, L510, L512, L517, L519, L554, L563-566, L575-578, L580, L619-624, L663-671, L684, L693. Verificar `make -C tests/unit run`.
-  - **Anti-fragilidade:** `mr_call_target`/`mr_jump_target`/`mr_get_data_target` derivados de `bin_header_bin[DISP_MR_CALL*2]`/`[DISP_MR_JUMP*2]`/`[DISP_MR_GET_DATA*2]` em runtime; opcodes e geometria literais.
-- [ ] 17.2 Aritmética de layout exata em limites: posicionar itens em `0x9FFF`/`0xA000`/`0xA001` (boundary `addr_within_segm >= 0xA000`) e em `0x3FF0`/`0x4000` (boundary `length >= 0x4000`), assertando `segm`, `addr_within_segm`, `segm_total`, `code_size` e o trampolim de skip. Cobrir os guards de `codeItem->length >= 0x4000` do `build` e o `% 0x4000`/`segm_from`/`segm_to`. Alvos: L161, L180, L193, L202, L240, L279, L295, L321, L324, L385, L416, L445, L449, L451-452, L457, L472, L486, L488, L504, L506. Verificar `make -C tests/unit run`.
-- [ ] 17.3 Verificar que os novos casos distinguem o mutante sob teste (compilar/rodar a suíte normal e, quando viável, inspecionar o byte esperado vs. o offset mutado). Nenhum mull.
+Rounds 4 and 5 (the former phases 11-17 and tasks 24-29) are superseded by
+Round 6 below. Their analysis remains in `design.md`; the unchecked historical
+tasks SHALL NOT be executed. Round 6 starts only after CleanArch Phase A and a
+fresh Mull baseline.
 
-## 18. Phase 12 — readers byte-exact com sentinelas (~55 kills)
+---
 
-- [ ] 18.1 `resource_spr_reader.cpp`: fixtures com **sentinela única por nibble/pixel** e assertar os bytes decodificados exatos para hex `0-9`/`A-F`/`a-f`, os quadrantes `spriteX<8`/`spriteY<8`, o limite `spriteC<16` e o guard `*spriteCount>63`. Alvos: L108, L111, L116, L131, L151, L152, L157, L158, L162, L178, L185, L217. Verificar `make -C tests/unit run` (mata ~19).
-- [ ] 18.2 `resource_akx_reader.cpp` + `resource_akm_reader.cpp` (parte não-linker): fixtures com **byte único por posição** (tabelas de instrumento/subsong/efeito com valores distintos) e assertar `baseAddress`, `firstSoundEffectFixed`, `soundEffectFixed`, `subsongIndexHeader`, `instrumentIndexItem` e os bytes reescritos exatos em `data[i±N]`. Alvos AKX: L52, L55, L57, L59, L94, L97, L98, L99, L100, L107. Alvos AKM: L58, L61, L62, L67, L68, L76-107, L198-208, L214-248, L277, L280-287, L299. Verificar `make -C tests/unit run` (mata ~40). **Os ~43 mutantes do linker state machine do AKM (L122-195) permanecem out-of-scope/registrados (tarefa 23.1), não testados.**
-- [ ] 18.3 `resource_mtf_map_reader.cpp`, `resource_csv_reader.cpp`, `resource_blob_chunk_packed_reader.cpp`, `resource_blob_packed_reader.cpp`, `resource_blob_reader.cpp`, `resource_data_reader.cpp`, `resource_string_reader.cpp`, `resource_txt_reader.cpp`: fixtures de boundary exato (`==`/`±1`) e sentinela distinta; assertar bytes/tabelas exatos. Alvos: L97-195 (mtf), L48-103 (csv), L41-58 (blob chunk), L26 (blob packed), L36 (blob), L36-37 (data), L31 (string), L41 (txt). Verificar `make -C tests/unit run` (mata ~20).
+# Round 6 (after CleanArch Phase A; fresh baseline 70%; target >85%)
 
-## 19. Phase 13 — semantic do compiler byte-exact (~60 kills)
+Round 6 supersedes Round 5. It starts only after
+`refactor-clean-architecture-testability` Phase A is complete, its boundary
+check is green, and a fresh `mutation_report.json` has been generated. The
+fresh post-Phase-A report is **70%**: 1,783 killed, 733 survived, and 12
+timeout out of 2,528; 85% requires **2,149 killed**, i.e. **366 additional
+kills**. The planned budget is **~415 kills**, distributed by the current
+survivor concentrations below. Historical pre-refactor figures (615 survivors,
+271 kills, 345 provisional budget) are context only and SHALL NOT be reused.
+No task runs Mull, `mutation-build`, or `mutation-clean`; verification is
+`make -C tests/unit run`, and the fresh and final Mull runs are user-managed.
 
-- [ ] 19.1 `compiler_variable_emitter.cpp`: assertar a **sequência de opcodes emitida exata** para `x_factor` 2/3/256/default, para o loop de potência-de-2 do `y_factor` (`while (factor >= (diff << 1))`, `diff != factor`) e para índices literais vs. expressão, em arrays 1D e 2D. Alvos: L47, L69, L72, L81, L114, L117, L128, L155, L158, L167, L198, L206, L209, L228, L245, L334, L335. Verificar `make -C tests/unit run` (mata ~19).
-- [ ] 19.2 `compiler_code_optimizer.cpp`: completar todos os padrões peephole com asserção dos **bytes emitidos exatos** (incl. `add hl,de` imediato 1/2/3, `pop de`/`push hl`/`ex de,hl`, os guards `code_pipeline`) e `getKernelCallAddr` com **endereço derivado do kernel em runtime**. Alvos: L44, L59-63, L123-127, L168, L206, L229, L230, L239, L246, L250, L252, L253. Verificar `make -C tests/unit run` (mata ~22; o branch morto `== 11` de L123 é registrado como equivalente — tarefa 23.1).
-- [ ] 19.3 `compiler_expression_evaluator.cpp`: dirigir todo par tipo/subtipo alcançável e assertar o resultado/opcode nos **dois lados** de cada `==`/`!=` (incl. `s[0] == 0x11`, `i <= 4`/`i <= 256`, `n < 100`, os loops de `result[]`). Alvos: L45, L52, L61, L62, L499, L570, L617, L618, L626, L659, L707, L988, L1032, L1061, L1221-1228, L1252, L1256, L1262, L1270-1271, L1285-1286, L1302. Verificar `make -C tests/unit run` (mata ~35).
-- [ ] 19.4 `compiler_symbol_resolver.cpp`, `compiler_float_converter.cpp`, `compiler_code_helper.cpp`, `compiler_evaluator.cpp`, `compiler_fixup_resolver.cpp`, `cpu_workspace_context.cpp`, `cpu_opcode_writer.cpp`: uma asserção de valor exato por local sobrevivente (subtipos string/numeric/double/single, `tt-1`/`s[0]` quotes, `ram_page + ram_pointer`, `ram_size > def_RAM_SIZE`; `getUsingFormat` format bits; `i + 1`/`i < t`). Alvos: symbol_resolver L104, L267, L268, L283, L284, L289, L299, L304, L317, L328, L332, L336, L340, L357; float L38; code_helper L156; evaluator L60; fixup L76; cpu_workspace L28/L40; cpu_opcode_writer L30. Verificar `make -C tests/unit run` (mata ~22).
+## 24. Prerequisite, fresh baseline, and fast test infrastructure
 
-## 20. Phase 14 — statements both-sides (~65 kills)
+- [x] 24.1 Confirm CleanArch Phase A is complete: boundary check green, source/kernel/resource/symbol boundaries available, normal unit suite passing, and the Phase A state recorded (commit when committed, otherwise the current working-tree diff). Verified `make test-architecture` green (19 tests, no temporary `.bas` outside adapter tests) and `make -C tests/unit run` passing (582 tests / 3,997 assertions).
+- [x] 24.2 (user-managed) Run `make mutation-run` once and regenerate the survivor inventory by module and mutator; recompute the total/killed/survived/timeout and the kills required for 85%. Verified against the fresh report: 2,528 total = 1,783 Killed + 733 Survived + 12 Timeout, score 70; 2,149 killed required, 366 additional kills. Do not reuse old line targets.
+- [x] 24.3 Create or extend `tests/unit/src/test_support.h` with `compileSource(logicalName, source)` and `kernelImage()` seams backed by the Phase A boundaries. Add a regression check that a compilation completes without creating a `.bas` file. Verified: both seams exist and `make test-architecture` rejects temporary `.bas` files outside explicit adapter tests.
+- [ ] 24.4 Profile the suite from `tests/unit` with `./bin/test_unit --duration=true`, record the top 10, and measure the mutation baseline excluding `Slow`. Post-Phase-A measurement: 582 tests / 3,997 assertions; top 10 = blob 8K 9.446 s (`Slow`), all statements 2.047 s, all functions 1.478 s, decimal/string 1.417 s, sprite cap 1.017 s, all CMD 0.853 s, MegaROM conditional 0.815 s, MegaROM GOSUB 0.754 s, MegaROM PRINT 0.705 s, ASCII8 retry 0.573 s; baseline excluding `Slow` = 24.95 s, below the 32 s cap. Tag a broad aggregate `Slow` only after its focused replacement tests exist; verify it still runs in the normal suite and is excluded only from mutation.
 
-- [ ] 20.1 `compiler_set_statement_strategy.cpp`: assertar contagens/bytes exatos e os dois ramos de `t>=3`, `t>=2`, `t<=3`, `actions.size()==1`, `lexeme->type == literal`/`subtype == null` e os loops `i < t`/`i < tt`/`i < sub_sub_action->actions.size()`. Alvos: L60, L111, L123, L169, L259, L443, L482, L513, L521, L678, L679, L740, L763, L767, L768, L878, L894, L898, L923, L926, L1230, L1274. Verificar `make -C tests/unit run` (mata ~30).
-- [ ] 20.2 `compiler_on_statement_strategy.cpp`, `compiler_for_statement_strategy.cpp`, `compiler_if_statement_strategy.cpp`: assertar os bytes exatos de `def_MR_TRAP_SEGMS + N + i` (literal vs dummy, single/multi-dígito) e os dois lados dos subtypos (`numeric`/`double_decimal`) e de `isLastActionGoto`. Alvos ON: L197, L261, L270, L325, L334, L389, L393, L402, L484, L488, L489, L492; FOR: L37, L83, L119, L143, L152; IF: L29, L58, L83, L86. Verificar `make -C tests/unit run` (mata ~24).
-- [ ] 20.3 `compiler_color`/`screen`/`copy`/`line`/`get`/`put`/`circle`/`paint`/`pset`/`sprite`/`key`: assertar os dois lados de `result_subtype == Lexeme::subtype_null`, `lexeme->type == identifier`, `i < N`, `t == 1`/`t == 0`, `t > 4`/`t > 3`, `t >= 2`/`t >= 3`, `line_type == 1`. Alvos: color L63-144; screen L50-313; copy L88-565; line L94-356; get L53-124; put L173-344; circle L52-258; paint L51-132; pset L22-136; sprite L35-66; key L49/L51. Verificar `make -C tests/unit run` (mata ~65 combinados).
-- [ ] 20.4 IO + CMD handlers + functions: `compiler_input`/`print`/`ipoke`/`out`/`vpoke`/`wait`/`call`/`close`/`read`/`iread`/`swap`/`poke`/`bload`/`dim`/`gosub`/`goto`/`return`/`interval`/`let`/`sound`/`play`, `compiler_cmd_mtf`/`page`/`setfnt`/`rsctoram`/`plysound`/`play`, e functions `using`/`base`/`pdl`/`vdp`/`loc`/`psg`/`mid`/`maker`/`turbo`: uma asserção exata por local (`i == 0`, `i < t`, `n >= K`, `size() == 1`, `type != separator`, `x_factor`). Alvos conforme report (ver `mutation_report.json`). Verificar `make -C tests/unit run` (mata ~45).
+## 25. P1 — graphics statement strategies (target ~75 kills; 129 survivors)
 
-## 21. Phase 15 — parser: contadores e branches (~50 kills)
+- [ ] 25.1 SET (39 survivors, the largest single file): add a data-driven matrix for every sub-command at 0..4 arguments, `ARRAY` forms with one and two entries, null parameters, and the `i>1`/`t>=2`/`t>=3`/`t<=3` branches; assert exact emitted bytes (e.g. `pop bc`/`pop hl` versus `ld b,0xff`/`ld hl,0xffff`). Verify `make -C tests/unit run`.
+- [ ] 25.2 COLOR (16) and SCREEN (14): cover 0..4 arguments, RGB tuples, `NEW`/`RESTORE`, sprite forms, and the `i<1`/`i<3`/`t<3`/`t<4`/null-subtype branches; assert exact byte counts and selected opcodes. Verify `make -C tests/unit run`.
+- [ ] 25.3 COPY (13), LINE (12), GET (8), PUT (8), CIRCLE (4), PAINT (4), PSET (5), SPRITE (4), and KEY (2): cover omitted coordinates, literal versus identifier, operator codes, and argument-count boundaries; assert exact bytes/entities, not just success. Verify `make -C tests/unit run`.
+- [ ] 25.4 Re-run the graphics strategy tests with distinct sentinels for any expression whose value is read back, so index/offset mutants change an asserted byte. Verify `make -C tests/unit run`.
 
-- [ ] 21.1 `graphics_statement_strategy.cpp`: os 15 sobreviventes são `sepCount++`/`parmCount++` (`post_inc_to_post_dec`). Dirigir contagens válidas e inválidas de parâmetros (com parênteses aninhados, listas com vírgula, parâmetro ausente, `parmCount > 3`, `parmCount >= 3 && !mustPopAction`) e assertar sucesso/erro exatos, de modo que o decremento altere o resultado. Alvos: L44, L66, L79, L171, L256, L257, L375, L388, L394, L408, L410, L452, L465, L471, L485, L545, L680, L741. Verificar `make -C tests/unit run` (mata ~19).
-- [ ] 21.2 `file_statement_strategy.cpp`, `data_statement_strategy.cpp`, `def_statement_strategy.cpp`, `put_statement_strategy.cpp`, `print_statement_strategy.cpp`, `set_statement_strategy.cpp`, `if_statement_strategy.cpp`, `color_statement_strategy.cpp`, `generic_statement_strategy.cpp`, `next_statement_strategy.cpp`, `on_statement_strategy.cpp`, `dim_statement_strategy.cpp`, `parser_context.cpp`, `parser.cpp`, `expression_evaluator.cpp`, `parser_line_evaluator.cpp`: uma asserção exata por local (`datas.size() + 1`, radix `h/o/b`, `fileNumber` 1..15, `s[2] == '#'`, `c[0] >= 0 && c[1] >= 0`, `size() == 1`, `sepCount`, `state == 1`, `current > ' '`, `++lineNumber`, `s[t-1]`, `c >= 0 && c < 26`, `thisPreced <= stackPreced`, `outputCount`). Alvos conforme report. Verificar `make -C tests/unit run` (mata ~50).
+## 26. P2 — control, I/O, basic, and sound statements (target ~60 kills; 100 survivors)
 
-## 22. Phase 16 — long tail kernel-safe (~40 kills)
+- [ ] 26.1 ON (16): assert the exact `def_MR_TRAP_SEGMS + N + i` loads, single/multi-digit literal versus dummy, `sub_lexeme->value.size() > 1`, and the numeric/double subtype branches; cover all reachable trap families. Verify `make -C tests/unit run`.
+- [ ] 26.2 IF (5)/FOR (5) and basic statements: cover `isLastActionGoto`, subtype branches, DIM (3)/LET (5) and assignment forms with exact emitted bytes. Verify `make -C tests/unit run`.
+- [ ] 26.3 I/O and CMD handlers (53): cover INPUT (7)/PRINT (7)/WAIT (3)/SWAP (2)/POKE/OUT (3)/BLOAD and the MTF handler thresholds `n>=2,3,4,5,6,7,8,9` (8); assert exact byte counts and opcodes. Verify `make -C tests/unit run`.
+- [ ] 26.4 SOUND (3)/PLAY (4) and remaining small statement strategies: assert exact argument-count and subtype branches with output assertions. Verify `make -C tests/unit run`.
 
-- [ ] 22.1 `rom.cpp`: assertar os patches de mapper e os limites com **valores derivados do kernel em runtime** (`kernelAddr = bin_header_bin[tableAddr] | (bin_header_bin[tableAddr+1] << 8)`; `offset = kernelAddr - 0x4000`; `def_wrapper_routines_map_table`), NUNCA hardcodados; os offsets relativos (`- 0x4000`, `+ 2`, limites `0..0x3FFF-2`/`0..0x3FFF`) e os loops `j < seqLen`/`j < 14` podem ser literais. Alvos: L87, L251, L315, L323, L327, L329, L330, L351, L352, L354, L355, L429. Verificar `make -C tests/unit run` (mata ~16).
-- [ ] 22.2 `resource_manager.cpp`: assertar `mapSize > 0x4000`, `resourceBlockNextAddress > 0x4000`, `resourceBlockSegment > 255`, `resourceBlockOffset = resourceBlockAddress + baseAddress` e `resourceItemIndex == 0 && resourceBlockCount > 1`. Alvos: L99, L148, L152, L157, L163. Verificar `make -C tests/unit run` (mata ~7).
-- [ ] 22.3 `symbols` exports (`cdb`/`noice`/`omds`/`symbol_file`/`elf`): assertar `size <= 0` (0 e 1), `name.size() > discardedPrefix.size()`, `compare(...) == 0`, loops `i < t` e o `mul_to_div` do ELF. Alvos: cdb L78, L79, L82, L160, L179; noice L35, L45, L51, L96; omds L42, L46, L62, L77; symbol_file L33, L52, L67; elf L222, L251. Verificar `make -C tests/unit run` (mata ~20).
-- [ ] 22.4 `lexer` (`lexer_line_state`/`lexer`/`identifier_state`/`comment_state`/`operator_state`/`separator_state`/`lexer_line_evaluator`): assertar os limites de caractere (`c >= 'a' && c <= 'f'`, `c <= ' '`, `c <= '9'`, `header[0] < 0x20 || > 126`), `index + 1 < length`, `current > ' '` e `++lineNumber`. Alvos: line_state L20, L41, L57, L59, L77; lexer L59, L89; identifier L11, L25; comment L8; operator L8; separator L8; line_evaluator L19. Verificar `make -C tests/unit run` (mata ~14).
-- [ ] 22.5 `cli/domain/infra` (`cliparser`/`action_node`/`tag_node`/`fswrapper`/`logger`): assertar `action_node` (L51), `tag_node` (L25) e `logger` (L160); os `cliparser` (L37/L60) e `fswrapper` (L108) permanecem **Timeout/equivalentes** (registrados na tarefa 23.1). Verificar `make -C tests/unit run` (mata ~3).
+## 27. P3 — compiler semantic helpers and optimizer (target ~60 kills; 98 survivors)
 
-## 23. Phase 17 — fallback + verificação final
+- [ ] 27.1 `compiler_expression_evaluator` (39, 26 of them `eq_to_ne`): drive a matrix of scalar/array, numeric/single/double/string, casts in both directions, comparisons, `s[0] == 0x11` with `i = 0..5` and `i = 256/257`, and result-array initialization; assert exact opcodes and result subtype. Verify `make -C tests/unit run`.
+- [ ] 27.2 `compiler_code_optimizer` (16): cover every peephole pattern and immediate 1/2/3, `getKernelCallAddr` with `DISP_*` and a raw address, and the dispatch/range branches; record the dead `== 11` branch as equivalent. Verify `make -C tests/unit run`.
+- [ ] 27.3 `compiler_variable_emitter` (18, 11 `eq_to_ne`): cover `x_factor` 2/3/256/default, the `y_factor` power-of-two loop, and 1D/2D literal versus expression indices with exact emitted sequences. Verify `make -C tests/unit run`.
+- [ ] 27.4 `compiler_symbol_resolver` (16, 8 `eq_to_ne`) and related helpers: cover every subtype, quote handling, `ram_page + ram_pointer`, and `ram_size > def_RAM_SIZE` with exact values. Verify `make -C tests/unit run`.
 
-- [ ] 23.1 Reavaliar os sobreviventes remanescentes e registrar os equivalentes/unreachable aceitos: (a) linker state machine do AKM (~43, L122-195) — out-of-scope por decisão; (b) branch morto `*cpuctx.code_pipeline[0] == 11` em `compiler_code_optimizer.cpp:123` (deveria ser `0x11`); (c) `cliparser.cpp` L37/L60 e `fswrapper.cpp` L108 e `resource_blob_reader.cpp` L36 — timeouts/equivalentes; (d) quaisquer mutantes de índice cujo fixture sentinela ainda seja equivalente (documentar o motivo). `mull.yml` permanece inalterado (Decision 8: `excludePaths` é whole-file).
-- [ ] 23.2 Rodar a suíte unitária completa (`make -C tests/unit run`) e confirmar que todos os testes anteriores passam e a contagem total aumentou.
-- [ ] 23.3 (user-managed) Rodar `make mutation-run` e `make mutation-check` e confirmar ≥ 85.0%.
+## 28. P4 — compiler core relocation and layout (target ~30 kills; 46 survivors)
+
+- [ ] 28.1 Extend the white-box `Compiler::write` harness with a distinct sentinel per offset; cover every relocation-switch opcode, including never-emitted `call p/po/m/pe` and `jp m/pe/p/po`. The current survivors are concentrated in the switch at `compiler.cpp:531-705` and the fixup arithmetic at `compiler.cpp:562-590`/`631-705`. Assert every preamble/payload byte and derive `mr_call_target`/`mr_jump_target`/`mr_get_data_target` from `bin_header_bin[DISP_MR_* * 2]` at runtime. Verify `make -C tests/unit run`.
+- [ ] 28.2 Cover the build/layout survivors at `compiler.cpp:169/188/201/210/248/287/303/329-332/397-457` with boundaries at `0x3FFF/0x4000` and `0x9FFF/0xA000/0xA001`, asserting `segm`, `addr_within_segm`, `segm_total`, `code_size`, and the skip trampoline. Verify `make -C tests/unit run`.
+- [ ] 28.3 Keep all context/patch manipulation in this single harness so CleanArch Phase B can adapt it without touching other tests. Verify `make -C tests/unit run`.
+
+## 29. P5 — builder resource readers (target ~85 kills; 145 survivors)
+
+- [ ] 29.1 AKM non-linker (65): build sentinel-diverse synthetic files for the header (`62-112`), track/subsong tables (`178-240`), and instrument table (`278-300`), including every `guessBaseAddress` iteration; assert complete rewritten bytes and every `==`/`±1` boundary. Verify `make -C tests/unit run`.
+- [ ] 29.2 AKX (13): cover `guessBaseAddress` iterations, first/last effect, and `length-1` boundaries; assert exact rewritten effect addresses. Verify `make -C tests/unit run`.
+- [ ] 29.3 SPR (19): cover hex digit ranges, 8x8 quadrants, `spriteC<16`, MSX1/MSX2 paths, and the 64-sprite cap; assert exact decoded bytes. Verify `make -C tests/unit run`.
+- [ ] 29.4 MTF (6)/CSV (6)/blob (6)/data (3) readers: cover exact/one-under/one-over sizes, truncation, and sentinel bytes; assert complete tables and distinct error messages. Verify `make -C tests/unit run`.
+- [ ] 29.5 Reassess the AKM linker state machine (`123-168`, **26** current survivors, not the former ~43) and document each residual as reachable, equivalent, timeout, or deliberately out of scope. Do not change `mull.yml` merely to remove it.
+
+## 30. P6 — parser (target ~55 kills; 98 survivors)
+
+- [ ] 30.1 Graphics parser (21, 17 `post_inc`): cover `parmCount`/`sepCount` with valid and invalid parameter lists, nested parentheses, missing separators, and excess parameters; assert success/error and action-tree counts. Verify `make -C tests/unit run`.
+- [ ] 30.2 FILE (13): cover file numbers 0, 1, 15, 16, `AS#`/`AS`, and identifier parameters; assert exact success/error. Verify `make -C tests/unit run`.
+- [ ] 30.3 DATA (10)/DEF (9): cover `h/H/o/O/b/B` prefixes and DEF ranges including out-of-range letters; assert parsed values/errors. Verify `make -C tests/unit run`.
+- [ ] 30.4 PRINT (8)/USING and PUT (7): cover the `0..3` USING loops, separator counts, and parameter boundaries; assert exact parse results. Verify `make -C tests/unit run`.
+- [ ] 30.5 Remaining parser long tail (SET 4/IF 3/color 2/generic 2/next 2/dim 1/on 2 and parser core/helpers 14): one exact-value or error assertion per surviving location. Verify `make -C tests/unit run`.
+
+## 31. P7 — builder core, symbols, lexer, functions, and long tail (target ~50 kills; 117 survivors)
+
+- [ ] 31.1 `rom.cpp` (18) and `resource_manager` (10): cover mapper patch offsets, kernel-derived addresses via the `kernelImage()` seam, `mapSize > 0x4000`, block counts, segment > 255, `packedRate` arithmetic, and layout limits with exact bytes. Verify `make -C tests/unit run`.
+- [ ] 31.2 Symbol exports (20: CDB 8, OMDS 4, NoICE 3, Symbol 3, ELF 2): assert exact strings, prefix comparisons, sizes 0/1, and ELF arithmetic. Verify `make -C tests/unit run`.
+- [ ] 31.3 Lexer (18): cover character boundaries for identifiers/hex, `<= ' '`, `index + 1 < length`, line counting, comments, operators, and separators. Verify `make -C tests/unit run`.
+- [ ] 31.4 Compiler functions (12) and domain/infrastructure long tail (6): one exact-value assertion per surviving location (USING 4/MID/PSG/LOC/VDP/PDL/BASE/TURBO/MAKER, action/tag nodes, file_source_resolver/fswrapper where reachable). Verify `make -C tests/unit run`.
+- [ ] 31.5 `compilation_use_case` (15, mostly `eq_to_ne`): drive success, source-resolution failure, plain-ROM overflow/ASCII8 retry, and symbol-output branches through `CompilationRequest` with in-memory adapters; assert `exitCode`, `retriedWithAscii8`, artifact presence, and diagnostic text exactly. Verify `make -C tests/unit run`.
+- [ ] 31.6 Kernel-image adapters (12: `kernel_image` 5, `generated_kernel_image` 5, `in_memory_kernel_image` 2): assert `resolveKernelCallAddress` null/size/dispatch/JP-follow branches and dispatch bounds with runtime-derived bytes, using `InMemoryKernelImage`. Verify `make -C tests/unit run`.
+
+## 32. Z80 regression safety and slow-test isolation (non-scoring)
+
+- [ ] 32.1 Add `tests/unit/src/test_generated_z80.cpp`: compile 6-8 representative programs, normalise/mask only kernel-derived address operands, and assert FNV-1a fingerprint + fragment size + selected Z80 opcodes/ABI bytes. Verify an unchanged generation preserves the fingerprint and an opcode/layout change does not; never hash a full ROM.
+- [ ] 32.2 Add `tests/unit/src/test_kernel_layout.cpp`: validate every `DISP_*` target is in the runtime-derived kernel range and assert distances only for the declared-stable MR anchor set (`DISP_MR_CALL` through `DISP_MR_JUMP`); do not add global distance snapshots. Verify `make -C tests/unit run`.
+- [ ] 32.3 Tag the identified broad aggregates (`All statement strategies`, `All function strategies`, `All CMD instruction handlers`, and other top-10 entries from task 24.4) `Slow` only after their focused replacements pass; verify the normal suite still runs them and the mutation command excludes only the tagged suite. Keep the post-Phase-A baseline (24.95 s excluding `Slow`) below the 32 s cap. Do not run Mull.
+
+## 33. Round 6 verification and handoff
+
+- [ ] 33.1 Run `make -C tests/unit run` from `tests/unit` and verify the complete normal suite passes (current baseline 582 tests / 3,997 assertions), the test count increased, and no existing assertion was weakened. Do not run Mull or mutation targets.
+- [ ] 33.2 Review residual survivors against the fresh 733-survivor inventory and document demonstrated equivalents, unreachable paths, and timeouts without whole-file exclusions. Expected residuals: AKM linker state machine (26), the dead optimizer `== 11` branch, and the 12 timeout mutants. Verify `mull.yml` remains unchanged.
+- [ ] 33.3 Confirm `make test-architecture` is green and that this change introduced no production source edits.
+- [ ] 33.4 (user-managed) Run `make mutation-run` and `make mutation-check`; confirm at least **2,149 killed** (366 more than the 1,783 baseline) and a Mutation Score >= 85. If short, add long-tail tests rather than excluding whole files.
+- [ ] 33.5 Record the final result and the Phase B handoff: after CleanArch Phase B, regenerate the baseline and reconcile the score with the refactored source.
+
+## Workflow follow-up
+
+- After Phase B and the final reconciliation, archive this change when the project's review requirements are satisfied.

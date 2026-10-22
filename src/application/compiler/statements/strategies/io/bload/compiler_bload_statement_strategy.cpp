@@ -5,27 +5,29 @@
 #include "compiler_context.h"
 #include "compiler_expression_evaluator.h"
 #include "compiler_hooks.h"
-#include "fswrapper.h"
+#include <strings.h>
+
+#include "build_path_policy.h"
 #include "lexeme.h"
 #include "resources.h"
 
 void CompilerBloadStatementStrategy::cmd_bload(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& opts = *context->opts;
+  auto& cpu = *context->getCpu();
+  auto& opts = *context->getOpts();
   shared_ptr<Lexeme> lexeme;
   shared_ptr<ActionNode> action;
-  unsigned int t = context->current_action->actions.size();
+  unsigned int t = context->getCurrentAction()->actions.size();
   bool isTinySprite;
   int resource_number;
   string filename, fileext;
 
   if (t == 2) {
-    action = context->current_action->actions[1];
+    action = context->getCurrentAction()->actions[1];
     lexeme = action->lexeme;
     if (lexeme) {
       if (lexeme->name == "S") {
-        action = context->current_action->actions[0];
+        action = context->getCurrentAction()->actions[0];
         lexeme = action->lexeme;
         if (lexeme) {
           if (lexeme->type == Lexeme::type_literal &&
@@ -34,13 +36,13 @@ void CompilerBloadStatementStrategy::cmd_bload(
 
             // verify file type (screen or sprite)
 
-            filename = removeQuotes(lexeme->value);
-            fileext = getFileExtension(filename);
+            filename = build_path::removeQuotes(lexeme->value);
+            fileext = build_path::getFileExtension(filename);
             isTinySprite = (strcasecmp((char*)fileext.c_str(), ".SPR") == 0);
 
-            resource_number = context->resourceManager->resources.size();
+            resource_number = context->getResourceManager()->resources.size();
             lexeme->name = "FILE";
-            context->resourceManager->addFile(filename, opts.inputPath);
+            context->getResourceManager()->addFile(filename, opts.inputPath);
 
             // execute a resource screen load
 
@@ -52,10 +54,10 @@ void CompilerBloadStatementStrategy::cmd_bload(
 
             if (isTinySprite) {
               // call cmd_wrtspr                    ; tiny sprite loader
-              context->codeOptimizer->addKernelCall(DISP_cmd_wrtspr);
+              context->getCodeOptimizer()->addKernelCall(DISP_cmd_wrtspr);
             } else {
               // call screen_load
-              context->codeOptimizer->addKernelCall(DISP_cmd_screen_load);
+              context->getCodeOptimizer()->addKernelCall(DISP_cmd_screen_load);
             }
 
           } else {
@@ -83,5 +85,5 @@ void CompilerBloadStatementStrategy::cmd_bload(
 bool CompilerBloadStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_bload(context);
-  return context->compiled;
+  return context->getCompiled();
 }

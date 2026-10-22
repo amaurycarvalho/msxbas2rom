@@ -18,7 +18,7 @@ int VarptrCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   shared_ptr<ActionNode> next_action = action->actions[0];
   if (next_action && next_action->lexeme &&
       next_action->lexeme->type == Lexeme::type_identifier) {
-    context->variableEmitter->addVarAddress(next_action);
+    context->getVariableEmitter()->addVarAddress(next_action);
     return Lexeme::subtype_numeric;
   }
 

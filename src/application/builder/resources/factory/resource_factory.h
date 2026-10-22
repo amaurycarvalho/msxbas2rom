@@ -12,14 +12,19 @@
 
 #include "resource_reader.h"
 
+class ResourceContentSource;
+
 /***
  * @class ResourceFactory
  * @brief Resource factory
  */
 class ResourceFactory {
+ private:
+  std::shared_ptr<ResourceContentSource> contentSource;
+
  public:
-  static std::shared_ptr<ResourceReader> create(string filename);
-  ResourceFactory();
+  std::shared_ptr<ResourceReader> create(string filename);
+  explicit ResourceFactory(std::shared_ptr<ResourceContentSource> contentSource);
   ~ResourceFactory();
 };
 

@@ -12,14 +12,14 @@ int StringCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                             shared_ptr<ActionNode> action,
                                             int* result,
                                              unsigned int parmCount) {
-  auto& optimizer = *context->codeOptimizer;
+  auto& optimizer = *context->getCodeOptimizer();
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (parmCount != 2) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "STRING$") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
-  auto& variable = *context->variableEmitter;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& variable = *context->getVariableEmitter();
+  auto& expression = *context->getExpressionEvaluator();
 
   if (result[0] == Lexeme::subtype_single_decimal ||
       result[0] == Lexeme::subtype_double_decimal) {

@@ -10,5 +10,5 @@ void CompilerResumeStatementStrategy::cmd_resume(
 bool CompilerResumeStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_resume(context);
-  return context->compiled;
+  return context->getCompiled();
 }

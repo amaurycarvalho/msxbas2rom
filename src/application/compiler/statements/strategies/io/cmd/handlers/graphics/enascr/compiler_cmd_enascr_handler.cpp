@@ -7,7 +7,7 @@
 bool CompilerCmdEnaScrHandler::execute(shared_ptr<CompilerContext> context,
                                        shared_ptr<ActionNode> action) {
   // call cmd_enascr
-  context->codeOptimizer->addKernelCall(DISP_cmd_enascr);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_enascr);
 
-  return context->compiled;
+  return context->getCompiled();
 }

@@ -14,10 +14,10 @@
 
 bool CompilerCmdPlySongHandler::execute(shared_ptr<CompilerContext> context,
                                         shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
 
-  context->akm = true;
+  context->getAkm() = true;
 
   if (action->actions.size() == 1) {
     auto sub = action->actions[0];
@@ -32,7 +32,7 @@ bool CompilerCmdPlySongHandler::execute(shared_ptr<CompilerContext> context,
   }
 
   // call cmd_plysong
-  context->codeOptimizer->addKernelCall(DISP_cmd_plysong);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_plysong);
 
-  return context->compiled;
+  return context->getCompiled();
 }

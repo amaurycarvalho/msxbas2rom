@@ -5,7 +5,7 @@
 
 void CompilerDataStatementStrategy::cmd_data(
     shared_ptr<CompilerContext> context) {
-  if (!context->current_action->actions.size()) {
+  if (!context->getCurrentAction()->actions.size()) {
     context->syntaxError("DATA with empty parameters");
   }
 }
@@ -13,5 +13,5 @@ void CompilerDataStatementStrategy::cmd_data(
 bool CompilerDataStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_data(context);
-  return context->compiled;
+  return context->getCompiled();
 }

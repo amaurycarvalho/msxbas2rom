@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <iterator>
 #include <memory>
 #include <string>
 
@@ -21,18 +22,45 @@
 #include "resource_mtf_reader.h"
 #include "resource_spr_reader.h"
 
+#include "in_memory_resource_content_source.h"
+
+static std::shared_ptr<InMemoryResourceContentSource> resourceSource =
+    std::make_shared<InMemoryResourceContentSource>();
+
+static std::vector<unsigned char> toResourceBytes(const std::string& content) {
+  return std::vector<unsigned char>(content.begin(), content.end());
+}
+
+static void resetResourceSource() {
+  if (!resourceSource) {
+    resourceSource = std::make_shared<InMemoryResourceContentSource>();
+  }
+  resourceSource->clear();
+}
+
 static void createTempFile(const std::string& filename,
                            const std::string& content) {
-  std::ofstream ofs(filename, std::ios::binary);
-  ofs.write(content.data(), content.size());
-  ofs.close();
+  if (!resourceSource) {
+    resourceSource = std::make_shared<InMemoryResourceContentSource>();
+  }
+  resourceSource->addBinary(filename, toResourceBytes(content));
+  resourceSource->addText(filename, content);
 }
 static void deleteTempFile(const std::string& filename) {
-  std::remove(filename.c_str());
+  (void)filename;
+}
+
+static void registerResourceFile(const std::string& filename) {
+  std::ifstream input(filename.c_str(), std::ios::binary);
+  std::string content((std::istreambuf_iterator<char>(input)),
+                      std::istreambuf_iterator<char>());
+  resourceSource->addBinary(filename, toResourceBytes(content));
+  resourceSource->addText(filename, content);
 }
 
 TEST_SUITE("ResourceReadersExtra") {
   TEST_CASE("ResourceSprReader loads MSX1 sprite") {
+    resetResourceSource();
     std::string fname = "tmp/temp_msx1.spr";
     std::string content = "!type\nmsx1\n#Slot 0\n";
     for (int i = 0; i < 16; i++) {
@@ -40,7 +68,7 @@ TEST_SUITE("ResourceReadersExtra") {
     }
     createTempFile(fname, content);
 
-    ResourceSprReader reader(fname);
+    ResourceSprReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     CHECK(reader.unpackedSize > 0);
     CHECK(reader.packedSize > 0);
@@ -49,6 +77,7 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceSprReader loads MSX2 sprite with slots") {
+    resetResourceSource();
     std::string fname = "tmp/temp_msx2.spr";
     std::string content = "!type\nmsx2\n#Slot 0\n";
     for (int i = 0; i < 16; i++) {
@@ -60,7 +89,7 @@ TEST_SUITE("ResourceReadersExtra") {
     }
     createTempFile(fname, content);
 
-    ResourceSprReader reader(fname);
+    ResourceSprReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     CHECK(reader.unpackedSize > 0);
 
@@ -68,10 +97,11 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceSprReader rejects invalid sprite file") {
+    resetResourceSource();
     std::string fname = "tmp/temp_bad.spr";
     createTempFile(fname, "not a sprite\n");
 
-    ResourceSprReader reader(fname);
+    ResourceSprReader reader(fname, resourceSource);
     CHECK(reader.load() == false);
     CHECK(reader.getLogger()->errors().size() > 0);
 
@@ -79,6 +109,7 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceSprReader handles every hex digit range") {
+    resetResourceSource();
     std::string fname = "tmp/temp_hex.spr";
     std::string content = "!type\nmsx1\n#Slot 0\n";
     const char* rows[16] = {
@@ -94,7 +125,7 @@ TEST_SUITE("ResourceReadersExtra") {
     }
     createTempFile(fname, content);
 
-    ResourceSprReader reader(fname);
+    ResourceSprReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     CHECK(reader.unpackedSize > 0);
     CHECK(reader.packedSize > 0);
@@ -103,6 +134,7 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceSprReader remaps an MSX2 sprite with many colors") {
+    resetResourceSource();
     std::string fname = "tmp/temp_hex_msx2.spr";
     std::string content = "!type\nmsx2\n#Slot 0\n";
     const char* rows[16] = {
@@ -130,7 +162,7 @@ TEST_SUITE("ResourceReadersExtra") {
     }
     createTempFile(fname, content);
 
-    ResourceSprReader reader(fname);
+    ResourceSprReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     CHECK(reader.unpackedSize > 0);
 
@@ -138,9 +170,11 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceAkmReader loads real AKM song") {
+    resetResourceSource();
     std::string fname = "../../tests/integration/ARKTRK/songs.akm";
+    registerResourceFile(fname);
 
-    ResourceAkmReader reader(fname);
+    ResourceAkmReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     CHECK(!reader.getLogger()->containErrors());
     CHECK(reader.data.size() > 0);
@@ -162,10 +196,11 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceAkmReader reports empty data error") {
+    resetResourceSource();
     std::string fname = "tmp/temp_empty.akm";
     createTempFile(fname, "AKM");
 
-    ResourceAkmReader reader(fname);
+    ResourceAkmReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
 
     SUBCASE("Cannot guess base address of small file") {
@@ -176,6 +211,7 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceAkmReader remaps a synthetic song with tables") {
+    resetResourceSource();
     std::string fname = "tmp/temp_synth.akm";
     // Synthetic AKM layout (32 bytes):
     //   [0..1]  instrumentIndexTable = 8
@@ -198,7 +234,7 @@ TEST_SUITE("ResourceReadersExtra") {
     content += std::string(7, '\x00');      // [25..31]
     createTempFile(fname, content);
 
-    ResourceAkmReader reader(fname);
+    ResourceAkmReader reader(fname, resourceSource);
     REQUIRE(reader.load() == true);
     CHECK(reader.remapTo(0, 0, 0x8000) == true);
     REQUIRE(reader.data.size() >= 1);
@@ -217,6 +253,7 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceAkmReader remaps a song with effects flag 0x0D") {
+    resetResourceSource();
     std::string fname = "tmp/temp_akm_0d.akm";
     std::string content;
     content += std::string("\x08\x00", 2);  // instrumentIndexTable = 8
@@ -230,7 +267,7 @@ TEST_SUITE("ResourceReadersExtra") {
     content += std::string(7, '\x00');      // [25..31]
     createTempFile(fname, content);
 
-    ResourceAkmReader reader(fname);
+    ResourceAkmReader reader(fname, resourceSource);
     REQUIRE(reader.load() == true);
     CHECK(reader.remapTo(0, 0, 0x8000) == true);
     CHECK(reader.data[0][0] == 0x08);
@@ -240,10 +277,12 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceAkmReader produces identical bytes across loads") {
+    resetResourceSource();
     std::string fname = "../../tests/integration/ARKTRK/songs.akm";
+    registerResourceFile(fname);
 
-    ResourceAkmReader reader1(fname);
-    ResourceAkmReader reader2(fname);
+    ResourceAkmReader reader1(fname, resourceSource);
+    ResourceAkmReader reader2(fname, resourceSource);
     REQUIRE(reader1.load() == true);
     REQUIRE(reader2.load() == true);
 
@@ -256,9 +295,11 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceAkxReader loads real AKX effects") {
+    resetResourceSource();
     std::string fname = "../../tests/integration/ARKTRK/effects.akx";
+    registerResourceFile(fname);
 
-    ResourceAkxReader reader(fname);
+    ResourceAkxReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     CHECK(!reader.getLogger()->containErrors());
     CHECK(reader.data.size() > 0);
@@ -280,10 +321,12 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceAkxReader produces identical bytes across loads") {
+    resetResourceSource();
     std::string fname = "../../tests/integration/ARKTRK/effects.akx";
+    registerResourceFile(fname);
 
-    ResourceAkxReader reader1(fname);
-    ResourceAkxReader reader2(fname);
+    ResourceAkxReader reader1(fname, resourceSource);
+    ResourceAkxReader reader2(fname, resourceSource);
     REQUIRE(reader1.load() == true);
     REQUIRE(reader2.load() == true);
 
@@ -296,6 +339,7 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceAkxReader remaps a synthetic effects list") {
+    resetResourceSource();
     std::string fname = "tmp/temp_synth.akx";
     // 2 effects, first sound effect address = 4 (2-byte pointer list)
     // base address is guessed as 0, so both pointers are remapped to 0x8000+
@@ -303,7 +347,7 @@ TEST_SUITE("ResourceReadersExtra") {
         std::string("\x04\x00\x06\x00\xAA\xBB\xCC\xDD", 8);
     createTempFile(fname, content);
 
-    ResourceAkxReader reader(fname);
+    ResourceAkxReader reader(fname, resourceSource);
     REQUIRE(reader.load() == true);
     CHECK(reader.remapTo(0, 0, 0x8000) == true);
     REQUIRE(reader.data.size() >= 1);
@@ -314,13 +358,14 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceAkxReader remaps a three-effect list") {
+    resetResourceSource();
     std::string fname = "tmp/temp_three.akx";
     // 3 effects: first address = 6, effect addresses 8 and 10, then data
     std::string content =
         std::string("\x06\x00\x08\x00\x0A\x00\xAA\xBB\xCC\xDD\xEE\xFF", 12);
     createTempFile(fname, content);
 
-    ResourceAkxReader reader(fname);
+    ResourceAkxReader reader(fname, resourceSource);
     REQUIRE(reader.load() == true);
     CHECK(reader.remapTo(0, 0, 0x8000) == true);
     REQUIRE(reader.data.size() >= 1);
@@ -335,6 +380,7 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceAkxReader guesses base address across iterations") {
+    resetResourceSource();
     std::string fname = "tmp/temp_guess.akx";
     // first sound effect address = 4, second pointer (0x09) is out of range
     // for base address 0, so the guessing loop advances base address
@@ -342,7 +388,7 @@ TEST_SUITE("ResourceReadersExtra") {
         std::string("\x04\x00\x09\x00\xAA\xBB\xCC\xDD", 8);
     createTempFile(fname, content);
 
-    ResourceAkxReader reader(fname);
+    ResourceAkxReader reader(fname, resourceSource);
     REQUIRE(reader.load() == true);
     CHECK(reader.remapTo(0, 0, 0x8000) == true);
     CHECK(!reader.getLogger()->containErrors());
@@ -351,11 +397,12 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceAkxReader warns on unguessable base address") {
+    resetResourceSource();
     std::string fname = "tmp/temp_bad.akx";
     std::string content = std::string("\x00\x00", 2);
     createTempFile(fname, content);
 
-    ResourceAkxReader reader(fname);
+    ResourceAkxReader reader(fname, resourceSource);
     REQUIRE(reader.load() == true);
     CHECK(reader.remapTo(0, 0, 0x8000) == true);
     CHECK(reader.getLogger()->containWarnings() == true);
@@ -364,6 +411,7 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceMtfMapReader loads a minimal map") {
+    resetResourceSource();
     std::string superName = "tmp/temp_min.SC4Super";
     std::string mapName = "tmp/temp_min.SC4Map";
 
@@ -376,7 +424,7 @@ TEST_SUITE("ResourceReadersExtra") {
     createTempFile(superName, supertile);
     createTempFile(mapName, tilemap);
 
-    ResourceMtfMapReader reader(mapName);
+    ResourceMtfMapReader reader(mapName, resourceSource);
     CHECK(reader.load() == true);
     CHECK(reader.data.size() >= 3);
     CHECK(reader.unpackedSize > 0);
@@ -399,12 +447,13 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceMtfMapReader fails when supertile is missing") {
+    resetResourceSource();
     std::string mapName = "tmp/temp_nosuper.SC4Map";
     std::string tilemap =
         std::string("\x01\x00\x01\x00\x00\x00\x00\x00\x00", 9);
     createTempFile(mapName, tilemap);
 
-    ResourceMtfMapReader reader(mapName);
+    ResourceMtfMapReader reader(mapName, resourceSource);
     CHECK(reader.load() == false);
     CHECK(reader.getLogger()->errors().size() > 0);
 
@@ -412,12 +461,14 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceMtfMapReader detects SC4Map extension") {
+    resetResourceSource();
     CHECK(ResourceMtfMapReader::isIt(".SC4Map") == true);
     CHECK(ResourceMtfMapReader::isIt(".sc4map") == true);
     CHECK(ResourceMtfMapReader::isIt(".MTF") == false);
   }
 
   TEST_CASE("ResourceMtfMapReader loads map with 16-bit supertile indices") {
+    resetResourceSource();
     std::string superName = "tmp/temp_wide.SC4Super";
     std::string mapName = "tmp/temp_wide.SC4Map";
 
@@ -432,7 +483,7 @@ TEST_SUITE("ResourceReadersExtra") {
     createTempFile(superName, supertile);
     createTempFile(mapName, tilemap);
 
-    ResourceMtfMapReader reader(mapName);
+    ResourceMtfMapReader reader(mapName, resourceSource);
     CHECK(reader.load() == true);
     CHECK(reader.data.size() >= 2);
 
@@ -441,6 +492,7 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceMtfMapReader produces byte-exact map output") {
+    resetResourceSource();
     std::string superName = "tmp/temp_golden.SC4Super";
     std::string mapName = "tmp/temp_golden.SC4Map";
 
@@ -453,7 +505,7 @@ TEST_SUITE("ResourceReadersExtra") {
     createTempFile(superName, supertile);
     createTempFile(mapName, tilemap);
 
-    ResourceMtfMapReader reader(mapName);
+    ResourceMtfMapReader reader(mapName, resourceSource);
     REQUIRE(reader.load() == true);
     REQUIRE(reader.data.size() == 3);
 
@@ -504,6 +556,7 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceMtfMapReader handles 3-byte count header and 2D tiles") {
+    resetResourceSource();
     std::string superName = "tmp/temp_3byte.SC4Super";
     std::string mapName = "tmp/temp_3byte.SC4Map";
 
@@ -531,7 +584,7 @@ TEST_SUITE("ResourceReadersExtra") {
     createTempFile(superName, supertile);
     createTempFile(mapName, tilemap);
 
-    ResourceMtfMapReader reader(mapName);
+    ResourceMtfMapReader reader(mapName, resourceSource);
     REQUIRE(reader.load() == true);
     REQUIRE(reader.data.size() == 5);
 
@@ -565,10 +618,11 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceMtfReader reports not implemented") {
+    resetResourceSource();
     std::string fname = "tmp/temp_notimpl.mtf";
     createTempFile(fname, "MTF");
 
-    ResourceMtfReader reader(fname);
+    ResourceMtfReader reader(fname, resourceSource);
     CHECK(reader.load() == false);
     CHECK(reader.getLogger()->errors().toString().find(
               "Not implemented yet") != std::string::npos);
@@ -583,6 +637,7 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceCsvReader parses quoted and escaped fields") {
+    resetResourceSource();
     std::string fname = "tmp/temp_quoted.csv";
     std::string csv =
         "id,name,value\n"
@@ -592,7 +647,7 @@ TEST_SUITE("ResourceReadersExtra") {
         "4,,\n";
     createTempFile(fname, csv);
 
-    ResourceCsvReader reader(fname);
+    ResourceCsvReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     CHECK(reader.data.size() > 0);
     CHECK(reader.unpackedSize > 0);
@@ -607,11 +662,12 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceCsvReader parses semicolon-separated and hex values") {
+    resetResourceSource();
     std::string fname = "tmp/temp_semi.csv";
     std::string csv = "a;b;c\n1;&O17;&B101\n\"x\";2;3\n";
     createTempFile(fname, csv);
 
-    ResourceCsvReader reader(fname);
+    ResourceCsvReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     CHECK(reader.unpackedSize > 0);
 
@@ -619,11 +675,12 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceCsvReader converts lowercase radix prefixes") {
+    resetResourceSource();
     std::string fname = "tmp/temp_lowradix.csv";
     std::string csv = "1,&h0f,&o17,&b11,255\n";
     createTempFile(fname, csv);
 
-    ResourceCsvReader reader(fname);
+    ResourceCsvReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     REQUIRE(reader.data.size() >= 5);
 
@@ -639,13 +696,14 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceCsvReader parses a large single-line CSV") {
+    resetResourceSource();
     std::string fname = "tmp/temp_big.csv";
     std::string line = "0";
     for (int i = 1; i < 500; i++) line += "," + std::to_string(i);
     line += "\n";
     createTempFile(fname, line);
 
-    ResourceCsvReader reader(fname);
+    ResourceCsvReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     CHECK(reader.unpackedSize > 0);
 
@@ -653,11 +711,12 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceCsvReader parses backspace-separated fields") {
+    resetResourceSource();
     std::string fname = "tmp/temp_backspace.csv";
     std::string csv = "a\bb\bc\n1\b2\b3\n";
     createTempFile(fname, csv);
 
-    ResourceCsvReader reader(fname);
+    ResourceCsvReader reader(fname, resourceSource);
     CHECK(reader.load() == true);
     CHECK(reader.unpackedSize > 0);
 
@@ -665,11 +724,12 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceCsvReader produces byte-exact field layout") {
+    resetResourceSource();
     std::string fname = "tmp/temp_exact.csv";
     std::string csv = "a,b\n";
     createTempFile(fname, csv);
 
-    ResourceCsvReader reader(fname);
+    ResourceCsvReader reader(fname, resourceSource);
     REQUIRE(reader.load() == true);
     REQUIRE(reader.data.size() == 3);
     CHECK(reader.unpackedSize == 8);
@@ -694,6 +754,7 @@ TEST_SUITE("ResourceReadersExtra") {
   }
 
   TEST_CASE("ResourceFactory creates readers by extension") {
+    resetResourceSource();
     std::string txtName = "tmp/temp_factory.txt";
     std::string csvName = "tmp/temp_factory.csv";
     std::string scrName = "tmp/temp_factory.scr";
@@ -720,7 +781,7 @@ TEST_SUITE("ResourceReadersExtra") {
     createTempFile(blobName, "BLOB");
     createTempFile(unkName, "UNKNOWN");
 
-    ResourceFactory factory;
+    ResourceFactory factory(resourceSource);
 
     CHECK(factory.create(txtName) != nullptr);
     CHECK(factory.create(csvName) != nullptr);

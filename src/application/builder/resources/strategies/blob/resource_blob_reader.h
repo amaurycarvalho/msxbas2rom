@@ -22,7 +22,8 @@ class ResourceBlobReader : public ResourceReader {
  public:
   static bool isIt(string fileext);
   bool load();
-  ResourceBlobReader(string filename);
+  ResourceBlobReader(string filename,
+                    shared_ptr<ResourceContentSource> contentSource);
 };
 
 #endif  // RESOURCE_BLOB_READER_H_INCLUDED

@@ -19,7 +19,7 @@
  * git checkout -b release/v0.0.0.0 && git push origin release/v0.0.0.0
  * git switch master
  */
-#define app_version "1.3.0.0"
+#define app_version "1.3.1.0"
 
 //! @brief Header information
 const char* info_header = R"(MSXBAS2ROM - MSX-BASIC TO ROM COMPILER
@@ -81,12 +81,18 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char* info_history = R"(
 Version history
 
-## [1.2.1.0] - 2026-06-29
+## [1.3.1.0] - 2026-10-21
 
-Fix Windows startup Unicode argv to ensure CLI runs reliably on Windows
+- Refactor compilation boundaries for in-memory testability and enforce Clean Architecture dependency rules
+- Replace global service-locator providers with explicit constructor and composition-root dependency injection
+
+## [1.3.0.0] - 2026-09-14
+
+- Add an agent-driven openMSX memory/screenshot capture skill
+- Add per-sprite configurable collision hitbox margins via SET SPRITE HITBOX
 
 See full changelog:
-https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.2.1.0
+https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.3.1.0
 )";
 
 /***

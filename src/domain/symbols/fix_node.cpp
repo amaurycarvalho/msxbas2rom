@@ -1,17 +1,13 @@
 #include "fix_node.h"
 
-#include "cpu_opcode_writer.h"
 #include "symbol_node.h"
 
 void FixNode::aimHere() {
-  if (cpu) {
-    if (cpu->context)
-      if (symbol) symbol->address = cpu->context->code_pointer;
-  }
+  if (codePointer && symbol) symbol->address = *codePointer;
 }
 
-FixNode::FixNode() {}
+FixNode::FixNode() : codePointer(nullptr) {}
 
-FixNode::FixNode(shared_ptr<ICpuOpcodeWriter> cpu) : cpu(cpu) {}
+FixNode::FixNode(int* codePointer) : codePointer(codePointer) {}
 
 FixNode::~FixNode() = default;

@@ -32,8 +32,8 @@ bool AssignmentEvaluator::evaluate(shared_ptr<LexerLineContext> assignment) {
     if (lexeme->type == Lexeme::type_identifier ||
         (lexeme->type == Lexeme::type_keyword &&
          lexeme->subtype == Lexeme::subtype_function)) {
-      if (ctx->actionRoot) {
-        lexLet = ctx->actionRoot->lexeme;
+      if (ctx->getActionRoot()) {
+        lexLet = ctx->getActionRoot()->lexeme;
         if (lexLet->isKeyword("LET")) {
           add_let_action = false;
         }
@@ -79,7 +79,7 @@ bool AssignmentEvaluator::evaluate(shared_ptr<LexerLineContext> assignment) {
     }
   }
 
-  ctx->logger->error("Invalid LET statement");
+  ctx->getLogger()->error("Invalid LET statement");
 
   return false;
 }

@@ -12,6 +12,7 @@
 
 #include "action_node.h"
 #include "build_options.h"
+#include "build_options_resolver.h"
 #include "code_node.h"
 #include "compiler.h"
 #include "compiler_cmd_handler_factory.h"
@@ -21,6 +22,12 @@
 #include "compiler_statement_strategy_factory.h"
 #include "cpu_workspace_context.h"
 #include "doctest/doctest.h"
+#include "test_support.h"
+
+static std::shared_ptr<TestSourceResolver> testSourceResolver() {
+  static auto resolver = std::make_shared<TestSourceResolver>();
+  return resolver;
+}
 #include "fix_node.h"
 #include "lexeme.h"
 #include "lexer.h"
@@ -37,16 +44,14 @@ extern unsigned char bin_header_bin[];
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {
   const std::string path = "tmp/" + filename;
-  std::ofstream ofs(path);
-  ofs << content;
-  ofs.close();
+  testSourceResolver()->add(path, content);
   return path;
 }
 
 static bool compileProgram(const std::string& filename,
                            shared_ptr<Compiler> compiler,
                            shared_ptr<Parser> parser) {
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
   if (!lexer->load(filename)) return false;
   if (!lexer->evaluate()) return false;
   if (!parser->evaluate(lexer)) return false;
@@ -55,7 +60,7 @@ static bool compileProgram(const std::string& filename,
 
 static bool compileProgram(const std::string& filename,
                            shared_ptr<Compiler> compiler) {
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
   shared_ptr<Parser> parser = make_shared<Parser>();
 
   if (!lexer->load(filename)) return false;
@@ -67,10 +72,10 @@ static bool compileProgram(const std::string& filename,
 static bool compileWithOpts(const std::string& filename,
                             shared_ptr<Compiler> compiler,
                             shared_ptr<BuildOptions> opts) {
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
   shared_ptr<Parser> parser = make_shared<Parser>();
 
-  opts->setInputFilename(filename);
+  build_options::setInputFilename(opts, filename);
 
   if (!lexer->load(opts)) return false;
   if (!lexer->evaluate()) return false;
@@ -83,8 +88,8 @@ static std::string compiledCodeHex(const std::string& filename,
   const std::string path = createTempBas(filename, program);
 
   shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
-  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
   shared_ptr<Parser> parser = make_shared<Parser>();
 
   bool ok = false;
@@ -114,11 +119,11 @@ static shared_ptr<CompilerContext> createCmdContext(
     shared_ptr<CpuWorkspaceContext> workspace) {
   workspace->clear();
   cpu->context = workspace;
-  shared_ptr<CompilerContext> ctx = make_shared<CompilerContext>();
+  shared_ptr<CompilerContext> ctx = makeTestCompilerContext();
   ctx->setHelpers(ctx);
-  ctx->cpu = cpu;
-  ctx->opts = make_shared<BuildOptions>();
-  ctx->compiled = true;
+  ctx->getCpu() = cpu;
+  ctx->getOpts() = make_shared<BuildOptions>();
+  ctx->getCompiled() = true;
   return ctx;
 }
 
@@ -150,7 +155,7 @@ static bool compileStatementProgram(const std::string& filename,
   const std::string path = createTempBas(filename, program);
 
   shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
-  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
 
   bool ok = compileProgram(path, compiler);
   if (!ok && error_out) {
@@ -169,7 +174,7 @@ TEST_SUITE("Compiler") {
 
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
 
     CHECK(compileProgram(filename, compiler) == true);
     CHECK(compiler->isCompiled() == true);
@@ -184,7 +189,7 @@ TEST_SUITE("Compiler") {
 
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
     CHECK(compiler->isCompiled() == false);
 
@@ -197,7 +202,7 @@ TEST_SUITE("Compiler") {
 
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
     CHECK(compiler->getLogger()->errors().toString().find(
               "Line number already declared") != std::string::npos);
@@ -211,7 +216,7 @@ TEST_SUITE("Compiler") {
 
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
     CHECK(compiler->getLogger()->errors().toString().find(
               "FOR without a NEXT") != std::string::npos);
@@ -225,7 +230,7 @@ TEST_SUITE("Compiler") {
 
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
     CHECK(compiler->getLogger()->errors().toString().find(
               "NEXT without a FOR") != std::string::npos);
@@ -239,7 +244,7 @@ TEST_SUITE("Compiler") {
 
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
     CHECK(compiler->getLogger()->errors().toString().find(
               "Undeclared array or unknown function") != std::string::npos);
@@ -253,7 +258,7 @@ TEST_SUITE("Compiler") {
 
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
     shared_ptr<Parser> parser = make_shared<Parser>();
     CHECK(compileProgram(filename, compiler, parser) == true);
     CHECK(compiler->getResourceManager() != nullptr);
@@ -268,7 +273,7 @@ TEST_SUITE("Compiler") {
 
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == true);
 
     std::vector<unsigned char> out(0x8000, 0);
@@ -287,7 +292,7 @@ TEST_SUITE("Compiler") {
     opts->megaROM = true;
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
     REQUIRE(compileWithOpts(filename, compiler, opts) == true);
 
     std::vector<unsigned char> out(0x8000 * 4, 0);
@@ -316,7 +321,7 @@ TEST_SUITE("Compiler") {
     opts->megaROM = true;
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
     REQUIRE(compileWithOpts(filename, compiler, opts) == true);
 
     CHECK(compiler->getCodeSize() > 0x4000);
@@ -347,7 +352,7 @@ TEST_SUITE("Compiler") {
     opts->megaROM = true;
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
     REQUIRE(compileWithOpts(filename, compiler, opts) == true);
 
     int codeSize = compiler->getCodeSize();
@@ -409,7 +414,7 @@ TEST_SUITE("Compiler") {
     opts->megaROM = true;
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
     REQUIRE(compileWithOpts(filename, compiler, opts) == true);
 
     CHECK(compiler->getCodeSize() > 0x4000);
@@ -442,7 +447,7 @@ TEST_SUITE("Compiler") {
     opts->megaROM = true;
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
     REQUIRE(compileWithOpts(filename, compiler, opts) == true);
 
     CHECK(compiler->getCodeSize() > 0x4000);
@@ -479,9 +484,9 @@ TEST_SUITE("Compiler") {
     opts->megaROM = true;
 
     shared_ptr<Z80OpcodeWriter> cpu = make_shared<Z80OpcodeWriter>();
-    h.compiler = make_shared<Compiler>(cpu);
+    h.compiler = makeTestCompiler(cpu);
     h.ctx = h.compiler->getContext();
-    h.ctx->opts = opts;
+    h.ctx->getOpts() = opts;
     return h;
   }
 
@@ -489,7 +494,7 @@ TEST_SUITE("Compiler") {
   // fix and seeds one code item plus one non-identifier fix.
   static void seedFix(RelocationHarness& h, unsigned char opcode,
                       int fix_address, int symbol_address) {
-    auto& code = h.ctx->cpu->context->code;
+    auto& code = h.ctx->getCpu()->context->getCode();
     int n = fix_address + 2;
     code.assign(n, 0);
 
@@ -506,14 +511,14 @@ TEST_SUITE("Compiler") {
     code[fix_address - 1] = opcode;
     code[fix_address] = 0x00;
     code[fix_address + 1] = 0x00;
-    h.ctx->cpu->context->code_size = n;
+    h.ctx->getCpu()->context->getCodeSize() = n;
 
     auto item = make_shared<CodeNode>();
     item->name = "FIX";
     item->start = 0;
     item->length = n;
     item->is_code = true;
-    auto& codeList = h.ctx->symbolManager->context->codeList;
+    auto& codeList = h.ctx->getSymbolManager()->context->getCodeList();
     codeList.clear();
     codeList.push_back(item);
 
@@ -525,19 +530,19 @@ TEST_SUITE("Compiler") {
     fix->symbol = sym;
     fix->address = fix_address;
     fix->step = 0;
-    h.ctx->fixes.clear();
-    h.ctx->fixes.push_back(fix);
+    h.ctx->getFixes().clear();
+    h.ctx->getFixes().push_back(fix);
   }
 
   // Seeds one code item per length (contiguous code) and no fixes.
   static void seedCodeItems(RelocationHarness& h, std::vector<int> lengths) {
-    auto& code = h.ctx->cpu->context->code;
+    auto& code = h.ctx->getCpu()->context->getCode();
     int total = 0;
     for (int l : lengths) total += l;
     code.assign(total, 0);
 
     int start = 0;
-    auto& codeList = h.ctx->symbolManager->context->codeList;
+    auto& codeList = h.ctx->getSymbolManager()->context->getCodeList();
     codeList.clear();
     for (int l : lengths) {
       auto item = make_shared<CodeNode>();
@@ -548,8 +553,8 @@ TEST_SUITE("Compiler") {
       codeList.push_back(item);
       start += l;
     }
-    h.ctx->fixes.clear();
-    h.ctx->cpu->context->code_size = total;
+    h.ctx->getFixes().clear();
+    h.ctx->getCpu()->context->getCodeSize() = total;
   }
 
   TEST_SUITE("MegaROM relocation byte-exact") {
@@ -753,7 +758,7 @@ TEST_SUITE("Compiler") {
       std::vector<unsigned char> out(0x4000, 0);
       h.compiler->write(out.data(), 0x8000);
 
-      auto& codeList = h.ctx->symbolManager->context->codeList;
+      auto& codeList = h.ctx->getSymbolManager()->context->getCodeList();
       REQUIRE(codeList.size() == 2);
       CHECK(codeList[0]->segm == 2);
       CHECK(codeList[0]->addr_within_segm == 0x8000);
@@ -777,7 +782,7 @@ TEST_SUITE("Compiler") {
       CHECK(out[0x3FF6] == (h.mr_jump_target & 0xFF));
       CHECK(out[0x3FF7] == ((h.mr_jump_target >> 8) & 0xFF));
 
-      auto& codeList = h.ctx->symbolManager->context->codeList;
+      auto& codeList = h.ctx->getSymbolManager()->context->getCodeList();
       CHECK(codeList[1]->segm == 4);
       CHECK(codeList[1]->addr_within_segm == 0x8000);
     }
@@ -789,8 +794,8 @@ TEST_SUITE("Compiler") {
       std::vector<unsigned char> out(0x20000, 0);
       h.compiler->write(out.data(), 0x8000);
 
-      CHECK(h.ctx->cpu->context->segm_last == 16);
-      CHECK(h.ctx->cpu->context->segm_total == 32);
+      CHECK(h.ctx->getCpu()->context->getSegmLast() == 16);
+      CHECK(h.ctx->getCpu()->context->getSegmTotal() == 32);
     }
 
     TEST_CASE("cross-segment target address wraps modulo 0x4000") {
@@ -844,7 +849,7 @@ TEST_SUITE("Compiler") {
 
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
     bool ok = compileProgram(filename, compiler);
 
     if (ok) {
@@ -869,7 +874,7 @@ TEST_SUITE("Compiler") {
 
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
     CHECK(compileProgram(filename, compiler) == false);
 
     auto errors = compiler->getLogger()->errors();
@@ -888,7 +893,7 @@ TEST_SUITE("Compiler") {
 
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
     REQUIRE(compileProgram(filename, compiler) == true);
 
     CHECK(compiler->getRamMemoryPerc() >= 0.0f);
@@ -909,7 +914,7 @@ TEST_SUITE("Compiler") {
 
       shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
           make_shared<Z80OpcodeWriter>();
-      shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+      shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
       REQUIRE(compileProgram(filename, compiler) == true);
       CHECK(compiler->getPt3() == false);
       CHECK(compiler->getAkm() == false);
@@ -924,7 +929,7 @@ TEST_SUITE("Compiler") {
 
       shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
           make_shared<Z80OpcodeWriter>();
-      shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+      shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
       REQUIRE(compileProgram(filename, compiler) == true);
       CHECK(compiler->getPt3() == false);
       CHECK(compiler->getAkm() == true);
@@ -938,7 +943,7 @@ TEST_SUITE("Compiler") {
 
       shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
           make_shared<Z80OpcodeWriter>();
-      shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+      shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
       REQUIRE(compileProgram(filename, compiler) == true);
       CHECK(compiler->getFont() == true);
 
@@ -951,7 +956,7 @@ TEST_SUITE("Compiler") {
 
       shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
           make_shared<Z80OpcodeWriter>();
-      shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
+      shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
       REQUIRE(compileProgram(filename, compiler) == true);
       CHECK(compiler->getHasTinySprite() == false);
 
@@ -1894,9 +1899,9 @@ TEST_SUITE("CompilerCmdHandlers") {
         bool ok = handler->execute(ctx, action);
 
         CHECK(ok == test_case.expect_success);
-        CHECK(ctx->pt3 == test_case.expect_pt3);
-        CHECK(ctx->akm == test_case.expect_akm);
-        CHECK(ctx->font == test_case.expect_font);
+        CHECK(ctx->getPt3() == test_case.expect_pt3);
+        CHECK(ctx->getAkm() == test_case.expect_akm);
+        CHECK(ctx->getFont() == test_case.expect_font);
       }
     }
   }

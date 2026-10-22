@@ -16,8 +16,8 @@ int DskfCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "DSKF") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
 
   if (result[0] == Lexeme::subtype_single_decimal ||
       result[0] == Lexeme::subtype_double_decimal) {
@@ -27,13 +27,13 @@ int DskfCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (result[0] != Lexeme::subtype_numeric) return Lexeme::subtype_unknown;
 
-  context->file_support = true;
+  context->getFileSupport() = true;
 
   // hl = disk number (0=default, 1=A:, 1=B:, ...)
   // ld a, l
   cpu.addLdAL();
   // call cmd_fdskf
-  context->codeOptimizer->addKernelCall(DISP_cmd_fdskf);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_fdskf);
 
   return Lexeme::subtype_numeric;
 }

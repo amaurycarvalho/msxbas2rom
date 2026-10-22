@@ -13,8 +13,9 @@
 
 #include "logger.h"
 
-ResourceBlobChunkPackedReader::ResourceBlobChunkPackedReader(string filename)
-    : ResourceBlobPackedReader(filename) {
+ResourceBlobChunkPackedReader::ResourceBlobChunkPackedReader(
+    string filename, shared_ptr<ResourceContentSource> contentSource)
+    : ResourceBlobPackedReader(filename, contentSource) {
   /// @todo Refactor it implementing resource block linked list
   has1stBlockAnd2ndBlockSegmentDisalignmentBug = true;
 };

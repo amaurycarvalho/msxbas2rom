@@ -5,7 +5,7 @@
 
 void CompilerBeepStatementStrategy::cmd_beep(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
   // call beep
   cpu.addCall(def_BEEP);
 }
@@ -13,5 +13,5 @@ void CompilerBeepStatementStrategy::cmd_beep(
 bool CompilerBeepStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_beep(context);
-  return context->compiled;
+  return context->getCompiled();
 }

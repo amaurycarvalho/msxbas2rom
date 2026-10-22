@@ -16,8 +16,8 @@ int VpeekCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (action->lexeme->value != "VPEEK") return Lexeme::subtype_unknown;
 
-  auto& optimizer = *context->codeOptimizer;
-  auto& expression = *context->expressionEvaluator;
+  auto& optimizer = *context->getCodeOptimizer();
+  auto& expression = *context->getExpressionEvaluator();
 
   if (result[0] == Lexeme::subtype_single_decimal ||
       result[0] == Lexeme::subtype_double_decimal) {

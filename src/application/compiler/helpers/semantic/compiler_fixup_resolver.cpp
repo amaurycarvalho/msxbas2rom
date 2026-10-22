@@ -16,15 +16,16 @@
 
 shared_ptr<FixNode> CompilerFixupResolver::addFix(
     shared_ptr<SymbolNode> symbol) {
-  auto& cpu = *context->cpu;
-  shared_ptr<FixNode> fix = make_shared<FixNode>(context->cpu);
+  auto& cpu = *context->getCpu();
+  shared_ptr<FixNode> fix = make_shared<FixNode>(
+      &context->getCpu()->context->getCodePointer());
   bool is_id = false;
 
   if (symbol->lexeme) {
     is_id = (symbol->lexeme->type == Lexeme::type_identifier);
   }
 
-  if (context->opts->megaROM && !is_id) {
+  if (context->getOpts()->megaROM && !is_id) {
     // nop, nop      ; reserved to "jr ?, ??" when "call ?, ??" or "jp ?, ??"
     cpu.addNop();
     cpu.addNop();
@@ -40,27 +41,27 @@ shared_ptr<FixNode> CompilerFixupResolver::addFix(
   }
 
   fix->symbol = symbol;
-  fix->address = cpu.context->code_pointer + 1;
+  fix->address = cpu.context->getCodePointer() + 1;
   fix->step = 0;
 
-  context->fixes.push_back(fix);
+  context->getFixes().push_back(fix);
 
   return fix;
 }
 
 shared_ptr<FixNode> CompilerFixupResolver::addFix(shared_ptr<Lexeme> lexeme) {
-  shared_ptr<SymbolNode> symbol = context->symbolResolver->addSymbol(lexeme);
+  shared_ptr<SymbolNode> symbol = context->getSymbolResolver()->addSymbol(lexeme);
   return addFix(symbol);
 }
 
 shared_ptr<FixNode> CompilerFixupResolver::addFix(string line) {
-  return addFix(context->symbolResolver->addSymbol(line));
+  return addFix(context->getSymbolResolver()->addSymbol(line));
 }
 
 shared_ptr<SymbolNode> CompilerFixupResolver::addPreMark() {
-  string mark_name = "MARK_" + to_string(context->mark_count);
-  context->mark_count++;
-  return context->symbolResolver->addSymbol(mark_name);
+  string mark_name = "MARK_" + to_string(context->getMarkCount());
+  context->getMarkCount()++;
+  return context->getSymbolResolver()->addSymbol(mark_name);
 }
 
 shared_ptr<FixNode> CompilerFixupResolver::addMark() {
@@ -68,13 +69,13 @@ shared_ptr<FixNode> CompilerFixupResolver::addMark() {
 }
 
 void CompilerFixupResolver::doFix() {
-  auto& cpu = *context->cpu;
-  unsigned int i, t = context->fixes.size(), address;
+  auto& cpu = *context->getCpu();
+  unsigned int i, t = context->getFixes().size(), address;
   shared_ptr<FixNode> fix;
   shared_ptr<SymbolNode> symbol;
 
   for (i = 0; i < t; i++) {
-    fix = context->fixes[i];
+    fix = context->getFixes()[i];
     symbol = fix->symbol;
     address = symbol->address;
 
@@ -84,7 +85,7 @@ void CompilerFixupResolver::doFix() {
             "Symbol reference not found: variable or constant\n" +
             symbol->lexeme->toString());
       } else if (symbol->tag) {
-        context->current_tag = symbol->tag;
+        context->getCurrentTag() = symbol->tag;
         context->syntaxError(
             "Symbol reference not found: line number in GOTO/GOSUB/RETURN");
       } else
@@ -94,8 +95,8 @@ void CompilerFixupResolver::doFix() {
 
     address += fix->step;
 
-    cpu.context->code[fix->address] = address & 0xFF;
-    cpu.context->code[fix->address + 1] = (address >> 8) & 0xFF;
+    cpu.context->getCode()[fix->address] = address & 0xFF;
+    cpu.context->getCode()[fix->address + 1] = (address >> 8) & 0xFF;
   }
 }
 

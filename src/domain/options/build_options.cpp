@@ -9,10 +9,8 @@
 
 #include "build_options.h"
 
-#include "fswrapper.h"
-
 BuildOptions::BuildOptions(string filename) : BuildOptions() {
-  setInputFilename(filename);
+  inputFilename = filename;
 }
 
 BuildOptions::BuildOptions() {
@@ -33,31 +31,6 @@ BuildOptions::BuildOptions() {
 
   /// default paths
   inputPath = outputPath = "";
-}
-
-void BuildOptions::setInputFilename(string filename) {
-  inputFilename = filename;
-  if (!inputFilename.empty()) {
-    if (inputPath.empty()) {
-      inputPath = getFilePath(inputFilename);
-    }
-    if (outputPath.empty()) {
-      outputPath = inputPath;
-    }
-    baseFilename =
-        pathJoin(outputPath, getFileNameWithoutExtension(inputFilename));
-
-    if (compileMode == CompileMode::ASCII8 ||
-        compileMode == CompileMode::ASCII16 ||
-        compileMode == CompileMode::ASCII16X ||
-        compileMode == CompileMode::Konami4 ||
-        compileMode == CompileMode::KonamiSCC) {
-      baseFilename += "[" + getCompileModeShortName() + "]";
-      megaROM = true;
-    }
-
-    outputFilename = baseFilename + ".rom";
-  }
 }
 
 string BuildOptions::getCompileModeShortName() {

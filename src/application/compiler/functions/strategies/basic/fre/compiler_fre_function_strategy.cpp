@@ -15,7 +15,7 @@ int FreCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (action->lexeme->value != "FRE") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
 
   // ld hl, (HEAPSIZ)
   cpu.addLdHLii(def_HEAPSIZ);

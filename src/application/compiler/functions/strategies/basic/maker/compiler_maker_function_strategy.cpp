@@ -17,13 +17,13 @@ int MakerCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (action->lexeme->value != "MAKER") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
-  // auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  // auto& optimizer = *context->getCodeOptimizer();
 
   // ld a, 6
   cpu.addLdA(6);
   // CALL USR2
-  cpu.addCall(context->codeOptimizer->getKernelCallAddr(DISP_usr2) + 1);
+  cpu.addCall(context->getCodeOptimizer()->getKernelCallAddr(DISP_usr2) + 1);
 
   return Lexeme::subtype_numeric;
 }

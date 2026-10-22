@@ -12,6 +12,7 @@
 
 #include "action_node.h"
 #include "build_options.h"
+#include "build_options_resolver.h"
 #include "compiler.h"
 #include "compiler_context.h"
 #include "compiler_hooks.h"
@@ -20,6 +21,12 @@
 #include "compiler_statement_strategy_factory.h"
 #include "cpu_workspace_context.h"
 #include "doctest/doctest.h"
+#include "test_support.h"
+
+static std::shared_ptr<TestSourceResolver> testSourceResolver() {
+  static auto resolver = std::make_shared<TestSourceResolver>();
+  return resolver;
+}
 #include "lexeme.h"
 #include "lexer.h"
 #include "logger.h"
@@ -29,9 +36,7 @@
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {
   const std::string path = "tmp/" + filename;
-  std::ofstream ofs(path);
-  ofs << content;
-  ofs.close();
+  testSourceResolver()->add(path, content);
   return path;
 }
 
@@ -41,8 +46,8 @@ static bool compileStatementProgram(const std::string& filename,
   const std::string path = createTempBas(filename, program);
 
   shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
-  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
   shared_ptr<Parser> parser = make_shared<Parser>();
 
   bool ok = false;
@@ -64,8 +69,8 @@ static int compiledCodeSize(const std::string& filename,
   const std::string path = createTempBas(filename, program);
 
   shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
-  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
   shared_ptr<Parser> parser = make_shared<Parser>();
 
   bool ok = false;
@@ -83,8 +88,8 @@ static std::string compiledCodeHex(const std::string& filename,
   const std::string path = createTempBas(filename, program);
 
   shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
-  shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-  shared_ptr<Lexer> lexer = make_shared<Lexer>();
+  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
   shared_ptr<Parser> parser = make_shared<Parser>();
 
   bool ok = false;
@@ -116,12 +121,12 @@ static shared_ptr<CompilerContext> createGraphicsContext() {
   workspace->clear();
   shared_ptr<Z80OpcodeWriter> cpu = make_shared<Z80OpcodeWriter>();
   cpu->context = workspace;
-  shared_ptr<CompilerContext> ctx = make_shared<CompilerContext>();
+  shared_ptr<CompilerContext> ctx = makeTestCompilerContext();
   ctx->setHelpers(ctx);
-  ctx->cpu = cpu;
-  ctx->opts = make_shared<BuildOptions>();
-  ctx->parser = make_shared<Parser>();
-  ctx->compiled = true;
+  ctx->getCpu() = cpu;
+  ctx->getOpts() = make_shared<BuildOptions>();
+  ctx->getParser() = make_shared<Parser>();
+  ctx->getCompiled() = true;
   return ctx;
 }
 
@@ -749,12 +754,12 @@ TEST_SUITE("CompilerGraphicsStatements") {
     shared_ptr<BuildOptions> opts = make_shared<BuildOptions>();
     opts->compileMode = BuildOptions::CompileMode::Konami4;
     opts->megaROM = true;
-    opts->setInputFilename(path);
+    build_options::setInputFilename(opts, path);
 
     shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter =
         make_shared<Z80OpcodeWriter>();
-    shared_ptr<Compiler> compiler = make_shared<Compiler>(cpuOpcodeWriter);
-    shared_ptr<Lexer> lexer = make_shared<Lexer>();
+    shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+    shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
     shared_ptr<Parser> parser = make_shared<Parser>();
 
     bool ok = false;
@@ -775,10 +780,10 @@ TEST_SUITE("CompilerScreenDirect") {
     shared_ptr<ActionNode> action = gfxAction("SCREEN");
     shared_ptr<ActionNode> copy = make_shared<ActionNode>(gfxKw("COPY"));
     action->actions.push_back(copy);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "SCREEN COPY with empty parameters") != std::string::npos);
   }
 
@@ -789,10 +794,10 @@ TEST_SUITE("CompilerScreenDirect") {
     shared_ptr<ActionNode> action = gfxAction("SCREEN");
     shared_ptr<ActionNode> paste = make_shared<ActionNode>(gfxKw("PASTE"));
     action->actions.push_back(paste);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "SCREEN PASTE with empty parameters") != std::string::npos);
   }
 
@@ -803,10 +808,10 @@ TEST_SUITE("CompilerScreenDirect") {
     shared_ptr<ActionNode> action = gfxAction("SCREEN");
     shared_ptr<ActionNode> scroll = make_shared<ActionNode>(gfxKw("SCROLL"));
     action->actions.push_back(scroll);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "SCREEN SCROLL with empty parameters") != std::string::npos);
   }
 
@@ -817,10 +822,10 @@ TEST_SUITE("CompilerScreenDirect") {
     shared_ptr<ActionNode> action = gfxAction("SCREEN");
     shared_ptr<ActionNode> load = make_shared<ActionNode>(gfxKw("LOAD"));
     action->actions.push_back(load);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "SCREEN LOAD with empty parameters") != std::string::npos);
   }
 
@@ -832,10 +837,10 @@ TEST_SUITE("CompilerScreenDirect") {
     shared_ptr<ActionNode> copy = make_shared<ActionNode>(gfxKw("COPY"));
     copy->actions.push_back(make_shared<ActionNode>(gfxId("A")));
     action->actions.push_back(copy);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->compiled == true);
+    CHECK(ctx->getCompiled() == true);
   }
 
   TEST_CASE("SCREEN PASTE with identifier parameter") {
@@ -846,10 +851,10 @@ TEST_SUITE("CompilerScreenDirect") {
     shared_ptr<ActionNode> paste = make_shared<ActionNode>(gfxKw("PASTE"));
     paste->actions.push_back(make_shared<ActionNode>(gfxId("A")));
     action->actions.push_back(paste);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->compiled == true);
+    CHECK(ctx->getCompiled() == true);
   }
 
   TEST_CASE("SCREEN SCROLL with parameter") {
@@ -860,10 +865,10 @@ TEST_SUITE("CompilerScreenDirect") {
     shared_ptr<ActionNode> scroll = make_shared<ActionNode>(gfxKw("SCROLL"));
     scroll->actions.push_back(make_shared<ActionNode>(gfxNum("1")));
     action->actions.push_back(scroll);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->compiled == true);
+    CHECK(ctx->getCompiled() == true);
   }
 
   TEST_CASE("SCREEN LOAD with parameter") {
@@ -874,10 +879,10 @@ TEST_SUITE("CompilerScreenDirect") {
     shared_ptr<ActionNode> load = make_shared<ActionNode>(gfxKw("LOAD"));
     load->actions.push_back(make_shared<ActionNode>(gfxNum("1")));
     action->actions.push_back(load);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->compiled == true);
+    CHECK(ctx->getCompiled() == true);
   }
 
   TEST_CASE("SCREEN COPY with excess parameters is rejected") {
@@ -890,10 +895,10 @@ TEST_SUITE("CompilerScreenDirect") {
     copy->actions.push_back(make_shared<ActionNode>(gfxNum("2")));
     copy->actions.push_back(make_shared<ActionNode>(gfxNum("3")));
     action->actions.push_back(copy);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "SCREEN COPY with excess of parameters") != std::string::npos);
   }
 
@@ -906,10 +911,10 @@ TEST_SUITE("CompilerScreenDirect") {
     paste->actions.push_back(make_shared<ActionNode>(gfxNum("1")));
     paste->actions.push_back(make_shared<ActionNode>(gfxNum("2")));
     action->actions.push_back(paste);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "SCREEN PASTE with excess of parameters") != std::string::npos);
   }
 
@@ -922,10 +927,10 @@ TEST_SUITE("CompilerScreenDirect") {
     copy->actions.push_back(make_shared<ActionNode>(gfxId("A")));
     copy->actions.push_back(make_shared<ActionNode>(gfxNum("1")));
     action->actions.push_back(copy);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->compiled == true);
+    CHECK(ctx->getCompiled() == true);
   }
 
   TEST_CASE("SCREEN SCROLL with excess parameters is rejected") {
@@ -937,10 +942,10 @@ TEST_SUITE("CompilerScreenDirect") {
     scroll->actions.push_back(make_shared<ActionNode>(gfxNum("1")));
     scroll->actions.push_back(make_shared<ActionNode>(gfxNum("2")));
     action->actions.push_back(scroll);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "SCREEN SCROLL with excess of parameters") != std::string::npos);
   }
 }
@@ -951,10 +956,10 @@ TEST_SUITE("CompilerPutDirect") {
     shared_ptr<CompilerContext> ctx = createGraphicsContext();
 
     shared_ptr<ActionNode> action = gfxAction("PUT");
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->logger->errors().toString().find("Empty PUT statement") !=
+    CHECK(ctx->getLogger()->errors().toString().find("Empty PUT statement") !=
           std::string::npos);
   }
 
@@ -964,10 +969,10 @@ TEST_SUITE("CompilerPutDirect") {
 
     shared_ptr<ActionNode> action = gfxAction("PUT");
     action->actions.push_back(make_shared<ActionNode>(gfxKw("FOOBAR")));
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->logger->errors().toString().find("Invalid PUT statement") !=
+    CHECK(ctx->getLogger()->errors().toString().find("Invalid PUT statement") !=
           std::string::npos);
   }
 
@@ -978,10 +983,10 @@ TEST_SUITE("CompilerPutDirect") {
     shared_ptr<ActionNode> action = gfxAction("PUT");
     shared_ptr<ActionNode> sprite = make_shared<ActionNode>(gfxKw("SPRITE"));
     action->actions.push_back(sprite);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "PUT SPRITE with empty parameters") != std::string::npos);
   }
 
@@ -992,10 +997,10 @@ TEST_SUITE("CompilerPutDirect") {
     shared_ptr<ActionNode> action = gfxAction("PUT");
     shared_ptr<ActionNode> tile = make_shared<ActionNode>(gfxKw("TILE"));
     action->actions.push_back(tile);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "PUT TILE with empty parameters") != std::string::npos);
   }
 
@@ -1009,10 +1014,10 @@ TEST_SUITE("CompilerPutDirect") {
     sprite->actions.push_back(make_shared<ActionNode>(gfxNum("0")));
     sprite->actions.push_back(coord);
     action->actions.push_back(sprite);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "Coordenates parameters error on PUT SPRITE") !=
           std::string::npos);
   }
@@ -1032,10 +1037,10 @@ TEST_SUITE("CompilerPutDirect") {
     sprite->actions.push_back(make_shared<ActionNode>(gfxNum("4")));
     sprite->actions.push_back(make_shared<ActionNode>(gfxNum("5")));
     action->actions.push_back(sprite);
-    ctx->current_action = action;
+    ctx->getCurrentAction() = action;
 
     strategy.execute(ctx);
-    CHECK(ctx->logger->errors().toString().find(
+    CHECK(ctx->getLogger()->errors().toString().find(
               "PUT SPRITE parameters not supported") != std::string::npos);
   }
 }

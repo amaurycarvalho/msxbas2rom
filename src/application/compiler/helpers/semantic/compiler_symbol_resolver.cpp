@@ -22,12 +22,12 @@
 
 shared_ptr<SymbolNode> CompilerSymbolResolver::getSymbol(
     shared_ptr<Lexeme> lexeme) {
-  unsigned int i, t = context->symbols.size();
+  unsigned int i, t = context->getSymbols().size();
   bool found = false;
   shared_ptr<SymbolNode> symbol;
 
   for (i = 0; i < t; i++) {
-    symbol = context->symbols[i];
+    symbol = context->getSymbols()[i];
     if (symbol->lexeme) {
       if (symbol->lexeme->type == lexeme->type &&
           symbol->lexeme->subtype == lexeme->subtype &&
@@ -53,7 +53,7 @@ shared_ptr<SymbolNode> CompilerSymbolResolver::addSymbol(
     symbol->lexeme = lexeme;
     symbol->tag = 0;
     symbol->address = 0;
-    context->symbols.push_back(symbol);
+    context->getSymbols().push_back(symbol);
   }
 
   return symbol;
@@ -61,12 +61,12 @@ shared_ptr<SymbolNode> CompilerSymbolResolver::addSymbol(
 
 shared_ptr<SymbolNode> CompilerSymbolResolver::getSymbol(
     shared_ptr<TagNode> tag) {
-  unsigned int i, t = context->symbols.size();
+  unsigned int i, t = context->getSymbols().size();
   bool found = false;
   shared_ptr<SymbolNode> symbol;
 
   for (i = 0; i < t; i++) {
-    symbol = context->symbols[i];
+    symbol = context->getSymbols()[i];
     if (symbol->tag) {
       if (symbol->tag->name == tag->name) {
         found = true;
@@ -89,20 +89,20 @@ shared_ptr<SymbolNode> CompilerSymbolResolver::addSymbol(
     symbol->lexeme = 0;
     symbol->tag = tag;
     symbol->address = 0;
-    context->symbols.push_back(symbol);
+    context->getSymbols().push_back(symbol);
   }
 
   return symbol;
 }
 
 shared_ptr<SymbolNode> CompilerSymbolResolver::addSymbol(string line) {
-  unsigned int i, t = context->symbols.size();
+  unsigned int i, t = context->getSymbols().size();
   bool found = false;
   shared_ptr<SymbolNode> symbol;
   shared_ptr<TagNode> tag;
 
   for (i = 0; i < t; i++) {
-    symbol = context->symbols[i];
+    symbol = context->getSymbols()[i];
     if (symbol->tag) {
       if (symbol->tag->name == line) {
         found = true;
@@ -114,9 +114,9 @@ shared_ptr<SymbolNode> CompilerSymbolResolver::addSymbol(string line) {
   if (!found) {
     tag = make_shared<TagNode>();
     tag->name = line;
-    if (context->current_tag) {
-      tag->value = context->current_tag->name;
-      tag->lexerLine = context->current_tag->lexerLine;
+    if (context->getCurrentTag()) {
+      tag->value = context->getCurrentTag()->name;
+      tag->lexerLine = context->getCurrentTag()->lexerLine;
     } else {
       tag->value = "SUPPORT_ROUTINE";
       tag->lexerLine = nullptr;
@@ -128,10 +128,10 @@ shared_ptr<SymbolNode> CompilerSymbolResolver::addSymbol(string line) {
 }
 
 void CompilerSymbolResolver::addSupportSymbols() {
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
   // IO REDIRECT FUNCTION
-  if (context->ioRedirectMark) {
-    context->ioRedirectMark->aimHere();
+  if (context->getIoRedirectMark()) {
+    context->getIoRedirectMark()->aimHere();
     // ld a, l  ; io number
     cpu.addLdAL();
     // ld hl, fake empty line
@@ -147,8 +147,8 @@ void CompilerSymbolResolver::addSupportSymbols() {
   }
 
   // IO SCREEN FUNCTION
-  if (context->ioScreenMark) {
-    context->ioScreenMark->aimHere();
+  if (context->getIoScreenMark()) {
+    context->getIoScreenMark()->aimHere();
     // ld hl, fake empty line
     cpu.addLdHL(def_ENDPRG);
     // ld ix, IOTOSCREEN
@@ -162,8 +162,8 @@ void CompilerSymbolResolver::addSupportSymbols() {
   }
 
   // DRAW STATEMENT - in: hl (pointer to string)
-  if (context->drawStmtMark) {
-    context->drawStmtMark->aimHere();
+  if (context->getDrawStmtMark()) {
+    context->getDrawStmtMark()->aimHere();
     // ld a, (SCRMOD)
     cpu.addLdAii(def_SCRMOD);
     // cp 2
@@ -174,7 +174,7 @@ void CompilerSymbolResolver::addSupportSymbols() {
     // push hl
     cpu.addPushHL();
 
-    context->codeHelper->addEnableBasicSlot();
+    context->getCodeHelper()->addEnableBasicSlot();
 
     // pop hl
     cpu.addPopHL();
@@ -182,10 +182,10 @@ void CompilerSymbolResolver::addSupportSymbols() {
     // xor a
     cpu.addXorA();
     // ld bc, disable basic slot
-    if (context->disableRomBasicMark)
-      context->fixupResolver->addFix(context->disableRomBasicMark->symbol);
+    if (context->getDisableRomBasicMark())
+      context->getFixupResolver()->addFix(context->getDisableRomBasicMark()->symbol);
     else
-      context->disableRomBasicMark = context->fixupResolver->addMark();
+      context->getDisableRomBasicMark() = context->getFixupResolver()->addMark();
     cpu.addLdBC(0x0000);
     // push bc
     cpu.addPushBC();
@@ -217,8 +217,8 @@ void CompilerSymbolResolver::addSupportSymbols() {
   }
 
   // ENABLE BASIC SLOT FUNCTION
-  if (context->enableRomBasicMark) {
-    context->enableRomBasicMark->aimHere();
+  if (context->getEnableRomBasicMark()) {
+    context->getEnableRomBasicMark()->aimHere();
     // ld a, (EXPTBL)
     cpu.addLdAii(def_EXPTBL);
     // jr $+4            ; jump to disable code
@@ -226,8 +226,8 @@ void CompilerSymbolResolver::addSupportSymbols() {
   }
 
   // DISABLE BASIC SLOT FUNCTION
-  if (context->disableRomBasicMark) {
-    context->disableRomBasicMark->aimHere();
+  if (context->getDisableRomBasicMark()) {
+    context->getDisableRomBasicMark()->aimHere();
     // ld a, (SLTSTR)
     cpu.addLdAii(def_SLTSTR);
     // ld h,040h        ; <--- enable jump to here
@@ -246,8 +246,8 @@ void CompilerSymbolResolver::clearSymbols() {
 }
 
 int CompilerSymbolResolver::saveSymbols() {
-  auto& cpu = *context->cpu;
-  unsigned int i, t = context->symbols.size();
+  auto& cpu = *context->getCpu();
+  unsigned int i, t = context->getSymbols().size();
   shared_ptr<SymbolNode> symbol;
   shared_ptr<CodeNode> codeItem;
   shared_ptr<Lexeme> lexeme;
@@ -255,12 +255,12 @@ int CompilerSymbolResolver::saveSymbols() {
   int length = 0, var_size = 0, literal_count = 0;
 
   for (i = 0; i < t; i++) {
-    if ((symbol = context->symbols[i])) {
+    if ((symbol = context->getSymbols()[i])) {
       if ((lexeme = symbol->lexeme)) {
         if (lexeme->isAbstract) continue;
 
         if (lexeme->type == Lexeme::type_literal) {
-          symbol->address = cpu.context->code_pointer;
+          symbol->address = cpu.context->getCodePointer();
 
           // string constant or binary data
           if (lexeme->subtype == Lexeme::subtype_string ||
@@ -270,7 +270,7 @@ int CompilerSymbolResolver::saveSymbols() {
 
             codeItem = make_shared<CodeNode>();
             codeItem->name = "LIT_" + to_string(literal_count);
-            codeItem->start = cpu.context->code_pointer;
+            codeItem->start = cpu.context->getCodePointer();
 
             literal_count++;
 
@@ -301,10 +301,10 @@ int CompilerSymbolResolver::saveSymbols() {
               }
             }
 
-            codeItem->length = cpu.context->code_pointer - codeItem->start;
+            codeItem->length = cpu.context->getCodePointer() - codeItem->start;
             codeItem->is_code = false;
             codeItem->debug = true;
-            context->symbolManager->context->codeList.push_back(codeItem);
+            context->getSymbolManager()->context->getCodeList().push_back(codeItem);
 
             length += codeItem->length;
           }
@@ -312,17 +312,17 @@ int CompilerSymbolResolver::saveSymbols() {
         } else if (lexeme->type == Lexeme::type_identifier) {
           codeItem = make_shared<CodeNode>();
           codeItem->name = "VAR_" + lexeme->value;
-          codeItem->start = cpu.context->ram_pointer;
+          codeItem->start = cpu.context->getRamPointer();
           codeItem->addr_within_segm =
-              cpu.context->ram_page + cpu.context->ram_pointer;
+              cpu.context->getRamPage() + cpu.context->getRamPointer();
           codeItem->is_code = false;
           codeItem->debug = true;
           codeItem->lexeme = lexeme;
-          context->symbolManager->context->dataList.push_back(codeItem);
+          context->getSymbolManager()->context->getDataList().push_back(codeItem);
 
           var_size = 0;
 
-          symbol->address = cpu.context->ram_pointer;
+          symbol->address = cpu.context->getRamPointer();
 
           // string variable
           if (lexeme->subtype == Lexeme::subtype_string) {
@@ -351,12 +351,12 @@ int CompilerSymbolResolver::saveSymbols() {
 
           codeItem->length = var_size;
 
-          cpu.context->ram_size += var_size;
-          cpu.context->ram_pointer += var_size;
+          cpu.context->getRamSize() += var_size;
+          cpu.context->getRamPointer() += var_size;
 
-          if (cpu.context->ram_size > def_RAM_SIZE) {
+          if (cpu.context->getRamSize() > def_RAM_SIZE) {
             context->syntaxError("Not enough memory to variables [" +
-                                 to_string(cpu.context->ram_size) +
+                                 to_string(cpu.context->getRamSize()) +
                                  "bytes occupied from RAM]");
           }
         }
@@ -364,18 +364,18 @@ int CompilerSymbolResolver::saveSymbols() {
     }
   }
 
-  context->temp_str_mark->address = cpu.context->ram_pointer;
+  context->getTempStrMark()->address = cpu.context->getRamPointer();
 
   var_size = (256 * 5);  // temporary strings
-  cpu.context->ram_size += var_size;
-  cpu.context->ram_pointer += var_size;
+  cpu.context->getRamSize() += var_size;
+  cpu.context->getRamPointer() += var_size;
 
-  if (context->parser->getHasFont()) {
-    cpu.context->ram_size += def_RAM_BUFSIZ;
-    cpu.context->ram_pointer += def_RAM_BUFSIZ;
+  if (context->getParser()->getHasFont()) {
+    cpu.context->getRamSize() += def_RAM_BUFSIZ;
+    cpu.context->getRamPointer() += def_RAM_BUFSIZ;
   }
 
-  context->heap_mark->address = cpu.context->ram_pointer;
+  context->getHeapMark()->address = cpu.context->getRamPointer();
 
   return length;
 }

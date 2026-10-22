@@ -14,10 +14,10 @@
 
 bool CompilerCmdPlyLoadHandler::execute(shared_ptr<CompilerContext> context,
                                         shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
 
-  context->akm = true;
+  context->getAkm() = true;
 
   if (action->actions.size()) {
     auto sub = action->actions[0];
@@ -41,7 +41,7 @@ bool CompilerCmdPlyLoadHandler::execute(shared_ptr<CompilerContext> context,
   }
 
   // call cmd_plyload
-  context->codeOptimizer->addKernelCall(DISP_cmd_plyload);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_plyload);
 
-  return context->compiled;
+  return context->getCompiled();
 }

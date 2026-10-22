@@ -19,34 +19,60 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - [set-page-screen4](openspec/changes/set-page-screen4) SET PAGE support for screen 4 compatibility
 - [wishlist](openspec/changes/wishlist) Explore and track potential future improvements not yet scheduled for any sprint
 
-## [1.3.0.0] - 2026-09-14
-
-### [2026-09-11-add-msx-memory-debug-skill](openspec/changes/archive/2026-09-11-add-msx-memory-debug-skill) Add an agent-driven openMSX memory/screenshot capture skill for deterministic post-run inspection of MSX ROMs
+### [add-rsctoram-offset-size](openspec/changes/add-rsctoram-offset-size) Add optional offset/size parameters to CMD RSCTORAM for partial resource copies
 
 #### Added
-- Register the `msx-memory-debug` capability and its implementation under `.opencode/skills/msx-memory-debug-skill/`
-- Tcl capture script reads `Main RAM` at `0xC000..0xFFFF` (16384 bytes) with `debug read_block`, saves a PNG screenshot, and exits openMSX
-- Configuration via `OPENMSX_EXECUTABLE`, `OPENMSX_ARGS`, `OPENMSX_FLATPAK_APP`, `MSX_DEBUG_DELAY`, `MSX_DEBUG_MACHINE`, `MSX_DEBUG_SETTINGS`, `MSX_DEBUG_SCREENSHOT_MODE`
+- Add optional `offset` and `size` parameters to `CMD RSCTORAM`
 
 #### Changed
-- Isolate openMSX from the user's interactive `settings.xml` by generating a minimal settings file, passing it with `-setting`, and deleting it on exit, so the skill no longer crashes on host-specific bindings
-- Select the Sharp HB-8000 (Hotbit) machine explicitly with `-machine Sharp_HB-8000_1.2`, preventing a C-BIOS fallback
-- Document reusable debugging strategies: freeze observable state with `POKE` plus a halt loop, map addresses with `-s --noi` and `header.symbols.asm`, use openMSX breakpoints, and rebuild the embedded kernel header after kernel edits
-- Debug MSX2-oriented BASIC commands on the Panasonic FS-A1WX machine; the MSX1 default remains Sharp HB-8000 1.2
+- Clamp the effective copy length to `min(size, resource_size - offset)`
+- Treat an omitted `size` as the full remaining resource
+- Ignore `offset` and `size` when `pletter = 1` and decompress the whole resource as before
+- Return `HL = dest` on success and `HL = 0` when the resource is missing or nothing is copied
+- Pass command parameters through the `PARM1` work area
+- Preserve existing 2- and 3-argument `CMD RSCTORAM` behavior
 
-### [add-sprite-hitbox-margins](openspec/changes/archive/2026-09-14-add-sprite-hitbox-margins) Add per-sprite configurable collision hitbox margins via SET SPRITE HITBOX
+### [redefine-resource-function](openspec/changes/redefine-resource-function) Redefine RESOURCE(n) to load the resource into free RAM and return a usable pointer
+
+#### Changed
+- Redefine `RESOURCE(n)` to copy the resource into `HEAP()` via `CMD RSCTORAM` and return a directly usable RAM pointer
+- Return `0` when the resource does not exist and truncate the copy to `FRE()` bytes when the resource is larger
+- Keep `RESOURCESIZE(n)` and the existing `DISP_cmd_rsctoram` dispatch unchanged
+
+## [1.3.1.0] - 2026-10-21
+
+### [refactor-clean-architecture-testability](openspec/changes/archive/2026-10-21-refactor-clean-architecture-testability) Refactor compilation boundaries for in-memory testability and enforce Clean Architecture dependency rules
 
 #### Added
-- Add the `SET SPRITE HITBOX` BASIC command family with global and per-sprite `ON`/`OFF`/`AUTO` forms plus explicit `<sprite>, <left>, <top>, <right>, <bottom>` margins
-- Add the `HITBOX_TABLE` runtime table (32 × 5 bytes) storing pre-normalized relative bounds (`X0`, `X1`, `Y0`, `Y1`) and a per-sprite enabled flag
-- Add the single kernel routine `set_sprite_hitbox` with a mode byte implementing all command forms
-- Add the `HITBOX` and `AUTO` lexer keywords
+- Establish an automated Clean Architecture boundary check with a version-controlled, pre-approved exception list
+- Introduce application ports and infrastructure adapters for BASIC source input, INCLUDE resolution, ROM/resource/symbol output, and kernel-image access
 
 #### Changed
-- Make `COLLISION()` combine each sprite's position from `SPRTBL` with its relative bounds from `HITBOX_TABLE`, keeping the public `COLLISION()`/`COLLISION(n)`/`COLLISION(n1,n2)` API unchanged
-- Reset `HITBOX_TABLE` to the default full-rectangle state on sprite clear (`SUB_CLRSPR`), covering the SCREEN sprite-size path
+- Make lexer/parser/compiler workflows accept in-memory source content with a logical source name
+- Keep `BuildOptions` as a domain value object by removing its dependency on filesystem utilities
+- Separate pure ROM image assembly from ROM-file persistence
+- Extract the CLI compile/retry orchestration into an application use case with structured results and diagnostics
+- Replace public, all-purpose parser/compiler contexts with narrower collaborators and encapsulated state
+- Preserve CLI behavior, ROM bytes, diagnostics, resource formats, and cross-platform C++11 support
 
-[Unreleased]: https://github.com/amaurycarvalho/msxbas2rom/compare/v1.3.0.0...HEAD
-[1.3.0.0]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.3.0.0
+### [replace-service-locators-with-dependency-injection](openspec/changes/archive/2026-10-21-replace-service-locators-with-dependency-injection) Replace global service-locator providers with explicit constructor and composition-root dependency injection
+
+#### Added
+- Introduce a headless compilation test harness backed by in-memory source, kernel, resource, symbol, and ROM adapters
+
+#### Changed
+- Require ports through constructor or parameter-object injection instead of resolving defaults inside application classes
+- Concentrate production adapter construction in the CLI composition root
+- Make `CompilationRequest` carry a complete, required set of compilation services
+- Pass `ResourceContentSource` through the resource reader factory instead of setting it after construction
+- Migrate ROM, symbol, resource, lexer/parser/compiler, and characterization tests to in-memory assertions
+- Preserve public CLI behavior, diagnostics, ROM bytes, resource bytes, and symbol formats
+
+#### Removed
+- Remove the five global provider pairs: source resolver, kernel image, resource content source, symbol output sink, and ROM writer
+- Remove the global test adapter setup and static test source registry
+
+[Unreleased]: https://github.com/amaurycarvalho/msxbas2rom/compare/v1.3.1.0...HEAD
+[1.3.1.0]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.3.1.0
 
 See [CHANGELOG Archive](CHANGELOG-ARCHIVE.md) for older releases.

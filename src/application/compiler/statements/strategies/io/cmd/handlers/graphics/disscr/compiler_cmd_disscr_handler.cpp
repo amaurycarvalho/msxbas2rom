@@ -7,7 +7,7 @@
 bool CompilerCmdDisScrHandler::execute(shared_ptr<CompilerContext> context,
                                        shared_ptr<ActionNode> action) {
   // call cmd_disscr
-  context->codeOptimizer->addKernelCall(DISP_cmd_disscr);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_disscr);
 
-  return context->compiled;
+  return context->getCompiled();
 }

@@ -9,6 +9,7 @@
 #include "logger.h"
 #include "parser_context.h"
 #include "parser_statement_strategy_factory.h"
+#include "source_resolver.h"
 #include "tag_node.h"
 
 ParserLineEvaluator::ParserLineEvaluator(
@@ -31,8 +32,8 @@ bool ParserLineEvaluator::evaluateLine(
   shared_ptr<LexerLineEvaluator> phrase = make_shared<LexerLineEvaluator>();
   int if_count = 0;
 
-  ctx->error_line = lexerLine;
-  ctx->actionRoot = 0;
+  ctx->getErrorLine() = lexerLine;
+  ctx->getActionRoot() = 0;
 
   if (lexeme) {
     lexeme = ctx->coalesceSymbols(lexeme);
@@ -42,8 +43,8 @@ bool ParserLineEvaluator::evaluateLine(
       tag->name = lexeme->value;
       tag->value = tag->name;
       tag->lexerLine = lexerLine;
-      ctx->tags.push_back(tag);
-      ctx->tag = tag;
+      ctx->getTags().push_back(tag);
+      ctx->getTag() = tag;
 
       while ((lexeme = lexerLine->getNextLexeme())) {
         lexeme = ctx->coalesceSymbols(lexeme);
@@ -53,7 +54,7 @@ bool ParserLineEvaluator::evaluateLine(
         }
 
         if (lexeme->isSeparator(":") && if_count == 0) {
-          ctx->actionRoot = 0;
+          ctx->getActionRoot() = 0;
           if (phrase->getLexemeCount())
             if (!evaluatePhrase(phrase)) return false;
           phrase->clearLexemes();
@@ -68,20 +69,20 @@ bool ParserLineEvaluator::evaluateLine(
       }
 
       if (phrase->getLexemeCount()) {
-        ctx->actionRoot = 0;
+        ctx->getActionRoot() = 0;
         if (!evaluatePhrase(phrase)) return false;
       }
 
     } else if (lexeme->type == Lexeme::type_keyword) {
       if (lexeme->value == "FILE" || lexeme->value == "TEXT") {
-        ctx->resourceCount++;
+        ctx->getResourceCount()++;
 
         auto tag = make_shared<TagNode>();  // register line number tag
         tag->name = "DIRECTIVE";
         tag->value = tag->name;
         tag->lexerLine = lexerLine;
-        ctx->tags.push_back(tag);
-        ctx->tag = tag;
+        ctx->getTags().push_back(tag);
+        ctx->getTag() = tag;
 
         auto action = make_shared<ActionNode>(lexeme);
         ctx->pushActionRoot(action);
@@ -96,13 +97,13 @@ bool ParserLineEvaluator::evaluateLine(
           if (lexeme->type == Lexeme::type_literal &&
               lexeme->subtype == Lexeme::subtype_string) {
             if (!includeLoader->load(lexeme, lexerLine)) {
-              ctx->logger->error(
+              ctx->getLogger()->error(
                   "INCLUDE file not found or with content syntax error");
               return false;
             }
 
           } else {
-            ctx->logger->error("Invalid parameter in INCLUDE keyword");
+            ctx->getLogger()->error("Invalid parameter in INCLUDE keyword");
             return false;
           }
         }
@@ -134,7 +135,7 @@ bool ParserLineEvaluator::evaluatePhrase(shared_ptr<LexerLineContext> phrase) {
     }
   }
 
-  ctx->logger->error("Invalid keyword/identifier");
+  ctx->getLogger()->error("Invalid keyword/identifier");
   return false;
 }
 
@@ -142,8 +143,8 @@ bool ParserLineEvaluator::evaluateStatement(
     shared_ptr<LexerLineContext> statement) {
   shared_ptr<Lexeme> lexeme;
   IParserStatementStrategy* strategy;
-  shared_ptr<ActionNode> actionSaved = ctx->actionRoot;
-  unsigned int actionCount = ctx->actionStack.size();
+  shared_ptr<ActionNode> actionSaved = ctx->getActionRoot();
+  unsigned int actionCount = ctx->getActionStack().size();
   bool result = true;
 
   lexeme = statement->getFirstLexeme();
@@ -159,16 +160,16 @@ bool ParserLineEvaluator::evaluateStatement(
       result = strategy->execute(ctx, statement, lexeme);
       if (lexeme->value == "IF") return result;
     } else {
-      ctx->logger->error("Invalid keyword / identifier");
+      ctx->getLogger()->error("Invalid keyword / identifier");
       result = false;
     }
 
     ctx->popActionRoot();
   }
 
-  while (ctx->actionStack.size() > actionCount) ctx->actionStack.pop();
+  while (ctx->getActionStack().size() > actionCount) ctx->getActionStack().pop();
 
-  ctx->actionRoot = actionSaved;
+  ctx->getActionRoot() = actionSaved;
 
   return result;
 }
@@ -179,4 +180,9 @@ shared_ptr<ParserContext> ParserLineEvaluator::getContext() {
 
 void ParserLineEvaluator::setContext(shared_ptr<ParserContext> context) {
   this->ctx = context;
+}
+
+void ParserLineEvaluator::setSourceResolver(
+    shared_ptr<SourceResolver> resolver) {
+  includeLoader->setSourceResolver(resolver);
 }

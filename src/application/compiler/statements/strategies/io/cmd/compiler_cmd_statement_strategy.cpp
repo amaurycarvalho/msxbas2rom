@@ -7,7 +7,7 @@
 
 void CompilerCmdStatementStrategy::cmd_cmd(
     shared_ptr<CompilerContext> context) {
-  auto& actions = context->current_action->actions;
+  auto& actions = context->getCurrentAction()->actions;
   ICompilerCmdHandler* handler;
 
   if (actions.empty()) {
@@ -38,5 +38,5 @@ CompilerCmdStatementStrategy::~CompilerCmdStatementStrategy() = default;
 bool CompilerCmdStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_cmd(context);
-  return context->compiled;
+  return context->getCompiled();
 }

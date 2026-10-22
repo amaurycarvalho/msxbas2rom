@@ -17,18 +17,18 @@ bool CmdStatementStrategy::parseStatement(
 
   if (lexeme->value == "WRTFNT" || lexeme->value == "SETFNT" ||
       lexeme->value == "WRTCHR")
-    context->has_font = true;
+    context->getHasFont() = true;
 
   if (lexeme->value == "PT3LOAD" || lexeme->value == "PT3PLAY")
-    context->has_pt3 = true;
+    context->getHasPt3() = true;
 
   if (lexeme->value == "PLYLOAD" || lexeme->value == "PLYPLAY" ||
       lexeme->value == "PLYSONG")
-    context->has_akm = true;
+    context->getHasAkm() = true;
 
-  if (lexeme->value == "MTF") context->has_mtf = true;
+  if (lexeme->value == "MTF") context->getHasMtf() = true;
 
-  if (lexeme->value == "RESTORE") context->has_resource_restore = true;
+  if (lexeme->value == "RESTORE") context->getHasResourceRestore() = true;
 
   GenericStatementStrategy genericStrategy;
   bool result = genericStrategy.parseStatement(context, statement);

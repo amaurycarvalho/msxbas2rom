@@ -24,6 +24,14 @@ class SymbolExportContext {
   vector<shared_ptr<CodeNode>> codeList;
   vector<shared_ptr<CodeNode>> dataList;
 
+
+  string& getExportFilename() { return exportFilename; }
+  vector<vector<string>>& getKernelSymbolAddresses() {
+    return kernelSymbolAddresses;
+  }
+  vector<shared_ptr<CodeNode>>& getCodeList() { return codeList; }
+  vector<shared_ptr<CodeNode>>& getDataList() { return dataList; }
+
   /***
    * @brief clear all symbol lists
    */

@@ -15,7 +15,7 @@ int TimeCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (action->lexeme->value != "TIME") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
 
   // ld hl, (0xFC9E)    ; JIFFY
   cpu.addLdHLii(def_JIFFY);

@@ -8,12 +8,12 @@
 
 void CompilerGotoStatementStrategy::cmd_goto(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
   shared_ptr<Lexeme> lexeme;
 
-  if (context->current_action->actions.size() == 1) {
-    lexeme = context->current_action->actions[0].get()->lexeme;
+  if (context->getCurrentAction()->actions.size() == 1) {
+    lexeme = context->getCurrentAction()->actions[0].get()->lexeme;
     if (lexeme) {
       if (lexeme->type == Lexeme::type_literal &&
           lexeme->subtype == Lexeme::subtype_numeric) {
@@ -35,7 +35,7 @@ void CompilerGotoStatementStrategy::cmd_goto(
 
 bool CompilerGotoStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
-  context->traps_checked = context->codeHelper->addCheckTraps();
+  context->getTrapsChecked() = context->getCodeHelper()->addCheckTraps();
   cmd_goto(context);
-  return context->compiled;
+  return context->getCompiled();
 }

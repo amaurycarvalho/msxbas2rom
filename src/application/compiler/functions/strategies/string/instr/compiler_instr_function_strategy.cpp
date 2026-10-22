@@ -11,12 +11,12 @@ int InstrCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
                                            shared_ptr<ActionNode> action,
                                            int* result,
                                             unsigned int parmCount) {
-  auto& optimizer = *context->codeOptimizer;
+  auto& optimizer = *context->getCodeOptimizer();
   if (!context || !action || !action->lexeme) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "INSTR") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
 
   switch (parmCount) {
     case 2: {

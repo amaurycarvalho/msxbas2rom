@@ -12,6 +12,7 @@
 
 class SymbolExportContext;
 class BuildOptions;
+class SymbolOutputSink;
 
 using namespace std;
 
@@ -20,7 +21,8 @@ class SymbolExportStrategy {
   virtual ~SymbolExportStrategy() {}
 
   virtual bool save(shared_ptr<SymbolExportContext> context,
-                    shared_ptr<BuildOptions> opts) = 0;
+                    shared_ptr<BuildOptions> opts,
+                    shared_ptr<SymbolOutputSink> sink) = 0;
 };
 
 #endif  // SYMBOL_EXPORT_STRATEGY_H_INCLUDED

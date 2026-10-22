@@ -9,6 +9,7 @@
 
 #include "action_node.h"
 #include "build_options.h"
+#include "build_options_resolver.h"
 #include "doctest/doctest.h"
 #include "lexeme.h"
 #include "lexer_line_context.h"
@@ -55,17 +56,17 @@ TEST_SUITE("Domain") {
 
   TEST_CASE("BuildOptions filename and compile mode naming") {
     BuildOptions opts;
-    opts.setInputFilename("tmp/test.bas");
+    build_options::setInputFilename(opts, "tmp/test.bas");
     CHECK(opts.outputFilename.find(".rom") != std::string::npos);
     CHECK(opts.baseFilename.find(".bas") == std::string::npos);
 
     opts.compileMode = BuildOptions::CompileMode::ASCII8;
-    opts.setInputFilename("tmp/test2.bas");
+    build_options::setInputFilename(opts, "tmp/test2.bas");
     CHECK(opts.outputFilename.find("[ASCII8]") != std::string::npos);
     CHECK(opts.megaROM == true);
 
     opts.compileMode = BuildOptions::CompileMode::KonamiSCC;
-    opts.setInputFilename("tmp/test3.bas");
+    build_options::setInputFilename(opts, "tmp/test3.bas");
     CHECK(opts.outputFilename.find("[KonamiSCC]") != std::string::npos);
 
     CHECK(opts.getCompileModeShortName().size() > 0);

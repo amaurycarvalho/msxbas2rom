@@ -25,7 +25,8 @@ class ResourceMtfReader : public ResourceReader {
  public:
   static bool isIt(string fileext);
   bool load();
-  ResourceMtfReader(string filename);
+  ResourceMtfReader(string filename,
+                    shared_ptr<ResourceContentSource> contentSource);
 };
 
 #endif  // RESOURCE_MTF_READER_H_INCLUDED

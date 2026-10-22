@@ -8,8 +8,8 @@
 
 bool CompilerCmdWrtSprHandler::execute(shared_ptr<CompilerContext> context,
                                        shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
 
   if (action->actions.size() == 1) {
     auto sub = action->actions[0];
@@ -19,11 +19,11 @@ bool CompilerCmdWrtSprHandler::execute(shared_ptr<CompilerContext> context,
     // ld (DAC), hl
     cpu.addLdiiHL(def_DAC);
     // call cmd_wrtspr                    ; tiny sprite loader
-    context->codeOptimizer->addKernelCall(DISP_cmd_wrtspr);
+    context->getCodeOptimizer()->addKernelCall(DISP_cmd_wrtspr);
 
   } else {
     context->syntaxError("CMD WRTSPR syntax error");
   }
 
-  return context->compiled;
+  return context->getCompiled();
 }

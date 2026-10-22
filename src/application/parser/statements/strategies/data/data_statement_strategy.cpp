@@ -16,11 +16,11 @@ bool DataStatementStrategy::parseData(shared_ptr<ParserContext> context,
   bool lastWasSeparator = true;
 
   if (isBinaryData) {
-    context->has_idata = true;
+    context->getHasIData() = true;
     sname = "_IDATA_";
     subtype = Lexeme::subtype_integer_data;
   } else {
-    context->has_data = true;
+    context->getHasData() = true;
     sname = "_DATA_";
     subtype = Lexeme::subtype_string;
   }
@@ -31,21 +31,21 @@ bool DataStatementStrategy::parseData(shared_ptr<ParserContext> context,
     if (next_lexeme->type == Lexeme::type_separator &&
         (next_lexeme->value == "," || next_lexeme->value == ";")) {
       if (lastWasSeparator) {
-        i = context->datas.size() + 1;
+        i = context->getDatas().size() + 1;
         lexeme =
             make_shared<Lexeme>(Lexeme::type_literal, Lexeme::subtype_string,
                                 sname + to_string(i), "");
         if (lexeme) {
-          lexeme->tag = context->tag->name;
+          lexeme->tag = context->getTag()->name;
           context->pushActionFromLexeme(lexeme);
-          context->datas.push_back(lexeme);
+          context->getDatas().push_back(lexeme);
         }
 
       } else if (stext.size()) {
-        i = context->datas.size() + 1;
+        i = context->getDatas().size() + 1;
         next_lexeme = make_shared<Lexeme>(Lexeme::type_literal, subtype,
                                           sname + to_string(i), stext);
-        next_lexeme->tag = context->tag->name;
+        next_lexeme->tag = context->getTag()->name;
 
         s = (char*)stext.c_str();
         if (s[0] == '&') {
@@ -59,7 +59,7 @@ bool DataStatementStrategy::parseData(shared_ptr<ParserContext> context,
             else
               itext = 0;
           } catch (exception& e) {
-            context->logger->warning(
+            context->getLogger()->warning(
                 "Error while converting numeric constant " + stext);
             itext = 0;
           }
@@ -67,12 +67,12 @@ bool DataStatementStrategy::parseData(shared_ptr<ParserContext> context,
         }
 
         context->pushActionFromLexeme(next_lexeme);
-        context->datas.push_back(next_lexeme);
+        context->getDatas().push_back(next_lexeme);
 
         stext = "";
 
       } else {
-        context->logger->error("Invalid DATA parameter type");
+        context->getLogger()->error("Invalid DATA parameter type");
         return false;
       }
 
@@ -89,21 +89,21 @@ bool DataStatementStrategy::parseData(shared_ptr<ParserContext> context,
   }
 
   if (lastWasSeparator) {
-    i = context->datas.size() + 1;
+    i = context->getDatas().size() + 1;
     lexeme = make_shared<Lexeme>(Lexeme::type_literal, Lexeme::subtype_string,
                                  sname + to_string(i), "");
     if (lexeme) {
-      lexeme->tag = context->tag->name;
+      lexeme->tag = context->getTag()->name;
       context->pushActionFromLexeme(lexeme);
-      context->datas.push_back(lexeme);
+      context->getDatas().push_back(lexeme);
     }
   }
 
   if (stext.size()) {
-    i = context->datas.size() + 1;
+    i = context->getDatas().size() + 1;
     next_lexeme = make_shared<Lexeme>(Lexeme::type_literal, subtype,
                                       "_DATA_" + to_string(i), stext);
-    next_lexeme->tag = context->tag->name;
+    next_lexeme->tag = context->getTag()->name;
 
     s = (char*)stext.c_str();
     if (s[0] == '&') {
@@ -117,7 +117,7 @@ bool DataStatementStrategy::parseData(shared_ptr<ParserContext> context,
         else
           itext = 0;
       } catch (exception& e) {
-        context->logger->warning("Error while converting numeric constant " +
+        context->getLogger()->warning("Error while converting numeric constant " +
                                  stext);
         itext = 0;
       }
@@ -125,7 +125,7 @@ bool DataStatementStrategy::parseData(shared_ptr<ParserContext> context,
     }
 
     context->pushActionFromLexeme(next_lexeme);
-    context->datas.push_back(next_lexeme);
+    context->getDatas().push_back(next_lexeme);
   }
 
   return true;

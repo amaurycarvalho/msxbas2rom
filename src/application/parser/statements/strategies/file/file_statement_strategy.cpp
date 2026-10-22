@@ -44,9 +44,9 @@ bool FileStatementStrategy::parseOpen(shared_ptr<ParserContext> context,
 
           /*
           if (next_lexeme->type == Lexeme::type_literal && str == "GRP:") {
-            context->actionRoot->lexeme->name = "OPEN_GRP";
-            context->actionRoot->lexeme->value =
-                context->actionRoot->lexeme->name;
+            context->getActionRoot()->lexeme->name = "OPEN_GRP";
+            context->getActionRoot()->lexeme->value =
+                context->getActionRoot()->lexeme->name;
             return true;
           }
           */
@@ -55,7 +55,7 @@ bool FileStatementStrategy::parseOpen(shared_ptr<ParserContext> context,
           state = 1;
           continue;
         } else {
-          context->logger->error("File name is missing in OPEN statement");
+          context->getLogger()->error("File name is missing in OPEN statement");
           return false;
         }
       } break;
@@ -74,12 +74,12 @@ bool FileStatementStrategy::parseOpen(shared_ptr<ParserContext> context,
           s += (s[2] == '#') ? 3 : 2;
           stext = s;
           if (stext.empty()) {
-            context->logger->error("File number is missing in OPEN statement");
+            context->getLogger()->error("File number is missing in OPEN statement");
             return false;
           }
           if (parseFixedFileNumber(stext, &fileNumber) &&
               (fileNumber < 1 || fileNumber > 15)) {
-            context->logger->error(
+            context->getLogger()->error(
                 "File number out of range in OPEN statement (1..15)");
             return false;
           }
@@ -89,7 +89,7 @@ bool FileStatementStrategy::parseOpen(shared_ptr<ParserContext> context,
           state = 5;
           continue;
         } else {
-          context->logger->error("FOR/AS is missing in OPEN statement");
+          context->getLogger()->error("FOR/AS is missing in OPEN statement");
           return false;
         }
       } break;
@@ -115,12 +115,12 @@ bool FileStatementStrategy::parseOpen(shared_ptr<ParserContext> context,
           s += (s[2] == '#') ? 3 : 2;
           stext = s;
           if (stext.empty()) {
-            context->logger->error("File number is missing in OPEN statement");
+            context->getLogger()->error("File number is missing in OPEN statement");
             return false;
           }
           if (parseFixedFileNumber(stext, &fileNumber) &&
               (fileNumber < 1 || fileNumber > 15)) {
-            context->logger->error(
+            context->getLogger()->error(
                 "File number out of range in OPEN statement (1..15)");
             return false;
           }
@@ -130,7 +130,7 @@ bool FileStatementStrategy::parseOpen(shared_ptr<ParserContext> context,
           state = 5;
           continue;
         } else {
-          context->logger->error("Invalid FOR parameter in OPEN statement");
+          context->getLogger()->error("Invalid FOR parameter in OPEN statement");
           return false;
         }
       } break;
@@ -146,12 +146,12 @@ bool FileStatementStrategy::parseOpen(shared_ptr<ParserContext> context,
           s += (s[2] == '#') ? 3 : 2;
           stext = s;
           if (stext.empty()) {
-            context->logger->error("File number is missing in OPEN statement");
+            context->getLogger()->error("File number is missing in OPEN statement");
             return false;
           }
           if (parseFixedFileNumber(stext, &fileNumber) &&
               (fileNumber < 1 || fileNumber > 15)) {
-            context->logger->error(
+            context->getLogger()->error(
                 "File number out of range in OPEN statement (1..15)");
             return false;
           }
@@ -161,7 +161,7 @@ bool FileStatementStrategy::parseOpen(shared_ptr<ParserContext> context,
           state = 5;
           continue;
         } else {
-          context->logger->error("AS is missing in OPEN statement");
+          context->getLogger()->error("AS is missing in OPEN statement");
           return false;
         }
       } break;
@@ -174,7 +174,7 @@ bool FileStatementStrategy::parseOpen(shared_ptr<ParserContext> context,
           if (next_lexeme->isLiteralNumeric()) {
             if (!parseFixedFileNumber(next_lexeme->value, &fileNumber) ||
                 fileNumber < 1 || fileNumber > 15) {
-              context->logger->error(
+              context->getLogger()->error(
                   "File number out of range in OPEN statement (1..15)");
               return false;
             }
@@ -183,7 +183,7 @@ bool FileStatementStrategy::parseOpen(shared_ptr<ParserContext> context,
           state = 5;
           continue;
         } else {
-          context->logger->error("File number is missing in OPEN statement");
+          context->getLogger()->error("File number is missing in OPEN statement");
           return false;
         }
       } break;
@@ -193,7 +193,7 @@ bool FileStatementStrategy::parseOpen(shared_ptr<ParserContext> context,
           state = 6;
           continue;
         } else {
-          context->logger->error("LEN is missing in OPEN statement");
+          context->getLogger()->error("LEN is missing in OPEN statement");
           return false;
         }
       } break;
@@ -207,7 +207,7 @@ bool FileStatementStrategy::parseOpen(shared_ptr<ParserContext> context,
           state = 7;
           continue;
         } else {
-          context->logger->error("Record length is missing in OPEN statement");
+          context->getLogger()->error("Record length is missing in OPEN statement");
           return false;
         }
       } break;
@@ -228,7 +228,7 @@ bool FileStatementStrategy::parseClose(shared_ptr<ParserContext> context,
         if (next_lexeme->isSeparator("#")) {
           state = 1;
         } else {
-          context->logger->error("# is missing in CLOSE statement");
+          context->getLogger()->error("# is missing in CLOSE statement");
           return false;
         }
 
@@ -238,7 +238,7 @@ bool FileStatementStrategy::parseClose(shared_ptr<ParserContext> context,
         if (next_lexeme->isLiteralNumeric()) {
           context->pushActionFromLexeme(next_lexeme);
         } else {
-          context->logger->error("Invalid parameter in CLOSE statement");
+          context->getLogger()->error("Invalid parameter in CLOSE statement");
           return false;
         }
 
@@ -248,7 +248,7 @@ bool FileStatementStrategy::parseClose(shared_ptr<ParserContext> context,
         if (next_lexeme->isSeparator(",")) {
           state = 0;
         } else {
-          context->logger->error("Comma is missing in CLOSE statement");
+          context->getLogger()->error("Comma is missing in CLOSE statement");
           return false;
         }
       } break;
@@ -273,7 +273,7 @@ bool FileStatementStrategy::parseMaxfiles(
         if (next_lexeme->isOperator("=")) {
           state = 1;
         } else {
-          context->logger->error("MAXFILES assignment is missing");
+          context->getLogger()->error("MAXFILES assignment is missing");
           return false;
         }
       } break;
@@ -298,7 +298,7 @@ bool FileStatementStrategy::parseMaxfiles(
 bool FileStatementStrategy::execute(shared_ptr<ParserContext> context,
                                     shared_ptr<LexerLineContext> statement,
                                     shared_ptr<Lexeme> lexeme) {
-  context->has_file_support = true;
+  context->getHasFileSupport() = true;
   if (lexeme->value == "OPEN") return parseOpen(context, statement);
   if (lexeme->value == "CLOSE") return parseClose(context, statement);
   return parseMaxfiles(context, statement);

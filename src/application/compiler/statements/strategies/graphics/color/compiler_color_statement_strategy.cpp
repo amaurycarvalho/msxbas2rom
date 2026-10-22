@@ -9,16 +9,16 @@
 
 void CompilerColorStatementStrategy::cmd_color(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& optimizer = *context->getCodeOptimizer();
   shared_ptr<ActionNode> action, subaction;
   shared_ptr<Lexeme> lexeme;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
 
   if (t) {
-    action = context->current_action->actions[0];
+    action = context->getCurrentAction()->actions[0];
     lexeme = action->lexeme;
 
     if (lexeme->type == Lexeme::type_keyword) {
@@ -163,7 +163,7 @@ void CompilerColorStatementStrategy::cmd_color(
 
     } else {
       for (i = 0; i < t; i++) {
-        action = context->current_action->actions[i];
+        action = context->getCurrentAction()->actions[i];
         result_subtype = expression.evalExpression(action);
 
         if (result_subtype == Lexeme::subtype_null) continue;
@@ -213,5 +213,5 @@ void CompilerColorStatementStrategy::cmd_color(
 bool CompilerColorStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_color(context);
-  return context->compiled;
+  return context->getCompiled();
 }

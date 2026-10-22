@@ -15,7 +15,7 @@ int HeapCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (action->lexeme->value != "HEAP") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
 
   // ld hl, (HEAPSTR)
   cpu.addLdHLii(def_HEAPSTR);

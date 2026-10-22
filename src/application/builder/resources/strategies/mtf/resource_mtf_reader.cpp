@@ -22,8 +22,9 @@ bool ResourceMtfReader::load() {
   return false;
 }
 
-ResourceMtfReader::ResourceMtfReader(string filename)
-    : ResourceReader(filename) {};
+ResourceMtfReader::ResourceMtfReader(
+    string filename, shared_ptr<ResourceContentSource> contentSource)
+    : ResourceReader(filename, contentSource) {};
 
 bool ResourceMtfReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".MTF") == 0);

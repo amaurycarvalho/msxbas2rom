@@ -28,42 +28,42 @@ bool CompilerEvaluator::evaluate(shared_ptr<TagNode> tag) {
   shared_ptr<ActionNode> action;
   unsigned int i, t = tag->actions.size(), lin;
 
-  context->current_tag = tag;
+  context->getCurrentTag() = tag;
 
-  if (context->opts->lineNumber) {
+  if (context->getOpts()->lineNumber) {
     try {
       lin = stoi(tag->name);
     } catch (exception& e) {
-      context->logger->warning("Error while converting numeric constant " +
+      context->getLogger()->warning("Error while converting numeric constant " +
                                tag->name);
       lin = 0;
     }
     // ld hl, line number
-    context->cpu->addLdHL(lin);
+    context->getCpu()->addLdHL(lin);
     // ld (CURLIN), hl
-    context->cpu->addLdiiHL(def_CURLIN);
+    context->getCpu()->addLdiiHL(def_CURLIN);
   }
 
-  for (i = 0; i < t && context->compiled; i++) {
+  for (i = 0; i < t && context->getCompiled(); i++) {
     action = tag->actions[i];
 
     if (!evalAction(action)) return false;
   }
 
-  return context->compiled;
+  return context->getCompiled();
 }
 
 bool CompilerEvaluator::evalActions(shared_ptr<ActionNode> action) {
   shared_ptr<ActionNode> sub_action;
   unsigned int i, t = action->actions.size();
 
-  for (i = 0; i < t && context->compiled; i++) {
+  for (i = 0; i < t && context->getCompiled(); i++) {
     sub_action = action->actions[i];
 
     if (!evalAction(sub_action)) return false;
   }
 
-  return context->compiled;
+  return context->getCompiled();
 }
 
 bool CompilerEvaluator::evalAction(shared_ptr<ActionNode> action) {
@@ -75,7 +75,7 @@ bool CompilerEvaluator::evalAction(shared_ptr<ActionNode> action) {
     return false;
   }
 
-  context->current_action = action;
+  context->getCurrentAction() = action;
   lexeme = action->lexeme;
   if (!lexeme || lexeme->type != Lexeme::type_keyword) {
     context->syntaxError();
@@ -88,18 +88,18 @@ bool CompilerEvaluator::evalAction(shared_ptr<ActionNode> action) {
     return false;
   }
 
-  context->traps_checked = false;
-  context->skip_post_trap_check = false;
+  context->getTrapsChecked() = false;
+  context->getSkipPostTrapCheck() = false;
 
   if (!statement->execute(context)) {
     if (!context->containErrors()) context->syntaxError();
     return false;
   }
 
-  if (!context->skip_post_trap_check)
-    if (!context->traps_checked) {
-      context->codeHelper->addCheckTraps();
+  if (!context->getSkipPostTrapCheck())
+    if (!context->getTrapsChecked()) {
+      context->getCodeHelper()->addCheckTraps();
     }
 
-  return context->compiled;
+  return context->getCompiled();
 }

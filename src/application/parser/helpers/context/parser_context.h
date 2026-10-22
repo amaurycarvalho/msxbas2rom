@@ -32,7 +32,7 @@ using namespace std;
  * @brief Mutable parser execution state shared across parser methods.
  */
 class ParserContext {
- public:
+ private:
   //! support objects
   shared_ptr<Lexer> lexer;
   shared_ptr<BuildOptions> opts;
@@ -71,6 +71,53 @@ class ParserContext {
   shared_ptr<TagNode> tag;
   shared_ptr<ActionNode> actionRoot;
   shared_ptr<LexerLineContext> error_line;
+
+
+ public:
+  shared_ptr<Lexer>& getLexer() { return lexer; }
+  shared_ptr<BuildOptions>& getOpts() { return opts; }
+  shared_ptr<ParserStatementStrategyFactory>& getStatementStrategyFactory() {
+    return statementStrategyFactory;
+  }
+  shared_ptr<ExpressionEvaluator>& getExprEval() { return exprEval; }
+  shared_ptr<AssignmentEvaluator>& getAssignEval() { return assignEval; }
+  shared_ptr<ParserLineEvaluator>& getLineEval() { return lineEval; }
+
+  shared_ptr<Lexeme>& getLexNull() { return lex_null; }
+  shared_ptr<Lexeme>& getLexIndex() { return lex_index; }
+  shared_ptr<Lexeme>& getLexEmptyString() { return lex_empty_string; }
+  shared_ptr<Lexeme>& getLexRgb() { return lex_rgb; }
+  shared_ptr<Lexeme>& getLexZero() { return lex_zero; }
+
+  stack<shared_ptr<ActionNode>>& getActionStack() { return actionStack; }
+  stack<shared_ptr<Lexeme>>& getExpressionList() { return expressionList; }
+  vector<shared_ptr<TagNode>>& getTags() { return tags; }
+  vector<shared_ptr<Lexeme>>& getSymbolList() { return symbolList; }
+  vector<shared_ptr<Lexeme>>& getDatas() { return datas; }
+
+  bool& getEvalExprError() { return eval_expr_error; }
+  bool& getLineComment() { return line_comment; }
+  bool& getHasTraps() { return has_traps; }
+  bool& getHasDefusr() { return has_defusr; }
+  bool& getHasData() { return has_data; }
+  bool& getHasIData() { return has_idata; }
+  bool& getHasPlay() { return has_play; }
+  bool& getHasInput() { return has_input; }
+  bool& getHasFont() { return has_font; }
+  bool& getHasMtf() { return has_mtf; }
+  bool& getHasPt3() { return has_pt3; }
+  bool& getHasAkm() { return has_akm; }
+  bool& getHasResourceRestore() { return has_resource_restore; }
+  bool& getHasFileSupport() { return has_file_support; }
+
+  int (&getDeftbl())[26] { return deftbl; }
+  int& getLineNumber() { return lineNumber; }
+  int& getResourceCount() { return resourceCount; }
+
+  shared_ptr<Logger>& getLogger() { return logger; }
+  shared_ptr<TagNode>& getTag() { return tag; }
+  shared_ptr<ActionNode>& getActionRoot() { return actionRoot; }
+  shared_ptr<LexerLineContext>& getErrorLine() { return error_line; }
 
   //! helper methods
   void setHelpers(

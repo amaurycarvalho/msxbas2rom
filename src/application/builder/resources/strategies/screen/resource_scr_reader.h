@@ -24,7 +24,8 @@
 class ResourceScrReader : public ResourceBlobChunkPackedReader {
  public:
   static bool isIt(string fileext);
-  ResourceScrReader(string filename);
+  ResourceScrReader(string filename,
+                    shared_ptr<ResourceContentSource> contentSource);
 };
 
 #endif  // RESOURCE_SCR_READER_H_INCLUDED

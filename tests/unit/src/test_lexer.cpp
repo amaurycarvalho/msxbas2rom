@@ -4,6 +4,7 @@
  */
 
 // NOLINTBEGIN
+// test-inventory: file-adapter
 
 #include <cstdio>
 #include <fstream>
@@ -12,6 +13,12 @@
 
 #include "comment_state.h"
 #include "doctest/doctest.h"
+#include "test_support.h"
+
+static std::shared_ptr<TestSourceResolver> testSourceResolver() {
+  static auto resolver = std::make_shared<TestSourceResolver>();
+  return resolver;
+}
 #include "identifier_state.h"
 #include "keyword_state.h"
 #include "lexeme.h"
@@ -27,9 +34,7 @@
 static std::string createTempBas(const std::string& filename,
                                  const std::string& content) {
   const std::string path = "tmp/" + filename;
-  std::ofstream ofs(path);
-  ofs << content;
-  ofs.close();
+  testSourceResolver()->add(path, content);
   return path;
 }
 
@@ -66,7 +71,7 @@ TEST_SUITE("Lexer") {
     const std::string filename =
         createTempBas("lexer_valid.bas", "10 PRINT \"HELLO\"\n");
 
-    Lexer lexer;
+    Lexer lexer(testSourceResolver());
     REQUIRE(lexer.load(filename) == true);
     REQUIRE(lexer.evaluate() == true);
     REQUIRE(lexer.lines.size() == 1);
@@ -90,7 +95,7 @@ TEST_SUITE("Lexer") {
   TEST_CASE("Fails when input file is empty") {
     const std::string filename = createTempBas("lexer_empty.bas", "");
 
-    Lexer lexer;
+    Lexer lexer(testSourceResolver());
     CHECK(lexer.load(filename) == false);
     CHECK(lexer.getLogger()->trace().toString().find("Empty file") !=
           std::string::npos);
@@ -99,7 +104,7 @@ TEST_SUITE("Lexer") {
   }
 
   TEST_CASE("Fails when input file does not exist") {
-    Lexer lexer;
+    Lexer lexer(testSourceResolver());
     CHECK(lexer.load("tmp/does_not_exist.bas") == false);
     CHECK(lexer.getLogger()->trace().toString().find("File doesn't exist") !=
           std::string::npos);
@@ -112,7 +117,7 @@ TEST_SUITE("Lexer") {
     ofs.write(reinterpret_cast<const char*>(data), sizeof(data));
     ofs.close();
 
-    Lexer lexer;
+    Lexer lexer(testSourceResolver());
     CHECK(lexer.load(filename) == false);
     CHECK(lexer.getLogger()->trace().toString().find("Tokenized MSX-BASIC") !=
           std::string::npos);
@@ -124,7 +129,7 @@ TEST_SUITE("Lexer") {
     const std::string filename =
         createTempBin("lexer_invalid_header.bas", {0x01, 0x02, 0x03});
 
-    Lexer lexer;
+    Lexer lexer(testSourceResolver());
     CHECK(lexer.load(filename) == false);
     CHECK(lexer.getLogger()->trace().toString().find("not a MSX-BASIC") !=
           std::string::npos);
@@ -136,7 +141,7 @@ TEST_SUITE("Lexer") {
     const std::string filename =
         createTempBas("lexer_invalid_token.bas", "10 A=1..2\n");
 
-    Lexer lexer;
+    Lexer lexer(testSourceResolver());
     REQUIRE(lexer.load(filename) == true);
     CHECK(lexer.evaluate() == false);
     CHECK(lexer.getLogger()->containErrors());
@@ -152,7 +157,7 @@ TEST_SUITE("Lexer") {
     const std::string filename = createTempBas(
         "lexer_numeric_ranges.bas", "10 A=32767:B=32768:C=123456:D=1234567\n");
 
-    Lexer lexer;
+    Lexer lexer(testSourceResolver());
     REQUIRE(lexer.load(filename) == true);
     REQUIRE(lexer.evaluate() == true);
     REQUIRE(lexer.lines.size() == 1);
@@ -185,7 +190,7 @@ TEST_SUITE("Lexer") {
     const std::string filename =
         createTempBas("lexer_hex_and_functions.bas", "10 A=&HFF:PRINT TIME\n");
 
-    Lexer lexer;
+    Lexer lexer(testSourceResolver());
     REQUIRE(lexer.load(filename) == true);
     REQUIRE(lexer.evaluate() == true);
     REQUIRE(lexer.lines.size() == 1);
@@ -221,7 +226,7 @@ TEST_SUITE("Lexer") {
       const std::string filename =
           createTempBas("lexer_rem.bas", "10 REM THIS IS A COMMENT\n");
 
-      Lexer lexer;
+      Lexer lexer(testSourceResolver());
       REQUIRE(lexer.load(filename) == true);
       REQUIRE(lexer.evaluate() == true);
       REQUIRE(lexer.lines.size() == 1);
@@ -239,7 +244,7 @@ TEST_SUITE("Lexer") {
       const std::string filename =
           createTempBas("lexer_apostrophe.bas", "10 '#COMMENT\n");
 
-      Lexer lexer;
+      Lexer lexer(testSourceResolver());
       REQUIRE(lexer.load(filename) == true);
       REQUIRE(lexer.evaluate() == true);
       REQUIRE(lexer.lines.size() == 1);

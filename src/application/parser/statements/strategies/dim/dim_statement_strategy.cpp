@@ -7,7 +7,7 @@
 
 bool DimStatementStrategy::parseStatement(
     shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
-  shared_ptr<ActionNode> action = context->actionRoot;
+  shared_ptr<ActionNode> action = context->getActionRoot();
   shared_ptr<ActionNode> subaction;
   shared_ptr<Lexeme> lexeme;
   unsigned int i, t;
@@ -24,7 +24,7 @@ bool DimStatementStrategy::parseStatement(
     lexeme->isArray = true;
     lexeme->parm_count = subaction->actions.size();
     if (!lexeme->parm_count) {
-      context->logger->error(
+      context->getLogger()->error(
           "Invalid array declaration: DIM size parameter is missing");
       return false;
     }

@@ -14,6 +14,7 @@
 #include "build_options.h"
 #include "code_node.h"
 #include "symbol_export_context.h"
+#include "symbol_output_sink.h"
 
 using namespace std;
 
@@ -209,36 +210,36 @@ struct ElfLayout {
 
 class ElfWriter {
  public:
-  static bool write(const string& file, SymbolTableBuilder& sym,
-                    StringTableBuilder& strtab, StringTableBuilder& shstr,
-                    DwarfBuilder& dwarf) {
-    FILE* f = fopen(file.c_str(), "wb");
-    if (!f) return false;
+  static bool write(const string& file, shared_ptr<SymbolOutputSink> sink,
+                    SymbolTableBuilder& sym, StringTableBuilder& strtab,
+                    StringTableBuilder& shstr, DwarfBuilder& dwarf) {
+    if (!sink) return false;
 
+    vector<unsigned char> output;
     ElfLayout L = computeLayout(sym, strtab, dwarf, shstr);
 
-    writeHeader(f, L);
+    writeHeader(output, L);
 
-    fwrite(sym.symbols.data(), sym.symbols.size() * sizeof(Elf32_Sym), 1, f);
+    appendBytes(output, sym.symbols.data(),
+                sym.symbols.size() * sizeof(Elf32_Sym));
+    appendBytes(output, strtab.table.data(), strtab.table.size());
+    appendBytes(output, dwarf.debug_info.data(), dwarf.debug_info.size());
+    appendBytes(output, dwarf.debug_abbrev.data(), dwarf.debug_abbrev.size());
+    appendBytes(output, dwarf.debug_str.data(), dwarf.debug_str.size());
+    appendBytes(output, dwarf.debug_line.data(), dwarf.debug_line.size());
+    appendBytes(output, shstr.table.data(), shstr.table.size());
 
-    fwrite(strtab.table.data(), strtab.table.size(), 1, f);
-
-    fwrite(dwarf.debug_info.data(), dwarf.debug_info.size(), 1, f);
-
-    fwrite(dwarf.debug_abbrev.data(), dwarf.debug_abbrev.size(), 1, f);
-
-    fwrite(dwarf.debug_str.data(), dwarf.debug_str.size(), 1, f);
-
-    fwrite(dwarf.debug_line.data(), dwarf.debug_line.size(), 1, f);
-
-    fwrite(shstr.table.data(), shstr.table.size(), 1, f);
-
-    fclose(f);
-
-    return true;
+    return sink->writeBinary(file, output);
   }
 
  private:
+  static void appendBytes(vector<unsigned char>& output, const void* data,
+                          size_t size) {
+    if (!data || !size) return;
+    const unsigned char* bytes = static_cast<const unsigned char*>(data);
+    output.insert(output.end(), bytes, bytes + size);
+  }
+
   static ElfLayout computeLayout(SymbolTableBuilder& sym,
                                  StringTableBuilder& strtab,
                                  DwarfBuilder& dwarf,
@@ -273,7 +274,7 @@ class ElfWriter {
     return L;
   }
 
-  static void writeHeader(FILE* f, const ElfLayout& L) {
+  static void writeHeader(vector<unsigned char>& output, const ElfLayout& L) {
     Elf32_Ehdr eh{};
     memset(&eh, 0, sizeof(eh));
 
@@ -296,7 +297,7 @@ class ElfWriter {
     eh.e_shoff = L.shOff;
     eh.e_shstrndx = 8;
 
-    fwrite(&eh, sizeof(eh), 1, f);
+    appendBytes(output, &eh, sizeof(eh));
   }
 };
 
@@ -307,7 +308,8 @@ class ElfWriter {
 /* ============================================================ */
 
 bool ElfExportStrategy::save(shared_ptr<SymbolExportContext> context,
-                             shared_ptr<BuildOptions> opts) {
+                             shared_ptr<BuildOptions> opts,
+                             shared_ptr<SymbolOutputSink> sink) {
   StringTableBuilder strtab;
   StringTableBuilder shstrtab;
   SymbolTableBuilder symtab;
@@ -367,6 +369,6 @@ bool ElfExportStrategy::save(shared_ptr<SymbolExportContext> context,
 
   context->exportFilename = opts->baseFilename + ".elf";
 
-  return ElfWriter::write(context->exportFilename, symtab, strtab, shstrtab,
-                          dwarf);
+  return ElfWriter::write(context->exportFilename, sink, symtab, strtab,
+                          shstrtab, dwarf);
 }

@@ -11,18 +11,18 @@ void CompilerPutStatementStrategy::cmd_put(
     shared_ptr<CompilerContext> context) {
   shared_ptr<ActionNode> action;
   shared_ptr<Lexeme> lexeme;
-  unsigned int t = context->current_action->actions.size();
+  unsigned int t = context->getCurrentAction()->actions.size();
 
   if (t) {
-    action = context->current_action->actions[0];
+    action = context->getCurrentAction()->actions[0];
     lexeme = action->lexeme;
 
     if (lexeme->type == Lexeme::type_keyword && lexeme->value == "SPRITE") {
-      context->current_action = action;
+      context->getCurrentAction() = action;
       cmd_put_sprite(context);
     } else if (lexeme->type == Lexeme::type_keyword &&
                lexeme->value == "TILE") {
-      context->current_action = action;
+      context->getCurrentAction() = action;
       cmd_put_tile(context);
     } else {
       context->syntaxError("Invalid PUT statement");
@@ -35,17 +35,17 @@ void CompilerPutStatementStrategy::cmd_put(
 
 void CompilerPutStatementStrategy::cmd_put_sprite(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<ActionNode> action, sub_action;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype, parm_flag = 0;
   bool has_sprite = false, has_x_coord = false, has_y_coord = false,
        has_color = false, has_pattern = false;
 
   if (t) {
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
 
       switch (i) {
         case 0: {
@@ -239,7 +239,7 @@ void CompilerPutStatementStrategy::cmd_put_sprite(
 
     // call xbasic PUT SPRITE (in: ix=x, iy=y, d=color, a=sprite number,
     // h=pattern number, b=parameters flag (b11100000)
-    context->codeOptimizer->addKernelCall(DISP_XBASIC_PUT_SPRITE);
+    context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_PUT_SPRITE);
 
   } else {
     context->syntaxError("PUT SPRITE with empty parameters");
@@ -248,17 +248,17 @@ void CompilerPutStatementStrategy::cmd_put_sprite(
 
 void CompilerPutStatementStrategy::cmd_put_tile(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  auto& optimizer = *context->codeOptimizer;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  auto& optimizer = *context->getCodeOptimizer();
   shared_ptr<ActionNode> action, sub_action;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype;
   bool has_tile = false, has_x_coord = false, has_y_coord = false;
 
   if (t) {
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
 
       switch (i) {
         case 0: {
@@ -398,7 +398,7 @@ void CompilerPutStatementStrategy::cmd_put_tile(
     }
 
     //   call TileAddress   ; in hl=xy, out: hl
-    context->codeOptimizer->addKernelCall(DISP_tileAddress);
+    context->getCodeOptimizer()->addKernelCall(DISP_tileAddress);
 
     if (has_tile) {
       // pop af
@@ -419,5 +419,5 @@ void CompilerPutStatementStrategy::cmd_put_tile(
 bool CompilerPutStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_put(context);
-  return context->compiled;
+  return context->getCompiled();
 }

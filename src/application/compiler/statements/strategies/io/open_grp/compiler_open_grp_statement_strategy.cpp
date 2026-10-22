@@ -5,6 +5,6 @@
 
 bool CompilerOpenGrpStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
-  context->has_open_grp = true;
-  return context->compiled;
+  context->getHasOpenGrp() = true;
+  return context->getCompiled();
 }

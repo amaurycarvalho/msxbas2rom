@@ -8,8 +8,8 @@
 
 bool CompilerCmdPageHandler::execute(shared_ptr<CompilerContext> context,
                                      shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
 
   if (action->actions.size() == 1) {
     auto sub = action->actions[0];
@@ -75,7 +75,7 @@ bool CompilerCmdPageHandler::execute(shared_ptr<CompilerContext> context,
   }
 
   // call cmd_page (l = mode, e = delay #1, c = delay #2)
-  context->codeOptimizer->addKernelCall(DISP_cmd_page);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_page);
 
-  return context->compiled;
+  return context->getCompiled();
 }

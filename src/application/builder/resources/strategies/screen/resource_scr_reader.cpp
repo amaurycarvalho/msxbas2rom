@@ -9,8 +9,9 @@
 
 #include <strings.h>
 
-ResourceScrReader::ResourceScrReader(string filename)
-    : ResourceBlobChunkPackedReader(filename) {};
+ResourceScrReader::ResourceScrReader(
+    string filename, shared_ptr<ResourceContentSource> contentSource)
+    : ResourceBlobChunkPackedReader(filename, contentSource) {};
 
 bool ResourceScrReader::isIt(string fileext) {
   return (strcasecmp(fileext.c_str(), ".SC0") == 0 ||

@@ -1,6 +1,21 @@
 ## Why
 
-The mutation score is now **73%** after Round 3 (`mutation_report.json` of set/08: 1791 killed + 10 timeout / 2445 mutants = 644 survivors), still short of the 85% target mandated by the `mutation-testing` spec and enforced by `make mutation-check`. Reaching 85% requires **2079 killed** (2445 × 0.85 = 2078.25), i.e. **~288 more kills**. The history: Round 1 moved 66% → 70% by sampling a representative case per branch; Round 2 attempted exhaustive enumeration but reported 70% because tests asserted high-level properties ("it compiled", `written > 0`); Round 3 switched to exact-output assertions and moved 70% → 73%. The residual 644 survivors are dominated by **index/offset mutants** (`dest[address - N]` → `address + N`, `data[i + 1]` → `i - 1`) whose Round 3 fixtures use **zeros/equal values**, so reading or writing the wrong offset yields the same byte the test asserts — the mutant is equivalent *for that fixture*. The fix is **distinct sentinel bytes per offset** plus both-sides assertions for the remaining equality/relational gaps, so that any wrong index changes an observable byte.
+> **Round 6 update (approved plan, release 1.3.1.0):** the fresh post-Phase-A
+> `mutation_report.json` baseline is **70%**: 1,783 killed, 733 survived, and
+> 12 timeout mutants out of 2,528. Achieving 85% on that report requires at
+> least **2,149 killed** mutants (`ceil(2,528 × 0.85)`), or **366 additional
+> kills**. No ASM/Z80 survivor is reported; all survivor-driven work targets
+> C++ code.
+>
+> Round 6 is sequenced **after Phase A of
+> `refactor-clean-architecture-testability`**: the boundary check, in-memory
+> source, kernel image, and resource/symbol boundaries run first so tests are
+> faster and deterministic. Phase A invalidates the old line targets; the
+> fresh report has been generated and the survivor inventory recomputed before
+> Round 6 starts. The **~415-kill budget** below (minimum 366) replaces the
+> former ~345-kill provisional estimate.
+
+Before Phase A, the Round 3 baseline was **73%** (`mutation_report.json` of set/08: 1,791 killed + 10 timeout / 2,445 mutants = 644 survivors), still short of the 85% target mandated by the `mutation-testing` spec and enforced by `make mutation-check`. The history: Round 1 moved 66% → 70% by sampling a representative case per branch; Round 2 attempted exhaustive enumeration but reported 70% because tests asserted high-level properties ("it compiled", `written > 0`); Round 3 switched to exact-output assertions and moved 70% → 73%. Those residuals were dominated by **index/offset mutants** (`dest[address - N]` → `address + N`, `data[i + 1]` → `i - 1`) whose Round 3 fixtures use **zeros/equal values**, so reading or writing the wrong offset yields the same byte the test asserts — the mutant is equivalent *for that fixture*. The fix remains **distinct sentinel bytes per offset** plus both-sides assertions for the remaining equality/relational gaps, so that any wrong index changes an observable byte. The post-Phase-A report shows the same pattern at a larger scale: 733 survivors, dominated by `eq_to_ne` (195), `post_inc` (110), relational (254), and arithmetic (147) mutants.
 
 ## What Changes
 
@@ -22,6 +37,38 @@ The mutation score is now **73%** after Round 3 (`mutation_report.json` of set/0
 - **Anti-fragility constraint (Decisions 11/13/14):** exact-output tests use **distinct sentinel bytes per offset** and never hardcode kernel-derived values. Z80 opcodes, compiler-owned layout arithmetic, and the documented compiler↔kernel ABI are asserted literally; kernel-resolved addresses (`mr_call_target`/`mr_jump_target`/`mr_get_data_target`, `getKernelCallAddr`, `rom.cpp` mapper-patch `kernelAddr`/`offset`) are derived at test runtime from `bin_header_bin`/`DISP_*`/`def_wrapper_routines_map_table`, so the suite does not break when the embedded kernel assembly is reassembled.
 - No production source changes; this change touches tests only (the sole production change, `Compiler::getContext()`, was added in Round 3). The `Makefile` `mutation-run` target is unchanged (Round 1 already added `--ld-search-path` and `--test-suite-exclude=Slow`).
 
+- **Round 6 (after CleanArch Phase A, target >85%)** replaces the Round 5
+  plan and does not reopen completed Rounds 1-4:
+  - consumes the fresh post-Phase-A `mutation_report.json` (70%, 1,783 killed,
+    733 survived, 12 timeout out of 2,528) and regenerates the survivor
+    inventory; the old file/line targets are not reused;
+  - prioritises C++ statement strategies (229), binary resource readers (145),
+    semantic helpers/optimizer (98), parser (98), `compiler.cpp`
+    relocation/layout (46), and the builder/symbols/lexer/application tail
+    (117); no ASM/Z80 survivor is targeted;
+  - uses direct, data-driven unit harnesses and byte-exact or normalised
+    fingerprint assertions for generated code, instead of many costly BASIC
+    end-to-end compilations;
+  - preserves kernel-reassembly safety: kernel addresses are runtime-derived;
+    generated-code fingerprints mask only derived operands while retaining
+    opcodes, compiler-owned immediates, and layout bytes;
+  - does not add global exact-distance tests for kernel routines. Dispatch
+    integrity is checked structurally; an exact local distance is allowed only
+    where a spec explicitly declares that layout span a stable ABI contract;
+  - uses the shared `compileSource()` and `kernelImage()` test seams from
+    Phase A so the cleanarch refactor can replace their internals without
+    rewriting the mutation tests;
+  - profiles the suite and moves only redundant aggregate tests to `Slow`
+    after focused replacements cover their mutation-relevant assertions;
+    normal-suite coverage is preserved;
+  - prohibits temporary `.bas` files in existing and future tests: BASIC
+    scenarios are supplied through the Phase A source boundary.
+- **Kill budget (~415, minimum 366 on the post-Phase-A report):**
+  graphics statements 75, control/IO/basic/sound 60, semantic/optimizer 60,
+  compiler core 30, builder readers 85, parser 55, long tail 50. The ~415
+  target leaves a ~49-kill margin over the 366 needed to reach 2,149 killed.
+- **Target release: 1.3.1.0.**
+
 ## Capabilities
 
 ### New Capabilities
@@ -30,11 +77,13 @@ The mutation score is now **73%** after Round 3 (`mutation_report.json` of set/0
 
 ### Modified Capabilities
 
-- `mutation-testing`: Strengthen the coverage requirement from *exercising each branch* to *asserting the exact emitted bytes/values* **with sentinel-diverse fixtures**, so tests fail when an arithmetic, relational, equality, or index mutant changes the output rather than when a branch is merely reached; require that kernel-derived expected values are computed at test runtime; retain the requirement permitting further `excludePaths` narrowing when mutants are provably equivalent; record that mull-runner 0.34.0 exposes no per-mutant filter, so incremental verification is via the unit suite and the full `make mutation-run` is a user-managed step.
+- `mutation-testing`: Strengthen the coverage requirement from *exercising each branch* to *asserting the exact emitted bytes/values* **with sentinel-diverse fixtures**, so tests fail when an arithmetic, relational, equality, or index mutant changes the output rather than when a branch is merely reached; require that kernel-derived expected values are computed at test runtime; require survivor-driven work to use a fresh report after a production architecture refactor; require C++-only mutation targets with Z80 regression tests excluded from the score; retain the requirement permitting further `excludePaths` narrowing when mutants are provably equivalent; record that mull-runner 0.34.0 exposes no per-mutant filter, so incremental verification is via the unit suite and the full `make mutation-run` is a user-managed step.
 
 ## Impact
 
 - `tests/unit/src/*.cpp`: new exact-output test cases (existing cases preserved) in `test_compiler.cpp` (relocation + layout sentinel white-box), `test_resources.cpp`/`test_resources_extra.cpp` (reader sentinel fixtures), `test_compiler_expressions.cpp` (type dispatch + variable emitter), `test_code_optimizer.cpp` (peephole), `test_compiler_graphics.cpp`/`test_compiler_set.cpp`/`test_compiler_on.cpp` (statement strategies), `test_parser.cpp`/`test_lexer.cpp` (counters/boundaries), `test_rom.cpp` (kernel-derived mapper patches), and `test_symbols.cpp` (exports).
+- New test-only files: `tests/unit/src/test_support.h` (shared `compileSource()`/`kernelImage()` seams), `tests/unit/src/test_generated_z80.cpp` (normalised fragment fingerprint), and `tests/unit/src/test_kernel_layout.cpp` (dispatch integrity and limited declared ABI spans).
+- Depends on Phase A of `refactor-clean-architecture-testability`; the old `mutation_report.json` line targets are invalidated by that phase and must be regenerated.
 - `mull.yml`: no change — the fallback is not viable at sub-file granularity (Decision 8).
 - `Makefile`: no change.
-- No production code, APIs, or dependencies change.
+- No production code, APIs, or dependencies change in this change; the Phase A production refactor belongs to `refactor-clean-architecture-testability`.

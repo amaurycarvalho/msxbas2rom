@@ -8,7 +8,7 @@
 
 void CompilerClearStatementStrategy::cmd_clear(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
 
   /// clear variables workarea
   cpu.addXorA();                //! A = 0
@@ -28,5 +28,5 @@ bool CompilerClearStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   /// @remark issue #11
   cmd_clear(context);
-  return context->compiled;
+  return context->getCompiled();
 }

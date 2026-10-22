@@ -15,7 +15,7 @@ int MsxCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (action->lexeme->value != "MSX") return Lexeme::subtype_unknown;
 
-  auto& cpu = *context->cpu;
+  auto& cpu = *context->getCpu();
 
   // ld hl, (VERSION)                    ; 0 = MSX1, 1 = MSX2, 2 = MSX2+, 3 =
   // MSXturboR

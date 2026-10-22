@@ -14,7 +14,7 @@ int BaseCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (action->lexeme->value != "BASE") return Lexeme::subtype_unknown;
 
-  auto& expression = *context->expressionEvaluator;
+  auto& expression = *context->getExpressionEvaluator();
 
   if (result[0] == Lexeme::subtype_single_decimal ||
       result[0] == Lexeme::subtype_double_decimal) {
@@ -25,7 +25,7 @@ int BaseCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   if (result[0] == Lexeme::subtype_numeric) {
     // call base function
-    context->codeOptimizer->addKernelCall(DISP_XBASIC_BASE);
+    context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_BASE);
     // ctx.cpu->addCall(def_XBASIC_ABS_INT);  // abs()
   } else
     result[0] = Lexeme::subtype_unknown;

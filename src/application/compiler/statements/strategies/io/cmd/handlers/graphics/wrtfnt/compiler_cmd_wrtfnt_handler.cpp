@@ -8,8 +8,8 @@
 
 bool CompilerCmdWrtFntHandler::execute(shared_ptr<CompilerContext> context,
                                        shared_ptr<ActionNode> action) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
 
   if (action->actions.size() != 1) {
     context->syntaxError("CMD WRTFNT syntax error");
@@ -23,7 +23,7 @@ bool CompilerCmdWrtFntHandler::execute(shared_ptr<CompilerContext> context,
   // ld (DAC), hl
   cpu.addLdiiHL(def_DAC);
   // call cmd_wrtfnt
-  context->codeOptimizer->addKernelCall(DISP_cmd_wrtfnt);
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_wrtfnt);
 
-  return context->compiled;
+  return context->getCompiled();
 }

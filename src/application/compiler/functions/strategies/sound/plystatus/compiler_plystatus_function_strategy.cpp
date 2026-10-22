@@ -16,7 +16,7 @@ int PlystatusCompilerFunctionStrategy::execute(
   if (action->lexeme->value != "PLYSTATUS") return Lexeme::subtype_unknown;
 
   // CALL usr2_player_status
-  context->codeOptimizer->addKernelCall(DISP_usr2_player_status);
+  context->getCodeOptimizer()->addKernelCall(DISP_usr2_player_status);
 
   return Lexeme::subtype_numeric;
 }

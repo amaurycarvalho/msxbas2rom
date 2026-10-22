@@ -29,7 +29,7 @@ bool PutStatementStrategy::parsePutSprite(
             }
             parm->clearLexemes();
           } else {
-            context->pushActionFromLexeme(context->lex_null);
+            context->pushActionFromLexeme(context->getLexNull());
           }
           state = 1;
           continue;
@@ -43,9 +43,9 @@ bool PutStatementStrategy::parsePutSprite(
           continue;
         } else if (next_lexeme->isSeparator("(")) {
           state = 2;
-          if (context->actionRoot) {
-            if (context->actionRoot->lexeme) {
-              if (context->actionRoot->lexeme->value != "STEP") {
+          if (context->getActionRoot()) {
+            if (context->getActionRoot()->lexeme) {
+              if (context->getActionRoot()->lexeme->value != "STEP") {
                 context->pushActionRoot(act_coord);
               }
             }
@@ -54,13 +54,13 @@ bool PutStatementStrategy::parsePutSprite(
         } else if (next_lexeme->isSeparator(",")) {
           state = 3;
           context->pushActionRoot(act_coord);
-          context->pushActionFromLexeme(context->lex_null);
-          context->pushActionFromLexeme(context->lex_null);
+          context->pushActionFromLexeme(context->getLexNull());
+          context->pushActionFromLexeme(context->getLexNull());
           context->popActionRoot();
           continue;
         } else {
-          context->logger->error("PUT SPRITE without a valid complement");
-          context->eval_expr_error = true;
+          context->getLogger()->error("PUT SPRITE without a valid complement");
+          context->getEvalExprError() = true;
           return false;
         }
       } break;
@@ -80,10 +80,10 @@ bool PutStatementStrategy::parsePutSprite(
               }
               parm->clearLexemes();
             } else {
-              if (context->actionRoot) {
-                context->pushActionFromLexeme(context->lex_null);
-                if (context->actionRoot->actions.size() == 1) {
-                  context->pushActionFromLexeme(context->lex_null);
+              if (context->getActionRoot()) {
+                context->pushActionFromLexeme(context->getLexNull());
+                if (context->getActionRoot()->actions.size() == 1) {
+                  context->pushActionFromLexeme(context->getLexNull());
                 }
               }
             }
@@ -105,7 +105,7 @@ bool PutStatementStrategy::parsePutSprite(
             }
             parm->clearLexemes();
           } else {
-            context->pushActionFromLexeme(context->lex_null);
+            context->pushActionFromLexeme(context->getLexNull());
           }
           continue;
         }
@@ -125,7 +125,7 @@ bool PutStatementStrategy::parsePutSprite(
             }
             parm->clearLexemes();
           } else {
-            context->pushActionFromLexeme(context->lex_null);
+            context->pushActionFromLexeme(context->getLexNull());
           }
           continue;
         }
@@ -172,7 +172,7 @@ bool PutStatementStrategy::parsePutTile(
             }
             parm->clearLexemes();
           } else {
-            context->pushActionFromLexeme(context->lex_null);
+            context->pushActionFromLexeme(context->getLexNull());
           }
           state = 1;
           continue;
@@ -186,9 +186,9 @@ bool PutStatementStrategy::parsePutTile(
           continue;
         } else if (next_lexeme->isSeparator("(")) {
           state = 2;
-          if (context->actionRoot) {
-            if (context->actionRoot->lexeme) {
-              if (context->actionRoot->lexeme->value != "STEP") {
+          if (context->getActionRoot()) {
+            if (context->getActionRoot()->lexeme) {
+              if (context->getActionRoot()->lexeme->value != "STEP") {
                 context->pushActionRoot(act_coord);
               }
             }
@@ -197,13 +197,13 @@ bool PutStatementStrategy::parsePutTile(
         } else if (next_lexeme->isSeparator(",")) {
           state = 3;
           context->pushActionRoot(act_coord);
-          context->pushActionFromLexeme(context->lex_null);
-          context->pushActionFromLexeme(context->lex_null);
+          context->pushActionFromLexeme(context->getLexNull());
+          context->pushActionFromLexeme(context->getLexNull());
           context->popActionRoot();
           continue;
         } else {
-          context->logger->error("PUT TILE without a valid complement");
-          context->eval_expr_error = true;
+          context->getLogger()->error("PUT TILE without a valid complement");
+          context->getEvalExprError() = true;
           return false;
         }
       } break;
@@ -223,10 +223,10 @@ bool PutStatementStrategy::parsePutTile(
               }
               parm->clearLexemes();
             } else {
-              if (context->actionRoot) {
-                context->pushActionFromLexeme(context->lex_null);
-                if (context->actionRoot->actions.size() == 1) {
-                  context->pushActionFromLexeme(context->lex_null);
+              if (context->getActionRoot()) {
+                context->pushActionFromLexeme(context->getLexNull());
+                if (context->getActionRoot()->actions.size() == 1) {
+                  context->pushActionFromLexeme(context->getLexNull());
                 }
               }
             }
@@ -248,7 +248,7 @@ bool PutStatementStrategy::parsePutTile(
             }
             parm->clearLexemes();
           } else {
-            context->pushActionFromLexeme(context->lex_null);
+            context->pushActionFromLexeme(context->getLexNull());
           }
           continue;
         }
@@ -268,7 +268,7 @@ bool PutStatementStrategy::parsePutTile(
             }
             parm->clearLexemes();
           } else {
-            context->pushActionFromLexeme(context->lex_null);
+            context->pushActionFromLexeme(context->getLexNull());
           }
           continue;
         }

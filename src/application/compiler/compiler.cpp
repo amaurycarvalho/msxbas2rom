@@ -30,10 +30,10 @@
 #include "compiler_start_statement_strategy.h"
 #include "compiler_symbol_resolver.h"
 #include "compiler_variable_emitter.h"
+#include "kernel_image.h"
 #include "lexeme.h"
 #include "lexer_line_context.h"
 
-extern unsigned char bin_header_bin[];
 #include "logger.h"
 #include "parser.h"
 #include "resources.h"
@@ -46,17 +46,21 @@ extern unsigned char bin_header_bin[];
  * @name Compiler class code
  */
 
-Compiler::Compiler(shared_ptr<ICpuOpcodeWriter> cpu) {
-  context = make_shared<CompilerContext>();
+Compiler::Compiler(shared_ptr<ICpuOpcodeWriter> cpu,
+                   shared_ptr<KernelImage> kernelImage,
+                   shared_ptr<ResourceContentSource> resourceContentSource,
+                   shared_ptr<SymbolOutputSink> symbolOutputSink) {
+  context = make_shared<CompilerContext>(kernelImage, resourceContentSource,
+                                         symbolOutputSink);
   context->setHelpers(context);
   if (cpu) {
     workspace = make_shared<CpuWorkspaceContext>(
         COMPILE_CODE_SIZE, COMPILE_RAM_SIZE, def_RAM_BOTTOM);
     cpu->context = workspace;
-    context->cpu = cpu;
+    context->getCpu() = cpu;
   }
-  context->current_tag = 0;
-  context->compiled = false;
+  context->getCurrentTag() = 0;
+  context->getCompiled() = false;
 }
 
 Compiler::~Compiler() = default;
@@ -66,66 +70,70 @@ shared_ptr<CompilerContext> Compiler::getContext() const {
 }
 
 int Compiler::getCodeSize() const {
-  return context->cpu->context->code_size;
+  return context->getCpu()->context->getCodeSize();
 }
 
 float Compiler::getRamMemoryPerc() const {
-  return context->cpu->context->ram_memory_perc;
+  return context->getCpu()->context->getRamMemoryPerc();
 }
 
 bool Compiler::getPt3() const {
-  return context->pt3;
+  return context->getPt3();
 }
 
 bool Compiler::getAkm() const {
-  return context->akm;
+  return context->getAkm();
 }
 
 bool Compiler::getFont() const {
-  return context->font;
+  return context->getFont();
 }
 
 bool Compiler::getHasTinySprite() const {
-  return context->has_tiny_sprite;
+  return context->getHasTinySprite();
 }
 
 shared_ptr<Logger> Compiler::getLogger() {
-  return context->logger;
+  return context->getLogger();
 }
 
 shared_ptr<SymbolManager> Compiler::getSymbolManager() {
-  return context->symbolManager;
+  return context->getSymbolManager();
 }
 
 const shared_ptr<SymbolManager> Compiler::getSymbolManager() const {
-  return context->symbolManager;
+  return context->getSymbolManager();
 }
 
 shared_ptr<ResourceManager> Compiler::getResourceManager() {
-  return context->resourceManager;
+  return context->getResourceManager();
 }
 const shared_ptr<ResourceManager> Compiler::getResourceManager() const {
-  return context->resourceManager;
+  return context->getResourceManager();
 }
 
 int Compiler::getRamSize() const {
-  return context->cpu->context->ram_size;
+  return context->getCpu()->context->getRamSize();
 }
 
 shared_ptr<TagNode> Compiler::getCurrentTag() const {
-  return context->current_tag;
+  return context->getCurrentTag();
 }
 
 shared_ptr<Parser> Compiler::getParser() const {
-  return context->parser;
+  return context->getParser();
 }
 
 shared_ptr<BuildOptions> Compiler::getOpts() const {
-  return context->opts;
+  return context->getOpts();
+}
+
+shared_ptr<KernelImage> Compiler::getKernelImage() const {
+  return context->getKernelImage();
 }
 
 bool Compiler::isCompiled() const {
-  return context->compiled;
+  return context->getCompiled();
 }
 
 bool Compiler::build(shared_ptr<Parser> parser) {
@@ -137,45 +145,45 @@ bool Compiler::build(shared_ptr<Parser> parser) {
   unsigned int i, t;
   string compiledCodeInfo;
 
-  context->parser = parser;
-  context->opts = parser->getOpts();
+  context->getParser() = parser;
+  context->getOpts() = parser->getOpts();
 
-  context->cpu->context->clear();
+  context->getCpu()->context->clear();
 
-  context->symbolResolver->clearSymbols();
+  context->getSymbolResolver()->clearSymbols();
 
-  context->logger->setFile(context->opts->inputFilename);
+  context->getLogger()->setFile(context->getOpts()->inputFilename);
 
   t = parser->getTags().size();
-  context->compiled = (t > 0);
+  context->getCompiled() = (t > 0);
 
   /// @remark END statement needs to be here (first segment) for MegaROM
   /// support
-  context->logger->debug("Registering END statement...");
+  context->getLogger()->debug("Registering END statement...");
 
   codeItem = make_shared<CodeNode>();
   codeItem->name = "END_STMT";
-  codeItem->start = context->cpu->context->code_pointer;
+  codeItem->start = context->getCpu()->context->getCodePointer();
   //! register END statement code
   endStmt.registerEndRoutine(context);
-  codeItem->length = context->cpu->context->code_pointer - codeItem->start;
+  codeItem->length = context->getCpu()->context->getCodePointer() - codeItem->start;
   codeItem->is_code = true;
   codeItem->debug = true;
-  context->symbolManager->context->codeList.push_back(codeItem);
-  context->logger->debug("+--> size: " + to_string(codeItem->length) +
+  context->getSymbolManager()->context->getCodeList().push_back(codeItem);
+  context->getLogger()->debug("+--> size: " + to_string(codeItem->length) +
                          " byte(s)");
 
-  context->logger->debug("Registering start of program...");
+  context->getLogger()->debug("Registering start of program...");
 
   codeItem = make_shared<CodeNode>();
   codeItem->name = "START_PGM";
-  codeItem->start = context->cpu->context->code_pointer;
+  codeItem->start = context->getCpu()->context->getCodePointer();
   startStmt.execute(context);
-  codeItem->length = context->cpu->context->code_pointer - codeItem->start;
+  codeItem->length = context->getCpu()->context->getCodePointer() - codeItem->start;
   codeItem->is_code = true;
   codeItem->debug = true;
-  context->symbolManager->context->codeList.push_back(codeItem);
-  context->logger->debug("+--> size: " + to_string(codeItem->length) +
+  context->getSymbolManager()->context->getCodeList().push_back(codeItem);
+  context->getLogger()->debug("+--> size: " + to_string(codeItem->length) +
                          " byte(s)");
   if (codeItem->length >= 0x4000) {
     context->syntaxError(
@@ -183,14 +191,14 @@ bool Compiler::build(shared_ptr<Parser> parser) {
     return false;
   }
 
-  context->logger->debug("Registering compiled code (line/bytes):");
+  context->getLogger()->debug("Registering compiled code (line/bytes):");
   compiledCodeInfo = "";
 
   for (i = 0; i < t; i++) {
     tag = parser->getTags()[i];
 
     if (tag) {
-      context->logger->setLineNumber(tag->lexerLine ? tag->lexerLine->lineNumber : i + 1);
+      context->getLogger()->setLineNumber(tag->lexerLine ? tag->lexerLine->lineNumber : i + 1);
 
       if (i)
         compiledCodeInfo += ", " + tag->name;  /// code line
@@ -203,128 +211,128 @@ bool Compiler::build(shared_ptr<Parser> parser) {
           tag->name.erase(0, 1);
         }
 
-        symbol = context->symbolResolver->getSymbol(tag);
+        symbol = context->getSymbolResolver()->getSymbol(tag);
         if (symbol) {
           if (symbol->address) {
             compiledCodeInfo += " error";
-            context->current_tag = tag;
+            context->getCurrentTag() = tag;
             context->syntaxError("Line number already declared");
-            context->logger->info(tag->toString());
+            context->getLogger()->info(tag->toString());
             break;
           }
         } else
-          symbol = context->symbolResolver->addSymbol(tag);
+          symbol = context->getSymbolResolver()->addSymbol(tag);
 
-        symbol->address = context->cpu->context->code_pointer;
+        symbol->address = context->getCpu()->context->getCodePointer();
       }
 
       codeItem = make_shared<CodeNode>();
-      codeItem->start = context->cpu->context->code_pointer;
+      codeItem->start = context->getCpu()->context->getCodePointer();
       codeItem->name = "LIN_" + tag->name;
       if (tag->lexerLine) codeItem->lineNumber = tag->lexerLine->lineNumber;
 
-      if (!context->evaluator->evaluate(tag)) {
+      if (!context->getEvaluator()->evaluate(tag)) {
         compiledCodeInfo += " error";
-        context->compiled = false;
-        context->logger->info(tag->toString());
+        context->getCompiled() = false;
+        context->getLogger()->info(tag->toString());
         break;
       }
 
-      codeItem->length = context->cpu->context->code_pointer - codeItem->start;
+      codeItem->length = context->getCpu()->context->getCodePointer() - codeItem->start;
       codeItem->is_code = true;
       codeItem->debug = true;
-      context->symbolManager->context->codeList.push_back(codeItem);
+      context->getSymbolManager()->context->getCodeList().push_back(codeItem);
 
       compiledCodeInfo += "/" + to_string(codeItem->length);  /// code bytes
 
       if (codeItem->length >= 0x4000) {
         compiledCodeInfo += " error";
-        context->logger->debug(compiledCodeInfo);
+        context->getLogger()->debug(compiledCodeInfo);
         context->syntaxError("Maximum of code per line per ROM reached (16k)");
-        context->logger->info(tag->toString());
+        context->getLogger()->info(tag->toString());
         return false;
       }
     }
   }
 
-  context->logger->debug(compiledCodeInfo);
+  context->getLogger()->debug(compiledCodeInfo);
 
-  if (context->compiled) {
-    if (context->forNextStack.size()) {
-      context->current_tag = context->forNextStack.top()->tag;
-      if (context->current_tag->lexerLine)
-        context->logger->setLineNumber(
-            context->current_tag->lexerLine->lineNumber);
+  if (context->getCompiled()) {
+    if (context->getForNextStack().size()) {
+      context->getCurrentTag() = context->getForNextStack().top()->tag;
+      if (context->getCurrentTag()->lexerLine)
+        context->getLogger()->setLineNumber(
+            context->getCurrentTag()->lexerLine->lineNumber);
       context->syntaxError("FOR without a NEXT");
-      context->logger->info(context->current_tag->toString());
+      context->getLogger()->info(context->getCurrentTag()->toString());
     }
   }
 
-  if (context->compiled) {
-    context->current_tag = 0;
+  if (context->getCompiled()) {
+    context->getCurrentTag() = 0;
 
     /// @remark END is always the last statement of the program
-    context->logger->debug("Registering end of program...");
+    context->getLogger()->debug("Registering end of program...");
 
     codeItem = make_shared<CodeNode>();
     codeItem->name = "END_PGM";
-    codeItem->start = context->cpu->context->code_pointer;
+    codeItem->start = context->getCpu()->context->getCodePointer();
     //! jump to the real END statement
     endStmt.execute(context);
-    codeItem->length = context->cpu->context->code_pointer - codeItem->start;
+    codeItem->length = context->getCpu()->context->getCodePointer() - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = true;
-    context->symbolManager->context->codeList.push_back(codeItem);
-    context->logger->debug("+--> " + to_string(codeItem->length) + " byte(s)");
+    context->getSymbolManager()->context->getCodeList().push_back(codeItem);
+    context->getLogger()->debug("+--> " + to_string(codeItem->length) + " byte(s)");
     if (codeItem->length >= 0x4000) {
       context->syntaxError(
           "Maximum of end of program code per ROM reached (16k)");
       return false;
     }
 
-    context->logger->debug("Registering support code...");
+    context->getLogger()->debug("Registering support code...");
 
     codeItem = make_shared<CodeNode>();
-    codeItem->start = context->cpu->context->code_pointer;
-    context->symbolResolver->addSupportSymbols();
-    codeItem->length = context->cpu->context->code_pointer - codeItem->start;
+    codeItem->start = context->getCpu()->context->getCodePointer();
+    context->getSymbolResolver()->addSupportSymbols();
+    codeItem->length = context->getCpu()->context->getCodePointer() - codeItem->start;
     codeItem->is_code = true;
     codeItem->debug = false;
-    context->symbolManager->context->codeList.push_back(codeItem);
-    context->logger->debug("+--> " + to_string(codeItem->length) + " byte(s)");
+    context->getSymbolManager()->context->getCodeList().push_back(codeItem);
+    context->getLogger()->debug("+--> " + to_string(codeItem->length) + " byte(s)");
     if (codeItem->length >= 0x4000) {
       context->syntaxError("Maximum of support code per ROM reached (16k)");
       return false;
     }
 
     if (parser->getHasIData()) {
-      context->logger->debug("Registering IDATA resource...");
-      context->resourceManager->addIDataResource(parser);
+      context->getLogger()->debug("Registering IDATA resource...");
+      context->getResourceManager()->addIDataResource(parser);
     }
 
     if (parser->getHasData()) {
-      context->logger->debug("Registering DATA resource...");
-      context->resourceManager->addDataResource(parser);
+      context->getLogger()->debug("Registering DATA resource...");
+      context->getResourceManager()->addDataResource(parser);
     }
 
-    context->logger->debug("Registering symbols...");
+    context->getLogger()->debug("Registering symbols...");
 
-    i = context->symbolResolver->saveSymbols();
+    i = context->getSymbolResolver()->saveSymbols();
 
-    context->logger->debug("+--> " + to_string(i) + " byte(s)");
+    context->getLogger()->debug("+--> " + to_string(i) + " byte(s)");
 
-    context->logger->debug("Adjusting code/data memory address...");
+    context->getLogger()->debug("Adjusting code/data memory address...");
 
-    context->fixupResolver->doFix();
+    context->getFixupResolver()->doFix();
 
-    int varRam = context->file_support ? def_VAR_RAM_DISK : def_VAR_RAM_NON_DISK;
+    int varRam = context->getFileSupport() ? def_VAR_RAM_DISK : def_VAR_RAM_NON_DISK;
     int freeRamSize = varRam + def_KERNEL_RAM_OVERHEAD;
 
-    context->cpu->context->ram_memory_perc =
-        (context->cpu->context->ram_size * 100.0) / freeRamSize;
+    context->getCpu()->context->getRamMemoryPerc() =
+        (context->getCpu()->context->getRamSize() * 100.0) / freeRamSize;
   }
 
-  return context->compiled;
+  return context->getCompiled();
 }
 
 int Compiler::write(unsigned char* dest, int start_address) {
@@ -338,31 +346,35 @@ int Compiler::write(unsigned char* dest, int start_address) {
   vector<shared_ptr<FixNode>> skips;
   bool is_id, is_jump, is_load;
 
-  // Resolve MR wrapper target addresses from dw dispatch table
-  unsigned int mr_call_target = bin_header_bin[DISP_MR_CALL * 2]
-                              | (bin_header_bin[DISP_MR_CALL * 2 + 1] << 8);
-  unsigned int mr_jump_target = bin_header_bin[DISP_MR_JUMP * 2]
-                              | (bin_header_bin[DISP_MR_JUMP * 2 + 1] << 8);
-  unsigned int mr_get_data_target = bin_header_bin[DISP_MR_GET_DATA * 2]
-                                  | (bin_header_bin[DISP_MR_GET_DATA * 2 + 1] << 8);
+  // Resolve MR wrapper target addresses from the read-only kernel image
+  unsigned int mr_call_target =
+      context->getKernelImage() ? context->getKernelImage()->dispatchAddress(DISP_MR_CALL)
+                           : 0;
+  unsigned int mr_jump_target =
+      context->getKernelImage() ? context->getKernelImage()->dispatchAddress(DISP_MR_JUMP)
+                           : 0;
+  unsigned int mr_get_data_target =
+      context->getKernelImage()
+          ? context->getKernelImage()->dispatchAddress(DISP_MR_GET_DATA)
+          : 0;
 
   // copy compiled code to final destination
 
-  t = context->symbolManager->context->codeList.size();
+  t = context->getSymbolManager()->context->getCodeList().size();
   addr_within_segm = start_address;
 
-  if (context->opts->megaROM) {
+  if (context->getOpts()->megaROM) {
     skips.clear();
 
-    context->cpu->context->segm_last =
+    context->getCpu()->context->getSegmLast() =
         2;  // last ROM segment starts at segment 2
-    context->cpu->context->segm_total = 4;  // 4 segments of 8kb (0, 1, 2, 3)
+    context->getCpu()->context->getSegmTotal() = 4;  // 4 segments of 8kb (0, 1, 2, 3)
     length = (start_address - 0x8000);
-    context->cpu->context->code_size = 0;
+    context->getCpu()->context->getCodeSize() = 0;
     d = dest;
 
-    if (context->cpu->context->error) {
-      context->logger->error(
+    if (context->getCpu()->context->getError()) {
+      context->getLogger()->error(
           "Compiled code exceeds maximum limit of " +
           to_string(COMPILE_CODE_SIZE) + " bytes (" +
           to_string(COMPILE_MAX_PAGES) + " pages)");
@@ -370,10 +382,10 @@ int Compiler::write(unsigned char* dest, int start_address) {
     }
 
     for (i = 0; i < t; i++) {
-      codeItem = context->symbolManager->context->codeList[i];
+      codeItem = context->getSymbolManager()->context->getCodeList()[i];
 
       if (codeItem->length) {
-        s = &context->cpu->context->code[codeItem->start];
+        s = &context->getCpu()->context->getCode()[codeItem->start];
 
         if (codeItem->is_code)
           step = 8;
@@ -383,7 +395,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
         tt = (length + codeItem->length + step);
 
         if (tt >= 0x4000) {
-          context->cpu->context->segm_last +=
+          context->getCpu()->context->getSegmLast() +=
               2;  // konami segments size are 8kb (0/1, 2/3...)
           addr_within_segm = 0x8000;
 
@@ -392,8 +404,8 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
             // ld a, segmt
             d[0] = 0x3E;
-            d[1] = context->cpu->context
-                       ->segm_last;  // extra code will start after segment 3
+            d[1] = context->getCpu()->context->getSegmLast();
+            // extra code will start after segment 3
             // ld hl, 0x8000
             d[2] = 0x21;
             d[3] = 0x00;
@@ -425,7 +437,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
           skip->step = step;
           skips.push_back(skip);
 
-          context->cpu->context->code_size += length;
+          context->getCpu()->context->getCodeSize() += length;
 
           length = 0;
         }
@@ -433,7 +445,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
         memcpy(d, s, codeItem->length);
 
         codeItem->addr_within_segm = addr_within_segm;
-        codeItem->segm = context->cpu->context->segm_last;
+        codeItem->segm = context->getCpu()->context->getSegmLast();
         if (codeItem->addr_within_segm >= (0xA000)) codeItem->segm++;
 
         d += codeItem->length;
@@ -441,36 +453,36 @@ int Compiler::write(unsigned char* dest, int start_address) {
         addr_within_segm += codeItem->length;
       } else {
         codeItem->addr_within_segm = addr_within_segm;
-        codeItem->segm = context->cpu->context->segm_last;
+        codeItem->segm = context->getCpu()->context->getSegmLast();
         if (codeItem->addr_within_segm >= (0xA000)) codeItem->segm++;
       }
     }
 
-    context->cpu->context->code_size += length;
+    context->getCpu()->context->getCodeSize() += length;
 
-    context->cpu->context->segm_total =
-        ((context->cpu->context->segm_last + 1) / 16 + 1) * 16;
+    context->getCpu()->context->getSegmTotal() =
+        ((context->getCpu()->context->getSegmLast() + 1) / 16 + 1) * 16;
 
     tt = skips.size();
 
   } else {
     for (i = 0; i < t; i++) {
-      codeItem = context->symbolManager->context->codeList[i];
+      codeItem = context->getSymbolManager()->context->getCodeList()[i];
       codeItem->segm = 0;
       codeItem->addr_within_segm = addr_within_segm;
       addr_within_segm += codeItem->length;
     }
 
-    memcpy(dest, context->cpu->context->code.data(),
-           context->cpu->context->code_size);
+    memcpy(dest, context->getCpu()->context->getCode().data(),
+           context->getCpu()->context->getCodeSize());
   }
 
   // reallocate code pointers to new start address
 
-  t = context->fixes.size();
+  t = context->getFixes().size();
 
   for (i = 0; i < t; i++) {
-    fix = context->fixes[i];
+    fix = context->getFixes()[i];
     if (fix) {
       if (fix->symbol) {
         if (fix->symbol->lexeme) {
@@ -481,7 +493,7 @@ int Compiler::write(unsigned char* dest, int start_address) {
 
         address = fix->address;
 
-        if (context->opts->megaROM) {
+        if (context->getOpts()->megaROM) {
           step = 0;
           for (k = 0; k < tt; k++) {
             skip = skips[k];
@@ -699,5 +711,5 @@ int Compiler::write(unsigned char* dest, int start_address) {
       context->syntaxError("Error in the fix object (null)");
   }
 
-  return context->cpu->context->code_size;
+  return context->getCpu()->context->getCodeSize();
 }

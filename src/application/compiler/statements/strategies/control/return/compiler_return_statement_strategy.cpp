@@ -10,12 +10,12 @@
 
 void CompilerReturnStatementStrategy::cmd_return(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& optimizer = *context->codeOptimizer;
-  auto& opts = *context->opts;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& optimizer = *context->getCodeOptimizer();
+  auto& opts = *context->getOpts();
   shared_ptr<Lexeme> lexeme;
-  int t = context->current_action->actions.size();
+  int t = context->getCurrentAction()->actions.size();
 
   if (t == 0) {
     // ret
@@ -23,7 +23,7 @@ void CompilerReturnStatementStrategy::cmd_return(
     return;
 
   } else if (t == 1) {
-    lexeme = context->current_action->actions[0].get()->lexeme;
+    lexeme = context->getCurrentAction()->actions[0].get()->lexeme;
     if (lexeme) {
       if (lexeme->type == Lexeme::type_literal &&
           lexeme->subtype == Lexeme::subtype_numeric) {
@@ -105,7 +105,7 @@ void CompilerReturnStatementStrategy::cmd_return(
 
 bool CompilerReturnStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
-  context->traps_checked = context->codeHelper->addCheckTraps();
+  context->getTrapsChecked() = context->getCodeHelper()->addCheckTraps();
   cmd_return(context);
-  return context->compiled;
+  return context->getCompiled();
 }

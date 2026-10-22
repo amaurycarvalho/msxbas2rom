@@ -6,15 +6,15 @@
 
 bool LetStatementStrategy::parseStatement(
     shared_ptr<ParserContext> context, shared_ptr<LexerLineContext> statement) {
-  return context->assignEval->evaluate(statement);
+  return context->getAssignEval()->evaluate(statement);
 }
 
 bool LetStatementStrategy::execute(shared_ptr<ParserContext> context,
                                    shared_ptr<LexerLineContext> statement,
                                    shared_ptr<Lexeme> lexeme) {
   (void)lexeme;
-  if (!context->assignEval) {
-    context->logger->error(
+  if (!context->getAssignEval()) {
+    context->getLogger()->error(
         "LET statement internal error (parser context not initialized)");
     return false;
   }

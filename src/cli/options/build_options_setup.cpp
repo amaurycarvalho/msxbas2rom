@@ -9,6 +9,8 @@
 
 #include "build_options_setup.h"
 
+#include "build_options_resolver.h"
+
 BuildOptionsSetup::BuildOptionsSetup() : BuildOptions() {
   setupParser();
 }
@@ -108,7 +110,7 @@ bool BuildOptionsSetup::parse(int argc, char* argv[]) {
   try {
     appFilename = argv[0];
     parser.parse(argc, argv);
-    setInputFilename(parser.getFilename());
+    build_options::setInputFilename(*this, parser.getFilename());
 
   } catch (const std::exception& ex) {
     errorMessage = ex.what();

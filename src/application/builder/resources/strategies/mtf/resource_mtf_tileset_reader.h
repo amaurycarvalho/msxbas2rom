@@ -27,7 +27,8 @@ class ResourceMtfTilesetReader : public ResourceBlobReader {
  public:
   static bool isIt(string fileext);
   bool load();
-  ResourceMtfTilesetReader(string filename);
+  ResourceMtfTilesetReader(string filename,
+                           shared_ptr<ResourceContentSource> contentSource);
 };
 
 #endif  // RESOURCE_MTF_TILESET_READER_H_INCLUDED

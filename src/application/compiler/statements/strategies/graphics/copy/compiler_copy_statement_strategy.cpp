@@ -9,12 +9,12 @@
 
 void CompilerCopyStatementStrategy::cmd_copy(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& fixup = *context->fixupResolver;
-  auto& expression = *context->expressionEvaluator;
+  auto& cpu = *context->getCpu();
+  auto& fixup = *context->getFixupResolver();
+  auto& expression = *context->getExpressionEvaluator();
   shared_ptr<ActionNode> action, sub_action;
   shared_ptr<Lexeme> lexeme;
-  unsigned int i, t = context->current_action->actions.size();
+  unsigned int i, t = context->getCurrentAction()->actions.size();
   int result_subtype, state;
   bool has_x0_coord = false, has_x1_coord = false, has_x2_coord = false;
   bool has_y0_coord = false, has_y1_coord = false, has_y2_coord = false;
@@ -27,7 +27,7 @@ void CompilerCopyStatementStrategy::cmd_copy(
     state = 0;
 
     for (i = 0; i < t; i++) {
-      action = context->current_action->actions[i];
+      action = context->getCurrentAction()->actions[i];
 
       switch (state) {
         case 0: {
@@ -408,7 +408,7 @@ void CompilerCopyStatementStrategy::cmd_copy(
       cpu.addPopHL();
 
       // call XBASIC_COPY_FROM
-      context->codeOptimizer->addKernelCall(DISP_XBASIC_COPY_FROM);
+      context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_COPY_FROM);
 
     } else if (has_address_to) {
       // ex de,hl      ; address to (hl to de)
@@ -465,7 +465,7 @@ void CompilerCopyStatementStrategy::cmd_copy(
       cpu.addExDEHL();
 
       // call XBASIC_COPY_TO
-      context->codeOptimizer->addKernelCall(DISP_XBASIC_COPY_TO);
+      context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_COPY_TO);
 
     } else {
       if (!has_operator) {
@@ -543,7 +543,7 @@ void CompilerCopyStatementStrategy::cmd_copy(
 
       // call COPY    ; in: de=x0, hl=y0, ix=x1, iy=y1, 0xFC18=srcpg, 0xFCB7=x2,
       // 0xFCB9=y2, 0xFC19=destpg, b=operator
-      context->codeOptimizer->addKernelCall(DISP_XBASIC_COPY);
+      context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_COPY);
     }
 
   } else {
@@ -553,9 +553,9 @@ void CompilerCopyStatementStrategy::cmd_copy(
 
 void CompilerCopyStatementStrategy::cmd_copy_screen(
     shared_ptr<CompilerContext> context) {
-  auto& cpu = *context->cpu;
-  auto& expression = *context->expressionEvaluator;
-  int t = context->current_action->actions.size();
+  auto& cpu = *context->getCpu();
+  auto& expression = *context->getExpressionEvaluator();
+  int t = context->getCurrentAction()->actions.size();
 
   if (t > 1) {
     context->syntaxError("Invalid COPY SCREEN parameters");
@@ -563,7 +563,7 @@ void CompilerCopyStatementStrategy::cmd_copy_screen(
     if (t == 0) {
       // xor a
     } else if (t == 1) {
-      shared_ptr<ActionNode> action = context->current_action->actions[0];
+      shared_ptr<ActionNode> action = context->getCurrentAction()->actions[0];
       shared_ptr<ActionNode> sub_action;
       int result_subtype;
 
@@ -630,5 +630,5 @@ void CompilerCopyStatementStrategy::cmd_copy_screen(
 bool CompilerCopyStatementStrategy::execute(
     shared_ptr<CompilerContext> context) {
   cmd_copy(context);
-  return context->compiled;
+  return context->getCompiled();
 }

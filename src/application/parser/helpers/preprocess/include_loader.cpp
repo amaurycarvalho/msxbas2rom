@@ -8,11 +8,17 @@
 
 #include "lexer_line_evaluator.h"
 #include "parser_line_evaluator.h"
+#include "source_document.h"
+#include "source_resolver.h"
 
 IncludeLoader::IncludeLoader(ParserLineEvaluator* lineEvaluator)
     : lineEvaluator(lineEvaluator) {}
 
 IncludeLoader::~IncludeLoader() = default;
+
+void IncludeLoader::setSourceResolver(shared_ptr<SourceResolver> resolver) {
+  sourceResolver = resolver;
+}
 
 bool IncludeLoader::load(shared_ptr<Lexeme> lexeme,
                          shared_ptr<LexerLineEvaluator> lexerLine) {
@@ -35,7 +41,7 @@ bool IncludeLoader::load(shared_ptr<Lexeme> lexeme,
 
 bool IncludeLoader::load(const string& filename,
                          shared_ptr<LexerLineEvaluator> lexerLine) {
-  FILE* file;
+  SourceDocument document;
 
   /***
    * @remark
@@ -43,30 +49,26 @@ bool IncludeLoader::load(const string& filename,
    * original source.
    */
 
-  if ((file = fopen(filename.c_str(), "r"))) {
-    bool result = true;
-    string originalLineText = lexerLine->lineText;
-    char newLineText[255];
+  if (!sourceResolver || !sourceResolver->resolve(filename, document)) {
+    return false;
+  }
 
-    while (fgets(newLineText, sizeof(newLineText), file)) {
-      lexerLine->lineText = newLineText;
-      if (lexerLine->evaluate()) {
-        if (!lineEvaluator->evaluateLine(lexerLine)) {
-          result = false;
-          break;
-        }
-      } else {
+  bool result = true;
+  string originalLineText = lexerLine->lineText;
+
+  for (const string& lineText : splitSourceLines(document.content)) {
+    lexerLine->lineText = lineText;
+    if (lexerLine->evaluate()) {
+      if (!lineEvaluator->evaluateLine(lexerLine)) {
         result = false;
         break;
       }
+    } else {
+      result = false;
+      break;
     }
-
-    lexerLine->lineText = originalLineText;
-
-    fclose(file);
-
-    return result;
   }
 
-  return false;
+  lexerLine->lineText = originalLineText;
+  return result;
 }

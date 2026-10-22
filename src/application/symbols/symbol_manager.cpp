@@ -9,15 +9,17 @@
 
 #include "build_options.h"
 #include "symbol_export_context.h"
+#include "symbol_output_sink.h"
 
 bool SymbolManager::saveSymbol(shared_ptr<BuildOptions> opts) {
   SymbolExportStrategy* strategy =
       symbolExportFactory.getBySymbolMode(opts->symbols);
-  return (strategy) ? strategy->save(context, opts) : false;
+  return (strategy) ? strategy->save(context, opts, sink) : false;
 }
 
-SymbolManager::SymbolManager() {
+SymbolManager::SymbolManager(shared_ptr<SymbolOutputSink> outputSink) {
   context = make_shared<SymbolExportContext>();
+  sink = outputSink;
 }
 
 SymbolManager::~SymbolManager() = default;
