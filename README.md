@@ -65,6 +65,10 @@ Project specifications, requirements, and architectural decisions are maintained
 - `openspec/specs/<capability>/spec.md` — Capability specifications (lexer, parser, compiler, builder, CLI, ON statements, file handling, sprites handling, architecture, governance, glossary)
 - `openspec/changes/` — Active and archived changes with proposal, design, and task artifacts
 
+### 🧑‍💻 DEVELOPER ONBOARDING
+
+New contributors should start with [Architecture and Developer Guide](doc/misc/architecture.md). It explains the layered architecture, the end-to-end compilation pipeline, how the Z80 kernel is built and packed into the ROM, and how to add or change MSX-BASIC statements and functions.
+
 ### ❤️ SUPPORT THE PROJECT!
 
 Support us on Patreon, Catarse.me, PayPal or Brazilian PIX, so we can buy [AI coding agent token credits](https://api-docs.deepseek.com/quick_start/pricing/) and new resources (ex: msx related hardware) to help us to speed up in coding new functionalities and test bug fixes.

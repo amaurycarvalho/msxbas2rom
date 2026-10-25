@@ -28,7 +28,7 @@ Compilation SHALL start only when parser output contains tags/actions. The compi
 
 ### Requirement: Compiler emits kernel calls via addKernelCall
 
-The compiler SHALL emit all calls to Z80 kernel routines (addresses in the range 0x4000-0x7FFF, corresponding to `bin_header_bin`) using `CompilerCodeOptimizer::addKernelCall()`, which resolves target addresses by reading the `dw` word-pointer entries from `bin_header_bin` at `0x0000 + index * 2`. The compiler SHALL pass a `DISP_*` dispatch index to `addKernelCall`. The compiler SHALL NOT use `cpu.addCall()` for any kernel-internal routine that has a dispatch table entry.
+The compiler SHALL emit all calls to Z80 kernel routines using `CompilerCodeOptimizer::addKernelCall()` and its conditional variants, passing a `DISP_*` dispatch index. The compiler SHALL record the index in the used dispatch set and emit a deferred dispatch fixup; it SHALL NOT embed a hardcoded absolute address for a kernel-internal routine. The compiler SHALL NOT use `cpu.addCall()` for any kernel-internal routine that has a dispatch table entry.
 
 #### Scenario: Integer comparison operators use addKernelCall
 
@@ -135,3 +135,33 @@ The compiler SHALL emit 8KB-pair segment numbers (2, 4, 6, ...) for all MegaROM 
 - **WHEN** `getKernelCallAddr` is called with `0x0000 + index * 2` for any `DISP_XBASIC_*` index
 - **THEN** the 2-byte word at the address in `bin_header_bin` encodes a valid kernel routine address (0x4000-0x7FFF)
 - **AND** the resolved target address equals the actual routine address in the kernel binary
+
+### Requirement: Compiler SHALL record used DISP entries and defer dispatch resolution
+
+The compiler SHALL maintain a set of used `DISP_*` indices populated by every kernel-call emission, and SHALL expose that set to the builder so it can compute the dependency closure and generate only the required stubs.
+
+#### Scenario: Used entry is recorded once
+- **WHEN** the compiler emits any call to a given `DISP_*` entry
+- **THEN** that index SHALL be present in the used dispatch set
+- **AND** repeated calls SHALL NOT change the set semantics
+
+#### Scenario: Conditional calls contribute to the used set
+- **WHEN** the compiler emits a conditional kernel call
+- **THEN** its `DISP_*` index SHALL be recorded in the used dispatch set
+
+#### Scenario: Unused entries are absent
+- **WHEN** a program never emits a call to a `DISP_*` entry and no used module depends on it
+- **THEN** that index SHALL NOT be present in the used dispatch set
+
+### Requirement: Compiler SHALL emit deferred dispatch fixups
+
+The compiler SHALL emit a 3-byte call placeholder for each kernel call and record a dispatch fixup containing the `DISP_*` index. The builder SHALL resolve the placeholder after module placement.
+
+#### Scenario: Dispatch fixup is recorded
+- **WHEN** the compiler emits a kernel call
+- **THEN** the call target SHALL be a placeholder
+- **AND** a dispatch fixup with the `DISP_*` index SHALL be recorded
+
+#### Scenario: Fixup is applied after packing
+- **WHEN** the builder has assigned the stub address for a used `DISP_*` entry
+- **THEN** the compiler's dispatch fixup SHALL patch the call placeholder to that stub address

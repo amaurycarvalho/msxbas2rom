@@ -454,7 +454,18 @@ RSCMAPSG:     equ RSCMAPAD+2   ; 37 - 1 - resource map segment number (copy on r
 RSCMAPT1:     equ RSCMAPSG+1   ; 38 - 1 - resource map temporary space for last segment number
 PLYSGTM:      equ RSCMAPT1+1   ; 39 - 1 - player song segment (megarom)
 
-BASMEM:       equ PLYSGTM+1    ; 40 - RAM starts after compiler internal variables
+; dispatcher scratch (single-level: consumed before the paged target starts)
+DISP_SCRATCH:  equ PLYSGTM+1    ; 40 - 16 - paged dispatcher scratch
+DISP_SAVE_AF:  equ DISP_SCRATCH ; 40 - 2 - caller AF
+DISP_SAVE_BC:  equ DISP_SAVE_AF+2  ; 42 - 2 - caller BC
+DISP_SAVE_DE:  equ DISP_SAVE_BC+2  ; 44 - 2 - caller DE
+DISP_SAVE_HL:  equ DISP_SAVE_DE+2  ; 46 - 2 - caller HL
+DISP_SAVE_IX:  equ DISP_SAVE_HL+2  ; 48 - 2 - caller IX
+DISP_TARGET:   equ DISP_SAVE_IX+2  ; 50 - 2 - paged target address
+DISP_SEG:      equ DISP_TARGET+2   ; 52 - 1 - paged target segment
+DISP_RESULT_A: equ DISP_SEG+1      ; 53 - 1 - target A result across segment restore
+
+BASMEM:       equ DISP_SCRATCH+16 ; 56 - RAM starts after compiler internal variables
 
 PLYBUF:       equ 0xEF00
 SPRTBL:       equ PLYBUF - (32*5)      ; 32 sprites * (test, x0, x1, y0, y1)

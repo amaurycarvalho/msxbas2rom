@@ -223,20 +223,32 @@ void CompilerCodeOptimizer::addByteOptimized(unsigned char byte) {
  * optimized kernel functions calls
  * skipping the jump map
  */
-void CompilerCodeOptimizer::addKernelCall(unsigned int address) {
+void CompilerCodeOptimizer::addKernelCall(unsigned int index) {
   auto& cpu = *context->getCpu();
-  if (address < DISP_ENTRIES) {
-    address = def_wrapper_routines_map_table + address * 2;
-    cpu.addCall(getKernelCallAddr(address));
-  } else
-    __throw_range_error("Invalid kernel call");
+  if (index >= DISP_ENTRIES) __throw_range_error("Invalid kernel call");
+
+  context->getUsedDispatch().insert(index);
+
+  DispatchFixup fixup;
+  fixup.dispatchIndex = index;
+  fixup.address = cpu.context->getCodePointer() + 1;
+  context->getDispatchFixups().push_back(fixup);
+
+  cpu.addCall(0x0000);
 }
 
 void CompilerCodeOptimizer::addKernelCallNZ(unsigned char index) {
   auto& cpu = *context->getCpu();
-  unsigned int target =
-      getKernelCallAddr(def_wrapper_routines_map_table + index * 2);
-  cpu.addCallNZ(target);
+  if (index >= DISP_ENTRIES) __throw_range_error("Invalid kernel call");
+
+  context->getUsedDispatch().insert(index);
+
+  DispatchFixup fixup;
+  fixup.dispatchIndex = index;
+  fixup.address = cpu.context->getCodePointer() + 1;
+  context->getDispatchFixups().push_back(fixup);
+
+  cpu.addCallNZ(0x0000);
 }
 
 int CompilerCodeOptimizer::getKernelCallAddr(unsigned int address) {

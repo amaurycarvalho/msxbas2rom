@@ -23,7 +23,7 @@
 //! compiler internal variables workspace size,
 //! so search for BASMEM in header.symbols.asm
 //! to get the correct value.
-#define def_BASMEM 0xC038
+#define def_BASMEM 0xC048
 
 /***************************************************************
  * @name kernel_workareas
@@ -54,12 +54,12 @@
 //! @brief free variable RAM available when file I/O is NOT enabled
 //! @note empirical value; represents usable space within BASMEM..HEAPEND
 //!       after accounting for temp strings and kernel variable bookkeeping
-#define def_VAR_RAM_NON_DISK 10534
+#define def_VAR_RAM_NON_DISK 10518
 
 //! @brief free variable RAM available when file I/O IS enabled
 //! @note 4603 bytes less than def_VAR_RAM_NON_DISK due to DSKBAS
 //!       workarea and disk I/O internal structures
-#define def_VAR_RAM_DISK 5931
+#define def_VAR_RAM_DISK 5915
 
 //! @brief kernel internal RAM overhead above HEAPEND
 //! @note covers sprite tables, player buffer, heap metadata, mapper

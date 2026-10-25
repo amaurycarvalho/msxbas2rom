@@ -1,0 +1,5520 @@
+{
+  "kernel": {
+    "start": 16384,
+    "end": 32768,
+    "size": 16384
+  },
+  "modules": [
+    {
+      "id": "20_runtime",
+      "name": "20_runtime",
+      "owner": "20_runtime",
+      "assembly_base": 16384,
+      "size": 261,
+      "fixed_address": 16384,
+      "has_fixed_address": true,
+      "policy": "fixed",
+      "exports": [
+        {
+          "name": "INIT1",
+          "offset": 24
+        },
+        {
+          "name": "pre_start.hook_data",
+          "offset": 55
+        },
+        {
+          "name": "start",
+          "offset": 60
+        },
+        {
+          "name": "ascii16x_patch_bugfix_ab_check",
+          "offset": 66
+        },
+        {
+          "name": "megarom_ascii8_bug_fix",
+          "offset": 66
+        },
+        {
+          "name": "konami_patch_bugfix_6800",
+          "offset": 82
+        },
+        {
+          "name": "ascii16_patch_bugfix_inc1",
+          "offset": 85
+        },
+        {
+          "name": "konami_patch_bugfix_8000",
+          "offset": 86
+        },
+        {
+          "name": "ascii16_patch_bugfix_nopseq",
+          "offset": 89
+        },
+        {
+          "name": "konami_patch_bugfix_A000",
+          "offset": 90
+        },
+        {
+          "name": "clear_basic_environment",
+          "offset": 93
+        },
+        {
+          "name": "clear_basic_environment.disk_mode",
+          "offset": 178
+        },
+        {
+          "name": "clear_basic_environment.non_disk_mode",
+          "offset": 189
+        },
+        {
+          "name": "clear_basic_environment.disk_mode_done",
+          "offset": 194
+        },
+        {
+          "name": "run_user_basic_code_on_rom",
+          "offset": 203
+        },
+        {
+          "name": "run_user_basic_code_on_rom.disk_himem",
+          "offset": 229
+        },
+        {
+          "name": "run_user_basic_code_on_rom.non_disk_himem",
+          "offset": 234
+        },
+        {
+          "name": "run_user_basic_code_on_rom.himem_done",
+          "offset": 237
+        },
+        {
+          "name": "run_user_basic_code_on_rom.stack_margin_done",
+          "offset": 252
+        }
+      ],
+      "relocations": [
+        2,
+        41,
+        57
+      ],
+      "dependencies": [
+        "60_bios_helpers"
+      ],
+      "imports": [],
+      "patch_points": [
+        66,
+        82,
+        85,
+        86,
+        89,
+        90
+      ],
+      "group": "core",
+      "classification": "fixed"
+    },
+    {
+      "id": "30_basic_helpers",
+      "name": "30_basic_helpers",
+      "owner": "30_basic_helpers",
+      "assembly_base": 16645,
+      "size": 1620,
+      "fixed_address": 16645,
+      "has_fixed_address": true,
+      "policy": "fixed",
+      "exports": [
+        {
+          "name": "XBASIC_INIT",
+          "offset": 0
+        },
+        {
+          "name": "XBASIC_INIT.loop",
+          "offset": 113
+        },
+        {
+          "name": "XBASIC_END",
+          "offset": 206
+        },
+        {
+          "name": "XBASIC_END.1",
+          "offset": 229
+        },
+        {
+          "name": "XBASIC_WIDTH",
+          "offset": 318
+        },
+        {
+          "name": "XBASIC_SCREEN",
+          "offset": 355
+        },
+        {
+          "name": "XBASIC_SCREEN.TEXT_OR_GRAPH",
+          "offset": 367
+        },
+        {
+          "name": "XBASIC_SCREEN.DO",
+          "offset": 377
+        },
+        {
+          "name": "XBASIC_CLS",
+          "offset": 393
+        },
+        {
+          "name": "XBASIC_LOCATE",
+          "offset": 404
+        },
+        {
+          "name": "XBASIC_LOCATE.TIL",
+          "offset": 413
+        },
+        {
+          "name": "XBASIC_LOCATE.GRP",
+          "offset": 424
+        },
+        {
+          "name": "XBASIC_LOCATE.TXT",
+          "offset": 440
+        },
+        {
+          "name": "XBASIC_PRINT_STR",
+          "offset": 446
+        },
+        {
+          "name": "XBASIC_PRINT_STR.TIL",
+          "offset": 460
+        },
+        {
+          "name": "XBASIC_PRINT_STR.GRP",
+          "offset": 482
+        },
+        {
+          "name": "XBASIC_PRINT_STR.MSX1",
+          "offset": 489
+        },
+        {
+          "name": "XBASIC_PRINT_STR.MSX2",
+          "offset": 497
+        },
+        {
+          "name": "XBASIC_PUT_SPRITE",
+          "offset": 509
+        },
+        {
+          "name": "XBASIC_USR",
+          "offset": 517
+        },
+        {
+          "name": "XBASIC_USR.ret",
+          "offset": 543
+        },
+        {
+          "name": "XBASIC_COPY",
+          "offset": 547
+        },
+        {
+          "name": "XBASIC_COPY.TILED",
+          "offset": 562
+        },
+        {
+          "name": "XBASIC_COPY_FROM",
+          "offset": 615
+        },
+        {
+          "name": "XBASIC_COPY_FROM.TILED",
+          "offset": 640
+        },
+        {
+          "name": "XBASIC_COPY_FROM.TILED.loop",
+          "offset": 661
+        },
+        {
+          "name": "XBASIC_COPY_TO",
+          "offset": 687
+        },
+        {
+          "name": "XBASIC_COPY_TO.1",
+          "offset": 699
+        },
+        {
+          "name": "XBASIC_COPY_TO.2",
+          "offset": 717
+        },
+        {
+          "name": "XBASIC_COPY_TO.TILED",
+          "offset": 750
+        },
+        {
+          "name": "XBASIC_COPY_TO.TILED.loop",
+          "offset": 778
+        },
+        {
+          "name": "XBASIC_PLAY",
+          "offset": 803
+        },
+        {
+          "name": "XBASIC_PLAY.1a",
+          "offset": 814
+        },
+        {
+          "name": "XBASIC_PLAY.1b",
+          "offset": 815
+        },
+        {
+          "name": "XBASIC_PLAY.1",
+          "offset": 816
+        },
+        {
+          "name": "XBASIC_PLAY.2",
+          "offset": 822
+        },
+        {
+          "name": "XBASIC_PLAY.3",
+          "offset": 826
+        },
+        {
+          "name": "XBASIC_PLAY.4",
+          "offset": 839
+        },
+        {
+          "name": "XBASIC_GET_BUFFER",
+          "offset": 861
+        },
+        {
+          "name": "XBASIC_BASE",
+          "offset": 876
+        },
+        {
+          "name": "XBASIC_BASE.LE_20",
+          "offset": 881
+        },
+        {
+          "name": "XBASIC_BASE.GET_NAME_TABLE",
+          "offset": 896
+        },
+        {
+          "name": "XBASIC_BASE.GE_20",
+          "offset": 907
+        },
+        {
+          "name": "XBASIC_BASE.GET_TABLE_1",
+          "offset": 911
+        },
+        {
+          "name": "XBASIC_BASE.GET_TABLE_2",
+          "offset": 922
+        },
+        {
+          "name": "XBASIC_BASE.DATA_TABLE",
+          "offset": 932
+        },
+        {
+          "name": "XBASIC_TAB",
+          "offset": 952
+        },
+        {
+          "name": "XBASIC_TAB.1",
+          "offset": 963
+        },
+        {
+          "name": "XBASIC_SOUND",
+          "offset": 975
+        },
+        {
+          "name": "XBASIC_SOUND.1",
+          "offset": 983
+        },
+        {
+          "name": "XBASIC_READ",
+          "offset": 986
+        },
+        {
+          "name": "XBASIC_READ.cont",
+          "offset": 993
+        },
+        {
+          "name": "XBASIC_IREAD",
+          "offset": 1024
+        },
+        {
+          "name": "XBASIC_IREAD.cont",
+          "offset": 1031
+        },
+        {
+          "name": "XBASIC_RESTORE",
+          "offset": 1052
+        },
+        {
+          "name": "XBASIC_RESTORE.cont",
+          "offset": 1071
+        },
+        {
+          "name": "XBASIC_RESTORE.0",
+          "offset": 1084
+        },
+        {
+          "name": "XBASIC_RESTORE.0.loop",
+          "offset": 1095
+        },
+        {
+          "name": "XBASIC_RESTORE.1",
+          "offset": 1111
+        },
+        {
+          "name": "XBASIC_RESTORE.1.loop",
+          "offset": 1120
+        },
+        {
+          "name": "XBASIC_RESTORE.2",
+          "offset": 1130
+        },
+        {
+          "name": "XBASIC_RESTORE.2.init",
+          "offset": 1131
+        },
+        {
+          "name": "XBASIC_RESTORE.2.loop",
+          "offset": 1133
+        },
+        {
+          "name": "XBASIC_RESTORE.2.cont",
+          "offset": 1152
+        },
+        {
+          "name": "XBASIC_RESTORE.next_sgm",
+          "offset": 1156
+        },
+        {
+          "name": "XBASIC_RESTORE.get_start",
+          "offset": 1174
+        },
+        {
+          "name": "XBASIC_RESTORE.add_item",
+          "offset": 1187
+        },
+        {
+          "name": "XBASIC_RESTORE.found",
+          "offset": 1201
+        },
+        {
+          "name": "XBASIC_RESTORE.3",
+          "offset": 1215
+        },
+        {
+          "name": "XBASIC_RESTORE.end",
+          "offset": 1226
+        },
+        {
+          "name": "XBASIC_RESTORE.3.next_sgm",
+          "offset": 1231
+        },
+        {
+          "name": "XBASIC_READ_MR",
+          "offset": 1238
+        },
+        {
+          "name": "XBASIC_READ_MR.repeat",
+          "offset": 1257
+        },
+        {
+          "name": "XBASIC_READ_MR.cont",
+          "offset": 1273
+        },
+        {
+          "name": "XBASIC_IREAD_MR",
+          "offset": 1281
+        },
+        {
+          "name": "XBASIC_INPUT_2",
+          "offset": 1306
+        },
+        {
+          "name": "XBASIC_INPUT_1",
+          "offset": 1311
+        },
+        {
+          "name": "XBASIC_INPUT_1.do",
+          "offset": 1314
+        },
+        {
+          "name": "XBASIC_INPUT_1.do.1",
+          "offset": 1330
+        },
+        {
+          "name": "XBASIC_INPUT_1.do.2",
+          "offset": 1337
+        },
+        {
+          "name": "XBASIC_INPUT_1.end",
+          "offset": 1340
+        },
+        {
+          "name": "XBASIC_USING",
+          "offset": 1343
+        },
+        {
+          "name": "XBASIC_USING.loop",
+          "offset": 1351
+        },
+        {
+          "name": "XBASIC_USING.next",
+          "offset": 1389
+        },
+        {
+          "name": "XBASIC_USING.do",
+          "offset": 1395
+        },
+        {
+          "name": "XBASIC_USING.string_size",
+          "offset": 1418
+        },
+        {
+          "name": "XBASIC_USING.end",
+          "offset": 1427
+        },
+        {
+          "name": "XBASIC_USING.format_zero",
+          "offset": 1431
+        },
+        {
+          "name": "XBASIC_USING.format_zero.loop",
+          "offset": 1434
+        },
+        {
+          "name": "XBASIC_USING.format_zero.cont",
+          "offset": 1442
+        },
+        {
+          "name": "XBASIC_USING.plus",
+          "offset": 1451
+        },
+        {
+          "name": "XBASIC_USING.minus",
+          "offset": 1457
+        },
+        {
+          "name": "XBASIC_USING.mark",
+          "offset": 1461
+        },
+        {
+          "name": "XBASIC_USING.curr",
+          "offset": 1465
+        },
+        {
+          "name": "XBASIC_USING.thou",
+          "offset": 1469
+        },
+        {
+          "name": "XBASIC_USING.zero",
+          "offset": 1473
+        },
+        {
+          "name": "XBASIC_USING.expo",
+          "offset": 1477
+        },
+        {
+          "name": "XBASIC_USING.hash",
+          "offset": 1479
+        },
+        {
+          "name": "XBASIC_USING.hash.1",
+          "offset": 1486
+        },
+        {
+          "name": "XBASIC_USING.dot",
+          "offset": 1489
+        },
+        {
+          "name": "XBASIC_BLOAD",
+          "offset": 1492
+        },
+        {
+          "name": "XBASIC_BLOAD.loop",
+          "offset": 1514
+        },
+        {
+          "name": "XBASIC_BLOAD.get_next_block",
+          "offset": 1532
+        },
+        {
+          "name": "XBASIC_BLOAD.get_next_block.loop",
+          "offset": 1561
+        },
+        {
+          "name": "XBASIC_BLOAD.get_next_block.cont",
+          "offset": 1594
+        },
+        {
+          "name": "XBASIC_BLOAD.get_next_block.end",
+          "offset": 1608
+        }
+      ],
+      "relocations": [
+        350,
+        353,
+        521,
+        595,
+        613,
+        804,
+        926,
+        960,
+        967,
+        991,
+        998,
+        1029,
+        1085,
+        1107,
+        1112,
+        1125,
+        1148,
+        1221,
+        1233,
+        1268,
+        1315,
+        1493,
+        1524
+      ],
+      "dependencies": [
+        "21_logic_pack",
+        "31-cmd-game-graphics",
+        "34_file_handling",
+        "60_bios_helpers",
+        "61_megarom",
+        "80_resources",
+        "90-base",
+        "90-graphics",
+        "90-print",
+        "90-strings"
+      ],
+      "imports": [
+        {
+          "offset": 157,
+          "target": "cmd_fmaxfiles",
+          "kind": "call"
+        },
+        {
+          "offset": 455,
+          "target": "C74FE",
+          "kind": "conditional"
+        },
+        {
+          "offset": 697,
+          "target": "intNeg",
+          "kind": "call"
+        },
+        {
+          "offset": 715,
+          "target": "intNeg",
+          "kind": "call"
+        },
+        {
+          "offset": 973,
+          "target": "C7EF2",
+          "kind": "jump"
+        },
+        {
+          "offset": 1400,
+          "target": "FloatToBCD",
+          "kind": "call"
+        }
+      ],
+      "patch_points": [],
+      "group": "core",
+      "classification": "fixed"
+    },
+    {
+      "id": "31-cmd-game-graphics",
+      "name": "31-cmd-game-graphics",
+      "owner": "31-cmd-game-graphics",
+      "assembly_base": 18265,
+      "size": 813,
+      "fixed_address": 18265,
+      "has_fixed_address": true,
+      "policy": "fixed",
+      "exports": [
+        {
+          "name": "cmd_play",
+          "offset": 0
+        },
+        {
+          "name": "cmd_mute",
+          "offset": 45
+        },
+        {
+          "name": "cmd_draw",
+          "offset": 54
+        },
+        {
+          "name": "cmd_runasm",
+          "offset": 71
+        },
+        {
+          "name": "cmd_wrtvram",
+          "offset": 80
+        },
+        {
+          "name": "cmd_wrtvram.ram_on_page_3",
+          "offset": 87
+        },
+        {
+          "name": "cmd_wrtvram.ram_on_page_2",
+          "offset": 97
+        },
+        {
+          "name": "cmd_wrtfnt",
+          "offset": 113
+        },
+        {
+          "name": "cmd_wrtfnt.tiled",
+          "offset": 134
+        },
+        {
+          "name": "cmd_wrtfnt.no_tiled",
+          "offset": 143
+        },
+        {
+          "name": "cmd_wrtchr",
+          "offset": 153
+        },
+        {
+          "name": "cmd_wrtclr",
+          "offset": 172
+        },
+        {
+          "name": "cmd_wrtscr",
+          "offset": 188
+        },
+        {
+          "name": "cmd_wrtspr",
+          "offset": 204
+        },
+        {
+          "name": "cmd_wrtspr.do",
+          "offset": 212
+        },
+        {
+          "name": "cmd_wrtspr.do.msx1",
+          "offset": 217
+        },
+        {
+          "name": "cmd_wrtspr.do.msx1.loop",
+          "offset": 246
+        },
+        {
+          "name": "cmd_wrtspr.do.msx1.ok",
+          "offset": 246
+        },
+        {
+          "name": "cmd_wrtspr.do.msx2",
+          "offset": 261
+        },
+        {
+          "name": "cmd_wrtspr.do.msx2.color",
+          "offset": 270
+        },
+        {
+          "name": "cmd_wrtspr.do.pattern",
+          "offset": 284
+        },
+        {
+          "name": "cmd_wrtspr.do.pattern.ok",
+          "offset": 293
+        },
+        {
+          "name": "cmd_wrtspr.set_color_table_size",
+          "offset": 326
+        },
+        {
+          "name": "cmd_wrtsprpat",
+          "offset": 343
+        },
+        {
+          "name": "cmd_wrtsprclr",
+          "offset": 353
+        },
+        {
+          "name": "cmd_wrtspratr",
+          "offset": 363
+        },
+        {
+          "name": "cmd_ramtovram",
+          "offset": 373
+        },
+        {
+          "name": "cmd_vramtoram",
+          "offset": 387
+        },
+        {
+          "name": "cmd_ramtoram",
+          "offset": 401
+        },
+        {
+          "name": "cmd_rsctoram",
+          "offset": 415
+        },
+        {
+          "name": "cmd_rsctoram.unpack",
+          "offset": 433
+        },
+        {
+          "name": "cmd_rsctoram.end",
+          "offset": 436
+        },
+        {
+          "name": "cmd_disscr",
+          "offset": 441
+        },
+        {
+          "name": "cmd_enascr",
+          "offset": 444
+        },
+        {
+          "name": "cmd_keyclkoff",
+          "offset": 447
+        },
+        {
+          "name": "cmd_setfnt",
+          "offset": 452
+        },
+        {
+          "name": "cmd_setfnt.unpack",
+          "offset": 478
+        },
+        {
+          "name": "cmd_setfnt.bios",
+          "offset": 493
+        },
+        {
+          "name": "cmd_setfnt.do",
+          "offset": 513
+        },
+        {
+          "name": "cmd_setfnt.tiled",
+          "offset": 520
+        },
+        {
+          "name": "cmd_setfnt.no_tiled",
+          "offset": 531
+        },
+        {
+          "name": "cmd_setfnt.cpy_to_bank",
+          "offset": 541
+        },
+        {
+          "name": "cmd_setfnt.cpy_to_bank.do",
+          "offset": 560
+        },
+        {
+          "name": "cmd_setfnt.cpy_to_bank.cont",
+          "offset": 580
+        },
+        {
+          "name": "cmd_setfnt.get_vram_address",
+          "offset": 588
+        },
+        {
+          "name": "cmd_setfnt.get_address.exit",
+          "offset": 609
+        },
+        {
+          "name": "cmd_setfnt.default_colors",
+          "offset": 611
+        },
+        {
+          "name": "cmd_setfnt.default_colors.cont",
+          "offset": 624
+        },
+        {
+          "name": "cmd_setfnt.default_colors.end",
+          "offset": 686
+        },
+        {
+          "name": "cmd_setfnt.default_colors.0",
+          "offset": 693
+        },
+        {
+          "name": "cmd_setfnt.default_colors.1",
+          "offset": 706
+        },
+        {
+          "name": "cmd_updfntclr",
+          "offset": 727
+        },
+        {
+          "name": "cmd_clrkey",
+          "offset": 732
+        },
+        {
+          "name": "cmd_clrscr",
+          "offset": 744
+        },
+        {
+          "name": "cmd_turbo",
+          "offset": 755
+        },
+        {
+          "name": "cmd_turbo.turboR",
+          "offset": 763
+        },
+        {
+          "name": "cmd_turbo.msx2p",
+          "offset": 777
+        },
+        {
+          "name": "cmd_restore",
+          "offset": 791
+        }
+      ],
+      "relocations": [
+        136,
+        167,
+        170,
+        186,
+        202,
+        224,
+        268,
+        306,
+        351,
+        361,
+        371,
+        525,
+        529,
+        548,
+        555,
+        562,
+        677,
+        682,
+        687,
+        730
+      ],
+      "dependencies": [
+        "30_basic_helpers",
+        "60_bios_helpers",
+        "80_resources"
+      ],
+      "imports": [],
+      "patch_points": [],
+      "group": "game-graphics",
+      "classification": "fixed"
+    },
+    {
+      "id": "31-cmd-tile-sprite",
+      "name": "31-cmd-tile-sprite",
+      "owner": "31-cmd-tile-sprite",
+      "assembly_base": 19078,
+      "size": 1497,
+      "fixed_address": 19078,
+      "has_fixed_address": true,
+      "policy": "flex-high",
+      "exports": [
+        {
+          "name": "set_tile_flip",
+          "offset": 0
+        },
+        {
+          "name": "set_tile_flip.horiz",
+          "offset": 36
+        },
+        {
+          "name": "set_tile_flip.horiz.do",
+          "offset": 41
+        },
+        {
+          "name": "set_tile_flip.horiz.loop",
+          "offset": 46
+        },
+        {
+          "name": "set_tile_flip.vert",
+          "offset": 55
+        },
+        {
+          "name": "set_tile_flip.vert.do",
+          "offset": 60
+        },
+        {
+          "name": "set_tile_flip.vert.loop",
+          "offset": 68
+        },
+        {
+          "name": "set_tile_flip.paste",
+          "offset": 79
+        },
+        {
+          "name": "set_tile_rotate",
+          "offset": 86
+        },
+        {
+          "name": "set_tile_rotate.right",
+          "offset": 115
+        },
+        {
+          "name": "set_tile_rotate.flip",
+          "offset": 123
+        },
+        {
+          "name": "set_tile_rotate.left",
+          "offset": 131
+        },
+        {
+          "name": "set_tile_rotate.paste",
+          "offset": 137
+        },
+        {
+          "name": "set_tile.paste",
+          "offset": 141
+        },
+        {
+          "name": "set_tile.paste.normal",
+          "offset": 160
+        },
+        {
+          "name": "set_tile.paste.bank_loop",
+          "offset": 175
+        },
+        {
+          "name": "set_tile.paste.do_1",
+          "offset": 179
+        },
+        {
+          "name": "set_tile.paste.all",
+          "offset": 189
+        },
+        {
+          "name": "set_tile.backup_rotate",
+          "offset": 234
+        },
+        {
+          "name": "set_tile.copy",
+          "offset": 249
+        },
+        {
+          "name": "get_tile_vram_addr",
+          "offset": 258
+        },
+        {
+          "name": "set_tile_pattern",
+          "offset": 273
+        },
+        {
+          "name": "set_tile_pattern.skip",
+          "offset": 286
+        },
+        {
+          "name": "set_tile_pattern.all",
+          "offset": 308
+        },
+        {
+          "name": "set_tile_pattern.do",
+          "offset": 316
+        },
+        {
+          "name": "set_tile_color",
+          "offset": 323
+        },
+        {
+          "name": "set_tile_color.uno",
+          "offset": 337
+        },
+        {
+          "name": "set_tile_color.multi",
+          "offset": 347
+        },
+        {
+          "name": "set_tile_color.multi.loop",
+          "offset": 354
+        },
+        {
+          "name": "set_tile_color.multi.do",
+          "offset": 360
+        },
+        {
+          "name": "get_tile_pattern",
+          "offset": 373
+        },
+        {
+          "name": "get_tile_pattern.skip",
+          "offset": 394
+        },
+        {
+          "name": "get_tile_pattern.bank_loop",
+          "offset": 405
+        },
+        {
+          "name": "get_tile_pattern.do",
+          "offset": 409
+        },
+        {
+          "name": "get_tile_pattern.exit",
+          "offset": 416
+        },
+        {
+          "name": "get_tile_color",
+          "offset": 418
+        },
+        {
+          "name": "get_tile_color.bank_loop",
+          "offset": 448
+        },
+        {
+          "name": "get_tile_color.do",
+          "offset": 452
+        },
+        {
+          "name": "get_tile_color.exit",
+          "offset": 462
+        },
+        {
+          "name": "set_tile_color_buf",
+          "offset": 463
+        },
+        {
+          "name": "set_tile_color_buf.bank_loop",
+          "offset": 492
+        },
+        {
+          "name": "set_tile_color_buf.do",
+          "offset": 499
+        },
+        {
+          "name": "set_tile_color_buf.all",
+          "offset": 509
+        },
+        {
+          "name": "set_tile_pattern_buffer",
+          "offset": 551
+        },
+        {
+          "name": "set_tile_pattern_buffer.skip",
+          "offset": 573
+        },
+        {
+          "name": "set_tile_pattern_buffer.bank_loop",
+          "offset": 588
+        },
+        {
+          "name": "set_tile_pattern_buffer.do",
+          "offset": 592
+        },
+        {
+          "name": "set_tile_pattern_buffer.all",
+          "offset": 602
+        },
+        {
+          "name": "set_sprite_flip",
+          "offset": 644
+        },
+        {
+          "name": "set_sprite_flip.vert",
+          "offset": 656
+        },
+        {
+          "name": "set_sprite_flip.vert.1",
+          "offset": 682
+        },
+        {
+          "name": "set_sprite_flip.vert.2",
+          "offset": 684
+        },
+        {
+          "name": "set_sprite_flip.horiz",
+          "offset": 691
+        },
+        {
+          "name": "set_sprite_flip.horiz.1",
+          "offset": 705
+        },
+        {
+          "name": "set_sprite.paste",
+          "offset": 718
+        },
+        {
+          "name": "set_sprite.copy",
+          "offset": 728
+        },
+        {
+          "name": "binaryReverseA",
+          "offset": 743
+        },
+        {
+          "name": "binaryReverseA.loop",
+          "offset": 747
+        },
+        {
+          "name": "set_sprite_rotate",
+          "offset": 754
+        },
+        {
+          "name": "set_sprite_rotate.right",
+          "offset": 769
+        },
+        {
+          "name": "set_sprite_rotate.left",
+          "offset": 807
+        },
+        {
+          "name": "set_sprite_rotate.left.end",
+          "offset": 843
+        },
+        {
+          "name": "blockRotateL",
+          "offset": 849
+        },
+        {
+          "name": "blockRotateL.1",
+          "offset": 851
+        },
+        {
+          "name": "blockRotateL.2",
+          "offset": 859
+        },
+        {
+          "name": "blockRotateL.loop",
+          "offset": 863
+        },
+        {
+          "name": "blockRotateR",
+          "offset": 874
+        },
+        {
+          "name": "blockRotateR.1",
+          "offset": 876
+        },
+        {
+          "name": "blockRotateR.2",
+          "offset": 884
+        },
+        {
+          "name": "blockRotateR.loop",
+          "offset": 888
+        },
+        {
+          "name": "set_sprite_pattern",
+          "offset": 899
+        },
+        {
+          "name": "set_sprite_color",
+          "offset": 911
+        },
+        {
+          "name": "set_sprite_color.msx2",
+          "offset": 932
+        },
+        {
+          "name": "get_sprite_pattern",
+          "offset": 944
+        },
+        {
+          "name": "get_sprite_color",
+          "offset": 955
+        },
+        {
+          "name": "get_sprite_color.msx2",
+          "offset": 980
+        },
+        {
+          "name": "set_sprite_hitbox",
+          "offset": 991
+        },
+        {
+          "name": "set_sprite_hitbox.on_all",
+          "offset": 1012
+        },
+        {
+          "name": "set_sprite_hitbox.on_all.loop",
+          "offset": 1013
+        },
+        {
+          "name": "set_sprite_hitbox.off_all",
+          "offset": 1024
+        },
+        {
+          "name": "set_sprite_hitbox.off_all.loop",
+          "offset": 1025
+        },
+        {
+          "name": "set_sprite_hitbox.auto_all",
+          "offset": 1042
+        },
+        {
+          "name": "set_sprite_hitbox.auto_all.loop",
+          "offset": 1043
+        },
+        {
+          "name": "set_sprite_hitbox.on_one",
+          "offset": 1055
+        },
+        {
+          "name": "set_sprite_hitbox.off_one",
+          "offset": 1060
+        },
+        {
+          "name": "set_sprite_hitbox.default",
+          "offset": 1071
+        },
+        {
+          "name": "set_sprite_hitbox.margins",
+          "offset": 1090
+        },
+        {
+          "name": "clamp_margin",
+          "offset": 1200
+        },
+        {
+          "name": "clamp_margin.use_l",
+          "offset": 1211
+        },
+        {
+          "name": "clamp_margin.max",
+          "offset": 1213
+        },
+        {
+          "name": "clamp_margin_limit",
+          "offset": 1217
+        },
+        {
+          "name": "clamp_margin_limit.use_l",
+          "offset": 1226
+        },
+        {
+          "name": "clamp_margin_limit.max",
+          "offset": 1228
+        },
+        {
+          "name": "set_sprite_hitbox.auto",
+          "offset": 1230
+        },
+        {
+          "name": "set_sprite_hitbox.auto.read32",
+          "offset": 1253
+        },
+        {
+          "name": "set_sprite_hitbox.auto.read",
+          "offset": 1256
+        },
+        {
+          "name": "set_sprite_hitbox.auto.scan16",
+          "offset": 1287
+        },
+        {
+          "name": "set_sprite_hitbox.auto.scan",
+          "offset": 1291
+        },
+        {
+          "name": "set_sprite_hitbox.auto.loop",
+          "offset": 1297
+        },
+        {
+          "name": "set_sprite_hitbox.auto.rowmask",
+          "offset": 1324
+        },
+        {
+          "name": "set_sprite_hitbox.auto.sety_max",
+          "offset": 1339
+        },
+        {
+          "name": "set_sprite_hitbox.auto.nextrow",
+          "offset": 1343
+        },
+        {
+          "name": "set_sprite_hitbox.auto.no2",
+          "offset": 1352
+        },
+        {
+          "name": "set_sprite_hitbox.auto.minx_hi",
+          "offset": 1385
+        },
+        {
+          "name": "set_sprite_hitbox.auto.minx_store",
+          "offset": 1393
+        },
+        {
+          "name": "set_sprite_hitbox.auto.maxx_lo",
+          "offset": 1409
+        },
+        {
+          "name": "set_sprite_hitbox.auto.maxx_store",
+          "offset": 1415
+        },
+        {
+          "name": "set_sprite_hitbox.auto.disabled",
+          "offset": 1449
+        },
+        {
+          "name": "firstSetBitPos",
+          "offset": 1454
+        },
+        {
+          "name": "firstSetBitPos.loop",
+          "offset": 1456
+        },
+        {
+          "name": "firstSetBitPos.found",
+          "offset": 1472
+        },
+        {
+          "name": "lastSetBitPos",
+          "offset": 1474
+        },
+        {
+          "name": "lastSetBitPos.loop",
+          "offset": 1476
+        },
+        {
+          "name": "lastSetBitPos.found",
+          "offset": 1493
+        }
+      ],
+      "relocations": [
+        12,
+        18,
+        29,
+        32,
+        37,
+        48,
+        56,
+        84,
+        98,
+        104,
+        116,
+        119,
+        124,
+        127,
+        132,
+        135,
+        309,
+        313,
+        355,
+        366,
+        654,
+        660,
+        669,
+        675,
+        695,
+        707,
+        758,
+        763,
+        776,
+        785,
+        794,
+        803,
+        814,
+        823,
+        832,
+        841,
+        847,
+        852,
+        877,
+        1010,
+        1015,
+        1046,
+        1057,
+        1125,
+        1137,
+        1151,
+        1160,
+        1176,
+        1185,
+        1381,
+        1389,
+        1403,
+        1413
+      ],
+      "dependencies": [
+        "60_bios_helpers"
+      ],
+      "imports": [],
+      "patch_points": [],
+      "group": "tile-sprite",
+      "classification": "flex-high"
+    },
+    {
+      "id": "31-cmd-cold-graphics",
+      "name": "31-cmd-cold-graphics",
+      "owner": "31-cmd-cold-graphics",
+      "assembly_base": 20575,
+      "size": 553,
+      "fixed_address": 20575,
+      "has_fixed_address": true,
+      "policy": "fixed",
+      "exports": [
+        {
+          "name": "cmd_page",
+          "offset": 0
+        },
+        {
+          "name": "cmd_page.mode",
+          "offset": 7
+        },
+        {
+          "name": "cmd_page.delay",
+          "offset": 23
+        },
+        {
+          "name": "cmd_page.end",
+          "offset": 35
+        },
+        {
+          "name": "cmd_get_date",
+          "offset": 43
+        },
+        {
+          "name": "cmd_get_date.msx1",
+          "offset": 106
+        },
+        {
+          "name": "cmd_get_time",
+          "offset": 112
+        },
+        {
+          "name": "cmd_set_date",
+          "offset": 168
+        },
+        {
+          "name": "cmd_set_time",
+          "offset": 240
+        },
+        {
+          "name": "cmd_clock_mult10",
+          "offset": 308
+        },
+        {
+          "name": "cmd_clock_div10",
+          "offset": 316
+        },
+        {
+          "name": "cmd_clock_disable",
+          "offset": 322
+        },
+        {
+          "name": "cmd_clock_enable",
+          "offset": 328
+        },
+        {
+          "name": "cmd_screen_copy",
+          "offset": 335
+        },
+        {
+          "name": "cmd_screen_copy.4",
+          "offset": 362
+        },
+        {
+          "name": "cmd_screen_copy.2",
+          "offset": 369
+        },
+        {
+          "name": "cmd_screen_copy.3",
+          "offset": 374
+        },
+        {
+          "name": "cmd_screen_copy.3.loop",
+          "offset": 389
+        },
+        {
+          "name": "cmd_screen_copy.1",
+          "offset": 404
+        },
+        {
+          "name": "cmd_screen_copy.above",
+          "offset": 434
+        },
+        {
+          "name": "cmd_screen_copy.5",
+          "offset": 444
+        },
+        {
+          "name": "cmd_screen_copy.8",
+          "offset": 466
+        },
+        {
+          "name": "cmd_screen_copy.6",
+          "offset": 473
+        },
+        {
+          "name": "cmd_screen_copy.7",
+          "offset": 478
+        },
+        {
+          "name": "cmd_screen_copy.7.loop",
+          "offset": 494
+        },
+        {
+          "name": "cmd_screen_paste",
+          "offset": 507
+        },
+        {
+          "name": "cmd_screen.get_start",
+          "offset": 515
+        },
+        {
+          "name": "cmd_screen_load",
+          "offset": 528
+        }
+      ],
+      "relocations": [
+        55,
+        75,
+        90,
+        124,
+        141,
+        158,
+        174,
+        184,
+        204,
+        223,
+        238,
+        247,
+        255,
+        273,
+        291,
+        306,
+        338,
+        364,
+        371,
+        468,
+        475,
+        509
+      ],
+      "dependencies": [
+        "30_basic_helpers",
+        "60_bios_helpers",
+        "90-graphics",
+        "90-math"
+      ],
+      "imports": [
+        {
+          "offset": 314,
+          "target": "J7631",
+          "kind": "jump"
+        },
+        {
+          "offset": 320,
+          "target": "C7643",
+          "kind": "jump"
+        }
+      ],
+      "patch_points": [],
+      "group": "cold-graphics",
+      "classification": "fixed"
+    },
+    {
+      "id": "31-cmd-mtf",
+      "name": "31-cmd-mtf",
+      "owner": "31-cmd-mtf",
+      "assembly_base": 21128,
+      "size": 522,
+      "fixed_address": 21128,
+      "has_fixed_address": true,
+      "policy": "fixed",
+      "exports": [
+        {
+          "name": "cmd_mtf",
+          "offset": 0
+        },
+        {
+          "name": "cmd_mtf.check_screen_mode",
+          "offset": 0
+        },
+        {
+          "name": "cmd_mtf.load_resource",
+          "offset": 10
+        },
+        {
+          "name": "cmd_mtf.check_palette",
+          "offset": 28
+        },
+        {
+          "name": "cmd_mtf.palette",
+          "offset": 31
+        },
+        {
+          "name": "cmd_mtf.palette.copy.to_buffer",
+          "offset": 42
+        },
+        {
+          "name": "cmd_mtf.palette.copy.to_vram",
+          "offset": 59
+        },
+        {
+          "name": "cmd_mtf.palette.copy.to_vram.loop",
+          "offset": 64
+        },
+        {
+          "name": "cmd_mtf.check_tileset",
+          "offset": 89
+        },
+        {
+          "name": "cmd_mtf.set_tiled_mode",
+          "offset": 92
+        },
+        {
+          "name": "cmd_mtf.tileset",
+          "offset": 97
+        },
+        {
+          "name": "cmd_mtf.tileset.copy.to_buffer",
+          "offset": 112
+        },
+        {
+          "name": "cmd_mtf.tileset.copy.to_vram",
+          "offset": 133
+        },
+        {
+          "name": "cmd_mtf.copy.to_vram",
+          "offset": 177
+        },
+        {
+          "name": "cmd_mtf.map",
+          "offset": 187
+        },
+        {
+          "name": "cmd_mtf.map_xy",
+          "offset": 240
+        },
+        {
+          "name": "cmd_mtf.map_xy.adjust_if_y_negative",
+          "offset": 240
+        },
+        {
+          "name": "cmd_mtf.map_xy.adjust_if_y_negative.loop",
+          "offset": 250
+        },
+        {
+          "name": "cmd_mtf.map_xy.adjust_if_x_negative",
+          "offset": 257
+        },
+        {
+          "name": "cmd_mtf.map_xy.adjust_if_x_negative.loop",
+          "offset": 266
+        },
+        {
+          "name": "cmd_mtf.map_xy.adjust_if_x_gt_tilemap_width",
+          "offset": 272
+        },
+        {
+          "name": "cmd_mtf.map_xy.adjust_if_y_gt_tilemap_height",
+          "offset": 286
+        },
+        {
+          "name": "cmd_mtf.window_copy",
+          "offset": 303
+        },
+        {
+          "name": ".sx_ok",
+          "offset": 313
+        },
+        {
+          "name": ".sy_ok",
+          "offset": 324
+        },
+        {
+          "name": ".w_ok",
+          "offset": 336
+        },
+        {
+          "name": ".h_ok",
+          "offset": 352
+        },
+        {
+          "name": ".do_ldirmv",
+          "offset": 418
+        },
+        {
+          "name": ".navigate_source",
+          "offset": 432
+        },
+        {
+          "name": ".copy_row",
+          "offset": 449
+        },
+        {
+          "name": ".go_to_next_map_row",
+          "offset": 490
+        },
+        {
+          "name": ".copy_done",
+          "offset": 499
+        },
+        {
+          "name": ".window_copy_done",
+          "offset": 517
+        }
+      ],
+      "relocations": [
+        137,
+        143,
+        149,
+        166,
+        172,
+        339,
+        355,
+        443,
+        479
+      ],
+      "dependencies": [
+        "60_bios_helpers",
+        "61_megarom",
+        "90-math"
+      ],
+      "imports": [
+        {
+          "offset": 279,
+          "target": "C7643",
+          "kind": "call"
+        },
+        {
+          "offset": 294,
+          "target": "C7643",
+          "kind": "call"
+        }
+      ],
+      "patch_points": [],
+      "group": "mtf",
+      "classification": "fixed"
+    },
+    {
+      "id": "31-cmd-input",
+      "name": "31-cmd-input",
+      "owner": "31-cmd-input",
+      "assembly_base": 21650,
+      "size": 165,
+      "fixed_address": 21650,
+      "has_fixed_address": true,
+      "policy": "flex-low",
+      "exports": [
+        {
+          "name": "cmd_pad",
+          "offset": 0
+        },
+        {
+          "name": "cmd_pad.mouse_on_msx1",
+          "offset": 12
+        },
+        {
+          "name": "cmd_pad.mouse_on_msx1.12",
+          "offset": 39
+        },
+        {
+          "name": "cmd_pad.mouse_on_msx1.12.cont",
+          "offset": 42
+        },
+        {
+          "name": "cmd_pad.mouse_on_msx1.16",
+          "offset": 61
+        },
+        {
+          "name": "cmd_pad.mouse_on_msx1.13",
+          "offset": 66
+        },
+        {
+          "name": "cmd_pad.mouse_on_msx1.14",
+          "offset": 71
+        },
+        {
+          "name": "cmd_pad.from_bios",
+          "offset": 76
+        },
+        {
+          "name": "cmd_pad.end",
+          "offset": 79
+        },
+        {
+          "name": "cmd_pad.GTMOUS",
+          "offset": 87
+        },
+        {
+          "name": "cmd_pad.GTOFST",
+          "offset": 124
+        },
+        {
+          "name": "cmd_pad.GTOFS2",
+          "offset": 126
+        },
+        {
+          "name": "cmd_pad.WAITMS",
+          "offset": 151
+        },
+        {
+          "name": "cmd_pad.WTTR",
+          "offset": 152
+        },
+        {
+          "name": "cmd_pad.WTTR2",
+          "offset": 159
+        },
+        {
+          "name": "cmd_pad.WTTR3",
+          "offset": 162
+        }
+      ],
+      "relocations": [
+        43,
+        90,
+        100,
+        107,
+        117,
+        141
+      ],
+      "dependencies": [],
+      "imports": [],
+      "patch_points": [],
+      "group": "input",
+      "classification": "flex-low"
+    },
+    {
+      "id": "32_usr",
+      "name": "32_usr",
+      "owner": "32_usr",
+      "assembly_base": 21815,
+      "size": 226,
+      "fixed_address": 21815,
+      "has_fixed_address": true,
+      "policy": "fixed",
+      "exports": [
+        {
+          "name": "usr0",
+          "offset": 0
+        },
+        {
+          "name": "usr1",
+          "offset": 21
+        },
+        {
+          "name": "usr2",
+          "offset": 42
+        },
+        {
+          "name": "usr2_play",
+          "offset": 73
+        },
+        {
+          "name": "usr2.0",
+          "offset": 81
+        },
+        {
+          "name": "usr2.1",
+          "offset": 90
+        },
+        {
+          "name": "usr2.2",
+          "offset": 91
+        },
+        {
+          "name": "usr2.3",
+          "offset": 98
+        },
+        {
+          "name": "usr2_inkey",
+          "offset": 106
+        },
+        {
+          "name": "usr2_input",
+          "offset": 112
+        },
+        {
+          "name": "usr2_player_status",
+          "offset": 118
+        },
+        {
+          "name": "usr2_vdp",
+          "offset": 124
+        },
+        {
+          "name": "usr2_turbo",
+          "offset": 130
+        },
+        {
+          "name": "usr2_turbo.turboR",
+          "offset": 140
+        },
+        {
+          "name": "usr2_turbo.msx2p",
+          "offset": 154
+        },
+        {
+          "name": "usr2_maker",
+          "offset": 163
+        },
+        {
+          "name": "usr3",
+          "offset": 169
+        },
+        {
+          "name": "usr3.return",
+          "offset": 179
+        },
+        {
+          "name": "usr3.return.1",
+          "offset": 185
+        },
+        {
+          "name": "usr3.test",
+          "offset": 187
+        },
+        {
+          "name": "usr3.COLLISION_ALL",
+          "offset": 201
+        },
+        {
+          "name": "usr3.COLLISION_COUPLE",
+          "offset": 206
+        },
+        {
+          "name": "usr3.COLLISION_ONE",
+          "offset": 211
+        },
+        {
+          "name": "usr_def",
+          "offset": 216
+        },
+        {
+          "name": "usr_def.ok",
+          "offset": 217
+        },
+        {
+          "name": "usr_def.exit",
+          "offset": 220
+        }
+      ],
+      "relocations": [
+        16,
+        19,
+        37,
+        40,
+        48,
+        52,
+        56,
+        60,
+        64,
+        68,
+        71,
+        79,
+        84,
+        96,
+        110,
+        116,
+        122,
+        128,
+        136,
+        146,
+        152,
+        161,
+        167,
+        170,
+        173
+      ],
+      "dependencies": [
+        "60_bios_helpers",
+        "80_resources"
+      ],
+      "imports": [],
+      "patch_points": [],
+      "group": "usr",
+      "classification": "fixed"
+    },
+    {
+      "id": "33_player",
+      "name": "33_player",
+      "owner": "33_player",
+      "assembly_base": 22041,
+      "size": 331,
+      "fixed_address": 22041,
+      "has_fixed_address": true,
+      "policy": "fixed",
+      "exports": [
+        {
+          "name": "player.initialize",
+          "offset": 0
+        },
+        {
+          "name": "player.unhook",
+          "offset": 48
+        },
+        {
+          "name": "player.int.control",
+          "offset": 64
+        },
+        {
+          "name": "player.int.exit",
+          "offset": 80
+        },
+        {
+          "name": "player.int.play.60hz",
+          "offset": 84
+        },
+        {
+          "name": "player.int.play.50hz",
+          "offset": 95
+        },
+        {
+          "name": "player.int.play.skip",
+          "offset": 113
+        },
+        {
+          "name": "player.int.mute",
+          "offset": 119
+        },
+        {
+          "name": "cmd_plyload",
+          "offset": 141
+        },
+        {
+          "name": "cmd_plysong",
+          "offset": 197
+        },
+        {
+          "name": "cmd_plyreplay",
+          "offset": 242
+        },
+        {
+          "name": "cmd_plyplay",
+          "offset": 258
+        },
+        {
+          "name": "player.status.set",
+          "offset": 268
+        },
+        {
+          "name": "cmd_plymute",
+          "offset": 276
+        },
+        {
+          "name": "cmd_plyloop",
+          "offset": 280
+        },
+        {
+          "name": "cmd_plysound",
+          "offset": 300
+        }
+      ],
+      "relocations": [
+        36
+      ],
+      "dependencies": [
+        "60_bios_helpers",
+        "61_megarom",
+        "80_resources"
+      ],
+      "imports": [],
+      "patch_points": [],
+      "group": "player",
+      "classification": "fixed"
+    },
+    {
+      "id": "34_file_handling",
+      "name": "34_file_handling",
+      "owner": "34_file_handling",
+      "assembly_base": 22372,
+      "size": 585,
+      "fixed_address": 22372,
+      "has_fixed_address": true,
+      "policy": "flex-low",
+      "exports": [
+        {
+          "name": "cmd_preflight_disk",
+          "offset": 0
+        },
+        {
+          "name": "cmd_fcalbas_we",
+          "offset": 21
+        },
+        {
+          "name": "cmd_fcalbas_we.done",
+          "offset": 56
+        },
+        {
+          "name": "cmd_fcalbas_we.error_handler",
+          "offset": 64
+        },
+        {
+          "name": "cmd_fcalbas",
+          "offset": 88
+        },
+        {
+          "name": "cmd_fcalbas_we.error_handler.end",
+          "offset": 88
+        },
+        {
+          "name": "cmd_freset_fil",
+          "offset": 98
+        },
+        {
+          "name": "cmd_ffilout",
+          "offset": 104
+        },
+        {
+          "name": "cmd_findskc",
+          "offset": 110
+        },
+        {
+          "name": "cmd_fsetfil",
+          "offset": 116
+        },
+        {
+          "name": "cmd_fmaxfiles",
+          "offset": 122
+        },
+        {
+          "name": "cmd_fmaxfiles.set_heap_end",
+          "offset": 129
+        },
+        {
+          "name": "cmd_fmaxfiles.set_himem",
+          "offset": 132
+        },
+        {
+          "name": "cmd_fmaxfiles.set_filtab",
+          "offset": 136
+        },
+        {
+          "name": "cmd_fmaxfiles.set_filtab.loop",
+          "offset": 139
+        },
+        {
+          "name": "cmd_fmaxfiles.set_heap_size",
+          "offset": 147
+        },
+        {
+          "name": "cmd_fmaxfiles.populate_filtab",
+          "offset": 163
+        },
+        {
+          "name": "cmd_fmaxfiles.populate_filtab.loop",
+          "offset": 175
+        },
+        {
+          "name": "cmd_fopen",
+          "offset": 197
+        },
+        {
+          "name": "cmd_fopen.error",
+          "offset": 249
+        },
+        {
+          "name": "cmd_feof",
+          "offset": 255
+        },
+        {
+          "name": "cmd_fcall.function",
+          "offset": 268
+        },
+        {
+          "name": "cmd_floc",
+          "offset": 286
+        },
+        {
+          "name": "cmd_flof",
+          "offset": 292
+        },
+        {
+          "name": "cmd_fpos",
+          "offset": 298
+        },
+        {
+          "name": "cmd_fdskf",
+          "offset": 304
+        },
+        {
+          "name": "cmd_fdskf.error",
+          "offset": 319
+        },
+        {
+          "name": "cmd_fclose",
+          "offset": 327
+        },
+        {
+          "name": "cmd_fclose.all",
+          "offset": 344
+        },
+        {
+          "name": "cmd_finput",
+          "offset": 360
+        },
+        {
+          "name": "cmd_finput.line_mode",
+          "offset": 371
+        },
+        {
+          "name": "cmd_finput.mode_saved",
+          "offset": 373
+        },
+        {
+          "name": "cmd_finput.begin",
+          "offset": 381
+        },
+        {
+          "name": "cmd_finput.pending_lf",
+          "offset": 405
+        },
+        {
+          "name": "cmd_finput.pending_lf_save",
+          "offset": 419
+        },
+        {
+          "name": "cmd_finput.pending_lf_store",
+          "offset": 421
+        },
+        {
+          "name": "cmd_finput.pending_no_lf",
+          "offset": 426
+        },
+        {
+          "name": "cmd_finput.pending_no_lf_save",
+          "offset": 435
+        },
+        {
+          "name": "cmd_finput.pending_no_lf_store",
+          "offset": 437
+        },
+        {
+          "name": "cmd_finput.check_delimiter",
+          "offset": 441
+        },
+        {
+          "name": "cmd_finput.first_done",
+          "offset": 477
+        },
+        {
+          "name": "cmd_finput.normal",
+          "offset": 481
+        },
+        {
+          "name": "cmd_finput.append_b",
+          "offset": 490
+        },
+        {
+          "name": "cmd_finput.quoted",
+          "offset": 493
+        },
+        {
+          "name": "cmd_finput.append",
+          "offset": 498
+        },
+        {
+          "name": "cmd_finput.exec",
+          "offset": 510
+        },
+        {
+          "name": "cmd_finput.exec_set_pending",
+          "offset": 525
+        },
+        {
+          "name": "cmd_finput.exec_ret",
+          "offset": 528
+        },
+        {
+          "name": "cmd_finput.exec_check_started",
+          "offset": 539
+        },
+        {
+          "name": "cmd_finput.end",
+          "offset": 546
+        },
+        {
+          "name": "cmd_fprint",
+          "offset": 554
+        },
+        {
+          "name": "cmd_fprint.loop",
+          "offset": 564
+        },
+        {
+          "name": "cmd_fprint.end",
+          "offset": 571
+        }
+      ],
+      "relocations": [
+        40,
+        86,
+        142,
+        186,
+        244,
+        247,
+        260,
+        277,
+        305,
+        315,
+        339,
+        342,
+        355,
+        358,
+        361,
+        382,
+        387,
+        508,
+        544,
+        552,
+        555,
+        566,
+        575,
+        580,
+        583
+      ],
+      "dependencies": [],
+      "imports": [],
+      "patch_points": [],
+      "group": "file-io",
+      "classification": "flex-low"
+    },
+    {
+      "id": "60_bios_helpers",
+      "name": "60_bios_helpers",
+      "owner": "60_bios_helpers",
+      "assembly_base": 22957,
+      "size": 1233,
+      "fixed_address": 22957,
+      "has_fixed_address": true,
+      "policy": "fixed",
+      "exports": [
+        {
+          "name": "resource.open",
+          "offset": 0
+        },
+        {
+          "name": "select_rsc_on_page_0",
+          "offset": 6
+        },
+        {
+          "name": "resource.close",
+          "offset": 26
+        },
+        {
+          "name": "select_rom_on_page_0",
+          "offset": 32
+        },
+        {
+          "name": "select_rom_on_megarom",
+          "offset": 40
+        },
+        {
+          "name": "select_rsc_on_megarom",
+          "offset": 46
+        },
+        {
+          "name": "resource.open_and_get_address",
+          "offset": 57
+        },
+        {
+          "name": "resource.copy_to_ram_on_page_2",
+          "offset": 67
+        },
+        {
+          "name": "resource.copy_to_ram_on_page_2.mr",
+          "offset": 73
+        },
+        {
+          "name": "resource.copy_to_ram_on_page_2.no_mr",
+          "offset": 98
+        },
+        {
+          "name": "resource.copy_to_ram_on_page_2.end",
+          "offset": 104
+        },
+        {
+          "name": "resource.copy_to_ram.unpack_and_close",
+          "offset": 107
+        },
+        {
+          "name": "resource.copy_to_ram_on_page_3",
+          "offset": 118
+        },
+        {
+          "name": "select_ram_on_page_0",
+          "offset": 131
+        },
+        {
+          "name": "select_rom_on_page_2",
+          "offset": 139
+        },
+        {
+          "name": "select_ram_on_page_2",
+          "offset": 159
+        },
+        {
+          "name": "page.getslt",
+          "offset": 179
+        },
+        {
+          "name": "PrimaryShiftContinue",
+          "offset": 190
+        },
+        {
+          "name": "PrimaryShiftDone",
+          "offset": 196
+        },
+        {
+          "name": "SecondaryShiftContinue",
+          "offset": 226
+        },
+        {
+          "name": "SecondaryShiftDone",
+          "offset": 232
+        },
+        {
+          "name": "verify.slots",
+          "offset": 236
+        },
+        {
+          "name": "verify.slots.test",
+          "offset": 280
+        },
+        {
+          "name": "verify.slots.test.mapper.mirror",
+          "offset": 317
+        },
+        {
+          "name": "verify.slots.set.mapper",
+          "offset": 330
+        },
+        {
+          "name": "verify.slots.set.mapper.1",
+          "offset": 370
+        },
+        {
+          "name": "verify.slots.set.running.on.ram",
+          "offset": 375
+        },
+        {
+          "name": "verify.slots.test.mapper",
+          "offset": 389
+        },
+        {
+          "name": "verify.slots.test.megaram",
+          "offset": 426
+        },
+        {
+          "name": "konami_patch_verify_read",
+          "offset": 434
+        },
+        {
+          "name": "konami_patch_verify_wr0",
+          "offset": 449
+        },
+        {
+          "name": "konami_patch_verify_wr2",
+          "offset": 463
+        },
+        {
+          "name": "verify.slots.test.megaram.nope",
+          "offset": 473
+        },
+        {
+          "name": "konami_patch_verify_restore",
+          "offset": 484
+        },
+        {
+          "name": "verify.slots.test.ram",
+          "offset": 493
+        },
+        {
+          "name": "verify.slots.test.program.on_page_2",
+          "offset": 507
+        },
+        {
+          "name": "SUB_ENASLT",
+          "offset": 524
+        },
+        {
+          "name": "ENASLT.EXPSLT",
+          "offset": 537
+        },
+        {
+          "name": "ENASLT.MASK",
+          "offset": 556
+        },
+        {
+          "name": "ENASLT.MASK.1",
+          "offset": 566
+        },
+        {
+          "name": "ENASLT.MASK.2",
+          "offset": 583
+        },
+        {
+          "name": "ENASLT.SUBSLT",
+          "offset": 593
+        },
+        {
+          "name": "ENASLT.SUBSLT.1",
+          "offset": 617
+        },
+        {
+          "name": "SUB_LDIRVM",
+          "offset": 645
+        },
+        {
+          "name": "SUB_LDIRVM.loop",
+          "offset": 659
+        },
+        {
+          "name": "SUB_LDIRMV",
+          "offset": 667
+        },
+        {
+          "name": "SUB_LDIRMV.loop",
+          "offset": 680
+        },
+        {
+          "name": "VDP_GetVersion",
+          "offset": 688
+        },
+        {
+          "name": "VDP_IsTMS9918A",
+          "offset": 719
+        },
+        {
+          "name": "VDP_IsTMS9918A_Wait",
+          "offset": 722
+        },
+        {
+          "name": "SUB_CLRSPR",
+          "offset": 760
+        },
+        {
+          "name": "SUB_CLRSPR.hitbox",
+          "offset": 784
+        },
+        {
+          "name": "SUB_GETSPRTBL_ADDR",
+          "offset": 805
+        },
+        {
+          "name": "SUB_GET_HITBOX_ADDR",
+          "offset": 819
+        },
+        {
+          "name": "SUB_SETSPRTBL_XY",
+          "offset": 833
+        },
+        {
+          "name": "SUB_SETSPRTBL_TEST",
+          "offset": 865
+        },
+        {
+          "name": "SUB_SPRCOL_LOAD",
+          "offset": 871
+        },
+        {
+          "name": "SUB_SPRCOL_LOAD.inactive",
+          "offset": 918
+        },
+        {
+          "name": "SUB_SPRCOL_LOAD.disabled",
+          "offset": 921
+        },
+        {
+          "name": "SUB_SPRCOL_ALL",
+          "offset": 924
+        },
+        {
+          "name": "SUB_SPRCOL_ALL.LOOP",
+          "offset": 925
+        },
+        {
+          "name": "SUB_SPRCOL_ONE",
+          "offset": 945
+        },
+        {
+          "name": "SUB_SPRCOL_ONE.1",
+          "offset": 949
+        },
+        {
+          "name": "SUB_SPRCOL_ONE.LOOP",
+          "offset": 963
+        },
+        {
+          "name": "SUB_SPRCOL_ONE.SKIP",
+          "offset": 992
+        },
+        {
+          "name": "SUB_SPRCOL_ONE.CONT",
+          "offset": 1007
+        },
+        {
+          "name": "SUB_SPRCOL_COUPLE",
+          "offset": 1015
+        },
+        {
+          "name": "SUB_SPRCOL_CHECK",
+          "offset": 1042
+        },
+        {
+          "name": "SUB_SPRCOL_CHECK.true",
+          "offset": 1089
+        },
+        {
+          "name": "SUB_SPRCOL_CHECK.skip_5",
+          "offset": 1093
+        },
+        {
+          "name": "SUB_SPRCOL_CHECK.skip_4",
+          "offset": 1094
+        },
+        {
+          "name": "SUB_SPRCOL_CHECK.skip_3",
+          "offset": 1095
+        },
+        {
+          "name": "SUB_SPRCOL_CHECK.skip_2",
+          "offset": 1096
+        },
+        {
+          "name": "SUB_SPRCOL_CHECK.skip_1",
+          "offset": 1097
+        },
+        {
+          "name": "SUB_SPRCOL_CHECK.false",
+          "offset": 1098
+        },
+        {
+          "name": "SUB_GetSpriteSize",
+          "offset": 1101
+        },
+        {
+          "name": "SUB_GetSpriteSize.1",
+          "offset": 1115
+        },
+        {
+          "name": "SUB_GetSpriteSize.2",
+          "offset": 1121
+        },
+        {
+          "name": "SUB_REDCLK",
+          "offset": 1124
+        },
+        {
+          "name": "SUB_WRTCLK",
+          "offset": 1131
+        },
+        {
+          "name": "gfxTileAddress",
+          "offset": 1138
+        },
+        {
+          "name": "gfxCALPAT",
+          "offset": 1148
+        },
+        {
+          "name": "gfxCALATR",
+          "offset": 1173
+        },
+        {
+          "name": "gfxCALCOL",
+          "offset": 1198
+        },
+        {
+          "name": "gfxVDP.set",
+          "offset": 1223
+        }
+      ],
+      "relocations": [
+        12,
+        38,
+        58,
+        74,
+        85,
+        88,
+        99,
+        102,
+        113,
+        120,
+        127,
+        137,
+        239,
+        247,
+        255,
+        266,
+        287,
+        290,
+        301,
+        390,
+        432,
+        446,
+        479,
+        525,
+        528,
+        539,
+        570,
+        621,
+        689,
+        726,
+        761,
+        840,
+        867,
+        873,
+        888,
+        929,
+        943,
+        950,
+        953,
+        957,
+        972,
+        1013,
+        1021,
+        1024,
+        1031,
+        1036,
+        1210
+      ],
+      "dependencies": [
+        "61_megarom",
+        "80_resources",
+        "90-base"
+      ],
+      "imports": [],
+      "patch_points": [
+        434,
+        449,
+        463,
+        484
+      ],
+      "group": "core",
+      "classification": "fixed"
+    },
+    {
+      "id": "61_megarom",
+      "name": "61_megarom",
+      "owner": "61_megarom",
+      "assembly_base": 24190,
+      "size": 162,
+      "fixed_address": 24190,
+      "has_fixed_address": true,
+      "policy": "fixed",
+      "exports": [
+        {
+          "name": "MR_JUMP",
+          "offset": 0
+        },
+        {
+          "name": "MR_CHANGE_SGM",
+          "offset": 1
+        },
+        {
+          "name": "konami_patch_sgm_8000",
+          "offset": 4
+        },
+        {
+          "name": "konami_patch_sgm_A000",
+          "offset": 8
+        },
+        {
+          "name": "OPENMSX_EMULATOR_AUTODETECTION",
+          "offset": 13
+        },
+        {
+          "name": "konami_patch_omsx_0",
+          "offset": 13
+        },
+        {
+          "name": "konami_patch_omsx_1",
+          "offset": 16
+        },
+        {
+          "name": "konami_patch_omsx_2",
+          "offset": 19
+        },
+        {
+          "name": "konami_patch_omsx_3",
+          "offset": 22
+        },
+        {
+          "name": "konami_patch_omsx_4",
+          "offset": 25
+        },
+        {
+          "name": "MR_CALL",
+          "offset": 28
+        },
+        {
+          "name": "MR_CALL_RET",
+          "offset": 44
+        },
+        {
+          "name": "MR_GET_DATA",
+          "offset": 48
+        },
+        {
+          "name": "MR_GET_BYTE",
+          "offset": 80
+        },
+        {
+          "name": "MR_CALL_TRAP",
+          "offset": 97
+        },
+        {
+          "name": "GET_NEXT_TEMP_STRING_ADDRESS",
+          "offset": 126
+        },
+        {
+          "name": "GET_NEXT_TEMP_STRING_ADDRESS.1",
+          "offset": 144
+        }
+      ],
+      "relocations": [
+        34,
+        37,
+        46,
+        54,
+        62,
+        72,
+        86,
+        93,
+        124
+      ],
+      "dependencies": [
+        "90-math",
+        "90-traps"
+      ],
+      "imports": [
+        {
+          "offset": 115,
+          "target": "C7643",
+          "kind": "call"
+        }
+      ],
+      "patch_points": [
+        4,
+        8,
+        13,
+        16,
+        19,
+        22,
+        25
+      ],
+      "group": "core",
+      "classification": "fixed"
+    },
+    {
+      "id": "70_pletter",
+      "name": "70_pletter",
+      "owner": "70_pletter",
+      "assembly_base": 24352,
+      "size": 160,
+      "fixed_address": 24352,
+      "has_fixed_address": true,
+      "policy": "fixed",
+      "exports": [
+        {
+          "name": "pletter.unpack",
+          "offset": 0
+        },
+        {
+          "name": "pletter.literal",
+          "offset": 36
+        },
+        {
+          "name": "pletter.loop",
+          "offset": 38
+        },
+        {
+          "name": "pletter.getlen",
+          "offset": 47
+        },
+        {
+          "name": "pletter.lus",
+          "offset": 53
+        }
+      ],
+      "relocations": [
+        34,
+        78
+      ],
+      "dependencies": [],
+      "imports": [],
+      "patch_points": [],
+      "group": "compression",
+      "classification": "fixed"
+    },
+    {
+      "id": "80_resources",
+      "name": "80_resources",
+      "owner": "80_resources",
+      "assembly_base": 24512,
+      "size": 1211,
+      "fixed_address": 24512,
+      "has_fixed_address": true,
+      "policy": "fixed",
+      "exports": [
+        {
+          "name": "resource.count",
+          "offset": 0
+        },
+        {
+          "name": "resource.address",
+          "offset": 8
+        },
+        {
+          "name": "resource.address.next",
+          "offset": 20
+        },
+        {
+          "name": "resource.get_data",
+          "offset": 43
+        },
+        {
+          "name": "resource.get_data.copy",
+          "offset": 62
+        },
+        {
+          "name": "resource.ram.unpack",
+          "offset": 72
+        },
+        {
+          "name": "font.resource.data.1",
+          "offset": 87
+        },
+        {
+          "name": "font.resource.data.2",
+          "offset": 540
+        },
+        {
+          "name": "font.resource.data.3",
+          "offset": 885
+        }
+      ],
+      "relocations": [
+        9,
+        50
+      ],
+      "dependencies": [
+        "60_bios_helpers",
+        "61_megarom",
+        "70_pletter"
+      ],
+      "imports": [],
+      "patch_points": [],
+      "group": "core",
+      "classification": "fixed"
+    },
+    {
+      "id": "90-base",
+      "name": "90-base",
+      "owner": "90-base",
+      "assembly_base": 25723,
+      "size": 1926,
+      "fixed_address": 25723,
+      "has_fixed_address": true,
+      "policy": "fixed",
+      "exports": [
+        {
+          "name": "BASIC_KUN_START_FILLER",
+          "offset": 0
+        },
+        {
+          "name": "ARKOS_PLAYER",
+          "offset": 6
+        },
+        {
+          "name": "PAINT_FIX.2",
+          "offset": 1882
+        },
+        {
+          "name": "PAINT_FIX.2.1",
+          "offset": 1908
+        },
+        {
+          "name": "SUB_EXTROM",
+          "offset": 1909
+        },
+        {
+          "name": "SUB_PUFOUT",
+          "offset": 1914
+        }
+      ],
+      "relocations": [],
+      "dependencies": [],
+      "imports": [],
+      "patch_points": [],
+      "group": "player",
+      "classification": "fixed"
+    },
+    {
+      "id": "90-math-early",
+      "name": "90-math-early",
+      "owner": "90-math-early",
+      "assembly_base": 27649,
+      "size": 34,
+      "fixed_address": 27649,
+      "has_fixed_address": true,
+      "policy": "flex-high",
+      "exports": [
+        {
+          "name": "J_SGN_INT",
+          "offset": 0
+        },
+        {
+          "name": "J_SGN_FLOAT",
+          "offset": 12
+        },
+        {
+          "name": "J_ABS_INT",
+          "offset": 24
+        },
+        {
+          "name": "XBASIC_SGN_INT",
+          "offset": 0
+        },
+        {
+          "name": "XBASIC_SGN_FLOAT",
+          "offset": 12
+        },
+        {
+          "name": "XBASIC_ABS_INT",
+          "offset": 24
+        }
+      ],
+      "relocations": [],
+      "dependencies": [],
+      "imports": [],
+      "patch_points": [],
+      "group": "math",
+      "classification": "flex-high"
+    },
+    {
+      "id": "90-traps",
+      "name": "90-traps",
+      "owner": "90-traps",
+      "assembly_base": 27683,
+      "size": 236,
+      "fixed_address": 27683,
+      "has_fixed_address": true,
+      "policy": "fixed",
+      "exports": [
+        {
+          "name": "I6BF7",
+          "offset": 0
+        },
+        {
+          "name": "I6BFB",
+          "offset": 4
+        },
+        {
+          "name": "I6BFF",
+          "offset": 8
+        },
+        {
+          "name": "J6C01",
+          "offset": 10
+        },
+        {
+          "name": "WriteParamBCD",
+          "offset": 20
+        },
+        {
+          "name": "C6C25",
+          "offset": 46
+        },
+        {
+          "name": "C6C26",
+          "offset": 47
+        },
+        {
+          "name": "C6C27",
+          "offset": 48
+        },
+        {
+          "name": "J6C4A",
+          "offset": 83
+        },
+        {
+          "name": "J6C54",
+          "offset": 93
+        },
+        {
+          "name": "J6C5B",
+          "offset": 100
+        },
+        {
+          "name": "J6C5F",
+          "offset": 104
+        },
+        {
+          "name": "J6C82",
+          "offset": 139
+        },
+        {
+          "name": "I6C8B",
+          "offset": 148
+        },
+        {
+          "name": "I6C9E",
+          "offset": 167
+        },
+        {
+          "name": "C6CA7",
+          "offset": 176
+        },
+        {
+          "name": "J6CAB",
+          "offset": 180
+        },
+        {
+          "name": "C6CB1",
+          "offset": 186
+        },
+        {
+          "name": "J6CB4",
+          "offset": 189
+        },
+        {
+          "name": "J6CBE",
+          "offset": 199
+        },
+        {
+          "name": "C6CC0",
+          "offset": 201
+        },
+        {
+          "name": "C6CC8",
+          "offset": 209
+        },
+        {
+          "name": "C6CCF",
+          "offset": 216
+        },
+        {
+          "name": "J6CDC",
+          "offset": 229
+        },
+        {
+          "name": "XBASIC_TRAP_ON",
+          "offset": 148
+        },
+        {
+          "name": "XBASIC_TRAP_OFF",
+          "offset": 167
+        },
+        {
+          "name": "XBASIC_TRAP_STOP",
+          "offset": 176
+        },
+        {
+          "name": "XBASIC_TRAP_CHECK",
+          "offset": 48
+        },
+        {
+          "name": "XBASIC_SWAP_INTEGER",
+          "offset": 0
+        },
+        {
+          "name": "XBASIC_SWAP_STRING",
+          "offset": 4
+        },
+        {
+          "name": "XBASIC_SWAP_FLOAT",
+          "offset": 8
+        },
+        {
+          "name": "XBASIC_DUMMY_RET",
+          "offset": 47
+        }
+      ],
+      "relocations": [
+        114,
+        117,
+        149,
+        168,
+        202,
+        210
+      ],
+      "dependencies": [
+        "21_logic_pack",
+        "61_megarom"
+      ],
+      "imports": [
+        {
+          "offset": 22,
+          "target": "FloatToBCD",
+          "kind": "call"
+        }
+      ],
+      "patch_points": [],
+      "group": "traps",
+      "classification": "pinned"
+    },
+    {
+      "id": "90-graphics",
+      "name": "90-graphics",
+      "owner": "90-graphics",
+      "assembly_base": 27919,
+      "size": 2037,
+      "fixed_address": 27919,
+      "has_fixed_address": true,
+      "policy": "fixed",
+      "exports": [
+        {
+          "name": "I6CE3",
+          "offset": 0
+        },
+        {
+          "name": "J6D18",
+          "offset": 53
+        },
+        {
+          "name": "J6D1D",
+          "offset": 58
+        },
+        {
+          "name": "C6D2F",
+          "offset": 76
+        },
+        {
+          "name": "J6D43",
+          "offset": 96
+        },
+        {
+          "name": "I6D4B",
+          "offset": 104
+        },
+        {
+          "name": "J6D62",
+          "offset": 127
+        },
+        {
+          "name": "J6D6E",
+          "offset": 139
+        },
+        {
+          "name": "C6DA9",
+          "offset": 198
+        },
+        {
+          "name": "J6DEF",
+          "offset": 268
+        },
+        {
+          "name": "J6E02",
+          "offset": 287
+        },
+        {
+          "name": "J6E0E",
+          "offset": 299
+        },
+        {
+          "name": "I6E29",
+          "offset": 326
+        },
+        {
+          "name": "C6E36",
+          "offset": 339
+        },
+        {
+          "name": "J6E4C",
+          "offset": 361
+        },
+        {
+          "name": "J6E58",
+          "offset": 373
+        },
+        {
+          "name": "J6E9C",
+          "offset": 441
+        },
+        {
+          "name": "J6EA2",
+          "offset": 447
+        },
+        {
+          "name": "J6EA7",
+          "offset": 452
+        },
+        {
+          "name": "J6EB2",
+          "offset": 463
+        },
+        {
+          "name": "J6EB7",
+          "offset": 468
+        },
+        {
+          "name": "J6EBE",
+          "offset": 475
+        },
+        {
+          "name": "I6EC8",
+          "offset": 485
+        },
+        {
+          "name": "J6F28",
+          "offset": 581
+        },
+        {
+          "name": "J6F3E",
+          "offset": 603
+        },
+        {
+          "name": "J6F5D",
+          "offset": 634
+        },
+        {
+          "name": "J6F63",
+          "offset": 640
+        },
+        {
+          "name": "J6F68",
+          "offset": 645
+        },
+        {
+          "name": "J6F6E",
+          "offset": 651
+        },
+        {
+          "name": "I6F73",
+          "offset": 656
+        },
+        {
+          "name": "I6FA9",
+          "offset": 710
+        },
+        {
+          "name": "C7004",
+          "offset": 801
+        },
+        {
+          "name": "J7023",
+          "offset": 832
+        },
+        {
+          "name": "J702C",
+          "offset": 841
+        },
+        {
+          "name": "J7038",
+          "offset": 853
+        },
+        {
+          "name": "J7042",
+          "offset": 863
+        },
+        {
+          "name": "J704D",
+          "offset": 874
+        },
+        {
+          "name": "J7053",
+          "offset": 880
+        },
+        {
+          "name": "C7079",
+          "offset": 918
+        },
+        {
+          "name": "C707B",
+          "offset": 920
+        },
+        {
+          "name": "C708A",
+          "offset": 935
+        },
+        {
+          "name": "C709C",
+          "offset": 953
+        },
+        {
+          "name": "I70A3",
+          "offset": 960
+        },
+        {
+          "name": "C70AB",
+          "offset": 968
+        },
+        {
+          "name": "C70AF",
+          "offset": 972
+        },
+        {
+          "name": "I70B7",
+          "offset": 980
+        },
+        {
+          "name": "I70BE",
+          "offset": 987
+        },
+        {
+          "name": "C70CC",
+          "offset": 1001
+        },
+        {
+          "name": "J70EE",
+          "offset": 1035
+        },
+        {
+          "name": "C7108",
+          "offset": 1061
+        },
+        {
+          "name": "C7109",
+          "offset": 1062
+        },
+        {
+          "name": "C710E",
+          "offset": 1067
+        },
+        {
+          "name": "J712C",
+          "offset": 1097
+        },
+        {
+          "name": "J7131",
+          "offset": 1102
+        },
+        {
+          "name": "J7136",
+          "offset": 1107
+        },
+        {
+          "name": "C7145",
+          "offset": 1122
+        },
+        {
+          "name": "J7155",
+          "offset": 1138
+        },
+        {
+          "name": "J7160",
+          "offset": 1149
+        },
+        {
+          "name": "J7164",
+          "offset": 1153
+        },
+        {
+          "name": "J7169",
+          "offset": 1158
+        },
+        {
+          "name": "C7189",
+          "offset": 1163
+        },
+        {
+          "name": "C7194",
+          "offset": 1174
+        },
+        {
+          "name": "J71A2",
+          "offset": 1188
+        },
+        {
+          "name": "C71A4",
+          "offset": 1190
+        },
+        {
+          "name": "C71A9",
+          "offset": 1195
+        },
+        {
+          "name": "C71B1",
+          "offset": 1203
+        },
+        {
+          "name": "C71B5",
+          "offset": 1207
+        },
+        {
+          "name": "C71BF",
+          "offset": 1217
+        },
+        {
+          "name": "J71DD",
+          "offset": 1247
+        },
+        {
+          "name": "J71F9",
+          "offset": 1275
+        },
+        {
+          "name": "J7201",
+          "offset": 1283
+        },
+        {
+          "name": "J7211",
+          "offset": 1299
+        },
+        {
+          "name": "J721F",
+          "offset": 1313
+        },
+        {
+          "name": "J7222",
+          "offset": 1316
+        },
+        {
+          "name": "J722E",
+          "offset": 1328
+        },
+        {
+          "name": "J7242",
+          "offset": 1348
+        },
+        {
+          "name": "J7259",
+          "offset": 1371
+        },
+        {
+          "name": "J7276",
+          "offset": 1400
+        },
+        {
+          "name": "J727B",
+          "offset": 1405
+        },
+        {
+          "name": "J728C",
+          "offset": 1422
+        },
+        {
+          "name": "J7293",
+          "offset": 1429
+        },
+        {
+          "name": "J72A8",
+          "offset": 1450
+        },
+        {
+          "name": "J72AB",
+          "offset": 1453
+        },
+        {
+          "name": "J72D1",
+          "offset": 1491
+        },
+        {
+          "name": "J72D8",
+          "offset": 1498
+        },
+        {
+          "name": "J72DD",
+          "offset": 1503
+        },
+        {
+          "name": "J72E7",
+          "offset": 1513
+        },
+        {
+          "name": "J72EA",
+          "offset": 1516
+        },
+        {
+          "name": "J72F8",
+          "offset": 1530
+        },
+        {
+          "name": "J72FF",
+          "offset": 1537
+        },
+        {
+          "name": "J7308",
+          "offset": 1546
+        },
+        {
+          "name": "J7327",
+          "offset": 1577
+        },
+        {
+          "name": "I7339",
+          "offset": 1595
+        },
+        {
+          "name": "J7352",
+          "offset": 1620
+        },
+        {
+          "name": "J7364",
+          "offset": 1638
+        },
+        {
+          "name": "C7369",
+          "offset": 1643
+        },
+        {
+          "name": "J7388",
+          "offset": 1674
+        },
+        {
+          "name": "J73AE",
+          "offset": 1712
+        },
+        {
+          "name": "J73B2",
+          "offset": 1716
+        },
+        {
+          "name": "J73B8",
+          "offset": 1722
+        },
+        {
+          "name": "J73B9",
+          "offset": 1723
+        },
+        {
+          "name": "C73BE",
+          "offset": 1728
+        },
+        {
+          "name": "C73D3",
+          "offset": 1749
+        },
+        {
+          "name": "J73F9",
+          "offset": 1787
+        },
+        {
+          "name": "C73FD",
+          "offset": 1791
+        },
+        {
+          "name": "C7403",
+          "offset": 1797
+        },
+        {
+          "name": "J741C",
+          "offset": 1822
+        },
+        {
+          "name": "J7426",
+          "offset": 1832
+        },
+        {
+          "name": "C742D",
+          "offset": 1839
+        },
+        {
+          "name": "C7441",
+          "offset": 1859
+        },
+        {
+          "name": "J7450",
+          "offset": 1874
+        },
+        {
+          "name": "J745C",
+          "offset": 1886
+        },
+        {
+          "name": "J7464",
+          "offset": 1894
+        },
+        {
+          "name": "J746A",
+          "offset": 1900
+        },
+        {
+          "name": "J746E",
+          "offset": 1904
+        },
+        {
+          "name": "J7476",
+          "offset": 1912
+        },
+        {
+          "name": "J747B",
+          "offset": 1917
+        },
+        {
+          "name": "J7480",
+          "offset": 1922
+        },
+        {
+          "name": "J7483",
+          "offset": 1925
+        },
+        {
+          "name": "J749A",
+          "offset": 1948
+        },
+        {
+          "name": "J74A8",
+          "offset": 1962
+        },
+        {
+          "name": "C74BC",
+          "offset": 1982
+        },
+        {
+          "name": "J74D5",
+          "offset": 2007
+        },
+        {
+          "name": "I74DC",
+          "offset": 2014
+        },
+        {
+          "name": "J74EA",
+          "offset": 2028
+        },
+        {
+          "name": "J74EE",
+          "offset": 2032
+        },
+        {
+          "name": "XBASIC_POINT",
+          "offset": 710
+        },
+        {
+          "name": "XBASIC_LINE",
+          "offset": 198
+        },
+        {
+          "name": "XBASIC_BOX",
+          "offset": 104
+        },
+        {
+          "name": "XBASIC_BOXF",
+          "offset": 326
+        },
+        {
+          "name": "XBASIC_PSET",
+          "offset": 656
+        },
+        {
+          "name": "XBASIC_PAINT",
+          "offset": 1982
+        },
+        {
+          "name": "XBASIC_CIRCLE",
+          "offset": 2014
+        },
+        {
+          "name": "XBASIC_CIRCLE2",
+          "offset": 2032
+        },
+        {
+          "name": "XBASIC_COLOR_RGB",
+          "offset": 1067
+        },
+        {
+          "name": "XBASIC_COLOR_SPRITE",
+          "offset": 1163
+        },
+        {
+          "name": "XBASIC_COLOR_SPRSTR",
+          "offset": 1174
+        },
+        {
+          "name": "XBASIC_SCREEN_SPRITE",
+          "offset": 987
+        },
+        {
+          "name": "XBASIC_SPRITE_ASSIGN",
+          "offset": 1122
+        },
+        {
+          "name": "XBASIC_SET_PAGE",
+          "offset": 1001
+        },
+        {
+          "name": "XBASIC_SET_SCROLL",
+          "offset": 801
+        },
+        {
+          "name": "XBASIC_VDP",
+          "offset": 1595
+        },
+        {
+          "name": "XBASIC_VPEEK",
+          "offset": 960
+        },
+        {
+          "name": "XBASIC_VPOKE",
+          "offset": 980
+        }
+      ],
+      "relocations": [
+        6,
+        9,
+        12,
+        64,
+        111,
+        155,
+        172,
+        187,
+        205,
+        209,
+        213,
+        216,
+        229,
+        333,
+        337,
+        341,
+        344,
+        380,
+        486,
+        489,
+        501,
+        517,
+        663,
+        667,
+        671,
+        674,
+        716,
+        719,
+        724,
+        770,
+        776,
+        782,
+        786,
+        872,
+        878,
+        884,
+        888,
+        939,
+        947,
+        961,
+        973,
+        982,
+        1018,
+        1042,
+        1127,
+        1151,
+        1167,
+        1176,
+        1208,
+        1228,
+        1239,
+        1318,
+        1326,
+        1340,
+        1363,
+        1457,
+        1465,
+        1471,
+        1479,
+        1499,
+        1539,
+        1558,
+        1566,
+        1582,
+        1608,
+        1614,
+        1700,
+        1708,
+        1751,
+        1775,
+        1848,
+        1910,
+        1946,
+        1960,
+        1998,
+        2012
+      ],
+      "dependencies": [
+        "60_bios_helpers",
+        "90-base"
+      ],
+      "imports": [],
+      "patch_points": [],
+      "group": "game-graphics",
+      "classification": "fixed"
+    },
+    {
+      "id": "90-print",
+      "name": "90-print",
+      "owner": "90-print",
+      "assembly_base": 29956,
+      "size": 36,
+      "fixed_address": 29956,
+      "has_fixed_address": true,
+      "policy": "flex-high",
+      "exports": [
+        {
+          "name": "C74F3",
+          "offset": 0
+        },
+        {
+          "name": "C74F7",
+          "offset": 4
+        },
+        {
+          "name": "C74FE",
+          "offset": 11
+        },
+        {
+          "name": "J7502",
+          "offset": 15
+        },
+        {
+          "name": "C7508",
+          "offset": 21
+        },
+        {
+          "name": "C750D",
+          "offset": 26
+        },
+        {
+          "name": "J7510",
+          "offset": 29
+        },
+        {
+          "name": "XBASIC_PRINT_TAB",
+          "offset": 0
+        },
+        {
+          "name": "XBASIC_PRINT_INT",
+          "offset": 21
+        },
+        {
+          "name": "XBASIC_PRINT_FLOAT",
+          "offset": 26
+        },
+        {
+          "name": "XBASIC_PRINT_CRLF",
+          "offset": 4
+        }
+      ],
+      "relocations": [],
+      "dependencies": [
+        "30_basic_helpers",
+        "90-strings"
+      ],
+      "imports": [
+        {
+          "offset": 22,
+          "target": "C7BD1",
+          "kind": "call"
+        },
+        {
+          "offset": 27,
+          "target": "C7C2B",
+          "kind": "call"
+        }
+      ],
+      "patch_points": [],
+      "group": "print",
+      "classification": "flex-high"
+    },
+    {
+      "id": "90-math",
+      "name": "90-math",
+      "owner": "90-math",
+      "assembly_base": 29992,
+      "size": 1426,
+      "fixed_address": 29992,
+      "has_fixed_address": true,
+      "policy": "flex-low",
+      "exports": [
+        {
+          "name": "C7624",
+          "offset": 0
+        },
+        {
+          "name": "J7631",
+          "offset": 13
+        },
+        {
+          "name": "J7638",
+          "offset": 20
+        },
+        {
+          "name": "J763F",
+          "offset": 27
+        },
+        {
+          "name": "C7643",
+          "offset": 31
+        },
+        {
+          "name": "J764F",
+          "offset": 43
+        },
+        {
+          "name": "J7650",
+          "offset": 44
+        },
+        {
+          "name": "J765B",
+          "offset": 55
+        },
+        {
+          "name": "J7665",
+          "offset": 65
+        },
+        {
+          "name": "J766E",
+          "offset": 74
+        },
+        {
+          "name": "J7684",
+          "offset": 96
+        },
+        {
+          "name": "I768E",
+          "offset": 106
+        },
+        {
+          "name": "J769F",
+          "offset": 123
+        },
+        {
+          "name": "J76AA",
+          "offset": 134
+        },
+        {
+          "name": "J76BA",
+          "offset": 150
+        },
+        {
+          "name": "J76C0",
+          "offset": 156
+        },
+        {
+          "name": "J76C9",
+          "offset": 165
+        },
+        {
+          "name": "C76D3",
+          "offset": 170
+        },
+        {
+          "name": "C76D7",
+          "offset": 174
+        },
+        {
+          "name": "J76E6",
+          "offset": 189
+        },
+        {
+          "name": "J76F7",
+          "offset": 206
+        },
+        {
+          "name": "J7701",
+          "offset": 216
+        },
+        {
+          "name": "J770E",
+          "offset": 229
+        },
+        {
+          "name": "J7710",
+          "offset": 231
+        },
+        {
+          "name": "J7715",
+          "offset": 236
+        },
+        {
+          "name": "J771C",
+          "offset": 243
+        },
+        {
+          "name": "J7728",
+          "offset": 255
+        },
+        {
+          "name": "J7729",
+          "offset": 256
+        },
+        {
+          "name": "J7739",
+          "offset": 272
+        },
+        {
+          "name": "J773C",
+          "offset": 275
+        },
+        {
+          "name": "J773D",
+          "offset": 276
+        },
+        {
+          "name": "J7745",
+          "offset": 284
+        },
+        {
+          "name": "C7748",
+          "offset": 287
+        },
+        {
+          "name": "J7774",
+          "offset": 331
+        },
+        {
+          "name": "J777F",
+          "offset": 342
+        },
+        {
+          "name": "J7789",
+          "offset": 352
+        },
+        {
+          "name": "J7793",
+          "offset": 362
+        },
+        {
+          "name": "J779D",
+          "offset": 372
+        },
+        {
+          "name": "J77A7",
+          "offset": 382
+        },
+        {
+          "name": "J77B1",
+          "offset": 392
+        },
+        {
+          "name": "J77BB",
+          "offset": 402
+        },
+        {
+          "name": "J77C5",
+          "offset": 412
+        },
+        {
+          "name": "J77CF",
+          "offset": 422
+        },
+        {
+          "name": "J77D9",
+          "offset": 432
+        },
+        {
+          "name": "J77E3",
+          "offset": 442
+        },
+        {
+          "name": "J77ED",
+          "offset": 452
+        },
+        {
+          "name": "J77F7",
+          "offset": 462
+        },
+        {
+          "name": "J7801",
+          "offset": 472
+        },
+        {
+          "name": "J780B",
+          "offset": 482
+        },
+        {
+          "name": "J7815",
+          "offset": 492
+        },
+        {
+          "name": "J781A",
+          "offset": 497
+        },
+        {
+          "name": "J7823",
+          "offset": 506
+        },
+        {
+          "name": "C782C",
+          "offset": 515
+        },
+        {
+          "name": "J7853",
+          "offset": 554
+        },
+        {
+          "name": "J7857",
+          "offset": 558
+        },
+        {
+          "name": "J785C",
+          "offset": 563
+        },
+        {
+          "name": "J785D",
+          "offset": 564
+        },
+        {
+          "name": "J7873",
+          "offset": 586
+        },
+        {
+          "name": "C7878",
+          "offset": 591
+        },
+        {
+          "name": "J7889",
+          "offset": 608
+        },
+        {
+          "name": "J788F",
+          "offset": 614
+        },
+        {
+          "name": "J789F",
+          "offset": 630
+        },
+        {
+          "name": "J78B4",
+          "offset": 651
+        },
+        {
+          "name": "C78B7",
+          "offset": 654
+        },
+        {
+          "name": "I78BF",
+          "offset": 662
+        },
+        {
+          "name": "C78DF",
+          "offset": 676
+        },
+        {
+          "name": "J78EE",
+          "offset": 691
+        },
+        {
+          "name": "J78F0",
+          "offset": 693
+        },
+        {
+          "name": "J78F8",
+          "offset": 701
+        },
+        {
+          "name": "J78FF",
+          "offset": 708
+        },
+        {
+          "name": "C7901",
+          "offset": 710
+        },
+        {
+          "name": "J7911",
+          "offset": 726
+        },
+        {
+          "name": "C7924",
+          "offset": 745
+        },
+        {
+          "name": "J7926",
+          "offset": 747
+        },
+        {
+          "name": "C792A",
+          "offset": 751
+        },
+        {
+          "name": "C7933",
+          "offset": 760
+        },
+        {
+          "name": "C793C",
+          "offset": 769
+        },
+        {
+          "name": "C7946",
+          "offset": 779
+        },
+        {
+          "name": "C794F",
+          "offset": 788
+        },
+        {
+          "name": "C7958",
+          "offset": 797
+        },
+        {
+          "name": "C7966",
+          "offset": 807
+        },
+        {
+          "name": "J797F",
+          "offset": 832
+        },
+        {
+          "name": "J7981",
+          "offset": 834
+        },
+        {
+          "name": "J7986",
+          "offset": 839
+        },
+        {
+          "name": "C798C",
+          "offset": 845
+        },
+        {
+          "name": "C7999",
+          "offset": 858
+        },
+        {
+          "name": "J79A8",
+          "offset": 873
+        },
+        {
+          "name": "J79AF",
+          "offset": 880
+        },
+        {
+          "name": "J79BA",
+          "offset": 891
+        },
+        {
+          "name": "J79CE",
+          "offset": 911
+        },
+        {
+          "name": "J79D7",
+          "offset": 920
+        },
+        {
+          "name": "C79E2",
+          "offset": 931
+        },
+        {
+          "name": "C79EA",
+          "offset": 939
+        },
+        {
+          "name": "J79F7",
+          "offset": 952
+        },
+        {
+          "name": "C79FC",
+          "offset": 957
+        },
+        {
+          "name": "J7A31",
+          "offset": 1010
+        },
+        {
+          "name": "I7A41",
+          "offset": 1026
+        },
+        {
+          "name": "I7A53",
+          "offset": 1044
+        },
+        {
+          "name": "I7A63",
+          "offset": 1060
+        },
+        {
+          "name": "C7A6E",
+          "offset": 1071
+        },
+        {
+          "name": "C7A85",
+          "offset": 1094
+        },
+        {
+          "name": "I7A8C",
+          "offset": 1101
+        },
+        {
+          "name": "J7AA8",
+          "offset": 1129
+        },
+        {
+          "name": "J7AE1",
+          "offset": 1186
+        },
+        {
+          "name": "I7AEB",
+          "offset": 1196
+        },
+        {
+          "name": "C7B01",
+          "offset": 1218
+        },
+        {
+          "name": "I7B46",
+          "offset": 1287
+        },
+        {
+          "name": "I7B53",
+          "offset": 1300
+        },
+        {
+          "name": "I7B60",
+          "offset": 1313
+        },
+        {
+          "name": "J7B6D",
+          "offset": 1326
+        },
+        {
+          "name": "C7B88",
+          "offset": 1353
+        },
+        {
+          "name": "C7B99",
+          "offset": 1370
+        },
+        {
+          "name": "J7BB0",
+          "offset": 1393
+        },
+        {
+          "name": "XBASIC_MULTIPLY_INTEGERS",
+          "offset": 13
+        },
+        {
+          "name": "XBASIC_DIVIDE_INTEGERS",
+          "offset": 31
+        },
+        {
+          "name": "XBASIC_ADD_FLOATS",
+          "offset": 174
+        },
+        {
+          "name": "XBASIC_SUBTRACT_FLOATS",
+          "offset": 170
+        },
+        {
+          "name": "XBASIC_MULTIPLY_FLOATS",
+          "offset": 287
+        },
+        {
+          "name": "XBASIC_DIVIDE_FLOATS",
+          "offset": 515
+        },
+        {
+          "name": "XBASIC_SIN",
+          "offset": 939
+        },
+        {
+          "name": "XBASIC_COS",
+          "offset": 931
+        },
+        {
+          "name": "XBASIC_TAN",
+          "offset": 1026
+        },
+        {
+          "name": "XBASIC_ATN",
+          "offset": 1060
+        },
+        {
+          "name": "XBASIC_EXP",
+          "offset": 1129
+        },
+        {
+          "name": "XBASIC_LOG",
+          "offset": 1218
+        },
+        {
+          "name": "XBASIC_SQR",
+          "offset": 1313
+        },
+        {
+          "name": "XBASIC_RND",
+          "offset": 106
+        },
+        {
+          "name": "XBASIC_INT",
+          "offset": 858
+        },
+        {
+          "name": "XBASIC_FIX",
+          "offset": 845
+        },
+        {
+          "name": "XBASIC_COMPARE_FLOATS_EQ",
+          "offset": 751
+        },
+        {
+          "name": "XBASIC_COMPARE_FLOATS_NE",
+          "offset": 760
+        },
+        {
+          "name": "XBASIC_COMPARE_FLOATS_GT",
+          "offset": 769
+        },
+        {
+          "name": "XBASIC_COMPARE_FLOATS_GE",
+          "offset": 779
+        },
+        {
+          "name": "XBASIC_COMPARE_FLOATS_LT",
+          "offset": 788
+        },
+        {
+          "name": "XBASIC_COMPARE_FLOATS_LE",
+          "offset": 797
+        },
+        {
+          "name": "XBASIC_CAST_INTEGER_TO_FLOAT",
+          "offset": 676
+        },
+        {
+          "name": "XBASIC_CAST_FLOAT_TO_INTEGER",
+          "offset": 710
+        },
+        {
+          "name": "XBASIC_POWER_FLOAT_TO_INTEGER",
+          "offset": 591
+        },
+        {
+          "name": "XBASIC_POWER_FLOAT_TO_FLOAT",
+          "offset": 662
+        }
+      ],
+      "relocations": [
+        86,
+        173,
+        180,
+        300,
+        329,
+        500,
+        504,
+        508,
+        513,
+        519,
+        530,
+        540,
+        580,
+        584,
+        594,
+        600,
+        612,
+        625,
+        642,
+        657,
+        660,
+        665,
+        671,
+        674,
+        716,
+        733,
+        752,
+        761,
+        770,
+        780,
+        789,
+        798,
+        819,
+        851,
+        918,
+        937,
+        938,
+        940,
+        950,
+        963,
+        968,
+        976,
+        984,
+        994,
+        1004,
+        1017,
+        1020,
+        1029,
+        1036,
+        1042,
+        1067,
+        1077,
+        1080,
+        1092,
+        1096,
+        1099,
+        1135,
+        1145,
+        1150,
+        1155,
+        1169,
+        1173,
+        1176,
+        1184,
+        1199,
+        1220,
+        1236,
+        1239,
+        1249,
+        1252,
+        1260,
+        1271,
+        1277,
+        1285,
+        1332,
+        1338,
+        1359,
+        1362,
+        1368,
+        1404,
+        1416
+      ],
+      "dependencies": [],
+      "imports": [],
+      "patch_points": [],
+      "group": "math",
+      "classification": "flex-low"
+    },
+    {
+      "id": "90-strings",
+      "name": "90-strings",
+      "owner": "90-strings",
+      "assembly_base": 31418,
+      "size": 1069,
+      "fixed_address": 31418,
+      "has_fixed_address": true,
+      "policy": "flex-low",
+      "exports": [
+        {
+          "name": "C7BD1",
+          "offset": 0
+        },
+        {
+          "name": "J7BE6",
+          "offset": 21
+        },
+        {
+          "name": "J7BEE",
+          "offset": 29
+        },
+        {
+          "name": "J7BF9",
+          "offset": 40
+        },
+        {
+          "name": "I7C07",
+          "offset": 54
+        },
+        {
+          "name": "C7C0E",
+          "offset": 61
+        },
+        {
+          "name": "J7C17",
+          "offset": 70
+        },
+        {
+          "name": "J7C22",
+          "offset": 81
+        },
+        {
+          "name": "C7C2B",
+          "offset": 90
+        },
+        {
+          "name": "J7C35",
+          "offset": 100
+        },
+        {
+          "name": "C7C42",
+          "offset": 113
+        },
+        {
+          "name": "J7C50",
+          "offset": 127
+        },
+        {
+          "name": "J7C56",
+          "offset": 133
+        },
+        {
+          "name": "J7C6D",
+          "offset": 156
+        },
+        {
+          "name": "J7C83",
+          "offset": 178
+        },
+        {
+          "name": "C7CA7",
+          "offset": 214
+        },
+        {
+          "name": "C7CC0",
+          "offset": 239
+        },
+        {
+          "name": "J7CCB",
+          "offset": 250
+        },
+        {
+          "name": "J7CCD",
+          "offset": 252
+        },
+        {
+          "name": "J7CDE",
+          "offset": 269
+        },
+        {
+          "name": "J7CE3",
+          "offset": 274
+        },
+        {
+          "name": "J7CFE",
+          "offset": 301
+        },
+        {
+          "name": "J7D06",
+          "offset": 309
+        },
+        {
+          "name": "C7D18",
+          "offset": 327
+        },
+        {
+          "name": "J7D28",
+          "offset": 343
+        },
+        {
+          "name": "C7D34",
+          "offset": 355
+        },
+        {
+          "name": "C7D3B",
+          "offset": 362
+        },
+        {
+          "name": "J7D50",
+          "offset": 383
+        },
+        {
+          "name": "J7D64",
+          "offset": 403
+        },
+        {
+          "name": "J7D6D",
+          "offset": 412
+        },
+        {
+          "name": "J7D7E",
+          "offset": 429
+        },
+        {
+          "name": "J7D8D",
+          "offset": 444
+        },
+        {
+          "name": "J7D90",
+          "offset": 447
+        },
+        {
+          "name": "J7DAE",
+          "offset": 477
+        },
+        {
+          "name": "J7DBB",
+          "offset": 490
+        },
+        {
+          "name": "J7DC4",
+          "offset": 499
+        },
+        {
+          "name": "J7DCC",
+          "offset": 507
+        },
+        {
+          "name": "J7DD0",
+          "offset": 511
+        },
+        {
+          "name": "J7DDB",
+          "offset": 522
+        },
+        {
+          "name": "J7DEF",
+          "offset": 542
+        },
+        {
+          "name": "J7DF0",
+          "offset": 543
+        },
+        {
+          "name": "J7DF3",
+          "offset": 546
+        },
+        {
+          "name": "J7DF5",
+          "offset": 548
+        },
+        {
+          "name": "J7DFF",
+          "offset": 558
+        },
+        {
+          "name": "C7E1C",
+          "offset": 587
+        },
+        {
+          "name": "J7E1F",
+          "offset": 590
+        },
+        {
+          "name": "J7E35",
+          "offset": 612
+        },
+        {
+          "name": "C7E38",
+          "offset": 615
+        },
+        {
+          "name": "C7E39",
+          "offset": 616
+        },
+        {
+          "name": "I7E42",
+          "offset": 625
+        },
+        {
+          "name": "J7E46",
+          "offset": 629
+        },
+        {
+          "name": "I7E49",
+          "offset": 632
+        },
+        {
+          "name": "J7E4D",
+          "offset": 636
+        },
+        {
+          "name": "C7E5A",
+          "offset": 649
+        },
+        {
+          "name": "J7E63",
+          "offset": 658
+        },
+        {
+          "name": "J7E6A",
+          "offset": 665
+        },
+        {
+          "name": "J7E6C",
+          "offset": 667
+        },
+        {
+          "name": "J7E70",
+          "offset": 671
+        },
+        {
+          "name": "J7E7D",
+          "offset": 684
+        },
+        {
+          "name": "C7E81",
+          "offset": 688
+        },
+        {
+          "name": "J7E86",
+          "offset": 693
+        },
+        {
+          "name": "J7E8C",
+          "offset": 699
+        },
+        {
+          "name": "J7E96",
+          "offset": 709
+        },
+        {
+          "name": "J7E9A",
+          "offset": 713
+        },
+        {
+          "name": "J7EA0",
+          "offset": 719
+        },
+        {
+          "name": "I7EA8",
+          "offset": 727
+        },
+        {
+          "name": "C7EB0",
+          "offset": 735
+        },
+        {
+          "name": "J7EBE",
+          "offset": 749
+        },
+        {
+          "name": "I7EC3",
+          "offset": 754
+        },
+        {
+          "name": "I7EC6",
+          "offset": 757
+        },
+        {
+          "name": "I7EC9",
+          "offset": 760
+        },
+        {
+          "name": "J7ECE",
+          "offset": 765
+        },
+        {
+          "name": "J7ED0",
+          "offset": 767
+        },
+        {
+          "name": "J7ED8",
+          "offset": 775
+        },
+        {
+          "name": "J7EE1",
+          "offset": 784
+        },
+        {
+          "name": "I7EEF",
+          "offset": 798
+        },
+        {
+          "name": "C7EF2",
+          "offset": 801
+        },
+        {
+          "name": "J7EFB",
+          "offset": 810
+        },
+        {
+          "name": "C7F01",
+          "offset": 816
+        },
+        {
+          "name": "J7F13",
+          "offset": 834
+        },
+        {
+          "name": "C7F15",
+          "offset": 836
+        },
+        {
+          "name": "J7F23",
+          "offset": 850
+        },
+        {
+          "name": "J7F29",
+          "offset": 856
+        },
+        {
+          "name": "J7F37",
+          "offset": 870
+        },
+        {
+          "name": "C7F40",
+          "offset": 879
+        },
+        {
+          "name": "C7F44",
+          "offset": 883
+        },
+        {
+          "name": "C7F4B",
+          "offset": 890
+        },
+        {
+          "name": "C7F55",
+          "offset": 900
+        },
+        {
+          "name": "C7F5B",
+          "offset": 906
+        },
+        {
+          "name": "C7F61",
+          "offset": 912
+        },
+        {
+          "name": "C7F67",
+          "offset": 918
+        },
+        {
+          "name": "C7F6D",
+          "offset": 924
+        },
+        {
+          "name": "C7F74",
+          "offset": 931
+        },
+        {
+          "name": "C7F77",
+          "offset": 934
+        },
+        {
+          "name": "C7F7B",
+          "offset": 938
+        },
+        {
+          "name": "J7F84",
+          "offset": 947
+        },
+        {
+          "name": "C7F99",
+          "offset": 968
+        },
+        {
+          "name": "C7FA0",
+          "offset": 976
+        },
+        {
+          "name": "J7FAD",
+          "offset": 988
+        },
+        {
+          "name": "J7FBD",
+          "offset": 1004
+        },
+        {
+          "name": "J7FC4",
+          "offset": 1011
+        },
+        {
+          "name": "J7FC5",
+          "offset": 1012
+        },
+        {
+          "name": "J7FCE",
+          "offset": 1021
+        },
+        {
+          "name": "J7FD2",
+          "offset": 1025
+        },
+        {
+          "name": "J7FDB",
+          "offset": 1034
+        },
+        {
+          "name": "J7FDD",
+          "offset": 1036
+        },
+        {
+          "name": "J7FF6",
+          "offset": 1061
+        },
+        {
+          "name": "XBASIC_LEFT",
+          "offset": 625
+        },
+        {
+          "name": "XBASIC_RIGHT",
+          "offset": 632
+        },
+        {
+          "name": "XBASIC_MID",
+          "offset": 649
+        },
+        {
+          "name": "XBASIC_MID_ASSIGN",
+          "offset": 688
+        },
+        {
+          "name": "XBASIC_INSTR",
+          "offset": 836
+        },
+        {
+          "name": "XBASIC_VAL",
+          "offset": 735
+        },
+        {
+          "name": "XBASIC_STRING",
+          "offset": 801
+        },
+        {
+          "name": "XBASIC_OCT_HEX_BIN",
+          "offset": 760
+        },
+        {
+          "name": "XBASIC_INKEY",
+          "offset": 816
+        },
+        {
+          "name": "XBASIC_COPY_STRING",
+          "offset": 883
+        },
+        {
+          "name": "XBASIC_COPY_STRING_TO_NULBUF",
+          "offset": 879
+        },
+        {
+          "name": "XBASIC_CONCAT_STRINGS",
+          "offset": 976
+        },
+        {
+          "name": "XBASIC_COMPARE_STRING_WITH_NULBUF_EQ",
+          "offset": 900
+        },
+        {
+          "name": "XBASIC_COMPARE_STRING_WITH_NULBUF_NE",
+          "offset": 918
+        },
+        {
+          "name": "XBASIC_COMPARE_STRING_WITH_NULBUF_GT",
+          "offset": 890
+        },
+        {
+          "name": "XBASIC_COMPARE_STRING_WITH_NULBUF_GE",
+          "offset": 906
+        },
+        {
+          "name": "XBASIC_COMPARE_STRING_WITH_NULBUF_LT",
+          "offset": 912
+        },
+        {
+          "name": "XBASIC_COMPARE_STRING_WITH_NULBUF_LE",
+          "offset": 924
+        },
+        {
+          "name": "XBASIC_CAST_INTEGER_TO_STRING",
+          "offset": 0
+        },
+        {
+          "name": "XBASIC_CAST_FLOAT_TO_STRING",
+          "offset": 90
+        },
+        {
+          "name": "XBASIC_CAST_STRING_TO_FLOAT",
+          "offset": 735
+        }
+      ],
+      "relocations": [
+        17,
+        27,
+        64,
+        78,
+        95,
+        98,
+        198,
+        219,
+        226,
+        233,
+        278,
+        293,
+        330,
+        338,
+        348,
+        367,
+        384,
+        449,
+        480,
+        512,
+        524,
+        536,
+        544,
+        554,
+        591,
+        611,
+        752,
+        891,
+        901,
+        907,
+        913,
+        919,
+        925,
+        932
+      ],
+      "dependencies": [
+        "90-math"
+      ],
+      "imports": [
+        {
+          "offset": 74,
+          "target": "C7643",
+          "kind": "call"
+        },
+        {
+          "offset": 140,
+          "target": "C7966",
+          "kind": "call"
+        },
+        {
+          "offset": 150,
+          "target": "C7748",
+          "kind": "call"
+        },
+        {
+          "offset": 162,
+          "target": "C7966",
+          "kind": "call"
+        },
+        {
+          "offset": 172,
+          "target": "C782C",
+          "kind": "call"
+        },
+        {
+          "offset": 184,
+          "target": "C76D7",
+          "kind": "call"
+        },
+        {
+          "offset": 187,
+          "target": "C7901",
+          "kind": "call"
+        },
+        {
+          "offset": 341,
+          "target": "J79F7",
+          "kind": "jump"
+        },
+        {
+          "offset": 352,
+          "target": "C78DF",
+          "kind": "call"
+        },
+        {
+          "offset": 468,
+          "target": "C7748",
+          "kind": "call"
+        },
+        {
+          "offset": 488,
+          "target": "C76D7",
+          "kind": "call"
+        },
+        {
+          "offset": 569,
+          "target": "C7878",
+          "kind": "call"
+        },
+        {
+          "offset": 579,
+          "target": "C7748",
+          "kind": "conditional"
+        },
+        {
+          "offset": 583,
+          "target": "C782C",
+          "kind": "conditional"
+        }
+      ],
+      "patch_points": [],
+      "group": "strings",
+      "classification": "flex-low"
+    },
+    {
+      "id": "21_logic_pack",
+      "name": "21_logic_pack",
+      "owner": "21_logic_pack",
+      "assembly_base": 32487,
+      "size": 279,
+      "fixed_address": 32487,
+      "has_fixed_address": true,
+      "policy": "flex-high",
+      "exports": [
+        {
+          "name": "intCompareEQ",
+          "offset": 0
+        },
+        {
+          "name": "intCompareNE",
+          "offset": 9
+        },
+        {
+          "name": "intCompareLT",
+          "offset": 18
+        },
+        {
+          "name": "intCompareLE",
+          "offset": 32
+        },
+        {
+          "name": "intCompareGT",
+          "offset": 46
+        },
+        {
+          "name": "intCompareGE",
+          "offset": 50
+        },
+        {
+          "name": "intCompareNOT",
+          "offset": 54
+        },
+        {
+          "name": "intCompareAND",
+          "offset": 61
+        },
+        {
+          "name": "intCompareOR",
+          "offset": 68
+        },
+        {
+          "name": "intCompareXOR",
+          "offset": 75
+        },
+        {
+          "name": "intSHR",
+          "offset": 82
+        },
+        {
+          "name": "intSHR.1",
+          "offset": 87
+        },
+        {
+          "name": "intSHR.2",
+          "offset": 94
+        },
+        {
+          "name": "intSHL",
+          "offset": 95
+        },
+        {
+          "name": "intSHL.1",
+          "offset": 100
+        },
+        {
+          "name": "intSHL.2",
+          "offset": 104
+        },
+        {
+          "name": "intNeg",
+          "offset": 105
+        },
+        {
+          "name": "floatNeg",
+          "offset": 112
+        },
+        {
+          "name": "castParamFloatInt",
+          "offset": 121
+        },
+        {
+          "name": "FloatToBCD",
+          "offset": 137
+        },
+        {
+          "name": "FloatToBCD.eval.multiply",
+          "offset": 188
+        },
+        {
+          "name": "FloatToBCD.eval.divide",
+          "offset": 193
+        },
+        {
+          "name": "FloatToBCD.add",
+          "offset": 222
+        },
+        {
+          "name": "FloatToBCD.add.0",
+          "offset": 258
+        },
+        {
+          "name": "FloatToBCD.add.1",
+          "offset": 264
+        },
+        {
+          "name": "FloatToBCD.add.2",
+          "offset": 269
+        }
+      ],
+      "relocations": [
+        48,
+        52,
+        165,
+        173,
+        181,
+        203,
+        227,
+        231,
+        237,
+        241,
+        265,
+        270
+      ],
+      "dependencies": [
+        "90-math"
+      ],
+      "imports": [
+        {
+          "offset": 119,
+          "target": "C76D3",
+          "kind": "jump"
+        },
+        {
+          "offset": 127,
+          "target": "C78DF",
+          "kind": "call"
+        },
+        {
+          "offset": 189,
+          "target": "C7748",
+          "kind": "call"
+        },
+        {
+          "offset": 200,
+          "target": "C782C",
+          "kind": "call"
+        },
+        {
+          "offset": 206,
+          "target": "C78DF",
+          "kind": "call"
+        },
+        {
+          "offset": 212,
+          "target": "C7748",
+          "kind": "call"
+        },
+        {
+          "offset": 220,
+          "target": "C76D3",
+          "kind": "jump"
+        },
+        {
+          "offset": 223,
+          "target": "C7901",
+          "kind": "call"
+        },
+        {
+          "offset": 262,
+          "target": "C7643",
+          "kind": "jump"
+        }
+      ],
+      "patch_points": [],
+      "group": "logic",
+      "classification": "flex-high"
+    },
+    {
+      "id": "90-logic",
+      "name": "90-logic",
+      "owner": "90-logic",
+      "assembly_base": 32766,
+      "size": 2,
+      "fixed_address": 32766,
+      "has_fixed_address": true,
+      "policy": "fixed",
+      "exports": [
+        {
+          "name": "KERNEL_END_FILLER",
+          "offset": 0
+        }
+      ],
+      "relocations": [],
+      "dependencies": [],
+      "imports": [],
+      "patch_points": [],
+      "group": "core",
+      "classification": "fixed"
+    }
+  ],
+  "fixed_regions": [
+    {
+      "id": "rom_header",
+      "start": 16384,
+      "end": 16450,
+      "owner": "boot"
+    },
+    {
+      "id": "mapper_patch_boot",
+      "start": 16450,
+      "end": 16482,
+      "owner": "boot"
+    },
+    {
+      "id": "player_interrupt",
+      "start": 22105,
+      "end": 22182,
+      "owner": "player"
+    },
+    {
+      "id": "mapper_patch_runtime",
+      "start": 24194,
+      "end": 24223,
+      "owner": "megarom"
+    },
+    {
+      "id": "arkos_player",
+      "start": 25729,
+      "end": 27605,
+      "owner": "player"
+    },
+    {
+      "id": "trap_routines",
+      "start": 27729,
+      "end": 27863,
+      "owner": "traps"
+    }
+  ]
+}

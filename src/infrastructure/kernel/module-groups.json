@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "groups": {
+    "20_runtime": {
+      "group": "core",
+      "classification": "fixed"
+    },
+    "30_basic_helpers": {
+      "group": "core",
+      "classification": "fixed"
+    },
+    "31-cmd-game-graphics": {
+      "group": "game-graphics",
+      "classification": "fixed"
+    },
+    "31-cmd-tile-sprite": {
+      "group": "tile-sprite",
+      "classification": "flex-high"
+    },
+    "31-cmd-cold-graphics": {
+      "group": "cold-graphics",
+      "classification": "fixed"
+    },
+    "31-cmd-mtf": {
+      "group": "mtf",
+      "classification": "fixed"
+    },
+    "31-cmd-input": {
+      "group": "input",
+      "classification": "flex-low"
+    },
+    "32_usr": {
+      "group": "usr",
+      "classification": "fixed"
+    },
+    "33_player": {
+      "group": "player",
+      "classification": "fixed"
+    },
+    "34_file_handling": {
+      "group": "file-io",
+      "classification": "flex-low"
+    },
+    "60_bios_helpers": {
+      "group": "core",
+      "classification": "fixed"
+    },
+    "61_megarom": {
+      "group": "core",
+      "classification": "fixed"
+    },
+    "70_pletter": {
+      "group": "compression",
+      "classification": "fixed"
+    },
+    "80_resources": {
+      "group": "core",
+      "classification": "fixed"
+    },
+    "90-base": {
+      "group": "player",
+      "classification": "fixed"
+    },
+    "90-math-early": {
+      "group": "math",
+      "classification": "flex-high"
+    },
+    "90-traps": {
+      "group": "traps",
+      "classification": "pinned"
+    },
+    "90-graphics": {
+      "group": "game-graphics",
+      "classification": "fixed"
+    },
+    "90-print": {
+      "group": "print",
+      "classification": "flex-high"
+    },
+    "90-math": {
+      "group": "math",
+      "classification": "flex-low"
+    },
+    "90-strings": {
+      "group": "strings",
+      "classification": "flex-low"
+    },
+    "21_logic_pack": {
+      "group": "logic",
+      "classification": "flex-high"
+    },
+    "90-logic": {
+      "group": "core",
+      "classification": "fixed"
+    }
+  }
+}

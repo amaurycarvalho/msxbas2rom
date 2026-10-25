@@ -81,3 +81,68 @@ PAGE 3 (16k)
      +--MSX BIOS WORKSPACE AND ROUTINES
 
 
+
+
+CENTRAL TABLE AND PLAIN ROM OVERFLOW
+====================================
+
+The generated BASIC code does not call kernel routines by absolute address.
+Every kernel call goes through a 3-byte call site patched by the builder to a
+central-table stub in the fixed kernel page.
+
+- Resident stub: `jp routine` (3 bytes).
+- Plain ROM overflow stub: `jp 0x8000-0xBFFF` (3 bytes). Plain ROM has no
+  dynamic page switching, so no dispatcher is needed.
+- MegaROM overflow stub: `call dispatcher; db segment; dw address` (6 bytes).
+
+The builder selects only the modules used by the program and their dependency
+closure. Unused modules are omitted from the resident kernel image, leaving
+holes for the central table and used modules. Module bytes, relocations,
+exports, dependencies, and mapper patch points are embedded in `msxbas2rom`
+at project build time; BASIC compilation never invokes an external assembler.
+
+Plain ROM budget
+----------------
+
+The combined start code, user code, and overflow modules must fit in
+`0x8000-0xBFFF` (16384 bytes). On failure the builder reports:
+
+    Plain ROM code budget exceeded (plain ROM limit): start code <n> +
+    user code <n> + overflow <n> = <n> > 16384; use MegaROM
+
+Use `-a` to retry automatically as an ASCII8 MegaROM.
+
+Game graphics
+-------------
+
+Game graphics and tile/sprite modules are flex-high priority. If they do not
+fit the resident page they are placed in overflow and the builder emits a
+diagnostic. Use `--pin-game-graphics` to force them resident or fail with a
+clear placement error.
+
+
+MEGAROM MODULE OVERFLOW
+=======================
+
+MegaROM overflow modules are allocated in 8 KB-pair segments after the last
+user-code segment. The central table uses a paged stub:
+
+    call dispatcher
+    db segment
+    dw address
+
+The dispatcher saves the caller registers and `SGMADR`, selects the segment
+through the mapper-patched switch, calls the module, restores `SGMADR`, and
+returns to the caller. ASCII8, Konami4, KonamiSCC, ASCII16, and ASCII16-X use
+the same 8 KB-pair numbering; the mapper-patched switch converts the pair to a
+16 KB page for ASCII16/ASCII16-X.
+
+The resource map segment is computed after overflow pages are appended, so
+resources follow the overflow modules. Trap-critical code remains pinned in the
+resident page, so trap segment metadata is unchanged. Programs that use the
+tile/sprite module can exercise the overflow path with:
+
+    msxbas2rom --force-overflow-module 31-cmd-tile-sprite program.bas
+
+The option is intended for diagnostics and emulator tests; normal builds keep
+the module resident when a kernel hole fits.

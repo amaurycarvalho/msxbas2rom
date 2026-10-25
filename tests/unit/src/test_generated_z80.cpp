@@ -58,12 +58,12 @@ TEST_SUITE("GeneratedZ80Regression") {
       unsigned int fingerprint;
     };
     const Case cases[] = {
-        {"r6_z80_rom", "10 PRINT \"X\"\n20 END\n", 55, 0xFB97ABC4u},
-        {"r6_z80_sym", "10 A=1\n20 END\n", 57, 0xB8BD0B75u},
-        {"r6_z80_line", "10 LINE (0,0)-(1,1),15\n20 END\n", 87, 0x95EFB785u},
-        {"r6_z80_for", "10 FOR I=1 TO 10\n20 NEXT\n", 144, 0xBEEE7205u},
-        {"r6_z80_print", "10 PRINT USING \"##\";A\n20 END\n", 89, 0x1C3805FFu},
-        {"r6_z80_mtf", "10 CMD MTF 0\n20 END\n", 86, 0xF0938428u},
+        {"r6_z80_rom", "10 PRINT \"X\"\n20 END\n", 55, 0x05F847A4u},
+        {"r6_z80_sym", "10 A=1\n20 END\n", 57, 0xEC0697D5u},
+        {"r6_z80_line", "10 LINE (0,0)-(1,1),15\n20 END\n", 87, 0x71960EE5u},
+        {"r6_z80_for", "10 FOR I=1 TO 10\n20 NEXT\n", 144, 0x58ACBFD5u},
+        {"r6_z80_print", "10 PRINT USING \"##\";A\n20 END\n", 89, 0xDB9E4E3Fu},
+        {"r6_z80_mtf", "10 CMD MTF 0\n20 END\n", 86, 0x8C0E5348u},
     };
     for (const auto& c : cases) {
       auto bytes = compileBytes(c.name, c.source);

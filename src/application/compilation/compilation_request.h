@@ -12,6 +12,7 @@
 class BuildOptions;
 class SourceResolver;
 class KernelImage;
+class KernelModuleLibrary;
 class ResourceContentSource;
 class SymbolOutputSink;
 class RomWriter;
@@ -21,6 +22,7 @@ class CompilationRequest {
   std::shared_ptr<BuildOptions> options;
   std::shared_ptr<SourceResolver> sourceResolver;
   std::shared_ptr<KernelImage> kernelImage;
+  std::shared_ptr<KernelModuleLibrary> moduleLibrary;
   std::shared_ptr<ResourceContentSource> resourceContentSource;
   std::shared_ptr<SymbolOutputSink> symbolOutputSink;
   std::shared_ptr<RomWriter> romWriter;
@@ -30,10 +32,13 @@ class CompilationRequest {
                      std::shared_ptr<KernelImage> kernelImage,
                      std::shared_ptr<ResourceContentSource> resourceContentSource,
                      std::shared_ptr<SymbolOutputSink> symbolOutputSink,
-                     std::shared_ptr<RomWriter> romWriter)
+                     std::shared_ptr<RomWriter> romWriter,
+                     std::shared_ptr<KernelModuleLibrary> moduleLibrary =
+                         nullptr)
       : options(options),
         sourceResolver(sourceResolver),
         kernelImage(kernelImage),
+        moduleLibrary(moduleLibrary),
         resourceContentSource(resourceContentSource),
         symbolOutputSink(symbolOutputSink),
         romWriter(romWriter) {}

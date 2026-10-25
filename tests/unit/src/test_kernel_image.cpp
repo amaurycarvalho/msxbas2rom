@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <fstream>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "build_options.h"
@@ -93,6 +94,30 @@ TEST_SUITE("Kernel image boundary") {
     CHECK(context->getCodeOptimizer()->getKernelCallAddr(DISP_MR_CALL * 2) ==
           0x4567);
     CHECK(context->getCodeOptimizer()->getKernelCallAddr(0x4100) == 0x4321);
+  }
+
+  TEST_CASE("Code optimizer records used dispatch entries") {
+    auto compiler = makeTestCompiler();
+    auto context = compiler->getContext();
+
+    context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_CLS);
+    context->getCodeOptimizer()->addKernelCallNZ(DISP_XBASIC_END);
+    context->getCodeOptimizer()->addKernelCall(DISP_XBASIC_CLS);
+
+    CHECK(context->getUsedDispatch().size() == 2);
+    CHECK(context->getUsedDispatch().count(DISP_XBASIC_CLS) == 1);
+    CHECK(context->getUsedDispatch().count(DISP_XBASIC_END) == 1);
+  }
+
+  TEST_CASE("Compilation records dispatch entries used by generated code") {
+    CompilationHarness harness;
+    auto compiler = harness.compileSource(
+        "tmp/used_dispatch.bas", "10 CLS\n20 END\n");
+    REQUIRE(compiler != nullptr);
+
+    const std::set<unsigned int>& used =
+        compiler->getContext()->getUsedDispatch();
+    CHECK(used.count(DISP_XBASIC_CLS) == 1);
   }
 
   TEST_CASE("In-memory image handles empty and boundary call targets") {

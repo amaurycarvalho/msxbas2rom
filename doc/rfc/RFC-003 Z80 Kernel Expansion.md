@@ -2,9 +2,19 @@
 
 | Field | Value |
 |---|---|
-| Status | Draft |
+| Status | Accepted - implemented incrementally for 1.4.0.0 |
 | Date | 2026-10-08 |
 | Scope | Z80 kernel space, Plain ROM, MegaROM, dispatcher, ABI, build/runtime packaging |
+
+## Implementation Notes
+
+The change `expand-kernel-central-jump-table` implements this RFC incrementally:
+a build-time module manifest and relocatable module generation, used-module
+closure composition, a selective runtime central table, deferred compiler
+dispatch fixups, Plain ROM overflow with direct stubs, and a paged MegaROM
+dispatcher. Plain ROM overflow is direct-linked because its `0x8000-0xBFFF`
+window is always mapped; MegaROM uses the dispatcher because its window is
+banked.
 
 ## 1. Problem
 

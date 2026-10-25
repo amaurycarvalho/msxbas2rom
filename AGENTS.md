@@ -9,16 +9,19 @@ Consult `openspec/` folder for more information related this project, starting b
 The project has a semantic index via `cocoindex-code` MCP (748 files, 3712 chunks: 2462 C++, 739 Markdown, 502 text/ASM).
 
 Use `cocoindex-code_search` when:
+
 - Finding implementations or understanding how features work
 - Locating related code without knowing exact names or keywords
 - Searching OpenSpec specs by meaning (requirements, scenarios, design decisions)
 - Exploring unfamiliar parts of the codebase
 
 Use `grep` only when:
+
 - Matching exact strings (specific symbol names, error messages, string literals)
 - Counting occurrences of a pattern
 
 Use `glob` only when:
+
 - Listing files by name pattern (e.g., `test_*.cpp`, `*.asm`)
 - Discovering directory structure
 
@@ -39,3 +42,7 @@ Fall back to grep/glob only when semantic search returns insufficient or irrelev
 - Run `make test-architecture` to enforce the inward dependency rule, reject
   global composition providers, and reject temporary `.bas` files in headless
   unit tests.
+
+## Project source files access
+
+- Never use absolute paths to access the project files, use relative paths instead.

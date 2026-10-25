@@ -12,6 +12,12 @@ all: run
 
 run:
 	@bash $(SCRIPT)
+	@python3 check_relocation.py
+	@python3 ../dispatcher/check_dispatcher.py
+	@python3 ../dispatcher/check_plain_overflow.py
+	@python3 ../dispatcher/check_megarom_overflow.py
+	@python3 ../dispatcher/check_megarom_resources.py
+	@python3 ../dispatcher/check_page_safe_modules.py
 
 clean:
 	@rm -f /tmp/header.kernel.test.bin /tmp/header.kernel.test.symbols.asm

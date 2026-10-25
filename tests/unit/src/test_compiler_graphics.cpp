@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <fstream>
 #include <memory>
+#include <map>
 #include <string>
 
 #include "action_node.h"
@@ -20,6 +21,7 @@
 #include "compiler_screen_statement_strategy.h"
 #include "compiler_statement_strategy_factory.h"
 #include "cpu_workspace_context.h"
+#include "dispatch_fixup_resolver.h"
 #include "doctest/doctest.h"
 #include "test_support.h"
 
@@ -100,6 +102,17 @@ static std::string compiledCodeHex(const std::string& filename,
   std::remove(path.c_str());
 
   if (!ok) return std::string();
+
+  std::map<unsigned int, unsigned int> stubs;
+  const auto& fixups = compiler->getContext()->getDispatchFixups();
+  for (std::size_t i = 0; i < fixups.size(); i++) {
+    stubs[fixups[i].dispatchIndex] =
+        kernelImage()->dispatchAddress(fixups[i].dispatchIndex);
+  }
+  std::string error;
+  applyDispatchFixups(fixups, stubs,
+                      compiler->getContext()->getCpu()->context->getCode(),
+                      error);
 
   int n = compiler->getCodeSize();
   std::vector<unsigned char> buffer(n);

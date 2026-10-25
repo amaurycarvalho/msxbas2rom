@@ -15,6 +15,7 @@
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
 #include "cpu_workspace_context.h"
+#include "dispatch_fixup_resolver.h"
 #include "doctest/doctest.h"
 #include "fix_node.h"
 #include "lexeme.h"
@@ -223,7 +224,39 @@ TEST_SUITE("CompilerCodeOptimizer") {
 
     auto& code = ctx->getCpu()->context->getCode();
     CHECK(code[0] == 0xCD);  // call
+    CHECK(code[1] == 0x00);
+    CHECK(code[2] == 0x00);
     CHECK(code[3] == 0xC4);  // call nz
+    CHECK(code[4] == 0x00);
+    CHECK(code[5] == 0x00);
+
+    const auto& fixups = ctx->getDispatchFixups();
+    REQUIRE(fixups.size() == 2);
+    CHECK(fixups[0].dispatchIndex == 0);
+    CHECK(fixups[0].address == 1);
+    CHECK(fixups[1].dispatchIndex == 0);
+    CHECK(fixups[1].address == 4);
+  }
+
+  TEST_CASE("Dispatch fixups patch the call target") {
+    std::vector<unsigned char> code(6, 0);
+    code[0] = 0xCD;
+    code[3] = 0xC4;
+
+    std::vector<DispatchFixup> fixups;
+    fixups.push_back({7, 1});
+    fixups.push_back({9, 4});
+
+    std::map<unsigned int, unsigned int> stubs;
+    stubs[7] = 0x4567;
+    stubs[9] = 0x89AB;
+
+    std::string error;
+    REQUIRE(applyDispatchFixups(fixups, stubs, code, error) == true);
+    CHECK(code[1] == 0x67);
+    CHECK(code[2] == 0x45);
+    CHECK(code[4] == 0xAB);
+    CHECK(code[5] == 0x89);
   }
 
   TEST_CASE("Dead ld de,/ld hl,(x) branch preserves exact bytes") {

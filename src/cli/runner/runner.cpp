@@ -35,6 +35,7 @@
 #include "file_source_resolver.h"
 #include "file_symbol_output_sink.h"
 #include "generated_kernel_image.h"
+#include "generated_kernel_module_library.h"
 #include "main.h"
 #include "runner.h"
 
@@ -43,6 +44,7 @@ using namespace std;
 int runCli(int argc, char* argv[]) {
   auto sourceResolver = make_shared<FileSourceResolver>();
   auto kernelImage = make_shared<GeneratedKernelImage>();
+  auto moduleLibrary = make_shared<GeneratedKernelModuleLibrary>();
   auto resourceContentSource = make_shared<FileResourceContentSource>();
   auto symbolOutputSink = make_shared<FileSymbolOutputSink>();
   auto romWriter = make_shared<FileRomWriter>();
@@ -140,7 +142,7 @@ int runCli(int argc, char* argv[]) {
 
   CompilationRequest request(opts, sourceResolver, kernelImage,
                              resourceContentSource, symbolOutputSink,
-                             romWriter);
+                             romWriter, moduleLibrary);
 
   CompilationUseCase useCase;
   CompilationResult result = useCase.execute(request);

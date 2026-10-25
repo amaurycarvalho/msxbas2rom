@@ -6,22 +6,54 @@ Establishes a dual hard size ceiling for the Z80 kernel binary: `0x8000` bytes (
 
 ## Requirements
 
-### Requirement: Kernel ROM binary SHALL NOT exceed 0x8000 bytes total, with kernel portion SHALL NOT exceed 0x4000 bytes
+### Requirement: Resident kernel page SHALL NOT exceed 0x4000 bytes
 
-The build system SHALL verify at build time that the Z80 kernel binary (`header.bin`) does not exceed `0x8000` bytes (32768 bytes). The actual kernel portion (second half, binary offset 0x4000 through 0x7FFF) SHALL NOT exceed `0x4000` bytes (16384 bytes). If either limit is exceeded, the build SHALL emit an alert identifying the actual size and the excess amount.
+The build SHALL verify that the resident kernel image placed in `0x4000-0x7FFF` does not exceed `0x4000` bytes. The resident image includes boot code, the dispatcher, the central table, fixed routines, and the player/Arkos region.
 
-#### Scenario: Binary within 0x8000 limit builds silently
+#### Scenario: Resident page within limit
+- **WHEN** the resident kernel image is 16384 bytes or fewer
+- **THEN** no resident-size alert SHALL be emitted
 
-- **WHEN** the kernel is compiled and `header.bin` is 32768 bytes or fewer
-- **THEN** no alert is emitted and the build proceeds normally
+#### Scenario: Resident page exceeds limit
+- **WHEN** the resident kernel image exceeds 16384 bytes
+- **THEN** the build SHALL emit a visible diagnostic with the actual size and excess
+- **AND** the build SHALL identify the modules that must move to overflow
 
-#### Scenario: Binary exceeds 0x8000 limit triggers alert
+### Requirement: Module placement budgets SHALL be validated
 
-- **WHEN** the kernel is compiled and `header.bin` exceeds 32768 bytes
-- **THEN** the build SHALL emit a visible alert message stating the actual size and how many bytes over the limit the binary is
+The build SHALL verify that every relocatable module fits its assigned kernel hole, user-page slot, or MegaROM segment. A module that does not fit SHALL cause a build failure with the module name, required size, and available size.
 
-#### Scenario: Kernel portion within 0x4000 limit
+#### Scenario: Module fits its assigned region
+- **WHEN** a used module's size is less than or equal to the assigned region
+- **THEN** placement SHALL succeed without a size diagnostic
 
-- **WHEN** the kernel is compiled and the second half of `header.bin` (bytes 16384-32767) is 16384 bytes or fewer
-- **THEN** no alert regarding kernel portion size is emitted
+#### Scenario: Module exceeds its region
+- **WHEN** a used module's size exceeds the assigned kernel hole, user-page slot, or segment
+- **THEN** the build SHALL fail
+- **AND** the diagnostic SHALL name the module, its size, and the available space
 
+### Requirement: Plain ROM total code budget SHALL be validated
+
+For Plain ROM, the build SHALL verify that start code, user code, and overflow modules fit within `0x8000-0xBFFF`. Failure SHALL report the combined usage and suggest MegaROM.
+
+#### Scenario: Plain ROM fits
+- **WHEN** start code, user code, and overflow modules total 16384 bytes or fewer
+- **THEN** the Plain ROM build SHALL succeed
+
+#### Scenario: Plain ROM exceeds the code page
+- **WHEN** start code, user code, and overflow modules exceed 16384 bytes
+- **THEN** the build SHALL fail
+- **AND** the diagnostic SHALL list the code size, overflow group sizes, and a MegaROM suggestion
+
+### Requirement: MegaROM segment budget SHALL be validated
+
+For MegaROM, the build SHALL verify that overflow modules fit in the allocated 8 KB/16 KB segments and that the final ROM remains within the mapper size limit.
+
+#### Scenario: Overflow segments fit
+- **WHEN** every overflow module fits in its allocated segment and the ROM is within the mapper limit
+- **THEN** the MegaROM build SHALL succeed
+
+#### Scenario: Overflow exceeds the mapper limit
+- **WHEN** overflow allocation would exceed the mapper size limit
+- **THEN** the build SHALL fail
+- **AND** the diagnostic SHALL identify the overflowing module group and the mapper limit

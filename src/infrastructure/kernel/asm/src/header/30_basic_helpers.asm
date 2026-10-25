@@ -633,7 +633,7 @@ XBASIC_TAB.1:
   ld b, l
   call XBASIC_GET_BUFFER
   ld hl, (TMPSTRBUF)
-  jp 0x7EF5    ; STRING$ (hl=destination, b=number of chars, a=char)
+  jp C7EF2     ; STRING$ handler (b=number of chars, a=char)
 
 XBASIC_SOUND:
   cp 007h

@@ -26,6 +26,18 @@ TEST_SUITE("Options") {
     CHECK(opts.megaROM == false);
   }
 
+  TEST_CASE("Parses pin game graphics option") {
+    BuildOptionsSetup opts;
+    char arg0[] = "msxbas2rom";
+    char arg1[] = "--pin-game-graphics";
+    char arg2[] = "program.bas";
+    char* argv[] = {arg0, arg1, arg2};
+
+    REQUIRE(opts.parse(3, argv) == true);
+    CHECK(opts.pinGameGraphics == true);
+    CHECK(opts.error == false);
+  }
+
   TEST_CASE("Parses -4 flag for Konami4 compile mode") {
     BuildOptionsSetup opts;
     char arg0[] = "msxbas2rom";

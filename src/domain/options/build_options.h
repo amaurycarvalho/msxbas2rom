@@ -8,6 +8,7 @@
 #define BUILD_OPTIONS_H
 
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -37,11 +38,14 @@ class BuildOptions {
 
   //! @brief Options flags
   //! @note for compiled mode only
-  bool lineNumber, megaROM, autoROM;
+  bool lineNumber, megaROM, autoROM, pinGameGraphics;
 
   //! @brief Options flags
   //! @deprecated for pcoded mode only
   bool turbo, noStripRemLines;
+
+  //! @brief Forced overflow module ids
+  vector<string> forceOverflowModules;
 
   //! @brief Options paths
   string inputPath, outputPath;

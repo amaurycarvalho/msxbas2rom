@@ -75,6 +75,16 @@ void BuildOptionsSetup::setupParser() {
   parser.addOption("-a", "--auto",
                    "Auto ROM mode (fallback from Plain ROM to ASCII8 MegaROM)",
                    false, false, [&](const std::string&) { autoROM = true; });
+  parser.addOption("", "--pin-game-graphics",
+                   "Keep game graphics resident or fail placement", false,
+                   false, [&](const std::string&) {
+                     pinGameGraphics = true;
+                   });
+  parser.addOption("", "--force-overflow-module",
+                   "Force a module id into overflow (diagnostics/testing)", true,
+                   false, [&](const std::string& val) {
+                     forceOverflowModules.push_back(val);
+                   });
   parser.addOption("", "--symbol", "Generate symbols in .symbol format", false,
                    false,
                    [&](const std::string&) { symbols = SymbolsMode::Symbol; });

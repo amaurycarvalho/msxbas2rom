@@ -346,17 +346,29 @@ int Compiler::write(unsigned char* dest, int start_address) {
   vector<shared_ptr<FixNode>> skips;
   bool is_id, is_jump, is_load;
 
-  // Resolve MR wrapper target addresses from the read-only kernel image
+  // Resolve MR wrapper targets through the builder-provided dispatch
+  // addresses, falling back to the read-only kernel image.
+  map<unsigned int, unsigned int>& dispatchAddresses =
+      context->getDispatchAddresses();
   unsigned int mr_call_target =
-      context->getKernelImage() ? context->getKernelImage()->dispatchAddress(DISP_MR_CALL)
-                           : 0;
+      dispatchAddresses.count(DISP_MR_CALL)
+          ? dispatchAddresses[DISP_MR_CALL]
+          : (context->getKernelImage()
+                 ? context->getKernelImage()->dispatchAddress(DISP_MR_CALL)
+                 : 0);
   unsigned int mr_jump_target =
-      context->getKernelImage() ? context->getKernelImage()->dispatchAddress(DISP_MR_JUMP)
-                           : 0;
+      dispatchAddresses.count(DISP_MR_JUMP)
+          ? dispatchAddresses[DISP_MR_JUMP]
+          : (context->getKernelImage()
+                 ? context->getKernelImage()->dispatchAddress(DISP_MR_JUMP)
+                 : 0);
   unsigned int mr_get_data_target =
-      context->getKernelImage()
-          ? context->getKernelImage()->dispatchAddress(DISP_MR_GET_DATA)
-          : 0;
+      dispatchAddresses.count(DISP_MR_GET_DATA)
+          ? dispatchAddresses[DISP_MR_GET_DATA]
+          : (context->getKernelImage()
+                 ? context->getKernelImage()->dispatchAddress(
+                       DISP_MR_GET_DATA)
+                 : 0);
 
   // copy compiled code to final destination
 

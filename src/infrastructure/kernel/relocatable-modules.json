@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "modules": [
+    {
+      "id": "31-cmd-tile-sprite",
+      "force_overflow": false
+    },
+    {
+      "id": "31-cmd-input",
+      "force_overflow": false
+    },
+    {
+      "id": "34_file_handling",
+      "force_overflow": false
+    },
+    {
+      "id": "90-math-early",
+      "force_overflow": false
+    },
+    {
+      "id": "90-math",
+      "force_overflow": false
+    },
+    {
+      "id": "90-strings",
+      "force_overflow": false
+    },
+    {
+      "id": "21_logic_pack",
+      "force_overflow": false
+    },
+    {
+      "id": "90-print",
+      "force_overflow": false
+    }
+  ],
+  "extra_modules": [
+    {
+      "id": "dispatcher",
+      "source": "22_dispatcher.asm",
+      "owner": "dispatcher",
+      "group": "core",
+      "classification": "fixed",
+      "policy": "flex-low",
+      "dependencies": [
+        "61_megarom"
+      ],
+      "force_overflow": false
+    }
+  ]
+}

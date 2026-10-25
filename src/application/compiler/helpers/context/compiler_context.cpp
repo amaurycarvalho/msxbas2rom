@@ -86,6 +86,9 @@ void CompilerContext::clear() {
 
   symbols.clear();
   fixes.clear();
+  usedDispatch.clear();
+  dispatchAddresses.clear();
+  dispatchFixups.clear();
 
   symbolManager->context->clear();
   resourceManager->clear();

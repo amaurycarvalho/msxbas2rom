@@ -16,9 +16,14 @@ BIN_DIR = bin
 INC_DIR = ..
 SRC_FILES = $(shell find $(SRC_DIR)/header -name '*.asm' | sort)
 
+MANIFEST_SCRIPT = ../../../../scripts/generate_kernel_manifest.py
+RELOCATABLE_SCRIPT = ../../../../scripts/generate_relocatable_modules.py
+MANIFEST = $(INC_DIR)/kernel_manifest_generated.h
+
 # Targets
 all: $(INC_DIR)/header.h \
-     $(INC_DIR)/start.h 
+     $(INC_DIR)/start.h \
+     manifest
 
 $(BIN_DIR):
 	@mkdir -p $(BIN_DIR)
@@ -48,6 +53,11 @@ $(BIN_DIR)/start.bin: $(SRC_DIR)/start.asm | $(BIN_DIR)
 
 $(INC_DIR)/start.h: $(BIN_DIR)/start.bin
 	$(XXD) $< > $@
+
+# Rule: header.bin + header.symbols.asm → kernel module manifest
+manifest: $(BIN_DIR)/header.bin $(MANIFEST_SCRIPT) $(RELOCATABLE_SCRIPT)
+	python3 $(MANIFEST_SCRIPT)
+	python3 $(RELOCATABLE_SCRIPT)
 
 # Clean up
 clean:

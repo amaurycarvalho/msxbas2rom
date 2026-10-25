@@ -14,6 +14,7 @@
 #include "build_options_resolver.h"
 #include "compiler.h"
 #include "kernel_image.h"
+#include "kernel_module_library.h"
 #include "lexer.h"
 #include "logger.h"
 #include "parser.h"
@@ -39,6 +40,7 @@ CompilationResult CompilationUseCase::execute(
   shared_ptr<BuildOptions> opts = request.options;
   shared_ptr<SourceResolver> sourceResolver = request.sourceResolver;
   shared_ptr<KernelImage> kernelImage = request.kernelImage;
+  shared_ptr<KernelModuleLibrary> moduleLibrary = request.moduleLibrary;
   shared_ptr<ResourceContentSource> resourceSource =
       request.resourceContentSource;
   shared_ptr<SymbolOutputSink> symbolSink = request.symbolOutputSink;
@@ -80,7 +82,7 @@ CompilationResult CompilationUseCase::execute(
     cpu = make_shared<Z80OpcodeWriter>();
     compiler =
         make_shared<Compiler>(cpu, kernelImage, resourceSource, symbolSink);
-    rom = make_shared<Rom>(romWriter);
+    rom = make_shared<Rom>(romWriter, moduleLibrary);
 
     /// LEXICAL ANALYSIS
     logger = lexer->getLogger();

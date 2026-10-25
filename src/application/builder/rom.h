@@ -16,8 +16,11 @@
 #include <string>
 #include <vector>
 
+#include "kernel_packer.h"
+
 class Compiler;
 class BuildOptions;
+class KernelModuleLibrary;
 class ResourceManager;
 class Logger;
 class RomArtifact;
@@ -36,7 +39,10 @@ class Rom {
   shared_ptr<ResourceManager> resourceManager;
   shared_ptr<Logger> logger;
   shared_ptr<RomWriter> writer;
+  shared_ptr<KernelModuleLibrary> moduleLibrary;
   shared_ptr<RomArtifact> artifact;
+  vector<KernelModulePlacement> overflowPlacements;
+  KernelPackingResult packingResult;
 
   int resourceAddress, resourceSegment;
 
@@ -52,6 +58,9 @@ class Rom {
   /// @brief Add kernel code
   bool addKernel();
 
+  /// @brief Patch start-code calls to relocated kernel routines
+  bool patchStartCode();
+
   //! @brief Fix kernel if Konami format
   bool fixKonamiMapper();
 
@@ -60,6 +69,9 @@ class Rom {
 
   /// @brief Add compiled code
   bool addCompiledCode();
+
+  /// @brief Add overflow modules to the code page
+  bool addOverflowModules();
 
   /// @brief Add resources
   bool addResources();
@@ -75,7 +87,8 @@ class Rom {
   int codeSize, resourcesSize;
   double codeShare, resourcesShare, kernelShare;
 
-  explicit Rom(shared_ptr<RomWriter> writer);
+  explicit Rom(shared_ptr<RomWriter> writer,
+               shared_ptr<KernelModuleLibrary> moduleLibrary = nullptr);
   ~Rom();
 
   shared_ptr<Logger> getLogger();

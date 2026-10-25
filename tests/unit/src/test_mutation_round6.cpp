@@ -6,12 +6,14 @@
 // NOLINTBEGIN
 
 #include <cstdio>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "compiler.h"
 #include "compiler_hooks.h"
+#include "dispatch_fixup_resolver.h"
 #include "doctest/doctest.h"
 #include "test_support.h"
 
@@ -23,6 +25,17 @@ static std::string compileRound6Hex(const std::string& name,
   bool ok = compiler != nullptr;
   if (okOut) *okOut = ok;
   if (!ok) return std::string();
+  std::map<unsigned int, unsigned int> stubs;
+  const auto& fixups = compiler->getContext()->getDispatchFixups();
+  for (std::size_t i = 0; i < fixups.size(); i++) {
+    stubs[fixups[i].dispatchIndex] =
+        kernelImage()->dispatchAddress(fixups[i].dispatchIndex);
+  }
+  std::string error;
+  applyDispatchFixups(fixups, stubs,
+                      compiler->getContext()->getCpu()->context->getCode(),
+                      error);
+
   int n = compiler->getCodeSize();
   std::vector<unsigned char> buffer(n);
   compiler->write(buffer.data(), 0);
@@ -101,11 +114,11 @@ TEST_SUITE("Round6Graphics") {
   TEST_CASE("SET TILE PATTERN distinguishes buffer, inline and bank forms") {
     checkFragment("r6_pattern_buf",
                   "10 DIM PB%(3)\n20 SET TILE PATTERN 65, PB%()\n30 END\n",
-                  "2141007DF52138C00603F1" +
+                  "2141007DF52148C00603F1" +
                       kernelCallHex(DISP_set_tile_pattern_buffer));
     checkFragment("r6_pattern_buf_bank",
                   "10 DIM PB%(3)\n20 SET TILE PATTERN 65, PB%(), 2\n30 END\n",
-                  "2141007DF52138C0E521020045E1F1" +
+                  "2141007DF52148C0E521020045E1F1" +
                       kernelCallHex(DISP_set_tile_pattern_buffer));
     checkFragment("r6_pattern_tuple",
                   "10 SET TILE PATTERN 65, (255,0,255,0,255,0,255,0)\n20 END\n",
@@ -119,11 +132,11 @@ TEST_SUITE("Round6Graphics") {
   TEST_CASE("SET TILE COLOR distinguishes buffer, inline and pair forms") {
     checkFragment("r6_color_buf",
                   "10 DIM CB%(7)\n20 SET TILE COLOR 5, CB%()\n30 END\n",
-                  "2105007DF52138C00603F1" +
+                  "2105007DF52148C00603F1" +
                       kernelCallHex(DISP_set_tile_color_buf));
     checkFragment("r6_color_buf_bank",
                   "10 DIM CB%(7)\n20 SET TILE COLOR 5, CB%(),1\n30 END\n",
-                  "2105007DF52138C0E521010045E1F1" +
+                  "2105007DF52148C0E521010045E1F1" +
                       kernelCallHex(DISP_set_tile_color_buf));
     checkFragment("r6_color_tuple",
                   "10 SET TILE COLOR 5, (1,2,3,4)\n20 END\n",
@@ -194,11 +207,11 @@ TEST_SUITE("Round6Graphics") {
   TEST_CASE("GET tile pattern and color emit exact lengths and addresses") {
     checkFragment("r6_get_pattern",
                   "10 DIM QB%(3)\n20 GET TILE PATTERN 67,QB%()\n30 END\n",
-                  "2143007DF52138C00600F1" +
+                  "2143007DF52148C00600F1" +
                       kernelCallHex(DISP_get_tile_pattern));
     checkFragment("r6_get_pattern_bank",
                   "10 DIM QB%(3)\n20 GET TILE PATTERN 67,QB%(),1\n30 END\n",
-                  "2143007DF52138C0E521010045E1F1");
+                  "2143007DF52148C0E521010045E1F1");
     CHECK(round6Size("r6_get_color",
                      "10 DIM G%(3)\n20 GET TILE COLOR 70,G%()\n30 END\n") ==
           58);

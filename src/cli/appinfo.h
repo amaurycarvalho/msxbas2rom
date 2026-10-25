@@ -19,7 +19,7 @@
  * git checkout -b release/v0.0.0.0 && git push origin release/v0.0.0.0
  * git switch master
  */
-#define app_version "1.3.1.0"
+#define app_version "1.4.0.0"
 
 //! @brief Header information
 const char* info_header = R"(MSXBAS2ROM - MSX-BASIC TO ROM COMPILER
@@ -51,6 +51,8 @@ Compile options (optional):
     -7 or --ascii16x = ASCII16-X MegaROM compile mode
     -4 or --konami = Konami MegaROM compile mode
     -k or --scc = Konami SCC MegaROM compile mode
+        --pin-game-graphics = keep game graphics resident or fail
+        --force-overflow-module <id> = force module overflow (testing)
 
 Path options (optional)
     -i  = input path (default=source file path)

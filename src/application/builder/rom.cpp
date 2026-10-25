@@ -12,11 +12,17 @@
 #include "rom.h"
 
 #include <cstring>
+#include <map>
 
 #include "build_options.h"
 #include "compiler.h"
+#include "compiler_context.h"
+#include "cpu_workspace_context.h"
 #include "compiler_hooks.h"
+#include "dispatch_fixup_resolver.h"
 #include "kernel_image.h"
+#include "kernel_module_library.h"
+#include "kernel_packer.h"
 #include "logger.h"
 #include "parser.h"
 #include "resource_manager.h"
@@ -25,9 +31,11 @@
 
 //----------------------------------------------------------------------------------------------
 
-Rom::Rom(shared_ptr<RomWriter> outputWriter) {
+Rom::Rom(shared_ptr<RomWriter> outputWriter,
+         shared_ptr<KernelModuleLibrary> kernelModules) {
   logger = make_shared<Logger>();
   writer = outputWriter;
+  moduleLibrary = kernelModules;
 }
 
 Rom::~Rom() = default;
@@ -70,6 +78,9 @@ bool Rom::build(shared_ptr<Compiler> compiler) {
   logger->debug("Adding compiled code...");
 
   if (!addCompiledCode()) return false;
+
+  logger->debug("Adding overflow modules...");
+  if (!addOverflowModules()) return false;
 
   // add resources pages
 
@@ -137,11 +148,6 @@ void Rom::buildInit() {
 }
 
 bool Rom::addKernel() {
-  /// add kernel code (support routines, Arkos Tracker and embedded fonts)
-  /// @remark
-  ///   Free space on kernel:
-  ///     ARKOS_PLAYER (06481H) - BASIC_KUN_START_FILLER (05D2EH)
-  ///     = 753H = 1875 bytes
   shared_ptr<KernelImage> kernel = compiler->getKernelImage();
   if (!kernel || !kernel->bytes() || kernel->size() < 0x8000 ||
       !kernel->startBytes() || kernel->startSize() > 0x4000) {
@@ -151,7 +157,113 @@ bool Rom::addKernel() {
   }
 
   pages.emplace_back(0x4000, 0);  // add new page
-  memcpy(pages[0].data(), kernel->bytes() + 0x4000, 0x4000);
+
+  std::map<unsigned int, unsigned int> stubAddresses;
+
+  if (moduleLibrary) {
+    KernelPackingRequest request;
+    request.library = moduleLibrary.get();
+    request.usedDispatch = compiler->getContext()->getUsedDispatch();
+    request.pinGameGraphics = opts->pinGameGraphics;
+    for (std::size_t i = 0; i < opts->forceOverflowModules.size(); i++) {
+      request.forceOverflowModules.insert(opts->forceOverflowModules[i]);
+    }
+    request.dispatcherAddress = 0;
+    if (opts->megaROM) {
+      request.usedDispatch.insert(DISP_MR_CALL);
+      request.usedDispatch.insert(DISP_MR_JUMP);
+      request.usedDispatch.insert(DISP_MR_GET_DATA);
+      request.requiredModules.insert("dispatcher");
+    }
+    request.kernelStart = 0x4000;
+    request.kernelEnd = 0x8000;
+    request.tableBaseAddress = 0;
+    request.romType =
+        opts->megaROM ? KernelRomType::MegaRom : KernelRomType::Plain;
+    request.startCodeSize = static_cast<unsigned int>(kernel->startSize());
+    request.userCodeSize = static_cast<unsigned int>(compiler->getCodeSize());
+    if (opts->megaROM) {
+      request.overflowStart = 0x8000;
+      request.overflowCapacity = 0x200000;
+    } else {
+      request.overflowStart = 0x8000 + request.startCodeSize +
+                              request.userCodeSize;
+      request.overflowCapacity =
+          request.overflowStart < 0xC000 ? 0xC000 - request.overflowStart : 0;
+    }
+
+    KernelPackingResult packing = KernelPacker::pack(request);
+    for (std::size_t i = 0; i < packing.diagnostics.size(); i++) {
+      logger->debug(packing.diagnostics[i]);
+    }
+    if (!packing.ok) {
+      logger->error(packing.error);
+      errorFound = true;
+      return false;
+    }
+
+    KernelCompositionResult composition =
+        KernelComposer::compose(*moduleLibrary, packing, 0x4000, 0x8000);
+    if (!composition.ok) {
+      logger->error(composition.error);
+      errorFound = true;
+      return false;
+    }
+    memcpy(pages[0].data(), composition.image.data(), 0x4000);
+
+    for (std::size_t i = 0; i < packing.dispatches.size(); i++) {
+      stubAddresses[packing.dispatches[i].dispatchIndex] =
+          packing.dispatches[i].stubAddress;
+    }
+    compiler->getContext()->getDispatchAddresses() = stubAddresses;
+
+    overflowPlacements.clear();
+    for (std::size_t i = 0; i < packing.placements.size(); i++) {
+      if (!packing.placements[i].resident) {
+        overflowPlacements.push_back(packing.placements[i]);
+      }
+    }
+    packingResult = packing;
+    logger->debug("Dispatcher address: 0x" +
+                  to_string(packing.dispatcherAddress));
+    logger->debug("Central table: 0x" + to_string(packing.tableBaseAddress) +
+                  " size " + to_string(packing.tableSize));
+    for (std::size_t i = 0; i < packing.imports.size(); i++) {
+      logger->debug("Import " + packing.imports[i].targetExport +
+                    " stub 0x" + to_string(packing.imports[i].stubAddress) +
+                    " target 0x" + to_string(packing.imports[i].address) +
+                    (packing.imports[i].paged ? " paged" : " resident"));
+    }
+    for (std::size_t i = 0; i < packing.placements.size(); i++) {
+      const KernelModulePlacement& p = packing.placements[i];
+      logger->debug(std::string("placement ") + p.moduleId +
+                    (p.resident ? " resident 0x" : " overflow 0x") +
+                    to_string(p.address) + " segment " +
+                    to_string(p.segment));
+    }
+  } else {
+    memcpy(pages[0].data(), kernel->bytes() + 0x4000, 0x4000);
+    const std::vector<DispatchFixup>& fixups =
+        compiler->getContext()->getDispatchFixups();
+    for (std::size_t i = 0; i < fixups.size(); i++) {
+      stubAddresses[fixups[i].dispatchIndex] =
+          kernel->dispatchAddress(fixups[i].dispatchIndex);
+    }
+    for (unsigned int i = 0; i < DISP_ENTRIES; i++) {
+      compiler->getContext()->getDispatchAddresses()[i] =
+          kernel->dispatchAddress(i);
+    }
+  }
+
+  std::string fixupError;
+  if (!applyDispatchFixups(compiler->getContext()->getDispatchFixups(),
+                           stubAddresses,
+                           compiler->getContext()->getCpu()->context->getCode(),
+                           fixupError)) {
+    logger->error(fixupError);
+    errorFound = true;
+    return false;
+  }
 
   /// add start code
   pages.emplace_back(0x4000, 0);  // add new page
@@ -159,10 +271,200 @@ bool Rom::addKernel() {
   pages[1][10] = (compiler->getParser() && compiler->getParser()->getHasFileSupport())
                      ? 0x01
                      : 0x00;
+  if (!patchStartCode()) return false;
 
   if (opts->megaROM) {
     if (!fixKonamiMapper()) return false;
     if (!fixAscii16Mapper()) return false;
+  }
+
+  return true;
+}
+
+bool Rom::patchStartCode() {
+  if (!moduleLibrary) return true;
+
+  std::map<std::string, unsigned int> stubs;
+  for (std::size_t i = 0; i < packingResult.dispatches.size(); i++) {
+    stubs[packingResult.dispatches[i].exportName] =
+        packingResult.dispatches[i].stubAddress;
+  }
+  for (std::size_t i = 0; i < packingResult.imports.size(); i++) {
+    stubs[packingResult.imports[i].targetExport] =
+        packingResult.imports[i].stubAddress;
+  }
+
+  const KernelModule* screenModule = nullptr;
+  for (std::size_t i = 0; i < moduleLibrary->modules().size(); i++) {
+    if (moduleLibrary->modules()[i].findExport("C7369")) {
+      screenModule = &moduleLibrary->modules()[i];
+      break;
+    }
+  }
+  if (!screenModule) return true;
+  if (screenModule->hasFixedAddress) {
+    logger->debug(
+        "Start code C7369 call remains at its fixed kernel address");
+    return true;
+  }
+
+  std::map<std::string, unsigned int>::const_iterator stub =
+      stubs.find("C7369");
+  if (stub == stubs.end()) {
+    logger->error(
+        "start code requires an import stub for 'C7369' (game graphics)");
+    errorFound = true;
+    return false;
+  }
+
+  shared_ptr<KernelImage> kernel = compiler->getKernelImage();
+  std::size_t startSize = kernel ? kernel->startSize() : 0;
+  std::size_t callOffset = 0;
+  unsigned int matches = 0;
+  for (std::size_t i = 0; i + 2 < startSize; i++) {
+    if (pages[1][i] != 0xCD || pages[1][i + 1] != 0x69 ||
+        pages[1][i + 2] != 0x73) {
+      continue;
+    }
+    callOffset = i;
+    matches++;
+  }
+  if (matches != 1) {
+    logger->error(
+        "start code must contain exactly one call to 'C7369'");
+    errorFound = true;
+    return false;
+  }
+
+  pages[1][callOffset + 1] = static_cast<unsigned char>(stub->second & 0xFF);
+  pages[1][callOffset + 2] =
+      static_cast<unsigned char>((stub->second >> 8) & 0xFF);
+  logger->debug("Start code C7369 call patched to stub 0x" +
+                to_string(stub->second));
+  return true;
+}
+
+bool Rom::addOverflowModules() {
+  if (overflowPlacements.empty()) return true;
+
+  if (pages.size() < 2) {
+    logger->error("Code page is unavailable for overflow modules");
+    errorFound = true;
+    return false;
+  }
+
+  unsigned int baseSegment =
+      opts->megaROM ? static_cast<unsigned int>(pages.size()) * 2 : 0;
+
+  std::map<std::string, unsigned int> importStubs;
+  for (std::size_t i = 0; i < packingResult.dispatches.size(); i++) {
+    importStubs[packingResult.dispatches[i].exportName] =
+        packingResult.dispatches[i].stubAddress;
+  }
+  for (std::size_t i = 0; i < packingResult.imports.size(); i++) {
+    importStubs[packingResult.imports[i].targetExport] =
+        packingResult.imports[i].stubAddress;
+  }
+
+  for (std::size_t i = 0; i < overflowPlacements.size(); i++) {
+    const KernelModulePlacement& placement = overflowPlacements[i];
+    const KernelModule* module = nullptr;
+    for (std::size_t j = 0; j < moduleLibrary->modules().size(); j++) {
+      if (moduleLibrary->modules()[j].id == placement.moduleId) {
+        module = &moduleLibrary->modules()[j];
+        break;
+      }
+    }
+    if (!module) {
+      logger->error("Overflow module is missing: " + placement.moduleId);
+      errorFound = true;
+      return false;
+    }
+
+    if (placement.address < 0x8000 ||
+        placement.address + module->size() > 0xC000) {
+      logger->error("Overflow module is outside the 0x8000 window: " +
+                    placement.moduleId);
+      errorFound = true;
+      return false;
+    }
+
+    std::vector<unsigned char> bytes = module->bytes;
+    if (module->assemblyBase != placement.address) {
+      std::string error;
+      if (!applyRelocations(bytes, module->assemblyBase, placement.address,
+                            module->relocations, error)) {
+        logger->error("Overflow module '" + module->id + "': " + error);
+        errorFound = true;
+        return false;
+      }
+    }
+    if (!module->imports.empty()) {
+      std::string error;
+      if (!applyModuleImports(bytes, module->imports, importStubs, error)) {
+        logger->error("Overflow module '" + module->id + "': " + error);
+        errorFound = true;
+        return false;
+      }
+    }
+
+    std::size_t offset = placement.address - 0x8000;
+    if (opts->megaROM) {
+      unsigned int segment = baseSegment + placement.segment;
+      logger->debug("MegaROM overflow module '" + placement.moduleId +
+                    "' at address 0x" + to_string(placement.address) +
+                    " segment " + to_string(segment) +
+                    " (offset " + to_string(offset) + ")");
+      if (segment >= 256) {
+        logger->error("MegaROM overflow exceeds the 2 MB segment limit");
+        errorFound = true;
+        return false;
+      }
+      std::size_t pageIndex = segment / 2;
+      while (pages.size() <= pageIndex) pages.emplace_back(0x4000, 0);
+      offset += (segment % 2) * 0x2000;
+      if (offset + bytes.size() > pages[pageIndex].size()) {
+        logger->error("Overflow module exceeds its MegaROM segment: " +
+                      placement.moduleId);
+        errorFound = true;
+        return false;
+      }
+      memcpy(pages[pageIndex].data() + offset, bytes.data(), bytes.size());
+
+      for (std::size_t k = 0; k < packingResult.dispatches.size(); k++) {
+        const KernelDispatchPlacement& dispatch =
+            packingResult.dispatches[k];
+        if (!dispatch.paged || dispatch.moduleId != placement.moduleId) {
+          continue;
+        }
+        std::size_t stubOffset = dispatch.stubAddress - 0x4000;
+        pages[0][stubOffset + 3] = static_cast<unsigned char>(segment);
+        logger->debug("Paged dispatch " + to_string(dispatch.dispatchIndex) +
+                      " stub 0x" + to_string(dispatch.stubAddress) +
+                      " target 0x" + to_string(dispatch.address) +
+                      " segment " + to_string(segment));
+      }
+      for (std::size_t k = 0; k < packingResult.imports.size(); k++) {
+        const KernelImportPlacement& imported = packingResult.imports[k];
+        if (!imported.paged || imported.moduleId != placement.moduleId) {
+          continue;
+        }
+        std::size_t stubOffset = imported.stubAddress - 0x4000;
+        pages[0][stubOffset + 3] = static_cast<unsigned char>(segment);
+        logger->debug("Paged import " + imported.targetExport +
+                      " stub 0x" + to_string(imported.stubAddress) +
+                      " target 0x" + to_string(imported.address) +
+                      " segment " + to_string(segment));
+      }
+    } else {
+      if (offset + bytes.size() > pages[1].size()) {
+        logger->error("Overflow module exceeds the Plain ROM code page: " +
+                      placement.moduleId);
+        errorFound = true;
+        return false;
+      }
+      memcpy(pages[1].data() + offset, bytes.data(), bytes.size());
+    }
   }
 
   return true;

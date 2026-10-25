@@ -2,11 +2,14 @@
 #define COMPILER_STATEMENT_CONTEXT_H_INCLUDED
 
 #include <functional>
+#include <map>
 #include <memory>
+#include <set>
 #include <stack>
 #include <string>
 
 #include "compiler_code_optimizer.h"
+#include "dispatch_fixup.h"
 #include "cpu_opcode_writer.h"
 #include "for_next_node.h"
 #include "symbol_node.h"
@@ -72,6 +75,9 @@ class CompilerContext {
 
   vector<shared_ptr<SymbolNode>> symbols;
   vector<shared_ptr<FixNode>> fixes;
+  set<unsigned int> usedDispatch;
+  map<unsigned int, unsigned int> dispatchAddresses;
+  vector<DispatchFixup> dispatchFixups;
   stack<shared_ptr<ForNextNode>> forNextStack;
 
   shared_ptr<Logger> logger;
@@ -126,6 +132,11 @@ class CompilerContext {
 
   vector<shared_ptr<SymbolNode>>& getSymbols() { return symbols; }
   vector<shared_ptr<FixNode>>& getFixes() { return fixes; }
+  set<unsigned int>& getUsedDispatch() { return usedDispatch; }
+  map<unsigned int, unsigned int>& getDispatchAddresses() {
+    return dispatchAddresses;
+  }
+  vector<DispatchFixup>& getDispatchFixups() { return dispatchFixups; }
   stack<shared_ptr<ForNextNode>>& getForNextStack() { return forNextStack; }
 
   shared_ptr<Logger>& getLogger() { return logger; }

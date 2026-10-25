@@ -6,61 +6,6 @@ Defines the word-pointer dispatch table mechanism in the Z80 kernel that replace
 
 ## Requirements
 
-### Requirement: Wrapper routines are dispatched via word-pointer table
-
-The Z80 kernel wrapper routine entry point at `wrapper_routines_map_table` (0x0000 in the virtual first half of header.bin) SHALL use a word-pointer dispatch table instead of a linear `jp` jump table. A dispatcher routine SHALL accept an entry index in HL and jump to the corresponding routine address from the table.
-
-#### Scenario: Dispatcher resolves entry by index
-
-- **WHEN** HL contains entry index `N` (0-indexed) and the dispatcher is called
-- **THEN** the dispatcher SHALL resolve the address from `wrapper_routines_map_table[N]` and jump to that routine
-
-#### Scenario: Word-pointer table replaces jp entries
-
-- **WHEN** the kernel is compiled after the restructure
-- **THEN** the `wrapper_routines_map_table` region contains 126 word-pointer (`dw`) entries, each 2 bytes
-
-### Requirement: compiler_hooks.h SHALL define dispatch table at logical address 0x0000
-
-The `compiler_hooks.h` header SHALL define `def_wrapper_routines_map_table` as `0x0000` (previously `0x4102`), reflecting the table's new location in the virtual first half of `header.bin`.
-
-#### Scenario: Table base address is 0x0000
-
-- **WHEN** `def_wrapper_routines_map_table` is referenced in C++ code
-- **THEN** its value SHALL be `0x0000`
-
-### Requirement: getKernelCallAddr SHALL handle two distinct address ranges
-
-The `getKernelCallAddr()` function SHALL handle two separate ranges:
-
-- **0x0000-0x3FFF (virtual table range)**: When the address falls within the dispatch table bounds (`def_wrapper_routines_map_table` to `def_wrapper_routines_map_table + DISP_ENTRIES * 2`), the function SHALL read 2 bytes from `bin_header_bin[address]` (no `- 0x4000` offset) and return the resulting 16-bit kernel address.
-
-- **0x4000-0x7FFF (kernel range)**: When the address is within the kernel page, the function SHALL use `bin_header_bin[address]` directly (since the kernel starts at binary offset 0x4000, which equals its logical address). If the byte at that position is `0xC3` (JP opcode), the function SHALL follow the jump target.
-
-#### Scenario: Table entry resolved from 0x0000-0x3FFF range
-
-- **WHEN** `getKernelCallAddr()` receives an address in the range `0x0000` to `0x0000 + DISP_ENTRIES * 2 - 1`
-- **THEN** it SHALL compute `address` directly as the `bin_header_bin` index (no offset subtraction) and return `bin_header_bin[address] | (bin_header_bin[address + 1] << 8)`
-
-#### Scenario: Kernel address resolved from 0x4000-0x7FFF range
-
-- **WHEN** `getKernelCallAddr()` receives an address in the range `0x4000` to `0x7FFF`
-- **THEN** it SHALL use `bin_header_bin[address]` directly (no `- 0x4000` offset) to read kernel bytes
-
-#### Scenario: Non-table, non-kernel addresses pass through unchanged
-
-- **WHEN** `getKernelCallAddr()` receives an address outside both the table range and the kernel range
-- **THEN** it SHALL return the address unchanged
-
-### Requirement: MegaROM addresses SHALL resolve via direct index
-
-In `compiler.cpp`, the MR_CALL, MR_JUMP, and MR_GET_DATA target addresses SHALL be resolved directly from the dispatch table using `bin_header_bin[DISP_MR_xxx * 2]`, without the `def_wrapper_routines_map_table - 0x4000` offset prefix.
-
-#### Scenario: MR target resolved by index
-
-- **WHEN** `compiler.cpp` resolves an MR target address (e.g., `DISP_MR_CALL`)
-- **THEN** the expression SHALL be `bin_header_bin[DISP_MR_CALL * 2] | (bin_header_bin[DISP_MR_CALL * 2 + 1] << 8)` with no additional offset
-
 ### Requirement: C compiler emits dispatch sequence via unified addKernelCall
 
 The C++ compiler SHALL emit all wrapper routine calls through the unified `addKernelCall(DISP_xxx)` helper, which resolves the target address by calling `getKernelCallAddr()` to look up the `dw` dispatch table entry. There SHALL be no separate `addKernelDispatch()` emission method.
@@ -105,3 +50,44 @@ All existing `.bas` integration test files SHALL compile without errors and prod
 - **WHEN** the full integration test suite runs against the restructured kernel
 - **THEN** all `.bas` test files SHALL compile without errors
 
+### Requirement: Runtime central table contains selective dispatch stubs
+
+The runtime central table SHALL contain a stub only for each used `DISP_*` entry and its required dependencies. Resident entries SHALL be `jp` stubs; overflow entries SHALL be dispatcher stubs carrying segment and address metadata.
+
+#### Scenario: Resident stub is emitted
+- **WHEN** a used dispatch entry resolves to a routine in the fixed kernel page
+- **THEN** the table SHALL contain a 3-byte `jp` stub to that routine
+
+#### Scenario: Paged stub is emitted
+- **WHEN** a used dispatch entry resolves to an overflow routine
+- **THEN** the table SHALL contain a stub that passes the target segment and address to the dispatcher
+
+#### Scenario: Unused entry has no stub
+- **WHEN** a `DISP_*` entry is not used by generated code or its dependency closure
+- **THEN** the table SHALL NOT contain a stub for that entry
+
+### Requirement: Compiler resolves kernel calls through build-time dispatch fixups
+
+The compiler SHALL keep emitting kernel calls through `addKernelCall(DISP_*)` and conditional variants, but it SHALL resolve them through dispatch fixups after placement instead of reading a direct routine address during code generation.
+
+#### Scenario: Call site stays a 3-byte placeholder
+- **WHEN** the compiler emits a kernel call
+- **THEN** the call instruction SHALL remain a 3-byte call placeholder
+- **AND** the target SHALL be recorded as a dispatch fixup
+
+#### Scenario: Conditional call uses the same fixup
+- **WHEN** the compiler emits `addKernelCallNZ(DISP_*)` or another conditional variant
+- **THEN** the conditional call target SHALL be resolved by the same dispatch fixup mechanism
+
+#### Scenario: Fixup is applied after packing
+- **WHEN** the packer has assigned all stub addresses
+- **THEN** every dispatch fixup SHALL be patched to its resolved stub address
+
+### Requirement: DISP indices remain stable across kernel relayouts
+
+The numeric value of every `DISP_*` constant SHALL remain stable when kernel modules are moved, packed, or sent to overflow.
+
+#### Scenario: Relayout does not renumber DISP constants
+- **WHEN** the kernel module layout changes between two builds
+- **THEN** the `DISP_*` values SHALL be identical
+- **AND** only the resolved stub addresses SHALL change
