@@ -535,13 +535,16 @@ Run:
 
 ```bash
 make test-kernel
+make test-emulator   # optional, requires openMSX
 make test-unit
 make test-integration
 ```
 
-`make test-kernel` checks binary integrity, relocation data, dispatcher
-behavior, Plain ROM overflow behavior, MegaROM overflow/resources, and
-page-safe module rules.
+`make test-kernel` checks binary integrity, generated kernel manifest data,
+and relocation data. `make test-emulator` builds the release binary and runs
+the openMSX-dependent checks: dispatcher behavior, Plain ROM overflow,
+MegaROM overflow/resources, and page-safe module rules. The emulator checks
+skip when openMSX is not available.
 
 ## 9. Locating and changing existing statements/functions
 
@@ -582,7 +585,8 @@ make debug                  # debug binary -> bin/Debug/msxbas2rom
 make release                # optimized binary -> bin/Release/msxbas2rom
 make test-unit              # headless unit tests (in-memory adapters)
 make test-architecture      # dependency/boundary checks and test inventory
-make test-kernel            # Z80 kernel binary/relocation/dispatcher checks
+make test-kernel            # Z80 kernel binary/manifest/relocation checks
+make test-emulator          # openMSX runtime checks (needs release and openMSX)
 make test-integration       # compiles integration BASIC programs (needs release)
 make quality-gate           # lint + architecture + coverage + kernel + integration
 ```

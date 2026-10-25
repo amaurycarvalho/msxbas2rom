@@ -3,7 +3,7 @@
 # by Amaury Carvalho (2022-2026)                                               #
 #------------------------------------------------------------------------------#
 
-.PHONY: all clean build debug release lint test lint-full test-clean test-unit test-integration test-coverage test-kernel test-architecture mutation-clean mutation-build mutation-run mutation-check quality-gate debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
+.PHONY: all clean build debug release lint test lint-full test-clean test-unit test-integration test-coverage test-kernel test-emulator test-architecture mutation-clean mutation-build mutation-run mutation-check quality-gate debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
 
 # ----------------------------
 # Variables
@@ -222,6 +222,11 @@ test-kernel:
 	@echo "🔍 Running kernel testing..."
 	@$(MAKE) -C tests/kernel run
 	@echo "✅ Kernel testing passed!"
+
+test-emulator: release
+	@echo "🔍 Running kernel emulator testing..."
+	@$(MAKE) -C tests/kernel emulator
+	@echo "✅ Kernel emulator testing passed!"
 
 test-architecture:
 	@echo "🔍 Running clean architecture boundary check..."

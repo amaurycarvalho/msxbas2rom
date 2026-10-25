@@ -6,13 +6,16 @@ BIN = $(KERNEL_DIR)/bin/header.bin
 SYMBOLS = $(KERNEL_DIR)/src/header.symbols.asm
 SCRIPT = check_kernel.sh
 
-.PHONY: all run clean
+.PHONY: all run emulator clean
 
 all: run
 
 run:
 	@bash $(SCRIPT)
+	@python3 test_kernel_manifest.py
 	@python3 check_relocation.py
+
+emulator:
 	@python3 ../dispatcher/check_dispatcher.py
 	@python3 ../dispatcher/check_plain_overflow.py
 	@python3 ../dispatcher/check_megarom_overflow.py
