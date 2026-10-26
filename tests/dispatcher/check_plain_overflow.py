@@ -1,23 +1,13 @@
 #!/usr/bin/env python3
 """Run a Plain ROM program with an overflow module in openMSX."""
 
-import os
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent.parent
-APP = ROOT / "bin" / "Release" / "msxbas2rom"
-SKILL = (
-    ROOT
-    / ".opencode"
-    / "skills"
-    / "msx-memory-debug-skill"
-    / "scripts"
-    / "debug-msx-memory.sh"
-)
+from emulator import APP, line_breakpoint, run_capture
 
 PROGRAM = """\
 10 SCREEN 2
@@ -42,7 +32,7 @@ def main():
         source.write_text(PROGRAM, encoding="utf-8")
 
         result = subprocess.run(
-            [str(APP), "-d", "--force-overflow-module",
+            [str(APP), "-d", "-s", "--noi", "--force-overflow-module",
              "31-cmd-tile-sprite", str(source)],
             check=False,
             stdout=subprocess.PIPE,
@@ -62,21 +52,8 @@ def main():
             print("[FAIL] ROM was not created")
             return 1
 
-        env = os.environ.copy()
-        env["MSX_DEBUG_DELAY"] = "10"
-        env["MSX_DEBUG_MACHINE"] = "Sharp_HB-8000_1.2"
-        if not env.get("DISPLAY") and not env.get("WAYLAND_DISPLAY"):
-            env.setdefault("SDL_VIDEODRIVER", "dummy")
-
-        subprocess.run(
-            ["bash", str(SKILL), str(rom)],
-            check=True,
-            env=env,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-
-        ram = (workdir / "plain_overflow.ram-c000-ffff.bin").read_bytes()
+        noi = workdir / "plain_overflow.noi"
+        ram = run_capture(rom, 10, line_breakpoint(noi, 50)).read_bytes()
 
     if ram[0x2000] != 0x5A:
         print(

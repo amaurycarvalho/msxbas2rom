@@ -20,8 +20,10 @@ Environment:
   MSX_DEBUG_VRAM_START   optional VRAM start address (default: 0)
   MSX_DEBUG_VRAM_LENGTH  optional VRAM byte count (default: physical size - start)
   MSX_DEBUG_BREAKPOINTS  comma-separated ADDRESS or LABEL=ADDRESS breakpoints,
-                         installed before the ROM starts (for example
-                         END_PGM=0x80a0,END_STMT+2=0x8065)
+                         optionally followed by @CONDITION, installed before the
+                         ROM starts (for example
+                         END_PGM=0x80a0,END_STMT+2=0x8065@[pc_in_slot X X 2])
+  MSX_DEBUG_ACCELERATE  1/on to disable throttling when no input script is set
   MSX_DEBUG_INPUT        path to a timed input script
   MSX_DEBUG_THROTTLE     on or off; openMSX throttle setting
 EOF
@@ -181,6 +183,24 @@ if [[ -n "$THROTTLE" ]]; then
   esac
 fi
 
+ACCELERATE="${MSX_DEBUG_ACCELERATE:-}"
+if [[ -n "$ACCELERATE" ]]; then
+  case "$ACCELERATE" in
+    1|true|yes|on) ACCELERATE=1 ;;
+    0|false|no|off|"") ACCELERATE=0 ;;
+    *)
+      echo "ERROR: MSX_DEBUG_ACCELERATE must be 1/0/true/false/on/off: $ACCELERATE" >&2
+      exit 2
+      ;;
+  esac
+else
+  ACCELERATE=0
+fi
+
+if [[ "$ACCELERATE" == "1" && -z "$THROTTLE" && -z "$INPUT_SCRIPT" ]]; then
+  THROTTLE=off
+fi
+
 BREAKPOINTS="${MSX_DEBUG_BREAKPOINTS:-}"
 
 # Build the launcher as an argv array. This avoids eval for the normal
@@ -246,6 +266,13 @@ if [[ -n "$BREAKPOINTS" ]]; then
     [[ -z "$item" ]] && continue
 
     label="bp${index}"
+    condition=""
+    if [[ "$item" == *"@"* ]]; then
+      condition="${item#*@}"
+      item="${item%%@*}"
+      condition=$(echo "$condition" | xargs)
+    fi
+
     address="$item"
     if [[ "$item" == *=* ]]; then
       label="${item%%=*}"
@@ -257,9 +284,15 @@ if [[ -n "$BREAKPOINTS" ]]; then
       exit 2
     fi
 
-    command+=(
-      -command "debug set_bp ${address_decimal} 1 {msx_debug_bp_fired {$label} ${address_decimal}}"
-    )
+    if [[ -n "$condition" ]]; then
+      command+=(
+        -command "debug set_bp ${address_decimal} {$condition} {msx_debug_bp_fired {$label} ${address_decimal}}"
+      )
+    else
+      command+=(
+        -command "debug set_bp ${address_decimal} 1 {msx_debug_bp_fired {$label} ${address_decimal}}"
+      )
+    fi
     index=$((index + 1))
   done
 fi

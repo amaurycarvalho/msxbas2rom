@@ -1,23 +1,21 @@
 #!/usr/bin/env python3
 """Runtime checks for page-safe overflow modules and fixed resource modules."""
 
-import os
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent.parent
-APP = ROOT / "bin" / "Release" / "msxbas2rom"
-SKILL = (
-    ROOT
-    / ".opencode"
-    / "skills"
-    / "msx-memory-debug-skill"
-    / "scripts"
-    / "debug-msx-memory.sh"
+from emulator import (
+    APP,
+    MAPPER_BLOCK_8K,
+    line_breakpoint,
+    mapper_block_size,
+    run_capture,
 )
+
+ROOT = Path(__file__).resolve().parent.parent.parent
 MARKER = 57345
 
 MATH_PROGRAM = """\
@@ -132,24 +130,26 @@ MODES = (
     ("--scc", "KonamiSCC"),
 )
 
+# Every program writes its marker and then enters a self-loop. The break line is
+# the first line of that loop, after all observable writes have completed.
 SAFE_CASES = (
-    ("34_file_handling", FILE_PROGRAM, "file.bas", 12),
-    ("90-math", MATH_PROGRAM, "math.bas", 12),
-    ("90-strings", MATH_PROGRAM, "strings.bas", 12),
-    ("21_logic_pack", MATH_PROGRAM, "logic.bas", 12),
-    ("90-print", MATH_PROGRAM, "print.bas", 12),
-    ("31-cmd-tile-sprite", TILE_PROGRAM, "tile.bas", 12),
-    ("31-cmd-input", INPUT_PROGRAM, "input.bas", 12),
+    ("34_file_handling", FILE_PROGRAM, "file.bas", 12, 30),
+    ("90-math", MATH_PROGRAM, "math.bas", 12, 80),
+    ("90-strings", MATH_PROGRAM, "strings.bas", 12, 80),
+    ("21_logic_pack", MATH_PROGRAM, "logic.bas", 12, 80),
+    ("90-print", MATH_PROGRAM, "print.bas", 12, 80),
+    ("31-cmd-tile-sprite", TILE_PROGRAM, "tile.bas", 12, 50),
+    ("31-cmd-input", INPUT_PROGRAM, "input.bas", 12, 30),
 )
 
 FIXED_CASES = (
-    ("32_usr", USR_PROGRAM, "usr.bas", 10),
-    ("31-cmd-mtf", MTF_PROGRAM, "mtf.bas", 12),
-    ("70_pletter", PLETTER_PROGRAM, "pletter.bas", 10),
-    ("31-cmd-cold-graphics", COLD_PROGRAM, "cold.bas", 8),
-    ("31-cmd-game-graphics", GAME_PROGRAM, "game.bas", 10),
-    ("31-cmd-rsctoram", RSCTORAM_PROGRAM, "rsctoram.bas", 10),
-    ("90-graphics", GAME_PROGRAM, "graphics.bas", 10),
+    ("32_usr", USR_PROGRAM, "usr.bas", 10, 40),
+    ("31-cmd-mtf", MTF_PROGRAM, "mtf.bas", 12, 60),
+    ("70_pletter", PLETTER_PROGRAM, "pletter.bas", 10, 40),
+    ("31-cmd-cold-graphics", COLD_PROGRAM, "cold.bas", 8, 40),
+    ("31-cmd-game-graphics", GAME_PROGRAM, "game.bas", 10, 50),
+    ("31-cmd-rsctoram", RSCTORAM_PROGRAM, "rsctoram.bas", 10, 40),
+    ("90-graphics", GAME_PROGRAM, "graphics.bas", 10, 50),
 )
 
 
@@ -173,7 +173,7 @@ def prepare(workdir, program, name):
 
 def compile_rom(workdir, source, flags):
     result = subprocess.run(
-        [str(APP), "-d"] + flags + [str(source)],
+        [str(APP), "-d", "-s", "--noi"] + flags + [str(source)],
         check=False,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -188,23 +188,12 @@ def find_rom(workdir):
     return None
 
 
-def run_emulator(rom, delay):
-    env = os.environ.copy()
-    env["MSX_DEBUG_DELAY"] = str(delay)
-    env["MSX_DEBUG_MACHINE"] = "Sharp_HB-8000_1.2"
-    if not env.get("DISPLAY") and not env.get("WAYLAND_DISPLAY"):
-        env.setdefault("SDL_VIDEODRIVER", "dummy")
-    subprocess.run(
-        ["bash", str(SKILL), str(rom)],
-        check=True,
-        env=env,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    return rom.with_name(rom.stem + ".ram-c000-ffff.bin")
+def run_emulator(rom, delay, break_line, block_size):
+    noi = rom.with_suffix(".noi")
+    return run_capture(rom, delay, line_breakpoint(noi, break_line, block_size))
 
 
-def check_safe_case(module_id, program, name, delay):
+def check_safe_case(module_id, program, name, delay, break_line):
     for flag, mode_name in MODES:
         with tempfile.TemporaryDirectory() as directory:
             workdir = Path(directory)
@@ -223,14 +212,14 @@ def check_safe_case(module_id, program, name, delay):
             if rom is None:
                 print(f"[FAIL] {module_id} {mode_name}: ROM not created")
                 return False
-            ram = run_emulator(rom, delay)
+            ram = run_emulator(rom, delay, break_line, mapper_block_size(flag))
             if not ram.exists() or ram.read_bytes()[0x2001] != 0x5A:
                 print(f"[FAIL] {module_id} {mode_name}: marker not set")
                 return False
     return True
 
 
-def check_fixed_case(module_id, program, name, delay):
+def check_fixed_case(module_id, program, name, delay, break_line):
     with tempfile.TemporaryDirectory() as directory:
         workdir = Path(directory)
         source = prepare(workdir, program, name)
@@ -257,14 +246,14 @@ def check_fixed_case(module_id, program, name, delay):
         if rom is None:
             print(f"[FAIL] {module_id}: resident ROM not created")
             return False
-        ram = run_emulator(rom, delay)
+        ram = run_emulator(rom, delay, break_line, MAPPER_BLOCK_8K)
         if not ram.exists() or ram.read_bytes()[0x2001] != 0x5A:
             print(f"[FAIL] {module_id}: resident marker not set")
             return False
     return True
 
 
-def check_resident_plain(module_id, program, name, delay):
+def check_resident_plain(module_id, program, name, delay, break_line):
     with tempfile.TemporaryDirectory() as directory:
         workdir = Path(directory)
         source = prepare(workdir, program, name)
@@ -277,7 +266,7 @@ def check_resident_plain(module_id, program, name, delay):
         if rom is None:
             print(f"[FAIL] {module_id}: resident Plain ROM not created")
             return False
-        ram = run_emulator(rom, delay)
+        ram = run_emulator(rom, delay, break_line, None)
         if not ram.exists() or ram.read_bytes()[0x2001] != 0x5A:
             print(f"[FAIL] {module_id}: resident Plain ROM marker not set")
             return False
@@ -293,20 +282,20 @@ def main():
         return 0
 
     failed = False
-    for module_id, program, name, delay in SAFE_CASES:
-        if check_safe_case(module_id, program, name, delay):
+    for module_id, program, name, delay, break_line in SAFE_CASES:
+        if check_safe_case(module_id, program, name, delay, break_line):
             print(f"[PASS] {module_id}: overflow runtime verified")
         else:
             failed = True
 
-    for module_id, program, name, delay in FIXED_CASES:
-        if check_fixed_case(module_id, program, name, delay):
+    for module_id, program, name, delay, break_line in FIXED_CASES:
+        if check_fixed_case(module_id, program, name, delay, break_line):
             print(f"[PASS] {module_id}: fixed resident runtime verified")
         else:
             failed = True
 
     if check_resident_plain(
-        "31-cmd-rsctoram", RSCTORAM_PROGRAM, "rsctoram.bas", 10
+        "31-cmd-rsctoram", RSCTORAM_PROGRAM, "rsctoram.bas", 10, 40
     ):
         print("[PASS] 31-cmd-rsctoram: resident Plain ROM verified")
     else:
@@ -322,7 +311,7 @@ def main():
             failed = True
         else:
             rom = find_rom(workdir)
-            ram = run_emulator(rom, 10) if rom else None
+            ram = run_emulator(rom, 10, 50, MAPPER_BLOCK_8K) if rom else None
             if ram is None or not ram.exists() or ram.read_bytes()[0x2001] != 0x5A:
                 print("[FAIL] DATA/RESTORE/READ: marker not set")
                 failed = True

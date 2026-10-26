@@ -57,9 +57,17 @@ Environment variables:
 - `MSX_DEBUG_SCREENSHOT` — `1` (default) or `0` to skip the screenshot artifact.
 - `MSX_DEBUG_VRAM` — `1`/`full` to capture physical VRAM, or `START:LENGTH` for a range.
 - `MSX_DEBUG_VRAM_START`, `MSX_DEBUG_VRAM_LENGTH` — optional range when `MSX_DEBUG_VRAM` is enabled.
-- `MSX_DEBUG_BREAKPOINTS` — comma-separated `LABEL=ADDRESS` or `ADDRESS` items installed before the ROM starts. Addresses come from a `.noi` file.
+- `MSX_DEBUG_BREAKPOINTS` — comma-separated `LABEL=ADDRESS`, `ADDRESS`,
+  `LABEL=ADDRESS@CONDITION`, or `ADDRESS@CONDITION` items installed before the ROM
+  starts. Addresses come from a `.noi` file. The optional condition is a Tcl
+  expression evaluated before capture, for example
+  `[pc_in_slot X X 2]`; it must not contain commas or braces.
+- `MSX_DEBUG_ACCELERATE` — `1`/`on` disables throttling when no input script is
+  configured. With an input script, real-time throttling stays enabled. An
+  explicit `MSX_DEBUG_THROTTLE` value overrides this setting.
 - `MSX_DEBUG_INPUT` — path to a timed input script (keyboard and joystick).
-- `MSX_DEBUG_THROTTLE` — `on` or `off`; `off` runs emulation as fast as possible (useful for regression). Input scripts should use `on`.
+- `MSX_DEBUG_THROTTLE` — `on` or `off`; `off` runs emulation as fast as possible.
+  Prefer `MSX_DEBUG_ACCELERATE=1` over setting this directly.
 
 Examples:
 
@@ -76,10 +84,18 @@ MSX_DEBUG_VRAM=1 ./scripts/debug-msx-memory.sh build/program.rom
 Capture at a program-end breakpoint (addresses from the compiled `.noi`):
 
 ```bash
-MSX_DEBUG_THROTTLE=off \
+MSX_DEBUG_ACCELERATE=1 \
 MSX_DEBUG_DELAY=20 \
 MSX_DEBUG_VRAM=1 \
 MSX_DEBUG_BREAKPOINTS='END_PGM=0x80a0,END_STMT+2=0x8065' \
+  ./scripts/debug-msx-memory.sh build/program.rom
+```
+
+Capture only when the MegaROM block containing the line is selected:
+
+```bash
+MSX_DEBUG_ACCELERATE=1 \
+MSX_DEBUG_BREAKPOINTS='LIN_80=0x8152@[pc_in_slot X X 2]' \
   ./scripts/debug-msx-memory.sh build/program.rom
 ```
 

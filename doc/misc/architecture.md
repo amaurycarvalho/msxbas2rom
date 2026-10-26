@@ -721,6 +721,23 @@ Joystick input requires focus on the openMSX window. The skill releases any
 scripted keys before exiting and clears residual keys before each program, so one
 interactive test cannot contaminate later programs.
 
+### 10.2 Emulator runtime checks (`make test-emulator`)
+
+`make test-emulator` builds the release binary and runs the dispatcher and
+kernel-module runtime checks under `tests/dispatcher/`. The checks compile each
+BASIC program with `-s --noi`, install a pre-boot breakpoint at the program's
+terminal marker loop, and capture RAM as soon as the breakpoint fires.
+
+The shared helper `tests/dispatcher/emulator.py` enables
+`MSX_DEBUG_ACCELERATE=1`, so emulation runs unthrottled when no host input script
+is present. The configured emulated-time delay remains as a fallback when a
+breakpoint is not reached.
+
+Line addresses come from the `.noi` export. MegaROM breakpoints also carry a
+`[pc_in_slot X X <block>]` condition because CPU addresses are reused across
+banks; the block is derived from the `.noi` segment (8 KiB for ASCII8, Konami,
+and Konami SCC; 16 KiB for ASCII16 and ASCII16-X). Plain ROMs use no condition.
+
 ## 11. Practical conventions and pitfalls
 
 - **Keep dispatch indices stable.** Append new `DISP_*` entries; do not

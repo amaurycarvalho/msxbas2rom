@@ -4,23 +4,15 @@
 Exercises MR_CALL/MR_GET_DATA segment handling through the resource map.
 """
 
-import os
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
+from emulator import APP, MAPPER_BLOCK_8K, line_breakpoint, run_capture
+
 ROOT = Path(__file__).resolve().parent.parent.parent
-APP = ROOT / "bin" / "Release" / "msxbas2rom"
-SKILL = (
-    ROOT
-    / ".opencode"
-    / "skills"
-    / "msx-memory-debug-skill"
-    / "scripts"
-    / "debug-msx-memory.sh"
-)
 SOURCE = ROOT / "tests" / "integration" / "DATA" / "test1.bas"
 
 
@@ -42,7 +34,7 @@ def main():
         )
 
         result = subprocess.run(
-            [str(APP), "-q", "-8", str(source)],
+            [str(APP), "-q", "-8", "-s", "--noi", str(source)],
             check=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -58,21 +50,8 @@ def main():
             print("[FAIL] ROM was not created")
             return 1
 
-        env = os.environ.copy()
-        env["MSX_DEBUG_DELAY"] = "12"
-        env["MSX_DEBUG_MACHINE"] = "Sharp_HB-8000_1.2"
-        if not env.get("DISPLAY") and not env.get("WAYLAND_DISPLAY"):
-            env.setdefault("SDL_VIDEODRIVER", "dummy")
-
-        subprocess.run(
-            ["bash", str(SKILL), str(rom)],
-            check=True,
-            env=env,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-
-        ram = workdir / "megarom_resources[ASCII8].ram-c000-ffff.bin"
+        noi = workdir / "megarom_resources[ASCII8].noi"
+        ram = run_capture(rom, 12, line_breakpoint(noi, 80, MAPPER_BLOCK_8K))
         if not ram.exists() or ram.read_bytes()[0x2000] != 0x5A:
             print("[FAIL] MegaROM resource program did not reach its marker")
             return 1

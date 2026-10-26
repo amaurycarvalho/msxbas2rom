@@ -8,16 +8,10 @@ import sys
 import tempfile
 from pathlib import Path
 
+from emulator import run_capture, symbol_breakpoint
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 ASM = Path(__file__).resolve().parent / "prototype.asm"
-SKILL = (
-    ROOT
-    / ".opencode"
-    / "skills"
-    / "msx-memory-debug-skill"
-    / "scripts"
-    / "debug-msx-memory.sh"
-)
 
 
 def check(results, offset, expected, label):
@@ -41,28 +35,15 @@ def main():
     with tempfile.TemporaryDirectory() as directory:
         workdir = Path(directory)
         rom = workdir / "dispatcher.rom"
+        symbols = workdir / "dispatcher.sym"
         subprocess.run(
-            ["pasmo", str(ASM), str(rom)],
+            ["pasmo", str(ASM), str(rom), str(symbols)],
             check=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
 
-        env = os.environ.copy()
-        env["MSX_DEBUG_DELAY"] = "10"
-        env["MSX_DEBUG_MACHINE"] = "Sharp_HB-8000_1.2"
-        if not env.get("DISPLAY") and not env.get("WAYLAND_DISPLAY"):
-            env.setdefault("SDL_VIDEODRIVER", "dummy")
-
-        subprocess.run(
-            ["bash", str(SKILL), str(rom)],
-            check=True,
-            env=env,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-
-        ram = (workdir / "dispatcher.ram-c000-ffff.bin").read_bytes()
+        ram = run_capture(rom, 10, symbol_breakpoint(symbols, "loop")).read_bytes()
 
     expected = [
         (0x0000, 0x5A, "magic"),
