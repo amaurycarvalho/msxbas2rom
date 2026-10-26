@@ -52,9 +52,26 @@ SCREEN2_REGIONS = (
 DEFAULTS: dict[str, Any] = {
     "msx1_machine": "Sharp_HB-8000_1.2",
     "msx2_machine": "Panasonic_FS-A1WX",
+    "msx2plus_machine": "Panasonic_FS-A1WX",
+    "turbo_r_machine": "Panasonic_FS-A1GT",
+    "machine_boot_seconds": {
+        "msx1": 10,
+        "msx2": 15,
+        "msx2plus": 15,
+        "turboR": 15,
+    },
     "fallback_seconds": 10,
     "baseline_runs": 3,
     "volatile_ranges": [],
+}
+
+MACHINE_CLASSES = ("msx1", "msx2", "msx2plus", "turboR")
+
+MACHINE_CLASS_KEYS = {
+    "msx1": "msx1_machine",
+    "msx2": "msx2_machine",
+    "msx2plus": "msx2plus_machine",
+    "turboR": "turbo_r_machine",
 }
 
 
@@ -191,21 +208,86 @@ def program_config(
 
 
 def screen_modes(text: str) -> tuple[int, int]:
-    modes = [int(m.group(1)) for m in re.finditer(r"\bSCREEN\s+(\d+)\b", text, re.IGNORECASE)]
+    modes = [int(m.group(1)) for m in re.finditer(r"\bSCREEN\s*(\d+)\b", text, re.IGNORECASE)]
     if not modes:
         return 0, 0
     return modes[-1], max(modes)
 
 
-def machine_for(program: Program, config: dict[str, Any]) -> str:
+def has_turbo_command(text: str) -> bool:
+    return bool(
+        re.search(r"\b(?:CMD|CALL)\s+TURBO\b|\bTURBO\s*\(", text, re.IGNORECASE)
+    )
+
+
+def infer_machine_class(text: str) -> str:
+    _, maximum = screen_modes(text)
+    if maximum >= 4 or has_turbo_command(text):
+        return "msx2plus"
+    return "msx1"
+
+
+def normalise_machine_class(value: Any) -> str:
+    text = str(value).strip()
+    for machine_class in MACHINE_CLASSES:
+        if text.lower() == machine_class.lower():
+            return machine_class
+    fail(f"unknown machine class {value!r}; expected one of {', '.join(MACHINE_CLASSES)}")
+
+
+def machine_class_for(
+    program: Program, config: dict[str, Any], text: str | None = None
+) -> str:
+    explicit = config.get("requires")
+    if explicit:
+        return normalise_machine_class(explicit)
+    if text is None:
+        text = program.source.read_text(encoding="utf-8", errors="replace")
+    return infer_machine_class(text)
+
+
+def machine_for_class(machine_class: str, config: dict[str, Any]) -> str:
+    key = MACHINE_CLASS_KEYS[machine_class]
+    return str(config.get(key, DEFAULTS[key]))
+
+
+def machine_for(
+    program: Program, config: dict[str, Any], text: str | None = None
+) -> str:
     explicit = config.get("machine")
     if explicit:
         return str(explicit)
-    text = program.source.read_text(encoding="utf-8", errors="replace")
-    _, maximum = screen_modes(text)
-    if maximum >= 5:
-        return str(config.get("msx2_machine", DEFAULTS["msx2_machine"]))
-    return str(config.get("msx1_machine", DEFAULTS["msx1_machine"]))
+    return machine_for_class(machine_class_for(program, config, text), config)
+
+
+def machine_boot_seconds(config: dict[str, Any], machine_class: str) -> float:
+    minimums = DEFAULTS["machine_boot_seconds"]
+    configured = config.get("machine_boot_seconds")
+    if configured is None:
+        configured = {}
+    if not isinstance(configured, dict):
+        fail("machine_boot_seconds must be an object")
+    value = configured.get(machine_class, minimums[machine_class])
+    try:
+        seconds = float(value)
+    except (TypeError, ValueError):
+        fail(f"machine_boot_seconds[{machine_class!r}] is not a number: {value!r}")
+    if seconds < 0:
+        fail(f"machine_boot_seconds[{machine_class!r}] must be non-negative")
+    return seconds
+
+
+def effective_fallback_seconds(
+    config: dict[str, Any], machine_class: str
+) -> float:
+    fallback = config.get("fallback_seconds", DEFAULTS["fallback_seconds"])
+    try:
+        configured = float(fallback)
+    except (TypeError, ValueError):
+        fail(f"fallback_seconds is not a number: {fallback!r}")
+    if configured < 0:
+        fail("fallback_seconds must be non-negative")
+    return max(configured, machine_boot_seconds(config, machine_class))
 
 
 def parse_noi(path: Path) -> dict[str, int]:
@@ -219,14 +301,20 @@ def parse_noi(path: Path) -> dict[str, int]:
     return symbols
 
 
-def breakpoints_for(noi_path: Path) -> list[tuple[str, int]]:
-    symbols = parse_noi(noi_path)
-    breakpoints: list[tuple[str, int]] = []
+def breakpoints_from_symbols(symbols: dict[str, int]) -> list[tuple[str, int]]:
+    # GRAPH/line1 compiles to END_STMT=0x8063, whose first two bytes are a JR
+    # skip; END_STMT+2=0x8065 is the CALL DISP_XBASIC_END instruction before
+    # the text-mode restore. END_PGM=0x828B jumps to 0x8065, so explicit and
+    # implicit ends reach the same pre-cleanup instruction.
     if "END_STMT" in symbols:
-        breakpoints.append(("END_STMT+2", (symbols["END_STMT"] & 0xFFFF) + 2))
+        return [("END_STMT+2", (symbols["END_STMT"] & 0xFFFF) + 2)]
     if "END_PGM" in symbols:
-        breakpoints.append(("END_PGM", symbols["END_PGM"] & 0xFFFF))
-    return breakpoints
+        return [("END_PGM", symbols["END_PGM"] & 0xFFFF)]
+    return []
+
+
+def breakpoints_for(noi_path: Path) -> list[tuple[str, int]]:
+    return breakpoints_from_symbols(parse_noi(noi_path))
 
 
 
@@ -381,19 +469,41 @@ def artifact_paths(rom: Path) -> dict[str, Path]:
 
 
 
+V9958_SCREEN_MODES = {
+    (0x00, 0x10): 0,
+    (0x00, 0x00): 1,
+    (0x02, 0x00): 2,
+    (0x00, 0x08): 3,
+    (0x04, 0x00): 4,
+    (0x06, 0x00): 5,
+    (0x08, 0x00): 6,
+    (0x0A, 0x00): 7,
+    (0x0E, 0x00): 8,
+}
+
+
 def screen_from_vdp(regs: bytes | None, fallback: int) -> int:
-    if fallback >= 5:
-        return fallback
     if not regs or len(regs) < 2:
         return fallback
-    r0, r1 = regs[0], regs[1]
-    if r0 & 0x02:
-        return 2
-    if r1 & 0x08:
-        return 3
-    if r1 & 0x10:
-        return 0
-    return 1
+    key = (regs[0] & 0x0E, regs[1] & 0x18)
+    if key == (0x0E, 0x00):
+        return fallback if 9 <= fallback <= 12 else 8
+    return V9958_SCREEN_MODES.get(key, fallback)
+
+
+def screen_mode_consistency(
+    source_screen: int | None, vdp_screen: int
+) -> tuple[int, str | None]:
+    if source_screen is None or source_screen == vdp_screen:
+        return vdp_screen, None
+    layout_screen = vdp_screen
+    if vdp_screen in {0, 1} and source_screen not in {0, 1}:
+        layout_screen = source_screen
+    message = (
+        f"source SCREEN {source_screen} conflicts with captured VDP mode "
+        f"{vdp_screen}; using SCREEN {layout_screen} for VRAM layout"
+    )
+    return layout_screen, message
 
 
 def extract_text(
@@ -510,6 +620,10 @@ def build_baseline(
         "scenario": program.scenario,
         "source": str(program.source.relative_to(ROOT)),
         "machine": str(config["machine"]),
+        "machine_class": config.get("machine_class"),
+        "effective_fallback_seconds": config.get(
+            "fallback_seconds", DEFAULTS["fallback_seconds"]
+        ),
         "screen": screen,
         "screen_stable": screen_stable,
         "volatile": volatile,
@@ -663,6 +777,62 @@ def compare_probes(
     return all_ok, checks
 
 
+def check_baseline_machine(
+    config: dict[str, Any], baseline: dict[str, Any]
+) -> tuple[bool, str]:
+    expected = baseline.get("machine")
+    selected = str(config.get("machine", ""))
+    if expected and str(expected) != selected:
+        return False, (
+            f"baseline machine {expected} does not match selected machine "
+            f"{selected}; regenerate the baseline"
+        )
+    return True, ""
+
+
+def compare_vram_probes(
+    config: dict[str, Any], vram: bytes
+) -> tuple[bool, list[dict[str, Any]]]:
+    checks: list[dict[str, Any]] = []
+    all_ok = True
+    for index, probe in enumerate(config.get("vram", {}).get("probes", [])):
+        if not isinstance(probe, dict) or "address" not in probe:
+            fail(f"vram probe {index} must be an object with an address")
+        address = parse_int(probe["address"], f"vram probe {index} address")
+        if "bytes" in probe:
+            raw = bytes(
+                int(part, 16) if isinstance(part, str) else int(part)
+                for part in re.split(r"[\s,]+", str(probe["bytes"]).strip())
+                if part
+            )
+        elif "value" in probe:
+            raw = bytes([parse_int(probe["value"], f"vram probe {index} value") & 0xFF])
+        else:
+            fail(f"vram probe {index} must contain value or bytes")
+        if address < 0 or address >= len(vram):
+            fail(
+                f"vram probe {index} address 0x{address:04X} is outside "
+                f"captured VRAM 0x0000-0x{len(vram) - 1:04X}"
+            )
+        if address + len(raw) > len(vram):
+            fail(
+                f"vram probe {index} range 0x{address:04X}-"
+                f"0x{address + len(raw) - 1:04X} exceeds captured VRAM "
+                f"size 0x{len(vram):04X}"
+            )
+        actual = vram[address:address + len(raw)]
+        ok = actual == raw
+        all_ok = all_ok and ok
+        expected_text = " ".join(f"{byte:02X}" for byte in raw)
+        actual_text = " ".join(f"{byte:02X}" for byte in actual)
+        checks.append({
+            "name": f"vram_probe_0x{address:04X}",
+            "ok": ok,
+            "detail": f"expected {expected_text}, got {actual_text}",
+        })
+    return all_ok, checks
+
+
 def compare_vram(
     program: Program,
     config: dict[str, Any],
@@ -720,6 +890,10 @@ def compare_vram(
                 else "missing text: " + " | ".join(str(item) for item in missing)
             )
             checks.append({"name": "vram_text", "ok": ok, "detail": detail})
+
+    probe_ok, probe_checks = compare_vram_probes(config, vram)
+    checks.extend(probe_checks)
+    all_ok = all_ok and probe_ok
 
     specs = region_specs(screen, len(vram), vram_config)
     baseline_regions = baseline_vram.get("regions") or {}
@@ -816,6 +990,16 @@ def run_program(
     }
     program_dir = run_dir / program.scenario / program.rel.replace("/", "__")
     build_dir = program_dir / "build"
+    text = program.source.read_text(encoding="utf-8", errors="replace")
+    screen, maximum = screen_modes(text)
+    machine_class = machine_class_for(program, config, text)
+    config["machine"] = machine_for(program, config, text)
+    config["machine_class"] = machine_class
+    config["fallback_seconds"] = effective_fallback_seconds(config, machine_class)
+    result["machine_class"] = machine_class
+    result["machine"] = config["machine"]
+    result["effective_fallback_seconds"] = config["fallback_seconds"]
+
     rom, noi, compile_output = compile_program(program, build_dir)
     if rom is None:
         result["failure"] = f"compilation failed: {compile_output}"
@@ -823,9 +1007,6 @@ def run_program(
     if compile_output:
         (program_dir / "compile.log").write_text(compile_output + "\n", encoding="utf-8")
 
-    text = program.source.read_text(encoding="utf-8", errors="replace")
-    screen, _ = screen_modes(text)
-    config["machine"] = machine_for(program, config)
     breakpoints = breakpoints_for(noi) if noi else []
 
     volatile = is_volatile_program(config, text)
@@ -864,7 +1045,15 @@ def run_program(
         result["failure"] = "emulator produced no VRAM artifact"
         return result
     vdp_regs = paths["vdp_regs"].read_bytes() if paths["vdp_regs"].exists() else None
-    screen = screen_from_vdp(vdp_regs, screen)
+    source_screen = screen if maximum > 0 else None
+    vdp_screen = screen_from_vdp(vdp_regs, screen)
+    layout_screen, screen_conflict = screen_mode_consistency(source_screen, vdp_screen)
+    result["source_screen"] = source_screen
+    result["vdp_screen"] = vdp_screen
+    result["layout_screen"] = layout_screen
+    if screen_conflict:
+        result["screen_conflict"] = screen_conflict
+    screen = layout_screen
     meta = read_capture_meta(paths["meta"])
 
     volatile = bool(config.get("volatile", False))
@@ -878,6 +1067,19 @@ def run_program(
             )
             return result
         baseline = json.loads(program.baseline_path.read_text(encoding="utf-8"))
+        machine_ok, machine_reason = check_baseline_machine(config, baseline)
+        if not machine_ok:
+            result["checks"] = [{
+                "name": "baseline_machine",
+                "ok": False,
+                "detail": machine_reason,
+            }]
+            result["failure"] = machine_reason
+            result["status"] = "fail"
+            result["decision"] = "memory"
+            result["volatile"] = volatile
+            result["capture_trigger"] = meta.get("trigger")
+            return result
 
     checks: list[dict[str, Any]] = []
     all_ok = True
@@ -909,7 +1111,9 @@ def run_program(
     checks.extend(vram_checks)
     all_ok = all_ok and vram_ok
     if any(
-        check["name"] == "vram_text" or check["name"].startswith("vram_region_")
+        check["name"] == "vram_text"
+        or check["name"].startswith("vram_region_")
+        or check["name"].startswith("vram_probe_")
         for check in vram_checks
     ):
         memory_decision = True
@@ -973,10 +1177,14 @@ def write_reports(run_dir: Path, results: list[dict[str, Any]], started: str) ->
     for item in results:
         lines.append(
             f"{item['status'].upper():5} {item['program']} "
-            f"({item.get('decision', 'none')})"
+            f"({item.get('decision', 'none')}) "
+            f"[{item.get('machine_class', '?')}] {item.get('machine', '?')} "
+            f"fallback={item.get('effective_fallback_seconds', '?')}s"
         )
         if item.get("failure"):
             lines.append(f"      failure: {item['failure']}")
+        if item.get("screen_conflict"):
+            lines.append(f"      note: {item['screen_conflict']}")
         for check in item.get("checks", []):
             if not check.get("ok", True):
                 lines.append(f"      {check['name']}: {check['detail']}")
@@ -984,13 +1192,18 @@ def write_reports(run_dir: Path, results: list[dict[str, Any]], started: str) ->
 
 
 def command_list(args: argparse.Namespace) -> int:
+    manifest = load_manifest()
     programs = select_programs(discover_programs(), args.scenario, args.program)
     current = None
     for program in programs:
         if program.scenario != current:
             current = program.scenario
             print(f"{current}:")
-        print(f"  {program.rel}")
+        config = program_config(manifest, program)
+        text = program.source.read_text(encoding="utf-8", errors="replace")
+        machine_class = machine_class_for(program, config, text)
+        machine = machine_for(program, config, text)
+        print(f"  {program.rel} [{machine_class}] {machine}")
     return 0
 
 
@@ -1043,7 +1256,10 @@ def capture_once(
 
     text = program.source.read_text(encoding="utf-8", errors="replace")
     screen, _ = screen_modes(text)
-    config["machine"] = machine_for(program, config)
+    machine_class = machine_class_for(program, config, text)
+    config["machine"] = machine_for(program, config, text)
+    config["machine_class"] = machine_class
+    config["fallback_seconds"] = effective_fallback_seconds(config, machine_class)
     breakpoints = breakpoints_for(noi) if noi else []
     screenshot = screenshot_override or bool(config.get("screenshot", False))
     input_events = config.get("input", [])
@@ -1085,7 +1301,8 @@ def command_baseline(args: argparse.Namespace) -> int:
         text = program.source.read_text(encoding="utf-8", errors="replace")
         if is_volatile_program(config, text):
             config["volatile"] = True
-        screen, _ = screen_modes(text)
+        screen, maximum = screen_modes(text)
+        source_screen = screen if maximum > 0 else None
         ram_runs: list[bytes] = []
         vram_runs: list[bytes] = []
         meta: dict[str, str] = {}
@@ -1099,7 +1316,10 @@ def command_baseline(args: argparse.Namespace) -> int:
                 break
             ram_runs.append(ram)
             vram_runs.append(vram)
-            screens.append(screen_from_vdp(vdp_regs, screen))
+            selected_screen, _ = screen_mode_consistency(
+                source_screen, screen_from_vdp(vdp_regs, screen)
+            )
+            screens.append(selected_screen)
             meta = meta or run_meta
 
         if len(ram_runs) != runs:

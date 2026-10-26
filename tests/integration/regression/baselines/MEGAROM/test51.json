@@ -1,13 +1,15 @@
 {
-  "capture_time": "9.156807359594586",
-  "capture_trigger": "breakpoint:END_PGM@45168",
-  "generated_at": "2026-10-25T22:25:21-0300",
+  "capture_time": "33.569667932656245",
+  "capture_trigger": "breakpoint:END_STMT+2@32869",
+  "effective_fallback_seconds": 45.0,
+  "generated_at": "2026-10-26T12:47:10-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "MEGAROM/test51",
   "ram": {
     "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
-    "values": "eNrt2jEKwjAUgOFXXTp0cBXBrl4nB/EOTupRvIUuPdezbupWECrp9z8IGQLhg4zJyI9p3vfNelxjFWU4HqI8xv19V4bNqcv4nkvsr9Gfb9uQpKWWk2bi8Z/PzNfz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8y/R374m/3mp6rdmfe/ff11JkiRJkurvCZFL5Co=",
+    "values": "eNrt2jEKwjAUgOFXXRwU3HsBr5ODuNuto3qpdum5nnVTt4KgpN//IGQIhA8yJiPfpnndN9t5jU2U6XyKMs77oS3Tsd9nfM6t7+5jdz1cQpLWWi6ahce/Pj++np+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn59/jf7dc/Kfl6p+a9b3/v3XlSRJkiSp/h7VT+Xp",
     "volatile_ranges": [
       [
         61440,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": " 56      113     27\n 57      115     27.5\n 58      117     27.99\n 59      119     28.49\n 60      121     28.98\n 61      123     29.48\n 62      125     29.97\n 63      127     30.47\n 64      129     30.97\n 65      131     31.46\n 66      133     31.96\n 67      135     32.46\n 68      137     32.95\n 69      139     33.45\n 70      141     33.94\n 71      143     34.44\n 72      145     34.94\n 73      147     35.43\n 74      149     35.93\n 75      151     36.43\n 76      153     36.92\n 77      155     37.42\n 78      157     37.92",
+    "text": " 477     955     237.1\n 478     957     237.6\n 479     959     238.1\n 480     961     238.6\n 481     963     239.1\n 482     965     239.6\n 483     967     240.1\n 484     969     240.6\n 485     971     241.1\n 486     973     241.6\n 487     975     242.1\n 488     977     242.6\n 489     979     243.1\n 490     981     243.6\n 491     983     244.1\n 492     985     244.6\n 493     987     245.1\n 494     989     245.6\n 495     991     246.1\n 496     993     246.6\n 497     995     247.1\n 498     997     247.6\n 499     999     248.1",
     "unstable_regions": []
   }
 }

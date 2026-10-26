@@ -1,8 +1,10 @@
 {
-  "capture_time": "10.113022744510825",
+  "capture_time": "15.102780101940331",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:29:30-0300",
+  "effective_fallback_seconds": 15.0,
+  "generated_at": "2026-10-26T12:13:41-0300",
   "machine": "Panasonic_FS-A1WX",
+  "machine_class": "msx2plus",
   "probes": [],
   "program": "TS/ts7",
   "ram": {
@@ -17,37 +19,17 @@
   },
   "runs": 3,
   "scenario": "TS",
-  "screen": 2,
+  "screen": 5,
   "screen_stable": true,
   "source": "tests/integration/TS/ts7.bas",
   "version": 1,
   "volatile": false,
   "vram": {
     "regions": {
-      "colour_table": {
-        "length": 6144,
-        "sha256": "fd9243e1ba57263ed469c3bdbd7ade6ec5254e7ed924a9f5737fa44749933cc0",
-        "start": 8192
-      },
-      "name_table": {
-        "length": 768,
-        "sha256": "ef115a0e0c15cdc41958ca46b5b14b456115f4baec5e3ca68599d2a8f435e3b8",
-        "start": 6144
-      },
-      "pattern_generator": {
-        "length": 6144,
-        "sha256": "fd9243e1ba57263ed469c3bdbd7ade6ec5254e7ed924a9f5737fa44749933cc0",
+      "bitmap": {
+        "length": 131072,
+        "sha256": "50e51d873f73dea71797524290d6d266a0818a920bb757e819b8a2b5e1ffecef",
         "start": 0
-      },
-      "sprite_attributes": {
-        "length": 128,
-        "sha256": "38723a2e5e8a17aa7950dc008209944e898f69a7bd10a23c839d341e935fd5ca",
-        "start": 6912
-      },
-      "sprite_patterns": {
-        "length": 2048,
-        "sha256": "e5a00aa9991ac8a5ee3109844d84a55583bd20572ad3ffcd42792f3c36b183ad",
-        "start": 14336
       }
     },
     "screen_stable": true,

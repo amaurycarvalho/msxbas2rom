@@ -1,8 +1,10 @@
 {
-  "capture_time": "10.113024700066628",
+  "capture_time": "15.102780101940331",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:18:14-0300",
+  "effective_fallback_seconds": 15.0,
+  "generated_at": "2026-10-26T12:12:52-0300",
   "machine": "Panasonic_FS-A1WX",
+  "machine_class": "msx2plus",
   "probes": [],
   "program": "GRAPH/cadbit",
   "ram": {
@@ -17,37 +19,17 @@
   },
   "runs": 3,
   "scenario": "GRAPH",
-  "screen": 2,
+  "screen": 5,
   "screen_stable": true,
   "source": "tests/integration/GRAPH/cadbit.bas",
   "version": 1,
   "volatile": false,
   "vram": {
     "regions": {
-      "colour_table": {
-        "length": 6144,
-        "sha256": "64fd4ccc6f0b36088d1e42cc55a83a8e436376f6ef9376c6d67f3d1f73a89d2d",
-        "start": 8192
-      },
-      "name_table": {
-        "length": 768,
-        "sha256": "ef115a0e0c15cdc41958ca46b5b14b456115f4baec5e3ca68599d2a8f435e3b8",
-        "start": 6144
-      },
-      "pattern_generator": {
-        "length": 6144,
-        "sha256": "fd9243e1ba57263ed469c3bdbd7ade6ec5254e7ed924a9f5737fa44749933cc0",
+      "bitmap": {
+        "length": 131072,
+        "sha256": "12a7f96ee5e8c579adc519250d713ee23a77766b17b00720cabfbee73080b563",
         "start": 0
-      },
-      "sprite_attributes": {
-        "length": 128,
-        "sha256": "38723a2e5e8a17aa7950dc008209944e898f69a7bd10a23c839d341e935fd5ca",
-        "start": 6912
-      },
-      "sprite_patterns": {
-        "length": 2048,
-        "sha256": "4fc5df976cde8edd8cf9c1e59836edc050aca796b1cb375774977247255eafc6",
-        "start": 14336
       }
     },
     "screen_stable": true,

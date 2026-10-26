@@ -13,6 +13,7 @@
 #include <string>
 #include "compiler.h"
 #include "compiler_context.h"
+#include "compiler_hooks.h"
 #include "compiler_statement_strategy_factory.h"
 #include "cpu_workspace_context.h"
 #include "doctest/doctest.h"
@@ -105,6 +106,25 @@ static int compiledCodeSize(const std::string& filename,
   std::remove(path.c_str());
 
   return ok ? compiler->getCodeSize() : -1;
+}
+
+static std::shared_ptr<Compiler> compiledProgram(const std::string& filename,
+                                                 const std::string& program) {
+  const std::string path = createTempBas(filename, program);
+
+  shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
+  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
+  shared_ptr<Parser> parser = make_shared<Parser>();
+
+  bool ok = false;
+  if (lexer->load(path) && lexer->evaluate() && parser->evaluate(lexer)) {
+    ok = compiler->build(parser);
+  }
+
+  std::remove(path.c_str());
+
+  return ok ? compiler : nullptr;
 }
 
 TEST_SUITE("CompilerStringFunctions") {
@@ -343,6 +363,47 @@ TEST_SUITE("CompilerFunctionNumericSubtypes") {
     CHECK(maker > 0);
     CHECK(turbo > 0);
     CHECK(vdp > 0);
+  }
+
+  // USR2-backed functions load their selector in HL and call DISP_usr2 through
+  // addKernelCall so the dispatch stub maps and restores the kernel bank. A
+  // direct call to USR2 + 1 skips the instruction that supplies the selector
+  // and is the runtime defect this test guards against.
+  TEST_CASE("USR2 functions use kernel dispatch with HL selector") {
+    struct Case {
+      const char* filename;
+      const char* program;
+      unsigned char selector;
+    };
+    const Case cases[] = {
+        {"fn_turbo_dispatch.bas", "10 A=TURBO\n20 END\n", 5},
+        {"fn_vdp_dispatch.bas", "10 A=VDP\n20 END\n", 4},
+        {"fn_maker_dispatch.bas", "10 A=MAKER\n20 END\n", 6},
+    };
+
+    for (const auto& item : cases) {
+      auto compiler = compiledProgram(item.filename, item.program);
+      REQUIRE(compiler != nullptr);
+      auto context = compiler->getContext();
+      CHECK(context->getUsedDispatch().count(DISP_usr2) == 1);
+
+      DispatchFixup* dispatch = nullptr;
+      for (auto& fixup : context->getDispatchFixups()) {
+        if (fixup.dispatchIndex == DISP_usr2) {
+          dispatch = &fixup;
+          break;
+        }
+      }
+      REQUIRE(dispatch != nullptr);
+
+      const auto& code = context->getCpu()->context->getCode();
+      const unsigned int callPosition = dispatch->address - 1;
+      REQUIRE(callPosition >= 3);
+      CHECK(code[callPosition - 3] == 0x21);
+      CHECK(code[callPosition - 2] == item.selector);
+      CHECK(code[callPosition - 1] == 0x00);
+      CHECK(code[callPosition] == 0xCD);
+    }
   }
 
   TEST_CASE("USING$ literal vs variable format emit distinct code") {

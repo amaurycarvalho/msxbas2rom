@@ -19,10 +19,10 @@ int VdpCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   switch (parmCount) {
     case 0: {
       // VDP() without parameters returns VDP version
-      // ld a, 4
-      cpu.addLdA(4);
-      // CALL USR2
-      cpu.addCall(context->getCodeOptimizer()->getKernelCallAddr(DISP_usr2) + 1);
+      // ld hl, 4 ; selector
+      cpu.addLdHL(4);
+      // CALL USR2 through kernel dispatch
+      optimizer.addKernelCall(DISP_usr2);
       return Lexeme::subtype_numeric;
     }
 

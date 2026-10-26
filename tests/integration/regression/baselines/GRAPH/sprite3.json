@@ -1,0 +1,39 @@
+{
+  "capture_time": "15.102780101940331",
+  "capture_trigger": "fallback",
+  "effective_fallback_seconds": 15.0,
+  "generated_at": "2026-10-26T12:02:16-0300",
+  "machine": "Panasonic_FS-A1WX",
+  "machine_class": "msx2plus",
+  "probes": [],
+  "program": "GRAPH/sprite3",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrtwQENAAAIAyBLvn8UreE+IAsAAAAAAAAAAAAAAHw3AAAAQL0DvPPSGA==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "GRAPH",
+  "screen": 4,
+  "screen_stable": true,
+  "source": "tests/integration/GRAPH/sprite3.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {
+      "bitmap": {
+        "length": 131072,
+        "sha256": "f1ff7186ae8f40bffb053c743ffd1b14431fd8c0ac93d9ad967cd2d34fd61f58",
+        "start": 0
+      }
+    },
+    "screen_stable": true,
+    "size": 131072,
+    "unstable_regions": []
+  }
+}

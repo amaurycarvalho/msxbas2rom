@@ -3,6 +3,14 @@
   "defaults": {
     "msx1_machine": "Sharp_HB-8000_1.2",
     "msx2_machine": "Panasonic_FS-A1WX",
+    "msx2plus_machine": "Panasonic_FS-A1WX",
+    "turbo_r_machine": "Panasonic_FS-A1GT",
+    "machine_boot_seconds": {
+      "msx1": 10,
+      "msx2": 15,
+      "msx2plus": 15,
+      "turboR": 15
+    },
     "fallback_seconds": 10,
     "baseline_runs": 3,
     "volatile_ranges": [
@@ -238,6 +246,18 @@
         "scplot": {
           "volatile": true
         },
+        "sprite3": {
+          "machine": "Panasonic_FS-A1WX",
+          "fallback_seconds": 15,
+          "vram": {
+            "probes": [
+              {
+                "address": "0x1C10",
+                "bytes": "6C 6C 6C 6C 6C 6C 6C 6C 6C 6C 6C 6C 6C 6C 6C 6C"
+              }
+            ]
+          }
+        },
         "sprite4": {
           "volatile": true
         },
@@ -297,6 +317,70 @@
         },
         "tree": {
           "volatile": true
+        }
+      }
+    },
+    "MISC": {
+      "programs": {
+        "test1": {
+          "requires": "turboR",
+          "vram": {
+            "text": {
+              "name_table": "0x1800",
+              "width": 40,
+              "expected": ["0", "1", "0"]
+            }
+          }
+        },
+        "test64": {
+          "requires": "turboR",
+          "vram": {
+            "text": {
+              "name_table": "0x1800",
+              "width": 40,
+              "expected": [
+                "MSX = 3",
+                "VDP = 2",
+                "TURBO = 1",
+                "TURBO = 0"
+              ]
+            }
+          }
+        },
+        "test65": {
+          "requires": "turboR",
+          "fallback_seconds": 30,
+          "vram": {
+            "text": {
+              "name_table": "0x1800",
+              "width": 40,
+              "expected": [
+                "TURBO OFF ELAPSED TIME=",
+                "TURBO ON ELAPSED TIME="
+              ]
+            }
+          }
+        },
+        "turbo_functions": {
+          "volatile": true
+        },
+        "turbo_gate": {
+          "requires": "turboR",
+          "volatile": true,
+          "vram": {
+            "text": {
+              "name_table": "0x1800",
+              "width": 40,
+              "expected": ["TURBO GATE OK"]
+            }
+          }
+        }
+      }
+    },
+    "MEGAROM": {
+      "programs": {
+        "test51": {
+          "fallback_seconds": 45
         }
       }
     }

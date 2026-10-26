@@ -1004,7 +1004,7 @@ J727B:	POP	IX
 	POP	AF
 	BIT	6,B
 	JR	Z,J728C
-	AND	0FH	; 15
+	AND	7FH	; preserve OR and collision-ignore bits, drop bit 7
 	OR	E
 	LD	E,A
 	LD	A,L

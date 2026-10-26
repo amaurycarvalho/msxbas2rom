@@ -1,8 +1,10 @@
 {
-  "capture_time": "10.113022558267415",
+  "capture_time": "15.102781498765905",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:18:50-0300",
+  "effective_fallback_seconds": 15.0,
+  "generated_at": "2026-10-26T12:17:11-0300",
   "machine": "Panasonic_FS-A1WX",
+  "machine_class": "msx2plus",
   "probes": [],
   "program": "GRAPH/mexhat",
   "ram": {
@@ -26,7 +28,7 @@
     "regions": {
       "bitmap": {
         "length": 131072,
-        "sha256": "3e43bb43de207f08e108b345069c3cae490b8b34af8173987f428abe991fcbc3",
+        "sha256": "28ec5f78935f895bd9cb5b5f3cb900c738fa6c769ee0fb605b293ea48aac935d",
         "start": 0
       }
     },

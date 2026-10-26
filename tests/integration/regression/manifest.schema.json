@@ -10,6 +10,18 @@
       "properties": {
         "msx1_machine": {"type": "string"},
         "msx2_machine": {"type": "string"},
+        "msx2plus_machine": {"type": "string"},
+        "turbo_r_machine": {"type": "string"},
+        "machine_boot_seconds": {
+          "type": "object",
+          "properties": {
+            "msx1": {"type": "number", "minimum": 0},
+            "msx2": {"type": "number", "minimum": 0},
+            "msx2plus": {"type": "number", "minimum": 0},
+            "turboR": {"type": "number", "minimum": 0}
+          },
+          "additionalProperties": false
+        },
         "fallback_seconds": {"type": "number", "minimum": 0},
         "baseline_runs": {"type": "integer", "minimum": 2},
         "volatile_ranges": {
@@ -47,6 +59,9 @@
       "type": "object",
       "properties": {
         "machine": {"type": "string"},
+        "requires": {
+          "enum": ["msx1", "msx2", "msx2plus", "turboR"]
+        },
         "fallback_seconds": {"type": "number", "minimum": 0},
         "screenshot": {"type": "boolean"},
         "volatile": {"type": "boolean"},
@@ -108,6 +123,18 @@
                   "name": {"type": "string"},
                   "start": {"type": ["integer", "string"]},
                   "length": {"type": ["integer", "string"]}
+                }
+              }
+            },
+            "probes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["address"],
+                "properties": {
+                  "address": {"type": ["integer", "string"]},
+                  "value": {"type": ["integer", "string"]},
+                  "bytes": {"type": ["string", "array"]}
                 }
               }
             }

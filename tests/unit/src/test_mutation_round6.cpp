@@ -459,8 +459,8 @@ TEST_SUITE("Round6Semantics") {
     CHECK(round6Size("r6_vdp", "10 A=VDP(0)\n20 END\n") == 60);
     CHECK(round6Size("r6_pdl", "10 A=PDL(0)\n20 END\n") == 64);
     CHECK(round6Size("r6_base", "10 A=BASE(0)\n20 END\n") == 60);
-    CHECK(round6Size("r6_turbo", "10 A=TURBO\n20 END\n") == 59);
-    CHECK(round6Size("r6_maker", "10 A=MAKER\n20 END\n") == 59);
+    CHECK(round6Size("r6_turbo", "10 A=TURBO\n20 END\n") == 60);
+    CHECK(round6Size("r6_maker", "10 A=MAKER\n20 END\n") == 60);
   }
 }
 

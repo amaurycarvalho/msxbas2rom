@@ -20,10 +20,10 @@ int MakerCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
   auto& cpu = *context->getCpu();
   // auto& optimizer = *context->getCodeOptimizer();
 
-  // ld a, 6
-  cpu.addLdA(6);
-  // CALL USR2
-  cpu.addCall(context->getCodeOptimizer()->getKernelCallAddr(DISP_usr2) + 1);
+  // ld hl, 6 ; selector
+  cpu.addLdHL(6);
+  // CALL USR2 through kernel dispatch
+  context->getCodeOptimizer()->addKernelCall(DISP_usr2);
 
   return Lexeme::subtype_numeric;
 }

@@ -19,10 +19,10 @@ int TurboCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
 
   auto& cpu = *context->getCpu();
 
-  // ld a, 5
-  cpu.addLdA(5);
-  // CALL USR2
-  cpu.addCall(context->getCodeOptimizer()->getKernelCallAddr(DISP_usr2) + 1);
+  // ld hl, 5 ; selector
+  cpu.addLdHL(5);
+  // CALL USR2 through kernel dispatch
+  context->getCodeOptimizer()->addKernelCall(DISP_usr2);
 
   return Lexeme::subtype_numeric;
 }
