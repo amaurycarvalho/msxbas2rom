@@ -9,7 +9,7 @@ Relevant state:
 - `HEAPSIZ` (`HEAPSTR+2`) is the free-heap size reported by `FRE()`. Variables live below `HEAPSTR`; the heap is `HEAPSTR..HEAPEND`, with the top 256 bytes reserved for BASIC temporary strings: `XBASIC_END` sets `FRETOP = HEAPSTR + HEAPSIZ - 256`.
 - `RESOURCE(n)` is a single-slot loader: it writes to `HEAP()` on every call and does not advance `HEAPSTR`.
 - After `add-rsctoram-offset-size`, `CMD RSCTORAM` accepts `offset`/`size` via the `PARM1` work area, clamps the copy to `min(size, resource_size - offset)`, detects invalid resources before copying, and returns `HL = dest` or `0`.
-- The `GRAPH/test38a` regression baseline is volatile with no probes, so it does not currently validate the `COPY RESOURCE(0) TO (0,0)` result.
+- `GRAPH/test38a` runs on MSX1, where the graphical `XBASIC_COPY_FROM` path returns without copying; the `.SC3` resource is also stored packed. It is a boot smoke test, not a validation of the copy. A raw-resource regression is required to observe `RESOURCE(n)`.
 
 ## Goals / Non-Goals
 
@@ -84,8 +84,8 @@ The parameter offsets are defined once and reused by both `CompilerCmdRscToRamHa
 - [`HEAPSIZ` overlaps the 256-byte string reserve] → documented caveat; users relying on strings can pre-check with `RESOURCESIZE(n) <= FRE() - 256`.
 - [Repeated `RESOURCE(n)` calls overwrite the same `HEAP()` address] → documented; the function is a single-slot loader, not an allocator.
 - [Silent truncation for oversized resources] → documented in `resource-functions/spec.md` and the wiki; users can compare `RESOURCESIZE(n)` with `FRE()`.
-- [Generated code growth] → each `RESOURCE` call site grows by the `PARM1` setup. This may matter for plain-ROM user-code limits; quantify it during implementation and document it.
-- [`COPY RESOURCE(0) TO (0,0)` now copies from RAM] → add a VRAM probe for the SCREEN 3 copy in `GRAPH/test38a` so the regression suite validates it; `XBASIC_COPY_FROM`/`BLTVM` accept RAM addresses.
+- [Generated code growth] → each `RESOURCE` call site grows by the `PARM1` setup (~33 bytes). This may matter for plain-ROM user-code limits; quantify it during implementation and document it.
+- [`COPY RESOURCE(0) TO (0,0)` is not a useful validation on MSX1] → the graphical `XBASIC_COPY_FROM` path is a no-op on MSX1 and the `.SC3` resource is packed. Keep `test38a` as a smoke test and validate `RESOURCE` with a raw `string.bin` regression (`MISC/rscfunc`).
 - [Invalid resource handling depends on `add-rsctoram`] → task 1 validates the carry check before the strategy is implemented.
 - [Dependency on an unmerged change] → task 1 blocks implementation until `add-rsctoram-offset-size` is applied, including its kernel-space gate.
 
@@ -94,8 +94,8 @@ The parameter offsets are defined once and reused by both `CompilerCmdRscToRamHa
 1. Confirm `add-rsctoram-offset-size` is applied: extended `cmd_rsctoram` present, carry check returns `0`, `dest` preserved, and the kernel budget is satisfied.
 2. Rewrite `ResourceCompilerFunctionStrategy` to set up the `PARM1` parameters and call `DISP_cmd_rsctoram`.
 3. Add the unit test for the emitted setup and dispatch target.
-4. Rebuild the compiler and recompile `test38a`.
-5. Add the `GRAPH/test38a` VRAM probes and the new deterministic `RESOURCE` regression program; run `MISC/rsc1`, `make test-emulator`, and `make test-integration`.
+4. Rebuild the compiler and recompile `test38a`; keep it as a boot smoke test.
+5. Add the deterministic `MISC/rscfunc` raw-resource regression and baseline; run `MISC/rsc1`, `make test-emulator`, and `make test-integration`.
 6. Update `doc/misc/z80-binary-code.md` and the wiki `Extended Functions` page.
 
 Rollback: revert the strategy to `DISP_usr0`. The regression probes can remain as harmless validations of the old or new behavior only if they are adjusted; otherwise revert them with the strategy.

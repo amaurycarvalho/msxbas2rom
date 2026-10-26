@@ -2838,6 +2838,49 @@ TEST_SUITE("CompilerFunctionStrategies") {
       }
     }
   }
+
+  TEST_CASE("RESOURCE stores CMD RSCTORAM parameters and dispatches") {
+    shared_ptr<CpuWorkspaceContext> workspace = make_shared<CpuWorkspaceContext>(
+        COMPILE_CODE_SIZE, COMPILE_RAM_SIZE, def_RAM_BOTTOM);
+    shared_ptr<Z80OpcodeWriter> cpu = make_shared<Z80OpcodeWriter>();
+    shared_ptr<CompilerContext> ctx = createCmdContext(cpu, workspace);
+
+    CompilerFunctionStrategyFactory factory;
+    ICompilerFunctionStrategy* strategy = factory.getByKeyword("RESOURCE");
+    REQUIRE(strategy != nullptr);
+
+    cpu->addLdHL(7);
+    shared_ptr<ActionNode> action = make_shared<ActionNode>("RESOURCE");
+    int result[1] = {Lexeme::subtype_numeric};
+
+    int out = strategy->execute(ctx, action, result, 1);
+    CHECK(out == Lexeme::subtype_numeric);
+
+    auto contains = [](const std::vector<unsigned char>& code,
+                       const std::vector<unsigned char>& pattern) {
+      if (pattern.empty() || code.size() < pattern.size()) return false;
+      for (size_t i = 0; i + pattern.size() <= code.size(); i++) {
+        bool match = true;
+        for (size_t j = 0; j < pattern.size(); j++) {
+          if (code[i + j] != pattern[j]) {
+            match = false;
+            break;
+          }
+        }
+        if (match) return true;
+      }
+      return false;
+    };
+
+    const auto& code = ctx->getCpu()->context->getCode();
+    CHECK(contains(code, {0x21, 0x07, 0x00, 0x22, 0xE8, 0xF6}));
+    CHECK(contains(code, {0x2A, 0x25, 0xC0, 0x22, 0xEA, 0xF6}));
+    CHECK(contains(code, {0x21, 0x00, 0x00, 0x22, 0xEC, 0xF6}));
+    CHECK(contains(code, {0x21, 0x00, 0x00, 0x22, 0xEE, 0xF6}));
+    CHECK(contains(code, {0x2A, 0x27, 0xC0, 0x22, 0xF0, 0xF6}));
+    CHECK(ctx->getUsedDispatch().count(DISP_cmd_rsctoram) == 1);
+    CHECK(ctx->getUsedDispatch().count(DISP_usr0) == 0);
+  }
 }
 
 // NOLINTEND

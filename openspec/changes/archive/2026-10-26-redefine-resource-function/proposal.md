@@ -14,7 +14,7 @@ Current codebase facts that constrain this change:
 - `FRE()` is compiled as `ld hl, (HEAPSIZ)` (`compiler_fre_function_strategy.cpp`, `def_HEAPSIZ = 0xC027`), so `size = FRE()` and `size = HEAPSIZ` are equivalent at runtime.
 - `HEAPSTR` (`0xC025`) and `HEAPSIZ` (`0xC027`) are adjacent RAM words. `XBASIC_END` computes `FRETOP = HEAPSTR + HEAPSIZ - 256`, reserving the top 256 bytes of the heap for BASIC temporary strings.
 - `RESOURCE(n)` becomes a single-slot loader: every call overwrites the same `HEAP()` address and does not advance `HEAPSTR`.
-- The `GRAPH/test38a` regression baseline is marked `volatile: true` and has no probes, so it currently does not validate `COPY RESOURCE(0) TO (0,0)`.
+- `GRAPH/test38a` runs on MSX1, where the graphical `XBASIC_COPY_FROM` path returns without copying; the `.SC3` resource is also stored packed. The test is therefore a boot smoke test, not a validation of `COPY RESOURCE(0) TO (0,0)`. The function behavior must be validated by a dedicated raw-resource regression.
 
 ## What Changes
 
@@ -41,15 +41,16 @@ Current codebase facts that constrain this change:
 ## Impact
 
 - **C++ compiler**: `compiler_resource_function_strategy.cpp` (parameter setup + `DISP_cmd_rsctoram`), and a shared `PARM1` offset definition with `CompilerCmdRscToRamHandler`.
-- **Generated code size**: each `RESOURCE(n)` call site grows from a 3-byte `call usr0` to the `PARM1` setup sequence (roughly 20-30 bytes). This affects the plain-ROM user-code budget and should be documented.
+- **Generated code size**: each `RESOURCE(n)` call site grows from a 3-byte `call usr0` to the `PARM1` setup sequence (roughly 30-33 bytes). This affects the plain-ROM user-code budget and should be documented.
 - **Kernel**: none directly (reuses the extended `cmd_rsctoram`), but the dependency must provide invalid-resource detection and a preserved `HL = dest` result. The `add-rsctoram` kernel-space gate applies.
 - **Heap/string risk**: `size = FRE()` can copy into the top 256-byte temporary-string reserve. The approved behavior uses `FRE()`; the limitation must be documented and regression tests should use resources that fit comfortably below `FRE() - 256`.
-- **Compatibility**: `RESOURCE(n)` call sites change behavior. `tests/integration/GRAPH/test38a.bas` (`COPY RESOURCE(0) TO (0,0)`) now copies from RAM and must still work.
+- **Compatibility**: `RESOURCE(n)` call sites change behavior. `tests/integration/GRAPH/test38a.bas` (`COPY RESOURCE(0) TO (0,0)`) remains a boot smoke test; it does not validate the copy because it runs on MSX1 and the `.SC3` resource is packed.
 - **Docs**: `doc/misc/z80-binary-code.md` and the project wiki `Extended Functions` page must describe the new behavior.
 - **Not impacted**: `RESOURCESIZE(n)`, `usr0`/`usr1`/`USR0`/`USR1`, resource map format/numbering.
 - **Tests and regression**:
-  - `GRAPH/test38a` is volatile and has no probes. Add `vram.probes` at `0x0000` with the first bytes of `NYANCAT.SC3` (`FE 00 00 FF 05 00 00 44 ...`); probes are evaluated even for volatile programs, so this validates the RAM-copy path without regenerating the baseline.
-  - Add a deterministic regression program for `RESOURCE` valid, invalid (`0`), and (if a suitable large fixture is available) truncation; add a manifest entry and generate its baseline.
+  - Keep `GRAPH/test38a` as a volatile boot smoke test. Do not add a VRAM probe: on MSX1 the graphical `XBASIC_COPY_FROM` path is a no-op, and the `.SC3` resource is stored packed.
+  - Add `MISC/rscfunc.bas` (raw `string.bin` resource) validating `PEEK(RESOURCE(n))`, invalid (`0`), no heap write on failure, repeated calls returning the same address, and `RESOURCESIZE(n)`; add a manifest entry and baseline.
+  - Truncation (resource larger than `FRE()`) is not covered yet; it requires a suitable large fixture and is recorded as an open test gap.
   - Run `MISC/rsc1` to confirm the shared `cmd_rsctoram` path did not regress.
-  - Run `make test-emulator` because `RESOURCE` moves from fixed `usr0` (`32_usr`) to fixed `cmd_rsctoram` (`31-cmd-game-graphics`).
+  - Run `make test-emulator` because `RESOURCE` moves from fixed `usr0` (`32_usr`) to fixed `cmd_rsctoram` (`31-cmd-rsctoram`).
   - `make test-integration` remains the 4-mapper compilation matrix.

@@ -1,0 +1,43 @@
+{
+  "capture_time": "5.2503605905219795",
+  "capture_trigger": "breakpoint:END_STMT+2@32869",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-26T16:10:07-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
+  "probes": [],
+  "program": "MISC/rscfunc",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2qENwkAUgOHXgkDWI2uYBH+DsAJhAobAsgIJmAoEi7AAoI7DAQbZhn7/ay5nLs2XnLwc+WOq9301KWvUkbrVItKp7I/z1DWbaf11Ksf2cC1fSNJ4299vy3Z92UXbPM45fk3kfqfn3/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pzj9E/e00e8jLwxn7/PdiVJEmSJOn/ewImZ+Xl",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MISC",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/MISC/rscfunc.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "expected_text": [
+      "SAME=0",
+      "B0=42",
+      "B1=248",
+      "B2=247",
+      "INV=0",
+      "SIZE=13",
+      "KEEP=171"
+    ],
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " SAME= 0\n         B0= 42\n                 B1= 248\n                         B2= 247\n\n INV= 0\n         SIZE= 13\n                 KEEP= 171",
+    "unstable_regions": []
+  }
+}

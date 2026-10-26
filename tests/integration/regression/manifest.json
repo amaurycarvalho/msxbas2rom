@@ -375,6 +375,21 @@
             }
           }
         },
+        "rscfunc": {
+          "vram": {
+            "text": {
+              "expected": [
+                "SAME=0",
+                "B0=42",
+                "B1=248",
+                "B2=247",
+                "INV=0",
+                "SIZE=13",
+                "KEEP=171"
+              ]
+            }
+          }
+        },
         "turbo_functions": {
           "volatile": true
         },

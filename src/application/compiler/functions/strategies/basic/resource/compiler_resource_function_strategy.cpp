@@ -13,14 +13,27 @@ int ResourceCompilerFunctionStrategy::execute(
   if (parmCount != 1) return Lexeme::subtype_unknown;
   if (action->lexeme->value != "RESOURCE") return Lexeme::subtype_unknown;
 
+  auto& cpu = *context->getCpu();
   auto& expression = *context->getExpressionEvaluator();
 
-  // cast
   expression.addCast(result[0], Lexeme::subtype_numeric);
   result[0] = Lexeme::subtype_numeric;
 
-  // call usr0
-  context->getCodeOptimizer()->addKernelCall(DISP_usr0);
+  cpu.addLdiiHL(def_RSC_RESOURCE);
+
+  cpu.addLdHLii(def_HEAPSTR);
+  cpu.addLdiiHL(def_RSC_DEST);
+
+  cpu.addLdHL(0);
+  cpu.addLdiiHL(def_RSC_PLETTER);
+
+  cpu.addLdHL(0);
+  cpu.addLdiiHL(def_RSC_OFFSET);
+
+  cpu.addLdHLii(def_HEAPSIZ);
+  cpu.addLdiiHL(def_RSC_SIZE);
+
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_rsctoram);
 
   return result[0];
 }

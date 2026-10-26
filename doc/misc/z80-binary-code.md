@@ -266,18 +266,31 @@ FILE "usr.bin"
 
 ### 10.2 `RESOURCE()` / `RESOURCESIZE()`
 
-`RESOURCE(n)` returns a resource start address and `RESOURCESIZE(n)` its size.
-They are useful to pass a resource to memory commands such as `COPY` or
-`CMD RAMTORAM`. Executing a resource in place with
-`DEF USR = RESOURCE(n)` is **not recommended**: in the current build
-`RESOURCE()` did not return the expected data address on plain ROM (verified),
-so use `CMD RSCTORAM` to move the code to RAM first.
+`RESOURCE(n)` copies the resource into the free heap and returns the RAM
+address. `RESOURCESIZE(n)` returns the resource size in bytes. Both return `0`
+when the resource does not exist.
+
+- The copy length is `min(RESOURCESIZE(n), FRE())`; a larger resource is
+  truncated to `FRE()` bytes and a non-zero address is still returned.
+- The copy is **verbatim** (no decompression). For a resource stored as a single
+  pletter stream, use `CMD RSCTORAM` with `pletter = 1`; other packed formats
+  (for example chunked screen resources) are not decompressed by `RESOURCE(n)`.
+- `RESOURCE(n)` is a single-slot loader: it writes to `HEAP()` on every call and
+  does not advance `HEAPSTR`. Consume the copy before the next call.
+- `FRE()` includes the top 256 bytes reserved for BASIC temporary strings, so a
+  resource close to `FRE()` in size can overlap that reserve. Leave at least 256
+  bytes of headroom when strings are in use.
+- `DEF USR = RESOURCE(n)` and `COPY RESOURCE(n) TO ...` now use a directly
+  readable RAM address for resources that are stored uncompressed. `COPY` keeps
+  its existing graphics semantics: the graphical path is MSX2-only and packed
+  resources are not decompressed there.
 
 ### 10.3 `USR0`/`USR1` (deprecated)
 
-Before `RESOURCE()`/`RESOURCESIZE()` existed, `USR0(n)` returned the resource
-address and `USR1(n)` the resource size. They are deprecated and share the same
-caveat as `RESOURCE()`.
+Before `RESOURCE()`/`RESOURCESIZE()` existed, `USR0(n)` returned the raw ROM
+resource pointer and `USR1(n)` the resource size. They are deprecated and still
+return the ROM pointer (not a usable RAM address); use `RESOURCE(n)` for RAM
+access or `CMD RSCTORAM` to copy a resource.
 
 ## 11. Command and function syntax summary
 
@@ -301,7 +314,7 @@ caveat as `RESOURCE()`.
 | `VARPTR()` | `VARPTR(var)` | Address of a variable. |
 | `CMD RUNASM` | `CMD RUNASM <resource>` | Copies (max 255 bytes) and executes. |
 | `CMD RSCTORAM` | `CMD RSCTORAM <res>, <dest>[, <pletter>[, <offset>[, <size>]]]` | Copies a resource range to RAM; `size=0` means full remaining. |
-| `RESOURCE()` | `RESOURCE(n)` | Resource address (with caveats, see 10.2). |
+| `RESOURCE()` | `RESOURCE(n)` | Copies up to `min(RESOURCESIZE(n), FRE())` bytes to `HEAP()` and returns that RAM address; `0` if missing. |
 | `RESOURCESIZE()` | `RESOURCESIZE(n)` | Resource size. |
 
 ## 12. Choosing an alternative
