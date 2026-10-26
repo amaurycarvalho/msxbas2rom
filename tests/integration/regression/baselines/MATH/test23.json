@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.79423781514131",
+  "capture_trigger": "breakpoint:END_PGM@33411",
+  "generated_at": "2026-10-25T22:24:48-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MATH/test23",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2rENwjAQQNFzSEGZngUyjKfJBGwWmsx1JB3QBSEROe+fZLmxrCe5dEa+TXndl8u6Rhd1mcaoj3U/3+oy3PuMz4m+hCSdt9w9Xxz56fz5en5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn7+M/qv2+SRl+Z+bLb1/v3ZlSRJkiSp/Z5BPeOI",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MATH",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/MATH/test23.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n          0\n                  5\n                          10\n\n  15\n          160\n                  225   .  .. ..\n. ... ... ... ... ... ..  640 ..\n. ... ... ... ... ... ... ... ..\n  1280 .. ... ... ... ... ... ..\n. ... ..  5000 .. ... ..\n                  0\n                        1 1024\n\n  512\n          341\n                  256\n                          128\n\n  64\n          32\n                  16\n                          15",
+    "unstable_regions": []
+  }
+}

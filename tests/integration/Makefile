@@ -5,11 +5,26 @@
 # Variables
 APP_PATH := ../../bin/Release/msxbas2rom
 BAS_FILES := $(shell find . -type f -name "*.bas")
+REGRESSION_PY := python3 regression/runner.py
+SCENARIO ?=
+PROGRAM ?=
+REGRESSION_ARGS := $(if $(strip $(SCENARIO)),--scenario "$(SCENARIO)") $(if $(strip $(PROGRAM)),--program "$(PROGRAM)")
 
-.PHONY: all run setup build clean cli-characterization
+.PHONY: all run setup build clean cli-characterization regression regression-baseline regression-list
 
 all:
 	@echo "📌 Run integration test: make run"
+
+regression:
+	@echo "🧠 Running local MSX regression..."
+	@$(REGRESSION_PY) run $(REGRESSION_ARGS)
+
+regression-baseline:
+	@echo "🧠 Generating local MSX regression baselines..."
+	@$(REGRESSION_PY) baseline $(REGRESSION_ARGS)
+
+regression-list:
+	@$(REGRESSION_PY) list $(REGRESSION_ARGS)
 
 run: setup cli-characterization build self-contained forced-overflow game-graphics-perf clean
 	@echo "✅ Integration test finished"

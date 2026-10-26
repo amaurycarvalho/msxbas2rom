@@ -1,0 +1,304 @@
+{
+  "version": 1,
+  "defaults": {
+    "msx1_machine": "Sharp_HB-8000_1.2",
+    "msx2_machine": "Panasonic_FS-A1WX",
+    "fallback_seconds": 10,
+    "baseline_runs": 3,
+    "volatile_ranges": [
+      [
+        "0xF000",
+        "0xFFFF"
+      ]
+    ]
+  },
+  "scenarios": {
+    "INPUT": {
+      "programs": {
+        "test8": {
+          "fallback_seconds": 12,
+          "input": [
+            {
+              "time": 6.5,
+              "text": "JOHN"
+            },
+            {
+              "time": 6.8,
+              "key": "RETURN",
+              "duration": 0.05
+            },
+            {
+              "time": 7.2,
+              "text": "1985"
+            },
+            {
+              "time": 7.5,
+              "key": "RETURN",
+              "duration": 0.05
+            },
+            {
+              "time": 8.0,
+              "text": "RIO"
+            },
+            {
+              "time": 8.3,
+              "key": "RETURN",
+              "duration": 0.05
+            }
+          ],
+          "vram": {
+            "text": {
+              "expected": [
+                "YOUR NAME? JOHN",
+                "CURRENT YEAR? 1985",
+                "YOUR CITY IS: RIO",
+                "HI JOHN",
+                "1985 IS A NICE YEAR",
+                "CITY = RIO"
+              ]
+            }
+          }
+        },
+        "test23": {
+          "fallback_seconds": 12,
+          "volatile": true,
+          "input": [
+            {
+              "time": 8.0,
+              "text": "A"
+            },
+            {
+              "time": 9.0,
+              "text": "B"
+            },
+            {
+              "time": 10.0,
+              "text": "C"
+            },
+            {
+              "time": 11.0,
+              "joy": "left",
+              "state": "down"
+            },
+            {
+              "time": 11.5,
+              "joy": "left",
+              "state": "up"
+            }
+          ],
+          "vram": {
+            "text": {
+              "expected": [
+                "7"
+              ]
+            }
+          }
+        },
+        "test18": {
+          "volatile": true
+        }
+      }
+    },
+    "ON": {
+      "programs": {
+        "test2": {
+          "fallback_seconds": 12,
+          "input": [
+            {
+              "time": 8.0,
+              "text": "5"
+            },
+            {
+              "time": 8.4,
+              "key": "RETURN",
+              "duration": 0.05
+            }
+          ],
+          "vram": {
+            "text": {
+              "expected": [
+                "FIVE"
+              ]
+            }
+          }
+        },
+        "test4": {
+          "fallback_seconds": 12,
+          "vram": {
+            "text": {
+              "expected": [
+                "ARROW CLICKED"
+              ]
+            }
+          },
+          "volatile_ranges": [
+            [
+              "0xF070",
+              "0xF090"
+            ]
+          ]
+        }
+      }
+    },
+    "PRINT": {
+      "programs": {
+        "test85": {
+          "ram_probes": [
+            {
+              "address": "0xC048",
+              "value": "0x07"
+            },
+            {
+              "address": "0xC049",
+              "value": "0x00"
+            },
+            {
+              "address": "0xC04A",
+              "bytes": "02 00"
+            }
+          ]
+        }
+      }
+    },
+    "MATH": {
+      "programs": {
+        "test20": {
+          "volatile": true
+        }
+      }
+    },
+    "ARKTRK": {
+      "programs": {
+        "test1": {
+          "volatile": true
+        },
+        "test2": {
+          "volatile": true
+        },
+        "test3": {
+          "volatile": true
+        }
+      }
+    },
+    "BLOAD": {
+      "programs": {
+        "test57": {
+          "volatile": true
+        },
+        "test58": {
+          "volatile": true
+        },
+        "test60": {
+          "volatile": true
+        },
+        "test77": {
+          "volatile": true
+        },
+        "test92": {
+          "volatile": true
+        },
+        "test92a": {
+          "volatile": true
+        },
+        "test98": {
+          "volatile": true
+        }
+      }
+    },
+    "DATA": {
+      "programs": {
+        "test70": {
+          "volatile": true
+        }
+      }
+    },
+    "GRAPH": {
+      "programs": {
+        "base1": {
+          "volatile": true
+        },
+        "base2": {
+          "volatile": true
+        },
+        "cadbit2": {
+          "volatile": true
+        },
+        "cadbit3": {
+          "volatile": true
+        },
+        "globe": {
+          "volatile": true
+        },
+        "hitbox": {
+          "volatile": true
+        },
+        "mouse2": {
+          "volatile": true
+        },
+        "scplot": {
+          "volatile": true
+        },
+        "sprite4": {
+          "volatile": true
+        },
+        "stars": {
+          "volatile": true
+        },
+        "test27": {
+          "volatile": true
+        },
+        "test38a": {
+          "volatile": true
+        },
+        "test39": {
+          "volatile": true
+        },
+        "test41": {
+          "volatile": true
+        },
+        "test52": {
+          "volatile": true
+        },
+        "test61": {
+          "volatile": true
+        },
+        "test63": {
+          "volatile": true
+        },
+        "test78": {
+          "volatile": true
+        },
+        "test81": {
+          "volatile": true
+        },
+        "test82": {
+          "volatile": true
+        },
+        "test87": {
+          "volatile": true
+        },
+        "test88": {
+          "volatile": true
+        },
+        "test93": {
+          "volatile": true
+        },
+        "test94": {
+          "volatile": true
+        },
+        "test96": {
+          "volatile": true
+        },
+        "test97": {
+          "volatile": true
+        },
+        "tile_flip_rotate": {
+          "volatile": true
+        },
+        "tree": {
+          "volatile": true
+        }
+      }
+    }
+  }
+}

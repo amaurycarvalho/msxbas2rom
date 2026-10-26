@@ -1,0 +1,32 @@
+{
+  "capture_time": "10.11302190641548",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:28:07-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "PRINT/test3",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2rENgzAQQNEDUqSkzwKM4omo2Yw0zHWQLqFEkUDm/ZMsN5b1JJfOyJ9pvvdNt63RRlnGIcp728+vsvTTI2M/knTf8tAcPPa3Ofl6fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fv47+p+fySsvVf7arOf9+7crSZIkSVL9rf9E5Xk=",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "PRINT",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/PRINT/test3.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " GOTO' test - 'GOTO' test - 'GOT\nO' test  - 'GOTO' test - 'GOTO'\ntest - 'GOTO' te st - 'GOTO' tes\nt - 'GOTO' test - 'GOTO'  test -\n 'GOTO' test - 'GOTO' test - 'GO\n TO' test - 'GOTO' test - 'GOTO'\n test -  'GOTO' test - 'GOTO' te\nst - 'GOTO' test  - 'GOTO' test\n- 'GOTO' test - 'GOTO' t est - '\nGOTO' test - 'GOTO' test - 'GOTO\n ' test - 'GOTO' test - 'GOTO' t\nest - 'G OTO' test - 'GOTO' test\n - 'GOTO' test -  'GOTO' test -\n'GOTO' test - 'GOTO' tes t - 'GO\nTO' test - 'GOTO' test - 'GOTO'\n test - 'GOTO' test - 'GOTO' tes\nt - 'GOT O' test - 'GOTO' test -\n 'GOTO' test - ' GOTO' test - 'G\nOTO' test - 'GOTO' test  - 'GOTO\n' test - 'GOTO' test - 'GOTO' te\n st - 'GOTO' test - 'GOTO' test\n- 'GOTO'  test - 'GOTO' test - '\nGOTO' test - 'GO TO' test - 'GOT\nO' test - 'GOTO' test -  'GOTO'",
+    "unstable_regions": []
+  }
+}

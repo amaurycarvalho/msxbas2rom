@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.207888153382623",
+  "capture_trigger": "breakpoint:END_PGM@32974",
+  "generated_at": "2026-10-25T22:25:39-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MISC/ipeek1",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2rENwjAQQNEzoaCkZ4EM42mYgM2gyVwX00G6RJFAzvsnWS5iWU9K6Yz8mvK5L0Nb4xR1uo9RX23/vNXp+jhnLKd9XEKSDluung1Hdp0fX8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pf0T/5T35z0t3Lzb7+v+92ZUkSZIkqf9mwb7jhg==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MISC",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/MISC/ipeek1.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n\n\n\n\n\n\n\n\n             HOTBIT\n\n             MSX BR\n\n     EPCOM [Z.F.MANAUS] 1985\n\n\n\n                  256     256\n                          256\n  257",
+    "unstable_regions": []
+  }
+}

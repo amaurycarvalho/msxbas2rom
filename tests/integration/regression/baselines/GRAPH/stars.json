@@ -1,0 +1,22 @@
+{
+  "capture_time": "10.113024420701514",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:19:29-0300",
+  "machine": "Panasonic_FS-A1WX",
+  "probes": [],
+  "program": "GRAPH/stars",
+  "ram": null,
+  "runs": 3,
+  "scenario": "GRAPH",
+  "screen": 5,
+  "screen_stable": true,
+  "source": "tests/integration/GRAPH/stars.bas",
+  "version": 1,
+  "volatile": true,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 131072,
+    "unstable_regions": []
+  }
+}

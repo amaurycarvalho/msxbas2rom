@@ -1,6 +1,6 @@
 ---
 name: msx-memory-debug
-description: Launch an MSX ROM in openMSX, wait a configurable amount of emulated time, capture the Z80-visible RAM range 0xC000-0xFFFF and a screenshot beside the ROM, then exit openMSX so a coding agent can inspect the artifacts.
+description: Launch an MSX ROM in openMSX, capture the Z80-visible RAM range 0xC000-0xFFFF, optional VRAM and a screenshot beside the ROM, optionally at a pre-boot breakpoint or with scripted keyboard/joystick input, then exit openMSX so a coding agent can inspect the artifacts.
 ---
 
 # MSX Memory Debug
@@ -20,16 +20,28 @@ The launcher:
 1. Validates the ROM path.
 2. Starts openMSX with the ROM inserted.
 3. Passes the ROM path and capture delay to the Tcl support script.
-4. Lets openMSX run normally for the configured delay.
-5. Captures the CPU-visible RAM range `0xC000..0xFFFF` (16 KiB) from the `Main RAM` debuggable.
-6. Captures a PNG screenshot.
-7. Exits openMSX automatically.
-8. Leaves both artifacts in the same directory as the ROM.
+4. Installs any configured breakpoints before the ROM starts executing.
+5. Lets openMSX run normally for the configured delay, or captures immediately
+   when a breakpoint fires.
+6. Captures the CPU-visible RAM range `0xC000..0xFFFF` (16 KiB) from the `Main RAM` debuggable.
+7. Optionally captures raw physical VRAM and the VDP register block.
+8. Captures a PNG screenshot (unless disabled).
+9. Exits openMSX automatically.
+10. Leaves the artifacts in the same directory as the ROM.
 
 Default artifacts:
 
 - `<rom-basename>.ram-c000-ffff.bin` — exactly 16384 bytes.
 - `<rom-basename>.screen.png` — screenshot captured at the same point in emulated time.
+
+Opt-in artifacts:
+
+- `<rom-basename>.vram.bin` — physical VRAM, sized by the emulated VDP
+  (16 KiB on the default Sharp HB-8000, 128 KiB on a V9938 MSX2 machine),
+  or exactly the configured `START:LENGTH` range.
+- `<rom-basename>.vdp-regs.bin` — the 64-byte VDP register debug block.
+- `<rom-basename>.capture.txt` — trigger, emulated capture time, machine, and
+  artifact sizes. Written only when VRAM, breakpoints, or input are configured.
 
 ## Configuration
 
@@ -38,16 +50,66 @@ Environment variables:
 - `OPENMSX_EXECUTABLE` — executable used to launch openMSX. Default: `openmsx`.
 - `OPENMSX_ARGS` — optional extra launcher arguments, parsed as shell words. Default: empty.
 - `OPENMSX_FLATPAK_APP` — if set, the launcher becomes `flatpak run <value>` and `OPENMSX_EXECUTABLE`/`OPENMSX_ARGS` are ignored. Example: `org.openmsx.openMSX`.
-- `MSX_DEBUG_DELAY` — delay in emulated seconds before capture. Default: `5`.
+- `MSX_DEBUG_DELAY` — delay in emulated seconds before fallback capture. The fallback runs at the next VDP frame boundary after the delay so the captured state is deterministic. Default: `5`.
 - `MSX_DEBUG_MACHINE` — openMSX machine name passed with `-machine`. Default: `Sharp_HB-8000_1.2` (the Brazilian Hotbit, MSX1), so the emulator never falls back to C-BIOS. Use `Panasonic_FS-A1WX` when debugging MSX2-oriented BASIC commands.
 - `MSX_DEBUG_SETTINGS` — optional path to an openMSX `settings.xml` to load with `-setting`. When unset, an isolated settings file is generated automatically.
 - `MSX_DEBUG_SCREENSHOT_MODE` — `scaled` (default) or `raw`.
+- `MSX_DEBUG_SCREENSHOT` — `1` (default) or `0` to skip the screenshot artifact.
+- `MSX_DEBUG_VRAM` — `1`/`full` to capture physical VRAM, or `START:LENGTH` for a range.
+- `MSX_DEBUG_VRAM_START`, `MSX_DEBUG_VRAM_LENGTH` — optional range when `MSX_DEBUG_VRAM` is enabled.
+- `MSX_DEBUG_BREAKPOINTS` — comma-separated `LABEL=ADDRESS` or `ADDRESS` items installed before the ROM starts. Addresses come from a `.noi` file.
+- `MSX_DEBUG_INPUT` — path to a timed input script (keyboard and joystick).
+- `MSX_DEBUG_THROTTLE` — `on` or `off`; `off` runs emulation as fast as possible (useful for regression). Input scripts should use `on`.
 
 Examples:
 
 ```bash
 MSX_DEBUG_DELAY=10 ./scripts/debug-msx-memory.sh build/program.rom
 ```
+
+VRAM capture (16 KiB on the default MSX1 machine, 128 KiB on an MSX2 machine):
+
+```bash
+MSX_DEBUG_VRAM=1 ./scripts/debug-msx-memory.sh build/program.rom
+```
+
+Capture at a program-end breakpoint (addresses from the compiled `.noi`):
+
+```bash
+MSX_DEBUG_THROTTLE=off \
+MSX_DEBUG_DELAY=20 \
+MSX_DEBUG_VRAM=1 \
+MSX_DEBUG_BREAKPOINTS='END_PGM=0x80a0,END_STMT+2=0x8065' \
+  ./scripts/debug-msx-memory.sh build/program.rom
+```
+
+### Timed input scripts
+
+`MSX_DEBUG_INPUT` points to a line-oriented file. Each line starts with an
+emulated time in seconds:
+
+```text
+# type a line of text, then press RETURN
+type 6.5 JOHN
+key 6.8 RETURN 0.05
+# hold the joystick left for four emulated seconds
+joy 8.0 left down
+joy 12.0 left up
+# press joystick button A
+joybutton 8.5 a down
+joybutton 8.7 a up
+```
+
+Supported commands:
+
+- `type TIME TEXT` — types text through openMSX's keyboard input.
+- `key TIME KEY [DURATION]` — presses a key matrix key (`SPACE`, `RETURN`,
+  `BACKSPACE`, `TAB`, `ESC`, `UP`, `DOWN`, `LEFT`, `RIGHT`, `SHIFT`, `CTRL`,
+  `GRAPH`, `CAPS`). A single printable character is typed instead.
+- `joy TIME DIRECTION down|up` — drives openMSX's `keyjoystick1` pluggable on
+  joystick port A through host XTEST events (`DIRECTION` is `left`, `right`,
+  `up`, or `down`). Requires an X display and `python-xlib`.
+- `joybutton TIME a|b down|up` — joystick trigger A or B.
 
 Direct executable:
 

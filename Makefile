@@ -228,6 +228,11 @@ test-emulator: release
 	@$(MAKE) -C tests/kernel emulator
 	@echo "✅ Kernel emulator testing passed!"
 
+test-regression:
+	@echo "🔍 Running regression testing..."
+	@$(MAKE) -C tests/integration regression
+	@echo "✅ Regression testing passed!"
+
 test-architecture:
 	@echo "🔍 Running clean architecture boundary check..."
 	@python3 -m unittest discover -s scripts/tests

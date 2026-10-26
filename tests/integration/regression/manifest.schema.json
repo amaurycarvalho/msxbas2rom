@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MSX regression manifest",
+  "type": "object",
+  "required": ["version", "defaults", "scenarios"],
+  "properties": {
+    "version": {"const": 1},
+    "defaults": {
+      "type": "object",
+      "properties": {
+        "msx1_machine": {"type": "string"},
+        "msx2_machine": {"type": "string"},
+        "fallback_seconds": {"type": "number", "minimum": 0},
+        "baseline_runs": {"type": "integer", "minimum": 2},
+        "volatile_ranges": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {"type": ["integer", "string"]},
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "scenarios": {
+      "type": "object",
+      "patternProperties": {
+        "^.+$": {
+          "type": "object",
+          "properties": {
+            "programs": {
+              "type": "object",
+              "patternProperties": {
+                "^.+$": {"$ref": "#/$defs/program"}
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  },
+  "$defs": {
+    "program": {
+      "type": "object",
+      "properties": {
+        "machine": {"type": "string"},
+        "fallback_seconds": {"type": "number", "minimum": 0},
+        "screenshot": {"type": "boolean"},
+        "volatile": {"type": "boolean"},
+        "volatile_ranges": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {"type": ["integer", "string"]},
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "input": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["time"],
+            "properties": {
+              "time": {"type": "number", "minimum": 0},
+              "text": {"type": "string"},
+              "key": {"type": "string"},
+              "duration": {"type": "number", "minimum": 0},
+              "joy": {"enum": ["left", "right", "up", "down"]},
+              "button": {"enum": ["a", "b"]},
+              "state": {"enum": ["down", "up"]}
+            }
+          }
+        },
+        "ram_probes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["address"],
+            "properties": {
+              "address": {"type": ["integer", "string"]},
+              "value": {"type": ["integer", "string"]},
+              "bytes": {"type": ["string", "array"]}
+            }
+          }
+        },
+        "vram": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "object",
+              "properties": {
+                "name_table": {"type": ["integer", "string"]},
+                "width": {"type": "integer", "minimum": 1},
+                "height": {"type": "integer", "minimum": 1},
+                "expected": {"type": ["string", "array"]}
+              }
+            },
+            "regions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "start", "length"],
+                "properties": {
+                  "name": {"type": "string"},
+                  "start": {"type": ["integer", "string"]},
+                  "length": {"type": ["integer", "string"]}
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

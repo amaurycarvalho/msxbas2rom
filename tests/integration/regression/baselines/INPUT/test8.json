@@ -1,0 +1,40 @@
+{
+  "capture_time": "8.43947457009201",
+  "capture_trigger": "breakpoint:END_PGM@33084",
+  "generated_at": "2026-10-25T22:23:11-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "INPUT/test8",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2jEKwkAQQNGNCWhpb29vIegNzBYGPIsH8GaiCDnWqp1aBkHJvD+wpAnhhSm3pPI21etzVT/ONEm5Py7rfM23dF7kfn5qSvqcJne7fYrbZVof2i7wDwi/Ac1qu1kH9kfff0WvDJhBL31xfvx5fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn7+qP7Zc8o/HyO8szem/XdrU5IkSZKk8XcHi9TraA==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "INPUT",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/INPUT/test8.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "expected_text": [
+      "YOUR NAME? JOHN",
+      "CURRENT YEAR? 1985",
+      "YOUR CITY IS: RIO",
+      "HI JOHN",
+      "1985 IS A NICE YEAR",
+      "CITY = RIO"
+    ],
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " >>>> INPUT TEST <<<<\n         YOUR NAME? JOHN\n                 CURRENT YEAR? 1\n985                      YOUR CI\nTY IS:RIO\n HI JOHN\n          1985  IS A NICE YEAR\n                 CITY = RIO",
+    "unstable_regions": []
+  }
+}

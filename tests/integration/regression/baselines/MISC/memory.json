@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.220315431151166",
+  "capture_trigger": "breakpoint:END_PGM@32940",
+  "generated_at": "2026-10-25T22:25:43-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MISC/memory",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2rENgzAQQNEDUqSkzwKM4omo2Yw0zHWQLqFEkUDm/ZMsN5b1JJfOyJ9pvvdNt63RRlnGIcp728+vsvTTI2M/knTf8tAcPPa3Ofl6fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fv47+p+fySsvVf7arOf9+7crSZIkSVL9rf9E5Xk=",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MISC",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/MISC/memory.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " Free memory:  10358",
+    "unstable_regions": []
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "capture_time": "10.113022185780595",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:18:55-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "GRAPH/mouse1",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2rENgzAQQNEDUqSkzwKM4omo2Yw0zHWQLqFEkUDm/ZMsN5b1JJfOyJ9pvvdNt63RRlnGIcp728+vsvTTI2M/knTf8tAcPPa3Ofl6fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fv47+p+fySsvVf7arOf9+7crSZIkSVL9rf9E5Xk=",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "GRAPH",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/GRAPH/mouse1.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n\n\n\n    MOUSE ON PORT 1: -1\n    MOUSE 1 X:  1\n    MOUSE 1 Y:  1\n\n    MOUSE ON PORT 2: -1\n    MOUSE 2 X:  1\n    MOUSE 2 Y:  1\n\n    MOUSE 1 BUTTON RELEASED",
+    "unstable_regions": []
+  }
+}

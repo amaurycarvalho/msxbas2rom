@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.283553915371926",
+  "capture_trigger": "breakpoint:END_PGM@33012",
+  "generated_at": "2026-10-25T22:25:47-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MISC/rsc1",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2r0JwkAYgOGLWoiVvU2CheAcKhICgo0LOIK1OIuLqI1g4TxqFbXzB0ELMZjn/eC4QMLxQCBN8pDfTXS7j6qXNVRCup11onRz2a9a6ba5qFUensrDdNjPslE8GY2zXpIk8SeXjfjNQnEbroMklbTu8TBoz/fL0G6edk/fh1fz9o1fmh8fz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz19Of/06eZGXglf2999/q5IkSZIk/X9n8q55QA==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MISC",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/MISC/rsc1.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n\n\n\n\n\n\n\n\n             HOTBIT\n\n             MSX BR\n\n     EPCOM [Z.F.MANAUS] 1985\n\n\n\n                 HELLO WORLD!!!\nHELLO WORLD!!! HELLO WOR LD!!! H\nELLO WORLD!!!\n\n\n                  10100\n                         HELLO W",
+    "unstable_regions": []
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "capture_time": "10.11302246514571",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:25:26-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MEGAROM/test53",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2iEOwjAUgOFXMAQMHoMDFGfgCjBDNZozcDMys2sVcDA1QyDd97+kmWjSfM1kS5SPSe/fafpcYxK5u2xSbnMb91Xulrd5if6o3+LUHI7NenveX3duQ9K4KgNm0KYvzo+P5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5x+nf/aa8s9LBW8Ua/7/vVKVJEmSJKn+HhHjYEs=",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MEGAROM",
+  "screen": 0,
+  "screen_stable": true,
+  "source": "tests/integration/MEGAROM/test53.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "START (Y/n)? .",
+    "unstable_regions": []
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.390272786066386",
+  "capture_trigger": "breakpoint:END_PGM@33373",
+  "generated_at": "2026-10-25T22:24:26-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MATH/test14a",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2rENgzAQQNEDUqSkzwKM4omo2Yw0zHWQLqFEkUDm/ZMsN5b1JJfOyJ9pvvdNt63RRlnGIcp728+vsvTTI2M/knTf8tAcPPa3Ofl6fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fv47+p+fySsvVf7arOf9+7crSZIkSVL9rf9E5Xk=",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MATH",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/MATH/test14a.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " <<<< NUMERIC FUNCTIONS >>>>\n         SGN(2) =  1\n                 SGN(2.0) =  1\n                         SGN(-1)\n = -1\n SGN(-1.0) = -1\n         ABS(2) =  2\n                 ABS(2.0) =  2\n                         ABS(-1)\n =  1\n ABS(-1.0) =  1\n         SQR(25) =  5\n                 SQR(2.0) =  1.4\n14                       SIN(2)\n=  .9093\n SIN(2.0) =  .9093\n         COS(2) = -.4162\n                 TAN(2) = -2.185\n                         ATN(2)\n=  1.107",
+    "unstable_regions": []
+  }
+}

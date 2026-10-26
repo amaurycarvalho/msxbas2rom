@@ -1,0 +1,57 @@
+{
+  "capture_time": "10.113023303241054",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:26:22-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MTF/mtf4",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2jFKw1AYwPHvvaRJa2vp1sFZ8BBFR7fcwUHe2gMI1gu8bCWCQ9eOXkBdCgq9hJtre4HnFxTFiFFQaLD/3+NL0qah/UPpUBIkfFjGmMj7h5IeR/qMWJstxgeS3enx7V62GExim4TKdQCw3YytFbXrL085z/kmn49btRJ+AQBsq9VfOXnZPVZcvFoBAIDGqP4r+v2SsNm14benn3766aeffvrpp59++umnn3766aeffvrpp59++j+vQblCkzcNN/Xl9t7386U/W49EjD7c3T/qlLfCtdPCybhwRgrX0bE6kc6OTqzT0kl00pvCdXXfk5m7dNdumIu83Rf/vhdZ+id/fCgy919/olPp5f1cRnJ+9etX/eQLCAAAAAAA/rtnH58tmQ==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MTF",
+  "screen": 2,
+  "screen_stable": true,
+  "source": "tests/integration/MTF/mtf4.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {
+      "colour_table": {
+        "length": 6144,
+        "sha256": "27853da267124723f6710df838e68fe431b4e59573f5c2d174b211bcc228e5e9",
+        "start": 8192
+      },
+      "name_table": {
+        "length": 768,
+        "sha256": "fbec7e4c91199b570665d649aa3844ce147d340808f3b756a28b9e53544456bb",
+        "start": 6144
+      },
+      "pattern_generator": {
+        "length": 6144,
+        "sha256": "dd521f74642848650ebf6655e6eec5d7140601889cd0adba0d26030a2b4c712e",
+        "start": 0
+      },
+      "sprite_attributes": {
+        "length": 128,
+        "sha256": "b4ec8e40b3586e5f2a8567a1bdb7750fc7c10abe3c92a2233b5c0d73b72754d9",
+        "start": 6912
+      },
+      "sprite_patterns": {
+        "length": 2048,
+        "sha256": "e5a00aa9991ac8a5ee3109844d84a55583bd20572ad3ffcd42792f3c36b183ad",
+        "start": 14336
+      }
+    },
+    "screen_stable": true,
+    "size": 16384,
+    "unstable_regions": []
+  }
+}

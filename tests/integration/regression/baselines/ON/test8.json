@@ -1,0 +1,57 @@
+{
+  "capture_time": "10.113024420701514",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:27:51-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "ON/test8",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2iEOwjAUgOGWIZB4LjA9gZhAk/Q4uwCOOyC5CJid6zEcIBcSSPf9L2lqmuZLKhsp3ia/7nMzrWmVyzi0udyn/W1Xxu1pHelzzumYJGmpxYyZdeiL8+Pr+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fmX6N88J/54ia7v+rhc94d6/mzW9P792pUkSZIkqf4esvjp1w==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "ON",
+  "screen": 2,
+  "screen_stable": true,
+  "source": "tests/integration/ON/test8.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {
+      "colour_table": {
+        "length": 6144,
+        "sha256": "0d9b53c9109f926b360a6121d1d681b7ee85f29286ac3a8a6735bb1839f80ed3",
+        "start": 8192
+      },
+      "name_table": {
+        "length": 768,
+        "sha256": "f3a25aa93aa2fbba28d79260535bbd6a5eb0fc1c24a8b0f04e12b484c1dfe363",
+        "start": 6144
+      },
+      "pattern_generator": {
+        "length": 6144,
+        "sha256": "fd9243e1ba57263ed469c3bdbd7ade6ec5254e7ed924a9f5737fa44749933cc0",
+        "start": 0
+      },
+      "sprite_attributes": {
+        "length": 128,
+        "sha256": "75e5337302864932251110172eb66b3df3552e104a7e7d1be32b5a174f379927",
+        "start": 6912
+      },
+      "sprite_patterns": {
+        "length": 2048,
+        "sha256": "9e7ec6abe867993ba859255599bf33f6501d0c2bf7f312325b16e959c6be8855",
+        "start": 14336
+      }
+    },
+    "screen_stable": true,
+    "size": 16384,
+    "unstable_regions": []
+  }
+}

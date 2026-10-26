@@ -48,6 +48,8 @@ tests/unit/bin/
 tests/unit/obj/
 tests/unit/tmp/
 tests/**/.vscode/
+tests/integration/regression/artifacts/*
+!tests/integration/regression/artifacts/.gitkeep
 
 # Deploys
 dist/

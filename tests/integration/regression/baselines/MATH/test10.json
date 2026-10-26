@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.335475039425402",
+  "capture_trigger": "breakpoint:END_PGM@33562",
+  "generated_at": "2026-10-25T22:24:04-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MATH/test10",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2r0NwjAURtEvQEFJzwIZhZIeuizACEgEGAuaSGxlQgcUlPzl3CdZllxYR3LpkvIw1f2+GvdrRmm6VZ3m3O9P86abbSclz9Nmc8j6mMsxi12yy7JNvU8dSRpw5cW8PHzDfPh6fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fv4h+qe3Kd+8/PDfzCG8f79zJUmSJEn6/65aNd9f",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MATH",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/MATH/test10.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " <<< Expression test 2 >>>\n         1 =  1\n                 1 + 2 =  3\n                         1 + 2 +\n 3 =  6\n 1 + 2 + 3 * 4 =  15\n         1 + 2 + 3 * 4 + 50 - 10\n =  55           -100.0 = -100\n                         -100.0\n+ 200.0 =  100\n E# =  4\n         2 * ( 10 + 3 ) / 4.0 =\n 6.5             (R1+R2) =  10.5\n                         (R1+R2)\n*2 =  21",
+    "unstable_regions": []
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "capture_time": "9.156807359594586",
+  "capture_trigger": "breakpoint:END_PGM@45168",
+  "generated_at": "2026-10-25T22:25:21-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MEGAROM/test51",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2jEKwjAUgOFXXTp0cBXBrl4nB/EOTupRvIUuPdezbupWECrp9z8IGQLhg4zJyI9p3vfNelxjFWU4HqI8xv19V4bNqcv4nkvsr9Gfb9uQpKWWk2bi8Z/PzNfz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8y/R374m/3mp6rdmfe/ff11JkiRJkurvCZFL5Co=",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MEGAROM",
+  "screen": 0,
+  "screen_stable": true,
+  "source": "tests/integration/MEGAROM/test51.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " 56      113     27\n 57      115     27.5\n 58      117     27.99\n 59      119     28.49\n 60      121     28.98\n 61      123     29.48\n 62      125     29.97\n 63      127     30.47\n 64      129     30.97\n 65      131     31.46\n 66      133     31.96\n 67      135     32.46\n 68      137     32.95\n 69      139     33.45\n 70      141     33.94\n 71      143     34.44\n 72      145     34.94\n 73      147     35.43\n 74      149     35.93\n 75      151     36.43\n 76      153     36.92\n 77      155     37.42\n 78      157     37.92",
+    "unstable_regions": []
+  }
+}

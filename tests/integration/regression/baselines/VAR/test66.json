@@ -1,0 +1,32 @@
+{
+  "capture_time": "10.11302190641548",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:29:54-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "VAR/test66",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2dsNgjAYhuGvggrWAx4xcRlHMy7mCiaGKTpE/Zt44WEAEN6nhDQBQl7KFUTFj+He5y6zvUYKzaN24W7z2yk01SWP+h5etRJnp2fKNdZEUxUqNbNjcy201EqV1tpoq532OtgVpdrm1RfenuZVtp3TShxf6wEAAAAAwMA4HgGAwfr9bBuj2h0t355++umnn3766aeffvrpp59++umnn3766aeffvq72F+kEbu8+79fIoN6//kpBgAAAABA/z0Bc9qhoQ==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "VAR",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/VAR/test66.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n\n\n\n\n\n\n\n\n             HOTBIT\n\n             MSX BR\n\n     EPCOM [Z.F.MANAUS] 1985\n\n\n\n                  0   1   2   3\n  4   5   6   7   8   9    10\n11   12   13   14   15   16   17\n    18   19   20   21   22   23\n .",
+    "unstable_regions": []
+  }
+}

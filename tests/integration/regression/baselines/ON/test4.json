@@ -1,0 +1,35 @@
+{
+  "capture_time": "12.115601843251028",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:27:33-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "ON/test4",
+  "ram": {
+    "mask": "eNrt0KEBAAAIAyD/f3rmJYsRTiABAAAAAAAAAAAAAABoc1EEAAAA7xYShqLT",
+    "values": "eNrtm0Fo01AYx7+Xxi3a2mRVZySIA9Ht4BAVnezkSQOrB9HCFOlm3cmDCKNOh2yvO3l0IurFm0gp4tnbClqwB/HQoyg7eNBb0+B0q1t8belcM6uua+tY//+vee99770k/b2X914CiUNOhbGVaeYRIUlkpm72kJkU6RnDTGlcdshtEARBrSunJqtxt7rZfz49+MEPfvCDH/zgBz/4wQ9+8IMf/OAHP/jBD37wgx/84Ac/+MEPfvCDH/zgBz/4wQ9+8IMf/K3IrxTM2cjBpnxrE9d/zbx/1fuIHblva9mPS3ak8R3UPPLr1liOWrz/vQFv4IWvsH32vaJyTCRJJCXCT2KMdek9h5mmTx0z9KmnF57HEmGSpmOPjg7z0eAATZsJZSDJTtfvulj3ATxC/1z7wcQIe0Pv7vzKycTDuicTHx3PxNOZuPL2sa1YIk5/+NIXCoauhGZDl86U7Srv3tut+4ujRCmGOnWJ0KCTK1KlEpFiTCOabeN0ol1+bamyLFpa/NSL8w5j2Xw2f/7ywV71QK+/c18xRYxYf+VY7Mdr/evRITQBqSQRDfEOqZzB7Ze5s3x8bo818YfdRCm3h/iynywtHYP8WW45r1RsJoWlglypqmahfppr0onMZDG6ffxIdKN2+6mRh+f69g/SNWvMqlYnRuRusW8u/7vLn3f5Cy4/7/J/uPxFl7+06nbQpRlDTK0kplVj7W0wGS383cmvxTC6gLmgBSTLt+46jazE9d2du3buCHRoqn+7z7ttq9LetkX2SGzVk81v1bgpidv1P+o9sWrcWKw2NiuXmc32OWEagtagmh5fsj8BsAnPqQ==",
+    "volatile_ranges": [
+      [
+        61552,
+        61584
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "ON",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/ON/test4.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "expected_text": [
+      "ARROW CLICKED"
+    ],
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " ARROW CLICKED:",
+    "unstable_regions": []
+  }
+}

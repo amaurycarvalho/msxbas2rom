@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.263618141411827",
+  "capture_trigger": "breakpoint:END_PGM@33187",
+  "generated_at": "2026-10-25T22:17:52-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "DATA/test71",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2rEJwkAUgOEXNSDY2Jva2ihoY2HjAjFjuINO4EqCjWPFaKV2FqLkvv/BcUVC+OC4Kk00L5M977N+u0Yvqut+GtWl3Z8n1XV8HPTe3mrncNoUp3WR19tdXUayPfzzdP2jyMtZW+InoOR3AyTqX8xXy1UkXPPBfPTwF+bHn+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn50/VP7xP889Lh/7V6+L5D0mSJEmS1PluXwrtNw==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "DATA",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/DATA/test71.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n\n\n\n\n\n\n\n\n             HOTBIT\n\n             MSX BR\n\n     EPCOM [Z.F.MANAUS] 1985\n\n\n\n                  32767   1E+04\n  9999   10000           TEST1\n TEST2\n TEST1\n         TEST1   TEST2\n                  32767",
+    "unstable_regions": []
+  }
+}

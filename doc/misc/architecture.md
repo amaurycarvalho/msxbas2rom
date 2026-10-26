@@ -538,6 +538,7 @@ make test-kernel
 make test-emulator   # optional, requires openMSX
 make test-unit
 make test-integration
+make test-regression # optional, requires openMSX
 ```
 
 `make test-kernel` checks binary integrity, generated kernel manifest data,
@@ -588,6 +589,7 @@ make test-architecture      # dependency/boundary checks and test inventory
 make test-kernel            # Z80 kernel binary/manifest/relocation checks
 make test-emulator          # openMSX runtime checks (needs release and openMSX)
 make test-integration       # compiles integration BASIC programs (needs release)
+make test-regression        # runtime RAM/VRAM regression tests (see 10.1; needs openMSX)
 make quality-gate           # lint + architecture + coverage + kernel + integration
 ```
 
@@ -599,6 +601,125 @@ make -C src/infrastructure/kernel/asm all
 
 Then rebuild the C++ application, because the generated `header.h`,
 `start.h`, and manifest headers are compiled into it.
+
+### 10.1 Runtime regression tests (`make test-regression`)
+
+`make test-regression` runs the local, memory-first regression workflow for
+compiled MSX-BASIC programs. Unlike `make test-integration`, which only compiles
+the integration corpus, this target executes selected ROMs in openMSX and
+validates their runtime state instead of relying on screenshots.
+
+The root target is equivalent to:
+
+```bash
+make -C tests/integration regression
+```
+
+It is intentionally local-only. It is not part of `make quality-gate`, and no CI
+workflow invokes it.
+
+Requirements:
+
+- a built release compiler (`make release`);
+- openMSX available as `openmsx`;
+- a graphical X session;
+- for joystick input scripts, `python-xlib` (the skill uses XTEST to drive
+  openMSX's `keyjoystick1`).
+
+#### Commands
+
+| Command | Purpose |
+| --- | --- |
+| `make test-regression` | Run every discovered scenario and program. |
+| `make -C tests/integration regression SCENARIO=INPUT` | Run only one feature folder. |
+| `make -C tests/integration regression SCENARIO=INPUT PROGRAM=test8` | Run one program. |
+| `make -C tests/integration regression PROGRAM=test8` | Run a program by name across scenarios. |
+| `make -C tests/integration regression-list` | List scenarios/programs without compiling or launching openMSX. |
+| `make -C tests/integration regression-baseline` | Generate or refresh baselines for all selected programs. |
+| `make -C tests/integration regression-baseline SCENARIO=INPUT PROGRAM=test8` | Refresh only the selected baseline. |
+
+#### Workflow
+
+1. Build the compiler and generate baselines from a known-good build with
+   `make -C tests/integration regression-baseline`.
+2. Inspect the generated baselines under
+   `tests/integration/regression/baselines/` before treating them as a gate.
+3. Run `make test-regression` after code changes. A failure names the program,
+   memory kind, and the differing address/range or VRAM region.
+4. When a change intentionally alters runtime behavior, refresh only the
+   affected baseline (`SCENARIO=`/`PROGRAM=`) and review the diff.
+5. If a program is inherently timing-dependent, mark it `"volatile": true` in
+   the manifest and keep explicit RAM probes for the behavior that must remain
+   stable.
+
+#### How it works
+
+The workflow lives in `tests/integration/regression/`:
+
+| Path | Responsibility |
+| --- | --- |
+| `runner.py` | Scenario discovery, compilation, capture orchestration, validation, baselines, and reports. |
+| `manifest.json` | Per-scenario/per-program overrides: machine, fallback time, input scripts, RAM probes, VRAM checks, volatile ranges, and volatile programs. |
+| `manifest.schema.json` | JSON Schema for the manifest. |
+| `baselines/` | Versioned reference data (stable RAM masks/values and stable VRAM region hashes). |
+| `artifacts/` | Gitignored per-run captures, logs, and reports. |
+| `test_runner.py` | Unit tests for the validation helpers. |
+
+Scenarios are the existing feature folders (`PRINT`, `GRAPH`, `INPUT`, ...).
+Programs are `.bas` files discovered recursively inside each scenario. The runner
+compiles each selected program in ASCII8 mode with `-s --noi` into an isolated
+output directory under `artifacts/`; the normal integration compile matrix is not
+used.
+
+Machine selection defaults to the Sharp HB-8000 (MSX1). Programs whose source
+uses `SCREEN 5` or higher run on the configured MSX2 machine
+(`Panasonic_FS-A1WX`). A manifest override can pin a different machine.
+
+Execution reuses the `msx-memory-debug` skill:
+
+- breakpoints at `END_PGM` and `END_STMT + 2` capture terminating programs at
+  their real terminal state;
+- non-terminating programs use a frame-aligned fallback after the configured
+  emulated-time delay (default 10 seconds in the manifest);
+- manifest input scripts inject keyboard and joystick events;
+- the skill writes RAM (`0xC000-0xFFFF`), physical VRAM, VDP registers, and an
+  optional screenshot beside the ROM.
+
+Validation is memory-first and evaluated in this order:
+
+1. explicit RAM probes (`ram_probes`);
+2. stable RAM snapshot comparison, masking configured volatile ranges (the
+   default masks the BIOS work area/stack at `0xF000-0xFFFF`);
+3. VRAM text extraction for text modes or VRAM region hashes for graphical
+   modes;
+4. screenshots only as a visual fallback when no memory check exists.
+
+Baselines are generated by capturing each selected program multiple times
+(default three) and storing only bytes and region hashes that are identical
+across those captures. VRAM regions that vary across runs are recorded as
+unstable and skipped. Programs that use `RND`, `TIME`, `TIME$`, `DATE$`, or
+`INTERVAL` are marked volatile automatically; other timing-dependent programs are
+marked explicitly in `manifest.json`. Volatile programs skip full snapshots but
+still evaluate their configured probes and expected text.
+
+Each run writes:
+
+- `artifacts/runs/<run-id>/report.txt` and `report.json` — summary and per-program
+  pass/fail causes;
+- `artifacts/runs/<run-id>/<scenario>/<program>/` — per-program build, capture,
+  emulator log, and optional screenshot;
+- `artifacts/runs/latest` — symlink to the most recent run.
+
+To capture diagnostic screenshots for programs that normally use memory checks,
+run the runner directly with `--screenshots`:
+
+```bash
+python3 tests/integration/regression/runner.py run --scenario GRAPH --program globe --screenshots
+```
+
+Joystick input requires focus on the openMSX window. The skill releases any
+scripted keys before exiting and clears residual keys before each program, so one
+interactive test cannot contaminate later programs.
 
 ## 11. Practical conventions and pitfalls
 

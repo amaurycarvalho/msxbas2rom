@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.198776660162116",
+  "capture_trigger": "breakpoint:END_PGM@32971",
+  "generated_at": "2026-10-25T22:25:00-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MATH/test96",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2rENgzAQQNEjoaCkzwJM41kYgc2Shrku0AU6JCQi8/5JlhvLepJLZ+Rmmt9981zWeESZxyHKZ9m/X2XupzZjP2300YUk3bc8OIcPnDwXX8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pf0d/t07+81LZf83a3r8fu5IkSZIk1d8Xf3/ipA==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MATH",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/MATH/test96.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n\n\n\n\n\n\n\n\n             HOTBIT\n\n             MSX BR\n\n     EPCOM [Z.F.MANAUS] 1985\n\n\n\n                  4       16\n  8",
+    "unstable_regions": []
+  }
+}

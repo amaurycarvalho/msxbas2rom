@@ -1,0 +1,22 @@
+{
+  "capture_time": "10.113022744510825",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:16:58-0300",
+  "machine": "Panasonic_FS-A1WX",
+  "probes": [],
+  "program": "BLOAD/test60",
+  "ram": null,
+  "runs": 3,
+  "scenario": "BLOAD",
+  "screen": 2,
+  "screen_stable": true,
+  "source": "tests/integration/BLOAD/test60.bas",
+  "version": 1,
+  "volatile": true,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 131072,
+    "unstable_regions": []
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.482461597772901",
+  "capture_trigger": "breakpoint:END_PGM@33016",
+  "generated_at": "2026-10-25T22:28:49-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "SOUND/test6",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2jEKwjAUgOG0Oji6u2VykNJqPUCaJukQKIh4FGdvpg49V6x1UcciKPH/H4RHoZQPOiaI8DLJ855M+lOkoumOy7S5NFdxXjTd/DQN4n3kodju13nelr50mVHO1DprN75Qu+FJW2qjnfFFnflSiuiSlXK2N8uV1LWxTlX9Zq2qHjMsEbKJaCiMmpGvfWy+/Hn8+PHjx48fP378+PHjx48fP378+PHjx48fP378+PHjx48fP378+PHjx4//H/2z+4RfPqK8tRnP/8+9XSIiIiIiIqL4uwGRtflu",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "SOUND",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/SOUND/test6.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " Playing a melody...\n         ...and random notes...",
+    "unstable_regions": []
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "capture_time": "10.11302358260617",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:29:24-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "TS/ts6",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrtmj1ugzAcR22DigckPHRAaqV0qJSVsUOHjAw5RIccIerMAXqE3CVkyTk4QsZsroHmA2g+upCovGf0ly3sn/0khISEFbbR5HFfeq4KJdP151imK9dfPqVrk/mqtcrdGThSAAAMlIm9QDVLtVd1g5TXmpLvel4UO7QOg3qcb8qxMUlx8jX8ckV+tl8cPJuKUT0uNm6z2CQf+xMIvxWW/ZIvT50/iNxhYx0+/JwgK950xba3/LPrL+1PPvnkk08++d38yNeR2l1S/fnqfFL20qy4bbvx9vjjjz/++OOPP/74448//vjjjz/++OOPP/74448//vjjjz/++N+HvymbveNiZ/PHV1fep40ymzfK1+JQ+v1tcejPPz+uAgAAAAAAAPx/vgFBPuv9",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "TS",
+  "screen": 2,
+  "screen_stable": true,
+  "source": "tests/integration/TS/ts6.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {
+      "colour_table": {
+        "length": 6144,
+        "sha256": "0d9b53c9109f926b360a6121d1d681b7ee85f29286ac3a8a6735bb1839f80ed3",
+        "start": 8192
+      },
+      "name_table": {
+        "length": 768,
+        "sha256": "f3a25aa93aa2fbba28d79260535bbd6a5eb0fc1c24a8b0f04e12b484c1dfe363",
+        "start": 6144
+      },
+      "pattern_generator": {
+        "length": 6144,
+        "sha256": "fd9243e1ba57263ed469c3bdbd7ade6ec5254e7ed924a9f5737fa44749933cc0",
+        "start": 0
+      },
+      "sprite_attributes": {
+        "length": 128,
+        "sha256": "14bdf33da7f8d3cf980f26253947cb400251e25281188837874c1bb72cab2152",
+        "start": 6912
+      },
+      "sprite_patterns": {
+        "length": 2048,
+        "sha256": "644c4f9249e5001dafebcdb901330b1465e5868c237f5e4f33704df8d9fbf8c9",
+        "start": 14336
+      }
+    },
+    "screen_stable": true,
+    "size": 16384,
+    "unstable_regions": []
+  }
+}

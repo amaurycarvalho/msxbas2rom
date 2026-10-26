@@ -1,0 +1,37 @@
+{
+  "capture_time": "10.113022185780595",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:18:45-0300",
+  "machine": "Panasonic_FS-A1WX",
+  "probes": [],
+  "program": "GRAPH/line2",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrtwQENAAAIAyBLvn8UreE+IAsAAAAAAAAAAAAAAHw3AAAAQL0DvPPSGA==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "GRAPH",
+  "screen": 5,
+  "screen_stable": true,
+  "source": "tests/integration/GRAPH/line2.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {
+      "bitmap": {
+        "length": 131072,
+        "sha256": "076d30dad5b8c0a2e8f97ff4dcfe8bde59cd35898b861677265c45ec866c96ae",
+        "start": 0
+      }
+    },
+    "screen_stable": true,
+    "size": 131072,
+    "unstable_regions": []
+  }
+}

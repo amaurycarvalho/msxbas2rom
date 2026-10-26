@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.257891156557607",
+  "capture_trigger": "breakpoint:END_PGM@33141",
+  "generated_at": "2026-10-25T22:24:52-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MATH/test24",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2jEKwjAUgOFXtSCd3L2Ah8lpegJvZpee67VurZsitKTf/yBkCeGDjMnI1TTLfXOe1zhFGftHlGHev+5lvD0vGZ/TRRuSdNzy6/nhyF9n4+v5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+Y/ov74n97xU92Ozrvfvz64kSZIkSfU3Ab6H45I=",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MATH",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/MATH/test24.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n\n\n\n\n\n\n\n     HOTBIT\n\n     MSX BR\n                             EPC\nOM [Z.F.MANAUS]  985\n                        1\n\n\n          11\n                  12\n                          13\n\n  14\n          15\n                  9     .  .. ..\n. ... ... ... ... ... ..  8 . ..",
+    "unstable_regions": []
+  }
+}

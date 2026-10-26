@@ -1,0 +1,45 @@
+{
+  "capture_time": "5.357755804159467",
+  "capture_trigger": "breakpoint:END_STMT+2@32869",
+  "generated_at": "2026-10-25T22:28:28-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [
+    {
+      "address": "0xC048",
+      "value": "0x07"
+    },
+    {
+      "address": "0xC049",
+      "value": "0x00"
+    },
+    {
+      "address": "0xC04A",
+      "bytes": "02 00"
+    }
+  ],
+  "program": "PRINT/test85",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2j9qAkEUwOG3JkFLexs7y/hnV72AJ4jFlqk8h+gxPEwIgtcaN1ZqZSOGne/3YNhiYPnglZMi3Uxx/V28NWd0oj5tRkX9Wx/jZ1Cf+tv3FPfTba7t43sXcfgcNefHevW1XkW29ZaLeTUdl8uQMtz/4aWqzNhflbPpJNsNSA/Ng9eeNi/+PT8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/P3+e/t7fpP98tOKVYnv330tlSZIkSZLa3xl/6Gbz",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "PRINT",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/PRINT/test85.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " TESTE\n          3   3   3\n                  3   3   3\n                          3   3\n  3\n  1       1       1\n          1       1       1\n                  1       1\n  1                       14\n  14      14\n       54\n            54321\n                 87652048\n                         -16384",
+    "unstable_regions": []
+  }
+}

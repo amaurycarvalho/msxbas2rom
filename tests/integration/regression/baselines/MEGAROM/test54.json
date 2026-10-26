@@ -1,0 +1,32 @@
+{
+  "capture_time": "10.113022744510825",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:25:30-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MEGAROM/test54",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2r1OwzAUhmG3MDCys5yNpS1CHRi4gU4M3MFpclSOVNutfzJzZ4iltxWcwMDPgiokkPleS5GVKqqeOE6X9qb/MCbv55OTcjRTszp0l2b1XOZPF6vD+ePp9NNVvVk6lVYbdSwU1epWLEXeqbikbEliFOKw1hTY5jCjKC2lHIlMHd08aExBvVPiJqkvQt4mTj4oWT9InXe0z9ppHPGNhOFsJXyzLLR2XOhELRdZuQHaUKeJiTfiWh4/GtSe7sVJEEo6r8Z/vc+++Gdvy+y3upZ0O8xaKvyy0o13nZRd4sbpnKiexS9dxbLT2Um2+yw0vAlsjgu6E6GCtrTJa7GcXjdITkR2QdRwNQ/AMe+/mtbffPlF+N448rIfG7/89fDDDz/88MMPP/zwww8//PDDDz/88MMPP/zwww8//PDDDz/88MMPP/zwww8//PD/T//ZMPq/fKjyX4v1PP8GIYQQQgghhBBC1fcCFKzdBg==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MEGAROM",
+  "screen": 0,
+  "screen_stable": true,
+  "source": "tests/integration/MEGAROM/test54.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " ut duo sint ultima bononim. Ut enim si\ncui propoaitum sit collineare hostora al\niquo aut sagittam, sicut ' nos ultimum i\nn bonis didmus, sic illi facere omnia qu\nae possit ut collineet: huic in eiusmodi\n similitudine omnia sint facienda ut col\nlineet, et tamen, ut omnia faciat quo pr\nopositum assequatur, sit* hoc quasi ulti\n- mum quale nos summum in vita bonum dtc\nimus, illud autem ut feriat, quasi selig\nendum, non espetendum. Cum autem omnia o\nflicia a principiis naturae proliciscant\nur, ab iisdem necesse est proficisci ips\nam sapientiam. Sed quemadmodum saepe fit\n ut is qui commendatus sit alieui pluris\n cum faciat cui com- mendatus quam ilium\n a quo sit, sic minime mirum itemque et\nratio et perfecta ratio. Ut enim histrio\nni actio, saltatori motus non quivis sed\n certus quidam est datus, sic vita agend\na est certo Renere quodam, non quolibet;\n quod genus conveniens con- sentaneumque\n dicimus. Nee enim gubemationi aut niedi\ncinae similem sapientia",
+    "unstable_regions": []
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "capture_time": "10.113022185780595",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:21:49-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "INPUT/test17",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2rENgzAQQNEDUlDSZwCm8TDZgM0iGtY6SJekC0IiMu+fZLmxrCe5dEZ+TPO+b7ptjTbK8hijzNv+eS/LMN0yvkeSdOXy59lx5NA5+Xp+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn7+a/r71+Q/L9X9WKzr/fuzKkmSJElS/a0oVWQH",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "INPUT",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/INPUT/test17.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " <<<< INKEY FUNCTION TEST >>>>\n         SPACE = CHR / ASC",
+    "unstable_regions": []
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "capture_time": "10.113025258796858",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:24:30-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MATH/test16",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2rENgzAQQNEDUlDSZwGG8TSZgM1Cw1wH6ZJ0QUhE5v2TLDeW9SSXzsiPad73Tbet0UZZHmOUeds/72UZplvG90jStcufZ8eRQ+fk6/n5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5r+jvX5P/vFT3Y7Ou9+/PriRJkiRJ9bcCApzjgw==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MATH",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/MATH/test16.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " <<<< IF - COMPARE INTEGERS >>>>\n         VALUE A? .",
+    "unstable_regions": []
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.233469058218293",
+  "capture_trigger": "breakpoint:END_PGM@33029",
+  "generated_at": "2026-10-25T22:23:15-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "IO/test1",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2jEKgzAUgOFndXDs3gv0LDlPD+DN6uKpOrzGre0ogiV+/4MQkBA+cExGfk33ue/6usYlyvK4R5nr/nkry3UaMn7nVT9K0lnLDbPp0I5z8PX8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Gf0j+vkPy8Nvtls6f/3aleSJEmSpPZ7A3gE5ng=",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "IO",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/IO/test1.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " Free memory:  10356\n         Please insert a new dis\nk!",
+    "unstable_regions": []
+  }
+}

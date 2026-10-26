@@ -1,0 +1,32 @@
+{
+  "capture_time": "10.11302358260617",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:22:42-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "INPUT/test75",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2rENgzAQQNEDUqSkzwLM4nkYgM1Iw1wH6RJKFAlk3j/JcmNZT3LpjPyZ5nvfdNsabZRlHKK8t/38Kks/PTL2I0l3Lg/MoUN/nJOv5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+e/o//5mbzyUuGfzZrev1+7kiRJkiTV3wp/8eR+",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "INPUT",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/INPUT/test75.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n\n\n\n\n\n\n\n\n             HOTBIT\n\n             MSX BR\n\n     EPCOM [Z.F.MANAUS] 1985\n\n\n\n                 FUNCTION KEYS T\nEST (ESC=EXIT)",
+    "unstable_regions": []
+  }
+}

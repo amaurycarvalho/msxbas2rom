@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.338385465191805",
+  "capture_trigger": "breakpoint:END_PGM@33342",
+  "generated_at": "2026-10-25T22:29:38-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "VAR/test19f",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2iEOwkAQQNEpIJB4DBLJQbjCCg7SpJDeC0xd77RsHWCKIUD7/iSbEU2al6zcHPlpqse9WpYzFpG60z7SrezXbeo2zSrH61wi6v7YxuE8LH0bu7JI0mzLo/PGJx+dL/+en5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn3+O/vUw+ZePv3+hOe37742uJEmSJEnT7w5kNeIz",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "VAR",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/VAR/test19f.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "  1  1.1  1.2  1.3  1.4  1.5  1.\n6  1.7   1.8  1.9\n                  2  1.9  1.8  1\n.7  1.6  1.5  1.4  1.3   1.2  1.\n1\n  1  2  3  4  5  6  7  8  9  10",
+    "unstable_regions": []
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "capture_time": "10.113021627050365",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:26:40-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "ON/test10",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2rENwjAQQNEzoaCkp0lHywhs4RFYA1D2QjRZy5gOqNIgkP3+SdYVkaIXpXSJ8jbpdU9DPWMVeT7tU77X/bbL8/a8LvE51zheIqY4TDHWpfeSTyCp18rCWfzgl+bHr+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fv0795Tvnno5F7iq3+/26qSpIkSZLUfg9mSmI+",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "ON",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/ON/test10.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " TEST 1: No effect\n\n                 Press a functio\nn key or ESC key         .",
+    "unstable_regions": []
+  }
+}

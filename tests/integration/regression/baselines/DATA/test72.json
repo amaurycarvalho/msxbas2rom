@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.249485898347416",
+  "capture_trigger": "breakpoint:END_PGM@33199",
+  "generated_at": "2026-10-25T22:17:56-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "DATA/test72",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2jEOgjAUgOEHOji6ywE8hANH6Em4gpyAK+nCuWrdxI2ERFO+/yVNB5rmSxibIy+m+dw3h7JGG2kerpGeZf+4pPk8HtuvU2XuU99Nty4kabflVbPy883nx9fz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8+/Rf3pP/uelqtea9f3/3utKkiRJklR/L5Yr494=",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "DATA",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/DATA/test72.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n\n\n\n\n\n\n\n\n             HOTBIT\n\n             MSX BR\n\n     EPCOM [Z.F.MANAUS] 1985\n\n\n\n                  32767   1E+04\n  9999                    0\n  10      20\n  0       10      20\n          32767   1E+04   9999",
+    "unstable_regions": []
+  }
+}

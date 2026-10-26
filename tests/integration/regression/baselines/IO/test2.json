@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.208510578858486",
+  "capture_trigger": "breakpoint:END_STMT+2@32869",
+  "generated_at": "2026-10-25T22:23:19-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "IO/test2",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2jEKgzAUgOGndujo3t2z5ETO3kzo4rGedmsdpaDE738QsoTwQcZk5M803/um29ZooyzjEOW97edXWfrpkbEfSZLuWR6ag8f+Nidfz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pf1f/8zN55aXKX3v1vH//NiVJkiRJqr8V1p3mbg==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "IO",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/IO/test2.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n\n\n\n\n\n\n\n\n             HOTBIT\n\n             MSX BR\n\n     EPCOM [Z.F.MANAUS] 1985\n\n\n\n                 Insert a disk t\no write TEST.TXT",
+    "unstable_regions": []
+  }
+}

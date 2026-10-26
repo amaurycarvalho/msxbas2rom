@@ -1,0 +1,57 @@
+{
+  "capture_time": "10.113023303241054",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:29:13-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "TS/ts4",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2j0KwjAYgOEkLbaCkIwBBR0dOzp6hBzBobOTB+jN7OI9egRHtxhbxViho4p930Loh/bnAbFLvfAvm4z3ZRJWoaQ77dfC1WH/OHcnU6Wqd5QXpXAiEUREI2762FHy9YNtHQ1p76gqHjJtjbH5bHL/Q62aTd52ib+lkoHzq975t/GQaBvK81nWzfX5NhtTNIPnj++xZxOreJDZwrQtu7k5h4tZU+zaO5RKy1SHtX1uvD1IPrx9+fL48ePHjx8/fvz48ePHjx8/fvz48ePHjx8/fvz48ePHjx8/fvz48ePHj3+cfnPb/A8vvjy43XP5udc1x/7754VdIiIiIiIiov/vCm7wZZo=",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "TS",
+  "screen": 2,
+  "screen_stable": true,
+  "source": "tests/integration/TS/ts4.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {
+      "colour_table": {
+        "length": 6144,
+        "sha256": "3f1d4618ac9602b281b45393090de14699c31d1e90bf4ef4dfbf4b7178ca8711",
+        "start": 8192
+      },
+      "name_table": {
+        "length": 768,
+        "sha256": "f3a25aa93aa2fbba28d79260535bbd6a5eb0fc1c24a8b0f04e12b484c1dfe363",
+        "start": 6144
+      },
+      "pattern_generator": {
+        "length": 6144,
+        "sha256": "22f350e1a44ef7bfe6782b2d78ca2ee7ffc4b158494e1569c7083e47461fafef",
+        "start": 0
+      },
+      "sprite_attributes": {
+        "length": 128,
+        "sha256": "f0c5d867e42c848b58a29417e07889941d9ee9711f5f040a40fee4da86870fae",
+        "start": 6912
+      },
+      "sprite_patterns": {
+        "length": 2048,
+        "sha256": "74e5fb76e6ae097684c80928ee058264b7445ae998d32ae6b8ac3298ca6221ae",
+        "start": 14336
+      }
+    },
+    "screen_stable": true,
+    "size": 16384,
+    "unstable_regions": []
+  }
+}

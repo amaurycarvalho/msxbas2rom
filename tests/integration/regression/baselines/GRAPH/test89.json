@@ -1,0 +1,57 @@
+{
+  "capture_time": "10.113021627050365",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:21:09-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "GRAPH/test89",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2jEKgzAUgOGkdujY3Qt4lJzI2Zu1i+d6xk0dpWCJ3/8gZAnhg4yJFLvJ233u6poeuczjkMu37j99md/TM9JxJOm+xak5eexnc/H1/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Px39L/WiX9emvy12c77929XkiRJkqT2WwB/BuV7",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "GRAPH",
+  "screen": 2,
+  "screen_stable": true,
+  "source": "tests/integration/GRAPH/test89.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {
+      "colour_table": {
+        "length": 6144,
+        "sha256": "b19750bf3b90fa99c345d42966a8af1d7a39d786616977c7269c6e972e491fd2",
+        "start": 8192
+      },
+      "name_table": {
+        "length": 768,
+        "sha256": "f3a25aa93aa2fbba28d79260535bbd6a5eb0fc1c24a8b0f04e12b484c1dfe363",
+        "start": 6144
+      },
+      "pattern_generator": {
+        "length": 6144,
+        "sha256": "ce549e51d91acc4b045c4de5772ff04c5cece2046aa0e98355ec115a51723a64",
+        "start": 0
+      },
+      "sprite_attributes": {
+        "length": 128,
+        "sha256": "a89990f87b7866f1cb668d10c28cd7ec39fcb7cb451e255a3a775f35863a63dc",
+        "start": 6912
+      },
+      "sprite_patterns": {
+        "length": 2048,
+        "sha256": "e5a00aa9991ac8a5ee3109844d84a55583bd20572ad3ffcd42792f3c36b183ad",
+        "start": 14336
+      }
+    },
+    "screen_stable": true,
+    "size": 16384,
+    "unstable_regions": []
+  }
+}

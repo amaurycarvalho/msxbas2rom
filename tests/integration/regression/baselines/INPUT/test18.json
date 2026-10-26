@@ -1,0 +1,23 @@
+{
+  "capture_time": "10.113022744510825",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:21:53-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "INPUT/test18",
+  "ram": null,
+  "runs": 3,
+  "scenario": "INPUT",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/INPUT/test18.bas",
+  "version": 1,
+  "volatile": true,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n\n\n\n\n\n                   ~~~~~(0v0)~~~\n~~",
+    "unstable_regions": []
+  }
+}

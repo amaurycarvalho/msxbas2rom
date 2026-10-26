@@ -1,0 +1,57 @@
+{
+  "capture_time": "10.113024420701514",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:26:31-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MTF/mtf6",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2jEOgjAYgNG2Ojiyuzh6Gu7gDTyCngwXDuIROEHF6CB10cSERt77k9KkEPIljOSQJxNf93E1riGltj/uQ3sZ99227ZvTOhVPjScAixbTxK60md7uvO5zAPjI8CuHx+VaOD8NAEA1cvh2Qp53Zn69fv369evXr1+/fv369evXr1+/fv369evXr/99mvvkmpfKLf37988OAAAA/L8bkKKN0Q==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MTF",
+  "screen": 2,
+  "screen_stable": true,
+  "source": "tests/integration/MTF/mtf6.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {
+      "colour_table": {
+        "length": 6144,
+        "sha256": "27853da267124723f6710df838e68fe431b4e59573f5c2d174b211bcc228e5e9",
+        "start": 8192
+      },
+      "name_table": {
+        "length": 768,
+        "sha256": "81e485bbde6bd10d5c972a1e3ba836011a0c5c089ea75b09e789c66e5463b4f3",
+        "start": 6144
+      },
+      "pattern_generator": {
+        "length": 6144,
+        "sha256": "dd521f74642848650ebf6655e6eec5d7140601889cd0adba0d26030a2b4c712e",
+        "start": 0
+      },
+      "sprite_attributes": {
+        "length": 128,
+        "sha256": "c49613f3a24dd8719ecec47eaeb8649cf713ac8145af38a8c297620cc28eb358",
+        "start": 6912
+      },
+      "sprite_patterns": {
+        "length": 2048,
+        "sha256": "e5a00aa9991ac8a5ee3109844d84a55583bd20572ad3ffcd42792f3c36b183ad",
+        "start": 14336
+      }
+    },
+    "screen_stable": true,
+    "size": 16384,
+    "unstable_regions": []
+  }
+}

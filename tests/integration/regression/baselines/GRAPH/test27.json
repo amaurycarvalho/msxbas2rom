@@ -1,0 +1,22 @@
+{
+  "capture_time": "10.11302302387594",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:19:42-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "GRAPH/test27",
+  "ram": null,
+  "runs": 3,
+  "scenario": "GRAPH",
+  "screen": 2,
+  "screen_stable": true,
+  "source": "tests/integration/GRAPH/test27.bas",
+  "version": 1,
+  "volatile": true,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "unstable_regions": []
+  }
+}

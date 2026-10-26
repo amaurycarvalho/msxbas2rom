@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.341338354455664",
+  "capture_trigger": "breakpoint:END_STMT+2@32869",
+  "generated_at": "2026-10-25T22:25:17-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MEGAROM/test2",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2jEKgzAUgOGoGTq6ewDv03PkEN6suHitZ9y0pbO2fv+DEBCRDwIuiRSHafb7pqtralNZnmMuc92/hrL0U27f3qpPJEn6Wnz+N+LcOfnz/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pf0P7aJKy8/dyPxXuffnVRJkiRJkv6/FcPeU1w=",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MEGAROM",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/MEGAROM/test2.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n\n\n\n\n\n\n\n     HOTBIT\n\n     MSX BR\n                             EPC\nOM [Z.F.MANAUS]  985\n                        1\n\n\n         TEST     10\n                  7       8\n                          56\n  56      56      56\n  15      15      15      15\n         -1      -1      -1\n -1               8       4 . ..\n. ... ... ... ... ... ..  2",
+    "unstable_regions": []
+  }
+}

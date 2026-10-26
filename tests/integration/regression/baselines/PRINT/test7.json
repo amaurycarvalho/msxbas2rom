@@ -1,0 +1,32 @@
+{
+  "capture_time": "5.394775592987377",
+  "capture_trigger": "breakpoint:END_PGM@33412",
+  "generated_at": "2026-10-25T22:28:15-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "PRINT/test7",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2iGOAjEUgOHHgFiJx9ThEHCBvcOcgAQEgQkbYN0K0FyCmwCGaxVwgENsdjPz/S9pKpo0X1LZHPlpWo/7Vvu2RhHlZd6P8nzbH3vlpbvt5HidIo2GoyrNvtbfVZosF8tVWs82aVxNN4NoQO3YxWlXfO4PPyFJTS2/MW8d/oX54+v5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5m+n/uE/+z0uN/irW8f37rSpJkiRJUv27AgTcbd4=",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "PRINT",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/PRINT/test7.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " Fixed String: Lorem ipsum dolor\n sit ame t.\n                 Fixed Integer:\n 2021                    Fixed S\ningle:  3.142\n Fixed Double:  3.142\n         Integer to Variant (Sin\ngle):  2021      Cast String to\nInteger:  123            Cast In\nteger to String:  123\n Cast Single to Integer:  3\n         Cast Integer to Single:\n  3              Cast Single to\nString:  3               Cast St\nring to Single: -1.5\n Cast String to Double: -1.5",
+    "unstable_regions": []
+  }
+}

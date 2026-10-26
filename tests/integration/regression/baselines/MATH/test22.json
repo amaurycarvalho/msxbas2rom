@@ -1,0 +1,23 @@
+{
+  "capture_time": "9.620731685172277",
+  "capture_trigger": "breakpoint:END_PGM@33152",
+  "generated_at": "2026-10-25T22:24:44-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MATH/test22",
+  "ram": null,
+  "runs": 3,
+  "scenario": "MATH",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/MATH/test22.bas",
+  "version": 1,
+  "volatile": true,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n\n\n\n\n\n\n\n\n             HOTBIT\n\n             MSX BR\n\n     EPCOM [Z.F.MANAUS] 1985\n\n\n\n                 ELAPSED TIME:\n  264                    LAST SI\nNE:       .8315",
+    "unstable_regions": []
+  }
+}

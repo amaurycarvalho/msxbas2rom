@@ -1,0 +1,32 @@
+{
+  "capture_time": "6.386542144322812",
+  "capture_trigger": "breakpoint:END_PGM@34547",
+  "generated_at": "2026-10-25T22:28:19-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "PRINT/test73",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2j8KwjAUgPFXrSCC4O4ScHDRkKYpeAEX19zBxSO4uHgucem1YqSLunUQpe/7HoQMhfLrv6lJ0tsUr/tinFcZSWxPa4n3vL8tY7u4lEk+p1zlRG/X46HbnGVmTLVpnLN+p/JSzE3luvZbV+vzT/L9t87XQemrkP3e+kbtpyD7g3VBrV9Sj+l18Bfmx6fHjx8/fvz48ePHjx8/fvz48ePHjx8/fvz48ePHjx8/fvz48ePHjx8/fvw6/dPnpH9eBvSv4hCffyEiIiIiIiKiwfcABjlrMQ==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "PRINT",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/PRINT/test73.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n          200.5  -200.5\n                 +200.5  -200.5\n                         200.5\n 200.5-\n 200.5+  200.5-\n         123.4   432.1\n                   12OK .  .. ..\n. ... ... ... ... ... .. 12345\n 10000... ... ... ... ... ... ..\n 12345   00123   00001... ... ..\n. ... .. 25.29OK. ... ..\n                 25.34\n                        1123OK\n\n %-123\n          +123    -123\n                  123+    123-\n                         123\n 123-\n *****123\n         ****-234\n                 $1234\n                         -$1234",
+    "unstable_regions": []
+  }
+}

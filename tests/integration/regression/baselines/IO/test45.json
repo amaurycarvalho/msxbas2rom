@@ -1,0 +1,32 @@
+{
+  "capture_time": "10.11302190641548",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:23:36-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "IO/test45",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2jEOgjAUgOHXyuDo7uKkCZMtJzCxDbu4Nh7FmxkXrlVAFnVhMirv/1/SdKAhHzCSJb+Med6bRb+KldRedibd+/1tndrVtbBvp4ZzY/axmtKfN004NUFUZsWPzyG6Y4iitmJbR6eXL7by7iCq33/lFftNWbu9aC5PzOQFH54v3x4/fvz48ePHjx8/fvz48ePHjx8/fvz48ePHjx8/fvz48ePHjx8/fvz48ev0L4fJv7z8+f+Jc//+hYiIiIiIiIhmXwdWK2F4",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "IO",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/IO/test45.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": "\n\n\n\n\n\n\n\n\n             HOTBIT\n\n             MSX BR\n\n     EPCOM [Z.F.MANAUS] 1985\n\n\n\n                  6\n                         MEU TES\nTE        10080   0\n  66\n         1A       26\n                 10       16\n                         F1",
+    "unstable_regions": []
+  }
+}

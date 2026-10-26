@@ -1,0 +1,32 @@
+{
+  "capture_time": "10.11302246514571",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:27:42-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "ON/test6",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2i0OwkAQgNEpRSDxmEokR+AeyL0IkN4LTM81tChAVPK375tkM0lF85KVm5FP0zzuTTuesYgyHLZRruN+2ZRhfVxmvM459qeIPnZ9dPdlOiWp8nJmZj++YT78e35+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn7+Gv2rafKbjx9+m1nD/fc6V5IkSZKk/+8Gms3c/Q==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "ON",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/ON/test6.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " TEST 1\n         Press a function key or\n space...",
+    "unstable_regions": []
+  }
+}

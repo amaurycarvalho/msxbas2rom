@@ -1,0 +1,57 @@
+{
+  "capture_time": "10.113023303241054",
+  "capture_trigger": "fallback",
+  "generated_at": "2026-10-25T22:26:26-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "probes": [],
+  "program": "MTF/mtf5",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2sEJwjAYgNEkrdqjdwdwla7hEp51MvHSPRyhE8SKHlSkBxEa7Hs/pIUQygelp+aQXyY+38dqWENKbbffxvY83J82bbc+1Ont1LAzczEAzPT7l0ZVzfjxlX37Je/Xi1FLXwBgrvpf2d0vlzfHhx4AKEYO303I087Ej9evX79+/fr169evX79+/fr169evX79+/fo/TXObXPJSuLm///5cAQAAgP93BZmq8ww=",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MTF",
+  "screen": 2,
+  "screen_stable": true,
+  "source": "tests/integration/MTF/mtf5.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {
+      "colour_table": {
+        "length": 6144,
+        "sha256": "27853da267124723f6710df838e68fe431b4e59573f5c2d174b211bcc228e5e9",
+        "start": 8192
+      },
+      "name_table": {
+        "length": 768,
+        "sha256": "fbec7e4c91199b570665d649aa3844ce147d340808f3b756a28b9e53544456bb",
+        "start": 6144
+      },
+      "pattern_generator": {
+        "length": 6144,
+        "sha256": "dd521f74642848650ebf6655e6eec5d7140601889cd0adba0d26030a2b4c712e",
+        "start": 0
+      },
+      "sprite_attributes": {
+        "length": 128,
+        "sha256": "a89990f87b7866f1cb668d10c28cd7ec39fcb7cb451e255a3a775f35863a63dc",
+        "start": 6912
+      },
+      "sprite_patterns": {
+        "length": 2048,
+        "sha256": "e5a00aa9991ac8a5ee3109844d84a55583bd20572ad3ffcd42792f3c36b183ad",
+        "start": 14336
+      }
+    },
+    "screen_stable": true,
+    "size": 16384,
+    "unstable_regions": []
+  }
+}
