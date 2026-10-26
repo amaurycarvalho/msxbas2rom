@@ -18,7 +18,7 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - [set-page-screen4](openspec/changes/set-page-screen4) SET PAGE support for screen 4 compatibility
 - [wishlist](openspec/changes/wishlist) Explore and track potential future improvements not yet scheduled for any sprint
 
-### [add-rsctoram-offset-size](openspec/changes/add-rsctoram-offset-size) Add optional offset/size parameters to CMD RSCTORAM for partial resource copies
+### [add-rsctoram-offset-size](openspec/changes/archive/2026-10-26-add-rsctoram-offset-size) Add optional offset/size parameters to CMD RSCTORAM for partial resource copies
 
 #### Added
 - Add optional `offset` and `size` parameters to `CMD RSCTORAM`
@@ -31,72 +31,169 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - Pass command parameters through the `PARM1` work area
 - Preserve existing 2- and 3-argument `CMD RSCTORAM` behavior
 
-### [redefine-resource-function](openspec/changes/redefine-resource-function) Redefine RESOURCE(n) to load the resource into free RAM and return a usable pointer
+### [redefine-resource-function](openspec/changes/archive/2026-10-26-redefine-resource-function) Redefine RESOURCE(n) to load the resource into free RAM and return a usable pointer
 
 #### Changed
 - Redefine `RESOURCE(n)` to copy the resource into `HEAP()` via `CMD RSCTORAM` and return a directly usable RAM pointer
 - Return `0` when the resource does not exist and truncate the copy to `FRE()` bytes when the resource is larger
 - Keep `RESOURCESIZE(n)` and the existing `DISP_cmd_rsctoram` dispatch unchanged
 
-## [1.3.1.0] - 2026-10-21
+## [1.4.0.0] - 2026-10-26
 
-### [improve-mutation-score](openspec/changes/archive/2026-10-22-improve-mutation-score) Raise the mutation score with exact-output, sentinel-diverse unit tests
-
-#### Added
-- Add exact-output and sentinel-diverse coverage for MegaROM relocation/layout, resource readers, compiler semantic helpers, statement strategies, parser, symbols, lexer, and builder code
-- Add normalized Z80 generated-code fingerprints and kernel dispatch-layout integrity checks as non-scoring regression coverage
-- Add exhaustive relocation-switch coverage, including never-emitted conditional `call`/`jp` variants
-
-#### Changed
-- Require kernel-derived expected values to be computed at test runtime and compiler/Z80 constants to be asserted literally
-- Raise the Mull timeout to 45000 ms for the measured post-Round-6 baseline
-- Strengthen the mutation-testing spec with fresh-report, sentinel-diverse, C++-scope, and kernel-safe requirements
-
-### [isolate-unit-tests-from-file-io](openspec/changes/archive/2026-10-22-isolate-unit-tests-from-file-io) Move CLI E2E scenarios to integration and isolate file-adapter tests in OS temporary directories
+### [2026-10-23-expand-kernel-central-jump-table](openspec/changes/archive/2026-10-23-expand-kernel-central-jump-table) Introduce a runtime central jump table and relocatable module packer for the kernel
 
 #### Added
-- Add a cross-platform `TestTempDir` RAII helper for OS temporary directories
-- Add an integration CLI characterization script preserving normal, quiet, debug, symbol, missing-input, and ASCII8-retry assertions
+- Add a runtime central jump table in the fixed kernel page, with `jp` stubs for resident entries and `{segment, address}` dispatcher stubs for paged entries
+- Add a module manifest (embedded in `msxbas2rom`) describing module ids, exports, imports, dependencies, placement policy, fixed regions, and patch points
+- Add embedded relocation metadata for pre-assembled modules so BASIC compilation never invokes an external assembler, linker, or data file
+- Add cross-module import fixups for calls and address-of pointers so fixed and relocatable modules never embed a movable module's address
+- Add a build-time packer that reserves boot/dispatcher/traps/player regions, computes the used-module closure, fills kernel free holes first, and sends only overflow to the user page or MegaROM segments
+- Add unit, kernel-regression, and emulator tests for dispatching, nested calls, interrupts, traps, relocations, and every supported mapper
 
 #### Changed
-- Move CLI characterization out of the unit/mutation binary into `tests/integration`
-- Remove the compile-based `FS`, `GRAPH`, and `MEGAROM` suites from `tests/unit/src/test_fs.cpp`
-- Convert explicit file-adapter unit tests to OS temporary directories with automatic cleanup
-- Strengthen `check_test_inventory.py` to reject filesystem I/O outside adapter tests and project-relative `tmp/` paths
-- Reduce the plain-ROM overflow fixture from 900 to 200 lines
+- Enforce module isolation and page safety: modules that map resource data into `0x8000` while executing stay fixed, and forced overflow of a fixed module fails with a diagnostic
+- Track the used `DISP_*` set during compilation and defer kernel call resolution to dispatch fixups, with the packer generating selective stubs and patching call sites
+- Classify routines into fixed resident, flex high priority, flex low priority, and overflow
+- Keep player/Arkos fixed-resident at `0x6481-0x6BD5` and keep the timer interrupt handler resident
+- Split `90_support.asm` into graphics, math, strings, print, logic, and trap subgroups, pinning trap/interrupt-critical routines resident
+- Keep `DISP_*` indices stable while replacing direct absolute kernel calls with stubs/fixups
+- Update Plain ROM and MegaROM placement, budget validation, and diagnostics
+- Internal breaking change: kernel routines may move out of the fixed page, flex-routine addresses in `header.symbols.asm` are no longer build constants, and `header.bin` is no longer the sole runtime kernel image
 
-### [refactor-clean-architecture-testability](openspec/changes/archive/2026-10-21-refactor-clean-architecture-testability) Refactor compilation boundaries for in-memory testability and enforce Clean Architecture dependency rules
+### [2026-10-26-accelerate-test-emulator](openspec/changes/archive/2026-10-26-accelerate-test-emulator) Accelerate openMSX regression captures with pre-boot breakpoints and conditional checks
 
 #### Added
-- Establish an automated Clean Architecture boundary check with a version-controlled, pre-approved exception list
-- Introduce application ports and infrastructure adapters for BASIC source input, INCLUDE resolution, ROM/resource/symbol output, and kernel-image access
+- Add a shared helper for `tests/dispatcher/` runtime checks that runs openMSX accelerated when no host input script is present, installs pre-boot breakpoints, and preserves the emulated-time delay as a fallback
+- Add an explicit acceleration option to the `msx-memory-debug` skill
+- Add optional breakpoint conditions (`LABEL=ADDRESS@CONDITION`) so MegaROM checks can require the correct mapper block before capturing
 
 #### Changed
-- Make lexer/parser/compiler workflows accept in-memory source content with a logical source name
-- Keep `BuildOptions` as a domain value object by removing its dependency on filesystem utilities
-- Separate pure ROM image assembly from ROM-file persistence
-- Extract the CLI compile/retry orchestration into an application use case with structured results and diagnostics
-- Replace public, all-purpose parser/compiler contexts with narrower collaborators and encapsulated state
-- Preserve CLI behavior, ROM bytes, diagnostics, resource formats, and cross-platform C++11 support
+- Compile BASIC runtime-check programs with `-s --noi`, resolve `LIN_<line>` from `.noi` symbols, mask addresses with `& 0xFFFF`, and derive the mapper block from the symbol's segment
+- Install the terminal-state breakpoint on the first line of the marker loop after the program has written its RAM marker
+- Export and parse the pasmo `loop` symbol for the hand-written dispatcher prototype
+- Preserve every existing check, marker address, machine selection, headless SDL behavior, and pass/fail result
+- Keep `make test-regression`, product runtime behavior, and parallel emulator execution unchanged
 
-### [replace-service-locators-with-dependency-injection](openspec/changes/archive/2026-10-21-replace-service-locators-with-dependency-injection) Replace global service-locator providers with explicit constructor and composition-root dependency injection
+### [2026-10-26-add-emulator-memory-regression-tests](openspec/changes/archive/2026-10-26-add-emulator-memory-regression-tests) Add an openMSX-based memory regression workflow for integration test programs
 
 #### Added
-- Introduce a headless compilation test harness backed by in-memory source, kernel, resource, symbol, and ROM adapters
+- Add a `regression` Make target in `tests/integration/Makefile`, independent from the existing `run`/`test-integration` flow
+- Add a regression runner and manifest under `tests/integration/regression/`
+- Group programs into scenarios by feature folder and allow running a whole scenario or a single program
+- Compile selected programs in ASCII8 mode by default, with `--noi` symbols and a dedicated output directory
+- Execute ROMs in openMSX with deterministic capture: `END_PGM`/`END_STMT + 2` breakpoints, configurable emulated-time fallback, and automated keyboard/joystick input
+- Validate RAM probes and stable RAM snapshots, VRAM text/name-table checks, and VRAM region hashes, using screenshots only as diagnostics
+- Add baseline generation/refresh with stable-byte masking and volatile-program handling
 
 #### Changed
-- Require ports through constructor or parameter-object injection instead of resolving defaults inside application classes
-- Concentrate production adapter construction in the CLI composition root
-- Make `CompilationRequest` carry a complete, required set of compilation services
-- Pass `ResourceContentSource` through the resource reader factory instead of setting it after construction
-- Migrate ROM, symbol, resource, lexer/parser/compiler, and characterization tests to in-memory assertions
-- Preserve public CLI behavior, diagnostics, ROM bytes, resource bytes, and symbol formats
+- Extend the `msx-memory-debug` skill with VRAM capture, pre-boot breakpoints, input injection, and fallback capture
+- Keep the regression workflow out of CI/CD
+
+### [2026-10-26-add-regression-vram-probes](openspec/changes/archive/2026-10-26-add-regression-vram-probes) Add declarative VRAM probes to the regression manifest
+
+#### Added
+- Add `vram.probes` to the regression manifest schema and runner
+- Add unit tests and document the manifest field
+
+#### Changed
+- Let each probe declare an absolute VRAM offset and expected `value` or `bytes`
+- Evaluate VRAM probes before the volatile short-circuit so volatile programs can still assert exact VRAM state
+- Report probe failures with the VRAM offset and expected/actual bytes
+
+### [2026-10-26-add-turbo-r-regression-coverage](openspec/changes/archive/2026-10-26-add-turbo-r-regression-coverage) Add turbo R regression coverage and machine requirements
+
+#### Added
+- Add stable text expectations for `MSX()` and turbo output labels, marking timing-dependent values volatile
+- Add a turbo R gate that verifies `MSX() = 3` and that `CMD TURBO` continues
+
+#### Changed
+- Mark the turbo R feature programs (`MISC/test1`, `MISC/test64`, `MISC/test65`) with `requires: turboR` so they run on `Panasonic_FS-A1GT`
+- Keep performance-only users of `CMD TURBO`/`CALL TURBO` on MSX2+ unless they declare a turbo R requirement
+
+### [2026-10-26-fix-put-sprite-or-color](openspec/changes/archive/2026-10-26-fix-put-sprite-or-color) Preserve MSX2 sprite color bits in PUT SPRITE
+
+#### Added
+- Add `tests/integration/GRAPH/sprite3.bas` to the regression workflow with a VRAM probe for sprite 1's 16 color-table bytes at `0x6C`
+
+#### Changed
+- Preserve bits 5 and 6 of the PUT SPRITE color parameter when writing the sprite color table on MSX2 and later
+- Keep the MSX1 path limited to the 4-bit sprite color
+- Generate a `GRAPH/sprite3` baseline after the fix
+
+### [2026-10-26-fix-regression-boot-timing](openspec/changes/archive/2026-10-26-fix-regression-boot-timing) Enforce a per-machine-class minimum boot delay for regression captures
+
+#### Added
+- Add a per-machine-class minimum boot delay for fallback captures
+
+#### Changed
+- Default MSX2+, MSX2, and turbo R to at least 15 emulated seconds
+- Keep program-specific `fallback_seconds` as the capture delay but use `max(fallback_seconds, machine_boot_seconds)` for the effective fallback
+- Allow the machine boot minimum to be overridden in the manifest
+- Document the timing rule and add runner tests for the effective value
+
+### [2026-10-26-fix-regression-end-pgm-capture](openspec/changes/archive/2026-10-26-fix-regression-end-pgm-capture) Capture terminal state at the pre-cleanup END entry
+
+#### Added
+- Add regression checks that a graphics-mode program captured at END reports the graphics mode and uses the correct VRAM region layout
+
+#### Changed
+- Capture terminal state at `END_STMT + 2` for both explicit and implicit program termination
+- Use `END_PGM` only as a fallback when `END_STMT` is unavailable
+- Report a clear diagnostic when the captured VDP mode conflicts with the source-declared screen mode
+- Keep the source fallback only for SCREEN 9-12 where VDP registers cannot distinguish the modes
+
+### [2026-10-26-fix-regression-machine-selection](openspec/changes/archive/2026-10-26-fix-regression-machine-selection) Select regression machines by class and VDP screen mode
+
+#### Added
+- Introduce machine classes `msx1`, `msx2`, `msx2plus`, and `turboR` with configurable defaults; MSX2/MSX2+ use `Panasonic_FS-A1WX`
+- Add an explicit `requires` manifest field while keeping `machine` as the highest-precedence override
+- Add unit tests for parsing, machine selection, and VDP mode decoding
+
+#### Changed
+- Parse `SCREEN` literals with or without whitespace
+- Infer MSX2+ for `SCREEN >= 4` or turbo-capable commands and require an explicit `requires: turboR` for turbo R programs
+- Decode V9938/V9958 screen modes from VDP registers, using the source's last SCREEN for SCREEN 9-12
+- Fail a regression run when the baseline machine differs from the selected machine
+- Expose each program's selected machine and class in the audit/list output and run report
+
+### [2026-10-26-fix-turbo-function-runtime](openspec/changes/archive/2026-10-26-fix-turbo-function-runtime) Route TURBO(), VDP(), and MAKER() through kernel dispatch
+
+#### Added
+- Add runtime regressions proving `TURBO()`, `VDP()`, and `MAKER()` return numeric values on MSX2+ and turbo R without hanging
+
+#### Changed
+- Route `TURBO()`, `VDP()`, and `MAKER()` through the kernel dispatch mechanism instead of a direct absolute call to `USR2 + 1`
+- Pass the function selector in `HL` so the `USR2` dispatcher receives the intended function number
+- Keep MSX1 behavior: `TURBO()` returns 0 and `CMD TURBO` remains a no-op
+
+### [2026-10-26-incremental-local-lint](openspec/changes/archive/2026-10-26-incremental-local-lint) Run local lint incrementally while keeping CI full-tree
+
+#### Added
+- Add `make lint-all` for a full local lint run
+
+#### Changed
+- Keep `make lint` full-tree when `CI=true` so the CI workflow is unchanged
+- Locally, lint only changed `src/**/*.cpp` files (working tree versus `HEAD`, including untracked files) and exit successfully with guidance when no C++ source changed
+- Point `make quality-gate` at `lint-all` so the local quality gate remains full
+- Keep `make lint-full` (full tree with `-fanalyzer`) unchanged
+- Document the local/CI split in the contributing guide and the build command reference
 
 #### Removed
-- Remove the five global provider pairs: source resolver, kernel image, resource content source, symbol output sink, and ROM writer
-- Remove the global test adapter setup and static test source registry
+- Remove the automatic fallback to full lint when a header or the `Makefile` changes; header and build-flag validation becomes an explicit `make lint-all` or `make quality-gate`
 
-[Unreleased]: https://github.com/amaurycarvalho/msxbas2rom/compare/v1.3.1.0...HEAD
-[1.3.1.0]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.3.1.0
+### [2026-10-26-refresh-regression-baselines](openspec/changes/archive/2026-10-26-refresh-regression-baselines) Refresh regression baselines for the new machine classes and capture fixes
+
+#### Added
+- Add the new `GRAPH/sprite3` baseline after the OR-color fix
+
+#### Changed
+- Regenerate baselines for programs whose machine class changed to MSX2+ or turbo R
+- Regenerate baselines whose captured screen mode or VRAM regions changed because of the V9958 decoder and END-capture fixes
+- Raise `MEGAROM/test51` fallback time so its 500-line program reaches the pre-cleanup END entry before capture, then regenerate its baseline
+- Review every regenerated baseline for selected machine, screen mode, and region/layout changes and reject unexplained diffs
+- Run the full local regression and the machine audit
+
+[Unreleased]: https://github.com/amaurycarvalho/msxbas2rom/compare/v1.4.0.0...HEAD
+[1.4.0.0]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.4.0.0
 
 See [CHANGELOG Archive](CHANGELOG-ARCHIVE.md) for older releases.

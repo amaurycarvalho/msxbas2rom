@@ -3,7 +3,7 @@
 # by Amaury Carvalho (2022-2026)                                               #
 #------------------------------------------------------------------------------#
 
-.PHONY: all clean build debug release lint test lint-full test-clean test-unit test-integration test-coverage test-kernel test-emulator test-architecture mutation-clean mutation-build mutation-run mutation-check quality-gate debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
+.PHONY: all clean build debug release lint lint-all test lint-full test-clean test-unit test-integration test-coverage test-kernel test-emulator test-architecture mutation-clean mutation-build mutation-run mutation-check quality-gate debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
 
 # ----------------------------
 # Variables
@@ -188,8 +188,23 @@ $(OBJDIR_DEBUG) $(OBJDIR_RELEASE) $(MUTATION_OBJDIR) $(MUTATION_BINDIR):
 # ----------------------------
 
 lint:
+	@if [ "$(CI)" = "true" ] || ! git rev-parse --git-dir >/dev/null 2>&1; then \
+	  echo "🔍 Running static analysis on all source files..."; \
+	  $(CXX) $(LINTFLAGS) $(CPPFLAGS) $(SRC_FILES) && echo "✅ Lint passed!"; \
+	else \
+	  files=$$(git diff --name-only --diff-filter=ACMR HEAD -- 'src/*.cpp' 2>/dev/null; \
+	           git ls-files --others --exclude-standard -- 'src/*.cpp' 2>/dev/null); \
+	  if [ -z "$$files" ]; then \
+	    echo "No changed C++ sources. If you changed headers or build flags, run 'make lint-all'."; \
+	  else \
+	    echo "🔍 Running static analysis on changed source files..."; \
+	    $(CXX) $(LINTFLAGS) $(CPPFLAGS) $$files && echo "✅ Lint passed!"; \
+	  fi; \
+	fi
+
+lint-all:
 	@echo "🔍 Running static analysis on all source files..."
-	@$(CXX) $(LINTFLAGS) $(CPPFLAGS) $(shell find $(SRC) -name "*.cpp") 
+	@$(CXX) $(LINTFLAGS) $(CPPFLAGS) $(SRC_FILES)
 	@echo "✅ Lint passed!"
 
 lint-full:
@@ -298,7 +313,7 @@ mutation-check:
 # Quality Gate
 # ----------------------------
 
-quality-gate: lint test-architecture test-coverage test-kernel test-integration
+quality-gate: lint-all test-architecture test-coverage test-kernel test-integration
 	@echo "✅ Quality gate completed"
 
 # -----------------------------------------------

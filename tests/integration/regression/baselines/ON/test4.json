@@ -1,13 +1,15 @@
 {
   "capture_time": "12.115601843251028",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:27:33-0300",
+  "effective_fallback_seconds": 12.0,
+  "generated_at": "2026-10-26T18:34:01-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "ON/test4",
   "ram": {
     "mask": "eNrt0KEBAAAIAyD/f3rmJYsRTiABAAAAAAAAAAAAAABoc1EEAAAA7xYShqLT",
-    "values": "eNrtm0Fo01AYx7+Xxi3a2mRVZySIA9Ht4BAVnezkSQOrB9HCFOlm3cmDCKNOh2yvO3l0IurFm0gp4tnbClqwB/HQoyg7eNBb0+B0q1t8belcM6uua+tY//+vee99770k/b2X914CiUNOhbGVaeYRIUlkpm72kJkU6RnDTGlcdshtEARBrSunJqtxt7rZfz49+MEPfvCDH/zgBz/4wQ9+8IMf/OAHP/jBD37wgx/84Ac/+MEPfvCDH/zgBz/4wQ9+8IMf/K3IrxTM2cjBpnxrE9d/zbx/1fuIHblva9mPS3ak8R3UPPLr1liOWrz/vQFv4IWvsH32vaJyTCRJJCXCT2KMdek9h5mmTx0z9KmnF57HEmGSpmOPjg7z0eAATZsJZSDJTtfvulj3ATxC/1z7wcQIe0Pv7vzKycTDuicTHx3PxNOZuPL2sa1YIk5/+NIXCoauhGZDl86U7Srv3tut+4ujRCmGOnWJ0KCTK1KlEpFiTCOabeN0ol1+bamyLFpa/NSL8w5j2Xw2f/7ywV71QK+/c18xRYxYf+VY7Mdr/evRITQBqSQRDfEOqZzB7Ze5s3x8bo818YfdRCm3h/iynywtHYP8WW45r1RsJoWlglypqmahfppr0onMZDG6ffxIdKN2+6mRh+f69g/SNWvMqlYnRuRusW8u/7vLn3f5Cy4/7/J/uPxFl7+06nbQpRlDTK0kplVj7W0wGS383cmvxTC6gLmgBSTLt+46jazE9d2du3buCHRoqn+7z7ttq9LetkX2SGzVk81v1bgpidv1P+o9sWrcWKw2NiuXmc32OWEagtagmh5fsj8BsAnPqQ==",
+    "values": "eNrtm0Fo01AYx7+Xxi3a2mRVZ6SIA9Ht4BAVnezkSQOrB5FCFem07uRBhFGnQ7bXnbwITkS9eJVSxLO3BbRgD+KhR1F28KC3psHpVrf42tK5ZlZd19ax/v9f89773ntJ+nsv770EEoecKmMr08wjQpLISN/sI8MU6Zmgkda47JDbIAiC2ldOXVbnbg2z/3x68IMf/OAHP/jBD37wgx/84Ac/+MEPfvCDH/zgBz/4wQ9+8IMf/OAHP/jBD37wgx/84Ac/+NuRXymas5GDTfnWJq7/unn/qvcxO/bA1nIfl+xY8zuodeTXrbE8tXn/ewPewAtfcfvse0WVmEiSSEpFnyYY69H7DjNNnzoW1KfuRZ4nUlGSphOPj17mo6EhmjZSypDJTjfuulj3ATxC/1z74cQIe0Pv7vzKySajuiebHB3PJjPZpPL2ia1YIs58+DIQDoWvhGfDF89U7Crv3dur+0ujRCmFOvWIMEgnV6TKJSLFmEY028HpRKf82lJlWbS0+KkX5h3GcoVc4fylg/3qgX5/975SihixweqxOIjX+tejQ2gCUkkiGuZdUiWD2y/zZ/n43B5r4g+7iVJuD/Nl3ywvHRH+LL+cVy42TGHpEFdqqlWon+ZadCLDLEW3jx+Jb9RuPzXy6NzA/ghds8asWnUSRO4W++byv7v8eZe/4PILLv+Hy190+UurbgddmgmKqZXEtBpcextMxot/d/JrKYwvYC5oA8nyrbtOMytxfXf3rp07Al2a6t/u827bqnR2bJE9Elv1ZPNbNW9K4nbjj3pfrBo3FmuNzeplZrN9TpiBoDWorseX3E+xis+W",
     "volatile_ranges": [
       [
         61552,

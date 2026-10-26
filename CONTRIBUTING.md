@@ -136,10 +136,14 @@ Run in the terminal (or CTRL+SHIFT+P, "Tasks: Run Task" and "test unit msxbas2ro
 Also, run linting, unit testing and code coverage:
 
 ```bash
-make lint
+make lint        # changed C++ sources only; CI lints the full tree
 make test
-make coverage
+make test-coverage
 ```
+
+Run `make lint-all` for a full local lint, and `make quality-gate` before
+pushing to run the full lint plus architecture, coverage, kernel and
+integration checks.
 
 And run integration testing as well:
 

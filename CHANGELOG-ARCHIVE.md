@@ -6,6 +6,64 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 with a MAJOR.MINOR.PATCH.BUILD scheme.
 
+## [1.3.1.0] - 2026-10-21
+
+### [improve-mutation-score](openspec/changes/archive/2026-10-22-improve-mutation-score) Raise the mutation score with exact-output, sentinel-diverse unit tests
+
+#### Added
+- Add exact-output and sentinel-diverse coverage for MegaROM relocation/layout, resource readers, compiler semantic helpers, statement strategies, parser, symbols, lexer, and builder code
+- Add normalized Z80 generated-code fingerprints and kernel dispatch-layout integrity checks as non-scoring regression coverage
+- Add exhaustive relocation-switch coverage, including never-emitted conditional `call`/`jp` variants
+
+#### Changed
+- Require kernel-derived expected values to be computed at test runtime and compiler/Z80 constants to be asserted literally
+- Raise the Mull timeout to 45000 ms for the measured post-Round-6 baseline
+- Strengthen the mutation-testing spec with fresh-report, sentinel-diverse, C++-scope, and kernel-safe requirements
+
+### [isolate-unit-tests-from-file-io](openspec/changes/archive/2026-10-22-isolate-unit-tests-from-file-io) Move CLI E2E scenarios to integration and isolate file-adapter tests in OS temporary directories
+
+#### Added
+- Add a cross-platform `TestTempDir` RAII helper for OS temporary directories
+- Add an integration CLI characterization script preserving normal, quiet, debug, symbol, missing-input, and ASCII8-retry assertions
+
+#### Changed
+- Move CLI characterization out of the unit/mutation binary into `tests/integration`
+- Remove the compile-based `FS`, `GRAPH`, and `MEGAROM` suites from `tests/unit/src/test_fs.cpp`
+- Convert explicit file-adapter unit tests to OS temporary directories with automatic cleanup
+- Strengthen `check_test_inventory.py` to reject filesystem I/O outside adapter tests and project-relative `tmp/` paths
+- Reduce the plain-ROM overflow fixture from 900 to 200 lines
+
+### [refactor-clean-architecture-testability](openspec/changes/archive/2026-10-21-refactor-clean-architecture-testability) Refactor compilation boundaries for in-memory testability and enforce Clean Architecture dependency rules
+
+#### Added
+- Establish an automated Clean Architecture boundary check with a version-controlled, pre-approved exception list
+- Introduce application ports and infrastructure adapters for BASIC source input, INCLUDE resolution, ROM/resource/symbol output, and kernel-image access
+
+#### Changed
+- Make lexer/parser/compiler workflows accept in-memory source content with a logical source name
+- Keep `BuildOptions` as a domain value object by removing its dependency on filesystem utilities
+- Separate pure ROM image assembly from ROM-file persistence
+- Extract the CLI compile/retry orchestration into an application use case with structured results and diagnostics
+- Replace public, all-purpose parser/compiler contexts with narrower collaborators and encapsulated state
+- Preserve CLI behavior, ROM bytes, diagnostics, resource formats, and cross-platform C++11 support
+
+### [replace-service-locators-with-dependency-injection](openspec/changes/archive/2026-10-21-replace-service-locators-with-dependency-injection) Replace global service-locator providers with explicit constructor and composition-root dependency injection
+
+#### Added
+- Introduce a headless compilation test harness backed by in-memory source, kernel, resource, symbol, and ROM adapters
+
+#### Changed
+- Require ports through constructor or parameter-object injection instead of resolving defaults inside application classes
+- Concentrate production adapter construction in the CLI composition root
+- Make `CompilationRequest` carry a complete, required set of compilation services
+- Pass `ResourceContentSource` through the resource reader factory instead of setting it after construction
+- Migrate ROM, symbol, resource, lexer/parser/compiler, and characterization tests to in-memory assertions
+- Preserve public CLI behavior, diagnostics, ROM bytes, resource bytes, and symbol formats
+
+#### Removed
+- Remove the five global provider pairs: source resolver, kernel image, resource content source, symbol output sink, and ROM writer
+- Remove the global test adapter setup and static test source registry
+
 ## [1.3.0.0] - 2026-09-14
 
 ### [2026-09-11-add-msx-memory-debug-skill](openspec/changes/archive/2026-09-11-add-msx-memory-debug-skill) Add an agent-driven openMSX memory/screenshot capture skill for deterministic post-run inspection of MSX ROMs
@@ -1440,6 +1498,7 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 
 See main [CHANGELOG](CHANGELOG.md) for newer releases.
 
+[1.3.1.0]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.3.1.0
 [1.3.0.0]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.3.0.0
 [1.2.3.0]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.2.3.0
 [1.2.2.0]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.2.2.0

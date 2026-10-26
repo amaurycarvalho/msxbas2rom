@@ -584,14 +584,23 @@ spec/tests together. Do not patch generated headers under
 ```bash
 make debug                  # debug binary -> bin/Debug/msxbas2rom
 make release                # optimized binary -> bin/Release/msxbas2rom
+make lint                   # changed sources locally; full tree in CI
+make lint-all               # full source tree locally
+make lint-full              # full source tree with -fanalyzer
 make test-unit              # headless unit tests (in-memory adapters)
 make test-architecture      # dependency/boundary checks and test inventory
 make test-kernel            # Z80 kernel binary/manifest/relocation checks
 make test-emulator          # openMSX runtime checks (needs release and openMSX)
 make test-integration       # compiles integration BASIC programs (needs release)
 make test-regression        # runtime RAM/VRAM regression tests (see 10.1; needs openMSX)
-make quality-gate           # lint + architecture + coverage + kernel + integration
+make quality-gate           # lint-all + architecture + coverage + kernel + integration
 ```
+
+`make lint` is incremental locally: it lints only changed `src/**/*.cpp`
+files and skips when none changed, printing a reminder to use `make lint-all`.
+When `CI=true`, it lints the full source tree; CI keeps the full-tree behavior.
+Use `make lint-all` or `make quality-gate` after changing headers or build
+flags.
 
 To regenerate the kernel after ASM changes:
 
