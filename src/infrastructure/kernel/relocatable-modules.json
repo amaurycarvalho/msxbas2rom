@@ -6,10 +6,6 @@
       "force_overflow": false
     },
     {
-      "id": "31-cmd-input",
-      "force_overflow": false
-    },
-    {
       "id": "34_file_handling",
       "force_overflow": false
     },
@@ -35,6 +31,16 @@
     }
   ],
   "extra_modules": [
+    {
+      "id": "31-cmd-input",
+      "source": "31-cmd-input.asm",
+      "owner": "31-cmd-input",
+      "group": "input",
+      "classification": "flex-low",
+      "policy": "flex-low",
+      "dependencies": [],
+      "force_overflow": false
+    },
     {
       "id": "dispatcher",
       "source": "22_dispatcher.asm",

@@ -87,12 +87,19 @@ COLD_PROGRAM = """\
 """
 
 GAME_PROGRAM = """\
-FILE "string.txt.plet5"
 10 SCREEN 2
-20 A$=SPACE$(100)
-30 CMD RSCTORAM 0, VARPTR(A$)+1, 1
+20 CMD DISSCR
+30 CMD ENASCR
 40 POKE 57345,90
 50 GOTO 50
+"""
+
+RSCTORAM_PROGRAM = """\
+FILE "string.bin"
+10 A$=SPACE$(20)
+20 CMD RSCTORAM 0, VARPTR(A$)+1, 0, 2, 3
+30 POKE 57345,90
+40 GOTO 40
 """
 
 DATA_PROGRAM = """\
@@ -106,6 +113,7 @@ FILE "test70.txt"
 """
 
 RESOURCE_FILES = {
+    "string.bin": ROOT / "tests" / "integration" / "MISC" / "string.bin",
     "string.txt.plet5": ROOT / "tests" / "integration" / "MISC" / "string.txt.plet5",
     "mtf.SC4Pal": ROOT / "tests" / "integration" / "MTF" / "mtf.SC4Pal",
     "mtf.SC4Tiles": ROOT / "tests" / "integration" / "MTF" / "mtf.SC4Tiles",
@@ -140,6 +148,7 @@ FIXED_CASES = (
     ("70_pletter", PLETTER_PROGRAM, "pletter.bas", 10),
     ("31-cmd-cold-graphics", COLD_PROGRAM, "cold.bas", 8),
     ("31-cmd-game-graphics", GAME_PROGRAM, "game.bas", 10),
+    ("31-cmd-rsctoram", RSCTORAM_PROGRAM, "rsctoram.bas", 10),
     ("90-graphics", GAME_PROGRAM, "graphics.bas", 10),
 )
 
@@ -255,6 +264,26 @@ def check_fixed_case(module_id, program, name, delay):
     return True
 
 
+def check_resident_plain(module_id, program, name, delay):
+    with tempfile.TemporaryDirectory() as directory:
+        workdir = Path(directory)
+        source = prepare(workdir, program, name)
+        result = compile_rom(workdir, source, [])
+        if result.returncode != 0:
+            print(f"[FAIL] {module_id}: resident Plain ROM build failed")
+            print(result.stdout[-2000:])
+            return False
+        rom = find_rom(workdir)
+        if rom is None:
+            print(f"[FAIL] {module_id}: resident Plain ROM not created")
+            return False
+        ram = run_emulator(rom, delay)
+        if not ram.exists() or ram.read_bytes()[0x2001] != 0x5A:
+            print(f"[FAIL] {module_id}: resident Plain ROM marker not set")
+            return False
+    return True
+
+
 def main():
     if not APP.exists():
         print(f"[SKIP] release binary not found: {APP}")
@@ -275,6 +304,13 @@ def main():
             print(f"[PASS] {module_id}: fixed resident runtime verified")
         else:
             failed = True
+
+    if check_resident_plain(
+        "31-cmd-rsctoram", RSCTORAM_PROGRAM, "rsctoram.bas", 10
+    ):
+        print("[PASS] 31-cmd-rsctoram: resident Plain ROM verified")
+    else:
+        failed = True
 
     with tempfile.TemporaryDirectory() as directory:
         workdir = Path(directory)

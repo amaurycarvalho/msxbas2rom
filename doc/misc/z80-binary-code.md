@@ -237,8 +237,8 @@ The example prints `HI!BACK FROM ASM`.
 
 ### 10.1 `CMD RSCTORAM` + `DEF USR` (recommended for larger code)
 
-`CMD RSCTORAM` copies the **whole** uncompressed resource into a RAM address of
-your choice, with no 255-byte cap. Then call it with `DEF USR` + `USR()`.
+`CMD RSCTORAM` copies a resource, or a bounded range of it, into a RAM address
+of your choice, with no 255-byte cap. Then call it with `DEF USR` + `USR()`.
 
 ```basic
 FILE "usr.bin"
@@ -247,7 +247,17 @@ FILE "usr.bin"
 30 PRINT USR(41)            ' prints 42
 ```
 
-- Syntax: `CMD RSCTORAM <resource>, <RAM dest> [, <pletter: 0=no, 1=yes>]`.
+- Syntax:
+  `CMD RSCTORAM <resource>, <RAM dest> [, <pletter: 0=no, 1=yes> [, <offset> [, <size>]]]`.
+- `offset` defaults to `0` (first resource byte). `size` defaults to the number
+  of bytes remaining after `offset`; a `size` of `0` also means "full remaining".
+  When `size` is non-zero, the kernel copies
+  `min(size, resource_size - offset)` bytes and never reads past the resource end.
+- `pletter = 1` decompresses the whole compressed resource and ignores `offset`
+  and `size`.
+- The kernel routine returns the destination address in `HL` on success, or `0`
+  when the resource does not exist or nothing was copied. `CMD RSCTORAM` used as
+  a statement ignores this value.
 - This is the best option for routines bigger than 255 bytes, or when you want
   to avoid the word-by-word `IPOKE` loop.
 - Because the code executes at `HEAP()` (unknown at assembly time), the same
@@ -290,7 +300,7 @@ caveat as `RESOURCE()`.
 | `HEAP()` | `HEAP()` | First free RAM address. |
 | `VARPTR()` | `VARPTR(var)` | Address of a variable. |
 | `CMD RUNASM` | `CMD RUNASM <resource>` | Copies (max 255 bytes) and executes. |
-| `CMD RSCTORAM` | `CMD RSCTORAM <res>, <dest>[, <pletter>]` | Bulk-copies a resource to RAM. |
+| `CMD RSCTORAM` | `CMD RSCTORAM <res>, <dest>[, <pletter>[, <offset>[, <size>]]]` | Copies a resource range to RAM; `size=0` means full remaining. |
 | `RESOURCE()` | `RESOURCE(n)` | Resource address (with caveats, see 10.2). |
 | `RESOURCESIZE()` | `RESOURCESIZE(n)` | Resource size. |
 

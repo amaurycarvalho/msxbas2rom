@@ -4,6 +4,10 @@
 
 	org 0000h
 
+; cmd_pad lives in the relocatable 31-cmd-input module; the compile-time
+; dispatch-name table below still needs the symbol to exist.
+cmd_pad equ 0
+
 wrapper_routines_map_table:
   dw castParamFloatInt
   dw cmd_clrkey

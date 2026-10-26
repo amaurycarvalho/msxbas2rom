@@ -11,47 +11,30 @@ bool CompilerCmdRscToRamHandler::execute(shared_ptr<CompilerContext> context,
   auto& cpu = *context->getCpu();
   auto& expression = *context->getExpressionEvaluator();
 
-  if (action->actions.size() == 2 || action->actions.size() == 3) {
-    auto sub = action->actions[0];  // resource number
-    int subtype = expression.evalExpression(sub);
-    expression.addCast(subtype, Lexeme::subtype_numeric);
-
-    // push hl
-    cpu.addPushHL();
-
-    sub = action->actions[1];  // ram dest address
-    subtype = expression.evalExpression(sub);
-    expression.addCast(subtype, Lexeme::subtype_numeric);
-
-    if (action->actions.size() == 2) {
-      // ex de, hl
-      cpu.addExDEHL();
-      // xor a   ; no pletter
-      cpu.addXorA();
-    } else {
-      // push hl
-      cpu.addPushHL();
-
-      sub = action->actions[2];  // pletter? 0=no, 1=yes
-      subtype = expression.evalExpression(sub);
-      expression.addCast(subtype, Lexeme::subtype_numeric);
-
-      // ld a, l
-      cpu.addLdAL();
-
-      // pop de
-      cpu.addPopDE();
-    }
-
-    // pop hl
-    cpu.addPopHL();
-
-    // call cmd_rsctoram
-    context->getCodeOptimizer()->addKernelCall(DISP_cmd_rsctoram);
-
-  } else {
+  const int n = static_cast<int>(action->actions.size());
+  if (n < 2 || n > 5) {
     context->syntaxError("CMD RSCTORAM syntax error");
+    return context->getCompiled();
   }
+
+  auto evaluateWord = [&](int index, int address) {
+    if (index < n) {
+      auto sub = action->actions[index];
+      int subtype = expression.evalExpression(sub);
+      expression.addCast(subtype, Lexeme::subtype_numeric);
+    } else {
+      cpu.addLdHL(0);
+    }
+    cpu.addLdiiHL(address);
+  };
+
+  evaluateWord(0, def_RSC_RESOURCE);
+  evaluateWord(1, def_RSC_DEST);
+  evaluateWord(2, def_RSC_PLETTER);
+  evaluateWord(3, def_RSC_OFFSET);
+  evaluateWord(4, def_RSC_SIZE);
+
+  context->getCodeOptimizer()->addKernelCall(DISP_cmd_rsctoram);
 
   return context->getCompiled();
 }

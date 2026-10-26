@@ -361,6 +361,20 @@
             }
           }
         },
+        "rsc_offset": {
+          "vram": {
+            "text": {
+              "expected": [
+                "EXACT=247,70,35",
+                "CLAMP=16,249,201",
+                "FULL=247,201",
+                "END=170",
+                "MISS=170",
+                "PLET=HELLO"
+              ]
+            }
+          }
+        },
         "turbo_functions": {
           "volatile": true
         },

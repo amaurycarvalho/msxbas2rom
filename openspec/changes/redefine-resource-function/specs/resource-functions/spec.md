@@ -35,6 +35,24 @@ The resource bytes SHALL be copied verbatim (no decompression, no transformation
 - **WHEN** `RESOURCE(n)` returns a non-zero address `A` for a resource that exists
 - **THEN** `PEEK(A)`, `PEEK(A+1)`, ... SHALL expose the resource bytes as stored in ROM, in the same order, up to the copied length
 
+### Requirement: RESOURCE(n) is a single-slot loader
+
+`RESOURCE(n)` SHALL NOT allocate memory and SHALL NOT advance `HEAPSTR`. Each evaluation SHALL write to the same `HEAP()` address and overwrite any previous copy. Callers SHALL consume the copy before the next `RESOURCE(n)` call or any operation that reuses the heap area.
+
+`RESOURCE(n)` SHALL NOT reserve the top 256 bytes of the heap used by BASIC temporary strings; the approved copy length is `min(resource_size, FRE())`, which may overlap that reserve.
+
+#### Scenario: Repeated calls overwrite the same address
+
+- **WHEN** `RESOURCE(n)` is evaluated twice in succession
+- **THEN** both calls SHALL return the same `HEAP()` address
+- **AND** the second copy SHALL overwrite the first
+
+#### Scenario: Heap start is not advanced
+
+- **WHEN** `RESOURCE(n)` completes
+- **THEN** `HEAPSTR` SHALL be unchanged
+- **AND** `FRE()` SHALL be unchanged
+
 ### Requirement: RESOURCE(n) is defined by delegation to CMD RSCTORAM
 
 `RESOURCE(n)` SHALL be equivalent to executing `CMD RSCTORAM n, HEAP(), 0, 0, FRE()` and returning the routine's `HL` result. It SHALL copy `min(resource_size, FRE())` bytes starting at resource byte `0`.
@@ -43,7 +61,7 @@ The resource bytes SHALL be copied verbatim (no decompression, no transformation
 
 - **WHEN** `RESOURCE(n)` is evaluated
 - **THEN** it SHALL produce the same RAM contents and the same returned address as `CMD RSCTORAM n, HEAP(), 0, 0, FRE()`
-- **AND** the returned `.rom` value SHALL be `0` when the command would return `0`
+- **AND** the returned value SHALL be `0` when the command would return `0`
 
 ### Requirement: RESOURCESIZE(n) keeps its current behavior
 

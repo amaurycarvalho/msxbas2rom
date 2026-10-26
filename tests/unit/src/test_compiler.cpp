@@ -1807,6 +1807,35 @@ TEST_SUITE("CompilerCmdHandlers") {
          false,
          false,
          false},
+        {"RSCTORAM_3param",
+         "RSCTORAM",
+         {numLex("1"), numLex("2"), numLex("1")},
+         true,
+         false,
+         false,
+         false},
+        {"RSCTORAM_4param",
+         "RSCTORAM",
+         {numLex("1"), numLex("2"), numLex("1"), numLex("3")},
+         true,
+         false,
+         false,
+         false},
+        {"RSCTORAM_5param",
+         "RSCTORAM",
+         {numLex("1"), numLex("2"), numLex("1"), numLex("3"), numLex("4")},
+         true,
+         false,
+         false,
+         false},
+        {"RSCTORAM_6param_invalid",
+         "RSCTORAM",
+         {numLex("1"), numLex("2"), numLex("1"), numLex("3"), numLex("4"),
+          numLex("5")},
+         false,
+         false,
+         false,
+         false},
         {"DISSCR", "DISSCR", {}, true, false, false, false},
         {"ENASCR", "ENASCR", {}, true, false, false, false},
         {"KEYCLKOFF", "KEYCLKOFF", {}, true, false, false, false},
@@ -1924,6 +1953,105 @@ TEST_SUITE("CompilerCmdHandlers") {
         CHECK(ctx->getFont() == test_case.expect_font);
       }
     }
+  }
+
+  TEST_CASE("CMD RSCTORAM stores all parameters in PARM1") {
+    struct Store {
+      int value;
+      int address;
+    };
+    struct LayoutCase {
+      const char* name;
+      std::vector<shared_ptr<Lexeme>> params;
+      std::vector<Store> stores;
+    };
+
+    const LayoutCase cases[] = {
+        {"two_arguments",
+         {numLex("1"), numLex("2")},
+         {{1, def_RSC_RESOURCE},
+          {2, def_RSC_DEST},
+          {0, def_RSC_PLETTER},
+          {0, def_RSC_OFFSET},
+          {0, def_RSC_SIZE}}},
+        {"three_arguments",
+         {numLex("1"), numLex("2"), numLex("1")},
+         {{1, def_RSC_RESOURCE},
+          {2, def_RSC_DEST},
+          {1, def_RSC_PLETTER},
+          {0, def_RSC_OFFSET},
+          {0, def_RSC_SIZE}}},
+        {"four_arguments",
+         {numLex("1"), numLex("2"), numLex("1"), numLex("3")},
+         {{1, def_RSC_RESOURCE},
+          {2, def_RSC_DEST},
+          {1, def_RSC_PLETTER},
+          {3, def_RSC_OFFSET},
+          {0, def_RSC_SIZE}}},
+        {"five_arguments",
+         {numLex("1"), numLex("2"), numLex("1"), numLex("3"), numLex("4")},
+         {{1, def_RSC_RESOURCE},
+          {2, def_RSC_DEST},
+          {1, def_RSC_PLETTER},
+          {3, def_RSC_OFFSET},
+          {4, def_RSC_SIZE}}},
+    };
+
+    auto containsLoadStore = [](const std::vector<unsigned char>& code,
+                                int value, int address) {
+      for (size_t i = 0; i + 5 < code.size(); i++) {
+        if (code[i] != 0x21 || code[i + 1] != (value & 0xFF) ||
+            code[i + 2] != ((value >> 8) & 0xFF)) {
+          continue;
+        }
+        if (code[i + 3] == 0x22 && code[i + 4] == (address & 0xFF) &&
+            code[i + 5] == ((address >> 8) & 0xFF)) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    for (const auto& test_case : cases) {
+      SUBCASE(test_case.name) {
+        shared_ptr<CpuWorkspaceContext> workspace =
+            make_shared<CpuWorkspaceContext>(COMPILE_CODE_SIZE,
+                                             COMPILE_RAM_SIZE, def_RAM_BOTTOM);
+        shared_ptr<Z80OpcodeWriter> cpu = make_shared<Z80OpcodeWriter>();
+        shared_ptr<CompilerContext> ctx = createCmdContext(cpu, workspace);
+
+        CompilerCmdHandlerFactory factory;
+        ICompilerCmdHandler* handler = factory.getByKeyword("RSCTORAM");
+        REQUIRE(handler != nullptr);
+
+        shared_ptr<ActionNode> action = makeCmdAction("RSCTORAM",
+                                                     test_case.params);
+        CHECK(handler->execute(ctx, action));
+
+        const auto& code = ctx->getCpu()->context->getCode();
+        for (const auto& store : test_case.stores) {
+          CHECK(containsLoadStore(code, store.value, store.address));
+        }
+      }
+    }
+  }
+
+  TEST_CASE("CMD RSCTORAM rejects six arguments") {
+    shared_ptr<CpuWorkspaceContext> workspace = make_shared<CpuWorkspaceContext>(
+        COMPILE_CODE_SIZE, COMPILE_RAM_SIZE, def_RAM_BOTTOM);
+    shared_ptr<Z80OpcodeWriter> cpu = make_shared<Z80OpcodeWriter>();
+    shared_ptr<CompilerContext> ctx = createCmdContext(cpu, workspace);
+
+    CompilerCmdHandlerFactory factory;
+    ICompilerCmdHandler* handler = factory.getByKeyword("RSCTORAM");
+    REQUIRE(handler != nullptr);
+
+    shared_ptr<ActionNode> action = makeCmdAction(
+        "RSCTORAM", {numLex("1"), numLex("2"), numLex("0"), numLex("3"),
+                     numLex("4"), numLex("5")});
+
+    CHECK_FALSE(handler->execute(ctx, action));
+    CHECK_FALSE(ctx->getCompiled());
   }
 }
 

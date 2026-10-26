@@ -1,0 +1,42 @@
+{
+  "capture_time": "5.271005113778427",
+  "capture_trigger": "breakpoint:END_STMT+2@32869",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-26T15:17:11-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
+  "probes": [],
+  "program": "MISC/rsc_offset",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2rEKgkAcwOHTCqKpvUWnXqTgBkFo6QV6hubeLFp8rcuarKkkSPT7/UHO4ZBPHS+F9DJZd53N2mvIQ2zO2zze2vV1E5v1ZZ6/7UrhFPdVVRfH+lDtyrIsvrldFR8WNNQWz0/qPUjTLPWantt+Nn9+PD8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/P/80/cvHpCFfRnlqcTz/v3OrkiRJkiSNvzv8O3pD",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "MISC",
+  "screen": 1,
+  "screen_stable": true,
+  "source": "tests/integration/MISC/rsc_offset.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "expected_text": [
+      "EXACT=247,70,35",
+      "CLAMP=16,249,201",
+      "FULL=247,201",
+      "END=170",
+      "MISS=170",
+      "PLET=HELLO"
+    ],
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " EXACT= 247 , 70 , 35\n         CLAMP= 16 , 249 , 201\n                 FULL= 247 , 201\n                         END= 17\n0\n MISS= 170\n         PLET=HELLO",
+    "unstable_regions": []
+  }
+}

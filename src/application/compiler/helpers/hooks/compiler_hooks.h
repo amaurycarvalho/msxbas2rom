@@ -443,6 +443,12 @@
 #define def_TEMPST 0xF67A   // 30 - temporary string descriptors buffer
 #define def_PARM1 0xF6E8    // 100 - parameters buffer 1
 #define def_PARM2 0xF750    // 100 - parameters buffer 2
+// CMD RSCTORAM / RESOURCE(n) PARM1 layout
+#define def_RSC_RESOURCE (def_PARM1 + 0)  // word
+#define def_RSC_DEST (def_PARM1 + 2)      // word
+#define def_RSC_PLETTER (def_PARM1 + 4)   // word
+#define def_RSC_OFFSET (def_PARM1 + 6)    // word
+#define def_RSC_SIZE (def_PARM1 + 8)      // word (0 = full remaining)
 #define def_DSCTMP 0xF698   // 3 - index and start address of temporary strings
 #define def_ENDFOR 0xF6A1   // 2
 #define def_ENDPRG 0xF40F   // fake empty line

@@ -25,6 +25,10 @@
       "group": "mtf",
       "classification": "fixed"
     },
+    "31-cmd-rsctoram": {
+      "group": "cmd",
+      "classification": "fixed"
+    },
     "31-cmd-input": {
       "group": "input",
       "classification": "flex-low"

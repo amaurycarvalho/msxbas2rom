@@ -295,29 +295,9 @@ cmd_ramtoram:
   ldir      ; hl = source ram address, de = dest ram address, bc = length
   ret
 
-; copy resource to ram address
-; CMD RSCTORAM <resource number>, <ram dest address>, <pletter: 0=no, 1=yes>
-; hl = resource
-; de = ram address
-; a = pletter
-cmd_rsctoram:
-  di
-    push de
-    push af
-      ld (DAC), hl
-      call resource.open_and_get_address          ; in: DAC = resource number, out: hl = resource data, a = resource segment, bc = resource size
-    pop af
-    pop de
-    or a
-    jr nz, cmd_rsctoram.unpack
-      ldir
-      jr cmd_rsctoram.end
-cmd_rsctoram.unpack:
-    call resource.ram.unpack
-cmd_rsctoram.end:
-    call resource.close
-  ei
-  ret
+; cmd_rsctoram moved to the fixed 31-cmd-rsctoram module.
+; This filler preserves the fixed layout (player.int.control / ARKOS_PLAYER).
+    DEFS 26, 0x00
 
 ; disable screen
 cmd_disscr:

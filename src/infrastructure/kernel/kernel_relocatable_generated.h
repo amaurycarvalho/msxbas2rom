@@ -259,47 +259,6 @@ static const char* const kernel_relocatable_dependencies_0[] = {
 };
 
 static const unsigned char kernel_relocatable_bytes_1[] = {
-    0x7D, 0xFE, 0x08, 0x38, 0x47, 0x3A, 0x2D, 0x00, 0xB7, 0x7D, 0x20, 0x40, 0xFE, 0x0C, 0x28, 0x17,
-    0xFE, 0x0D, 0x28, 0x2E, 0xFE, 0x0E, 0x28, 0x2F, 0xFE, 0x10, 0x28, 0x21, 0xFE, 0x11, 0x28, 0x22,
-    0xFE, 0x12, 0x28, 0x23, 0xAF, 0x18, 0x28, 0x11, 0x10, 0x13, 0xCD, 0x57, 0x00, 0x7D, 0xED, 0x44,
-    0x32, 0x9C, 0xFC, 0x7C, 0xED, 0x44, 0x32, 0x9D, 0xFC, 0x3E, 0xFF, 0x18, 0x12, 0x11, 0x20, 0x6C,
-    0x18, 0xE8, 0x3A, 0x9D, 0xFC, 0x18, 0x08, 0x3A, 0x9C, 0xFC, 0x18, 0x03, 0xCD, 0xDB, 0x00, 0x6F,
-    0xE6, 0x80, 0x67, 0xC8, 0x26, 0xFF, 0xC9, 0x06, 0x1E, 0xCD, 0x7E, 0x00, 0xE6, 0x0F, 0x07, 0x07,
-    0x07, 0x07, 0x4F, 0xCD, 0x7C, 0x00, 0xE6, 0x0F, 0xB1, 0x67, 0xCD, 0x7C, 0x00, 0xE6, 0x0F, 0x07,
-    0x07, 0x07, 0x07, 0x4F, 0xCD, 0x7C, 0x00, 0xE6, 0x0F, 0xB1, 0x6F, 0xC9, 0x06, 0x0A, 0x3E, 0x0F,
-    0xF3, 0xD3, 0xA0, 0xDB, 0xA1, 0xE6, 0x80, 0xB2, 0xD3, 0xA1, 0xAB, 0x57, 0xCD, 0x97, 0x00, 0x3E,
-    0x0E, 0xD3, 0xA0, 0xFB, 0xDB, 0xA2, 0xC9, 0x78, 0x10, 0xFE, 0xED, 0x55, 0x07, 0x07, 0x47, 0x10,
-    0xFE, 0x47, 0x10, 0xFE, 0xC9,
-};
-
-static const GeneratedRelocatableExport kernel_relocatable_exports_1[] = {
-    {"cmd_pad", 0},
-    {"cmd_pad.mouse_on_msx1", 12},
-    {"cmd_pad.mouse_on_msx1.12", 39},
-    {"cmd_pad.mouse_on_msx1.12.cont", 42},
-    {"cmd_pad.mouse_on_msx1.16", 61},
-    {"cmd_pad.mouse_on_msx1.13", 66},
-    {"cmd_pad.mouse_on_msx1.14", 71},
-    {"cmd_pad.from_bios", 76},
-    {"cmd_pad.end", 79},
-    {"cmd_pad.GTMOUS", 87},
-    {"cmd_pad.GTOFST", 124},
-    {"cmd_pad.GTOFS2", 126},
-    {"cmd_pad.WAITMS", 151},
-    {"cmd_pad.WTTR", 152},
-    {"cmd_pad.WTTR2", 159},
-    {"cmd_pad.WTTR3", 162},
-};
-
-static const GeneratedRelocatableImport kernel_relocatable_imports_1[] = { {0, 0, 0} };
-
-static const unsigned int kernel_relocatable_relocations_1[] = {
-    43, 90, 100, 107, 117, 141,
-};
-
-static const char* const kernel_relocatable_dependencies_1[] = {0};
-
-static const unsigned char kernel_relocatable_bytes_2[] = {
     0xFE, 0x09, 0xD0, 0xE5, 0x6F, 0x26, 0x00, 0x29, 0xD5, 0x11, 0x21, 0xFB, 0x19, 0xD1, 0x7E, 0x23,
     0xB6, 0xE1, 0xC8, 0xAF, 0xC9, 0x08, 0xD9, 0xAF, 0x32, 0x14, 0xF4, 0x3E, 0xC3, 0x32, 0xB1, 0xFF,
     0x11, 0x50, 0xF7, 0xED, 0x53, 0xB2, 0xFF, 0x21, 0x40, 0x00, 0x01, 0x18, 0x00, 0xED, 0xB0, 0xD9,
@@ -339,7 +298,7 @@ static const unsigned char kernel_relocatable_bytes_2[] = {
     0x00, 0x7A, 0xB7, 0xC4, 0x68, 0x00, 0xC3, 0x62, 0x00,
 };
 
-static const GeneratedRelocatableExport kernel_relocatable_exports_2[] = {
+static const GeneratedRelocatableExport kernel_relocatable_exports_1[] = {
     {"cmd_preflight_disk", 0},
     {"cmd_fcalbas_we", 21},
     {"cmd_fcalbas_we.done", 56},
@@ -395,21 +354,21 @@ static const GeneratedRelocatableExport kernel_relocatable_exports_2[] = {
     {"cmd_fprint.end", 571},
 };
 
-static const GeneratedRelocatableImport kernel_relocatable_imports_2[] = { {0, 0, 0} };
+static const GeneratedRelocatableImport kernel_relocatable_imports_1[] = { {0, 0, 0} };
 
-static const unsigned int kernel_relocatable_relocations_2[] = {
+static const unsigned int kernel_relocatable_relocations_1[] = {
     40, 86, 142, 186, 244, 247, 260, 277, 305, 315, 339, 342, 355, 358, 361, 382, 387, 508, 544, 552, 555, 566, 575, 580, 583,
 };
 
-static const char* const kernel_relocatable_dependencies_2[] = {0};
+static const char* const kernel_relocatable_dependencies_1[] = {0};
 
-static const unsigned char kernel_relocatable_bytes_3[] = {
+static const unsigned char kernel_relocatable_bytes_2[] = {
     0x7D, 0xB4, 0xC8, 0xCB, 0x7C, 0x21, 0xFF, 0xFF, 0xC0, 0x23, 0x23, 0xC9, 0x78, 0xA7, 0xC8, 0x06,
     0x81, 0x2E, 0x00, 0x7C, 0xE6, 0x80, 0x67, 0xC9, 0x7C, 0x87, 0xD0, 0xAF, 0x95, 0x6F, 0x9F, 0x94,
     0x67, 0xC9,
 };
 
-static const GeneratedRelocatableExport kernel_relocatable_exports_3[] = {
+static const GeneratedRelocatableExport kernel_relocatable_exports_2[] = {
     {"J_SGN_INT", 0},
     {"XBASIC_SGN_INT", 0},
     {"J_SGN_FLOAT", 12},
@@ -418,13 +377,13 @@ static const GeneratedRelocatableExport kernel_relocatable_exports_3[] = {
     {"XBASIC_ABS_INT", 24},
 };
 
-static const GeneratedRelocatableImport kernel_relocatable_imports_3[] = { {0, 0, 0} };
+static const GeneratedRelocatableImport kernel_relocatable_imports_2[] = { {0, 0, 0} };
 
-static const unsigned int kernel_relocatable_relocations_3[] = {0};
+static const unsigned int kernel_relocatable_relocations_2[] = {0};
 
-static const char* const kernel_relocatable_dependencies_3[] = {0};
+static const char* const kernel_relocatable_dependencies_2[] = {0};
 
-static const unsigned char kernel_relocatable_bytes_4[] = {
+static const unsigned char kernel_relocatable_bytes_3[] = {
     0x3E, 0x40, 0xCB, 0x37, 0xFE, 0x81, 0x28, 0x05, 0x4B, 0x42, 0xED, 0xC3, 0xC9, 0x4D, 0x44, 0x21,
     0x00, 0x00, 0x3E, 0x10, 0x29, 0xEB, 0x29, 0xEB, 0x30, 0x01, 0x09, 0x3D, 0x20, 0xF6, 0xC9, 0xD5,
     0xE5, 0xCB, 0x7A, 0x20, 0x06, 0xAF, 0x93, 0x5F, 0x9F, 0x92, 0x57, 0x4B, 0x42, 0xCB, 0x7C, 0x28,
@@ -517,7 +476,7 @@ static const unsigned char kernel_relocatable_bytes_4[] = {
     0x18, 0xDF,
 };
 
-static const GeneratedRelocatableExport kernel_relocatable_exports_4[] = {
+static const GeneratedRelocatableExport kernel_relocatable_exports_3[] = {
     {"C7624", 0},
     {"J7631", 13},
     {"XBASIC_MULTIPLY_INTEGERS", 13},
@@ -659,15 +618,15 @@ static const GeneratedRelocatableExport kernel_relocatable_exports_4[] = {
     {"J7BB0", 1393},
 };
 
-static const GeneratedRelocatableImport kernel_relocatable_imports_4[] = { {0, 0, 0} };
+static const GeneratedRelocatableImport kernel_relocatable_imports_3[] = { {0, 0, 0} };
 
-static const unsigned int kernel_relocatable_relocations_4[] = {
+static const unsigned int kernel_relocatable_relocations_3[] = {
     86, 180, 300, 329, 500, 504, 508, 513, 519, 530, 540, 580, 584, 594, 600, 612, 625, 642, 657, 660, 665, 671, 674, 716, 733, 752, 761, 770, 780, 789, 798, 819, 851, 918, 937, 950, 963, 968, 976, 984, 994, 1004, 1017, 1020, 1029, 1036, 1042, 1067, 1077, 1080, 1092, 1096, 1099, 1135, 1145, 1150, 1155, 1169, 1173, 1176, 1184, 1236, 1239, 1249, 1252, 1260, 1271, 1277, 1285, 1332, 1338, 1359, 1362, 1368, 1404, 1416,
 };
 
-static const char* const kernel_relocatable_dependencies_4[] = {0};
+static const char* const kernel_relocatable_dependencies_3[] = {0};
 
-static const unsigned char kernel_relocatable_bytes_5[] = {
+static const unsigned char kernel_relocatable_bytes_4[] = {
     0xDD, 0x21, 0xC6, 0xF7, 0xCB, 0x7C, 0x3E, 0x20, 0x28, 0x0B, 0xAF, 0x95, 0x6F, 0x9F, 0x94, 0x67,
     0xFA, 0x28, 0x00, 0x3E, 0x2D, 0xDD, 0x77, 0x00, 0xDD, 0x23, 0xCD, 0x3D, 0x00, 0xDD, 0xE5, 0xE1,
     0x7D, 0xD6, 0xC6, 0x21, 0xC5, 0xF7, 0x77, 0xC9, 0x11, 0xCB, 0xF7, 0x21, 0x3C, 0x00, 0x01, 0x07,
@@ -737,7 +696,7 @@ static const unsigned char kernel_relocatable_bytes_5[] = {
     0x04, 0x02, 0x7E, 0x18, 0xCF, 0x0A, 0xF5, 0x3E, 0xFF, 0x02, 0xF1, 0x18, 0xC6,
 };
 
-static const GeneratedRelocatableExport kernel_relocatable_exports_5[] = {
+static const GeneratedRelocatableExport kernel_relocatable_exports_4[] = {
     {"C7BD1", 0},
     {"XBASIC_CAST_INTEGER_TO_STRING", 0},
     {"J7BE6", 21},
@@ -868,7 +827,7 @@ static const GeneratedRelocatableExport kernel_relocatable_exports_5[] = {
     {"J7FF6", 1061},
 };
 
-static const GeneratedRelocatableImport kernel_relocatable_imports_5[] = {
+static const GeneratedRelocatableImport kernel_relocatable_imports_4[] = {
     {"C7643", 74, 0},
     {"C7966", 140, 0},
     {"C7748", 150, 0},
@@ -885,15 +844,15 @@ static const GeneratedRelocatableImport kernel_relocatable_imports_5[] = {
     {"C782C", 583, 2},
 };
 
-static const unsigned int kernel_relocatable_relocations_5[] = {
+static const unsigned int kernel_relocatable_relocations_4[] = {
     17, 27, 78, 95, 98, 198, 219, 226, 233, 278, 293, 330, 338, 348, 367, 384, 449, 480, 512, 524, 536, 544, 554, 591, 752, 891, 901, 907, 913, 919, 925, 932,
 };
 
-static const char* const kernel_relocatable_dependencies_5[] = {
+static const char* const kernel_relocatable_dependencies_4[] = {
     "90-math",
 };
 
-static const unsigned char kernel_relocatable_bytes_6[] = {
+static const unsigned char kernel_relocatable_bytes_5[] = {
     0xA7, 0xED, 0x52, 0x21, 0xFF, 0xFF, 0xC8, 0x23, 0xC9, 0xA7, 0xED, 0x52, 0x21, 0xFF, 0xFF, 0xC0,
     0x23, 0xC9, 0xEB, 0x7C, 0xEE, 0x80, 0x67, 0x7A, 0xEE, 0x80, 0x57, 0xED, 0x52, 0xED, 0x62, 0xC9,
     0x7C, 0xEE, 0x80, 0x67, 0x7A, 0xEE, 0x80, 0x57, 0xED, 0x52, 0x3F, 0xED, 0x62, 0xC9, 0xEB, 0xC3,
@@ -914,7 +873,7 @@ static const unsigned char kernel_relocatable_bytes_6[] = {
     0x7B, 0x87, 0x87, 0x87, 0x87, 0x5F, 0xC9,
 };
 
-static const GeneratedRelocatableExport kernel_relocatable_exports_6[] = {
+static const GeneratedRelocatableExport kernel_relocatable_exports_5[] = {
     {"intCompareEQ", 0},
     {"intCompareNE", 9},
     {"intCompareLT", 18},
@@ -943,7 +902,7 @@ static const GeneratedRelocatableExport kernel_relocatable_exports_6[] = {
     {"FloatToBCD.add.2", 269},
 };
 
-static const GeneratedRelocatableImport kernel_relocatable_imports_6[] = {
+static const GeneratedRelocatableImport kernel_relocatable_imports_5[] = {
     {"C76D3", 119, 1},
     {"C78DF", 127, 0},
     {"C7748", 189, 0},
@@ -955,21 +914,21 @@ static const GeneratedRelocatableImport kernel_relocatable_imports_6[] = {
     {"C7643", 262, 1},
 };
 
-static const unsigned int kernel_relocatable_relocations_6[] = {
+static const unsigned int kernel_relocatable_relocations_5[] = {
     48, 52, 165, 173, 181, 203, 227, 231, 237, 241, 265, 270,
 };
 
-static const char* const kernel_relocatable_dependencies_6[] = {
+static const char* const kernel_relocatable_dependencies_5[] = {
     "90-math",
 };
 
-static const unsigned char kernel_relocatable_bytes_7[] = {
+static const unsigned char kernel_relocatable_bytes_6[] = {
     0x3E, 0x09, 0xDF, 0xC9, 0x3E, 0x0D, 0xDF, 0x3E, 0x0A, 0xDF, 0xC9, 0x46, 0x78, 0xA7, 0xC8, 0x23,
     0x7E, 0xDF, 0x10, 0xFB, 0xC9, 0xCD, 0xBA, 0x7A, 0x18, 0x03, 0xCD, 0x14, 0x7B, 0xCD, 0xC3, 0x42,
     0x3E, 0x20, 0xDF, 0xC9,
 };
 
-static const GeneratedRelocatableExport kernel_relocatable_exports_7[] = {
+static const GeneratedRelocatableExport kernel_relocatable_exports_6[] = {
     {"C74F3", 0},
     {"XBASIC_PRINT_TAB", 0},
     {"C74F7", 4},
@@ -983,17 +942,58 @@ static const GeneratedRelocatableExport kernel_relocatable_exports_7[] = {
     {"J7510", 29},
 };
 
-static const GeneratedRelocatableImport kernel_relocatable_imports_7[] = {
+static const GeneratedRelocatableImport kernel_relocatable_imports_6[] = {
     {"C7BD1", 22, 0},
     {"C7C2B", 27, 0},
 };
 
-static const unsigned int kernel_relocatable_relocations_7[] = {0};
+static const unsigned int kernel_relocatable_relocations_6[] = {0};
 
-static const char* const kernel_relocatable_dependencies_7[] = {
+static const char* const kernel_relocatable_dependencies_6[] = {
     "30_basic_helpers",
     "90-strings",
 };
+
+static const unsigned char kernel_relocatable_bytes_7[] = {
+    0x7D, 0xFE, 0x08, 0x38, 0x47, 0x3A, 0x2D, 0x00, 0xB7, 0x7D, 0x20, 0x40, 0xFE, 0x0C, 0x28, 0x17,
+    0xFE, 0x0D, 0x28, 0x2E, 0xFE, 0x0E, 0x28, 0x2F, 0xFE, 0x10, 0x28, 0x21, 0xFE, 0x11, 0x28, 0x22,
+    0xFE, 0x12, 0x28, 0x23, 0xAF, 0x18, 0x28, 0x11, 0x10, 0x13, 0xCD, 0x57, 0x00, 0x7D, 0xED, 0x44,
+    0x32, 0x9C, 0xFC, 0x7C, 0xED, 0x44, 0x32, 0x9D, 0xFC, 0x3E, 0xFF, 0x18, 0x12, 0x11, 0x20, 0x6C,
+    0x18, 0xE8, 0x3A, 0x9D, 0xFC, 0x18, 0x08, 0x3A, 0x9C, 0xFC, 0x18, 0x03, 0xCD, 0xDB, 0x00, 0x6F,
+    0xE6, 0x80, 0x67, 0xC8, 0x26, 0xFF, 0xC9, 0x06, 0x1E, 0xCD, 0x7E, 0x00, 0xE6, 0x0F, 0x07, 0x07,
+    0x07, 0x07, 0x4F, 0xCD, 0x7C, 0x00, 0xE6, 0x0F, 0xB1, 0x67, 0xCD, 0x7C, 0x00, 0xE6, 0x0F, 0x07,
+    0x07, 0x07, 0x07, 0x4F, 0xCD, 0x7C, 0x00, 0xE6, 0x0F, 0xB1, 0x6F, 0xC9, 0x06, 0x0A, 0x3E, 0x0F,
+    0xF3, 0xD3, 0xA0, 0xDB, 0xA1, 0xE6, 0x80, 0xB2, 0xD3, 0xA1, 0xAB, 0x57, 0xCD, 0x97, 0x00, 0x3E,
+    0x0E, 0xD3, 0xA0, 0xFB, 0xDB, 0xA2, 0xC9, 0x78, 0x10, 0xFE, 0xED, 0x55, 0x07, 0x07, 0x47, 0x10,
+    0xFE, 0x47, 0x10, 0xFE, 0xC9,
+};
+
+static const GeneratedRelocatableExport kernel_relocatable_exports_7[] = {
+    {"cmd_pad", 0},
+    {"cmd_pad.mouse_on_msx1", 12},
+    {"cmd_pad.mouse_on_msx1.12", 39},
+    {"cmd_pad.mouse_on_msx1.12.cont", 42},
+    {"cmd_pad.mouse_on_msx1.16", 61},
+    {"cmd_pad.mouse_on_msx1.13", 66},
+    {"cmd_pad.mouse_on_msx1.14", 71},
+    {"cmd_pad.from_bios", 76},
+    {"cmd_pad.end", 79},
+    {"cmd_pad.GTMOUS", 87},
+    {"cmd_pad.GTOFST", 124},
+    {"cmd_pad.GTOFS2", 126},
+    {"cmd_pad.WAITMS", 151},
+    {"cmd_pad.WTTR", 152},
+    {"cmd_pad.WTTR2", 159},
+    {"cmd_pad.WTTR3", 162},
+};
+
+static const GeneratedRelocatableImport kernel_relocatable_imports_7[] = { {0, 0, 0} };
+
+static const unsigned int kernel_relocatable_relocations_7[] = {
+    43, 90, 100, 107, 117, 141,
+};
+
+static const char* const kernel_relocatable_dependencies_7[] = {0};
 
 static const unsigned char kernel_relocatable_bytes_8[] = {
     0x22, 0x3E, 0xC0, 0xED, 0x43, 0x3A, 0xC0, 0xED, 0x53, 0x3C, 0xC0, 0xDD, 0x22, 0x40, 0xC0, 0xF5,
@@ -1041,40 +1041,22 @@ static const GeneratedRelocatableModuleDefinition kernel_relocatable_modules[] =
         kernel_relocatable_dependencies_0,
     },
     {
-        "31-cmd-input",
-        "31-cmd-input",
-        "input",
-        "flex-low",
-        2,
-        0,
-        kernel_relocatable_bytes_1,
-        165,
-        16,
-        kernel_relocatable_exports_1,
-        0,
-        kernel_relocatable_imports_1,
-        6,
-        kernel_relocatable_relocations_1,
-        0,
-        kernel_relocatable_dependencies_1,
-    },
-    {
         "34_file_handling",
         "34_file_handling",
         "file-io",
         "flex-low",
         2,
         0,
-        kernel_relocatable_bytes_2,
+        kernel_relocatable_bytes_1,
         585,
         53,
-        kernel_relocatable_exports_2,
+        kernel_relocatable_exports_1,
         0,
-        kernel_relocatable_imports_2,
+        kernel_relocatable_imports_1,
         25,
-        kernel_relocatable_relocations_2,
+        kernel_relocatable_relocations_1,
         0,
-        kernel_relocatable_dependencies_2,
+        kernel_relocatable_dependencies_1,
     },
     {
         "90-math-early",
@@ -1083,16 +1065,16 @@ static const GeneratedRelocatableModuleDefinition kernel_relocatable_modules[] =
         "flex-high",
         1,
         0,
-        kernel_relocatable_bytes_3,
+        kernel_relocatable_bytes_2,
         34,
         6,
-        kernel_relocatable_exports_3,
+        kernel_relocatable_exports_2,
         0,
-        kernel_relocatable_imports_3,
+        kernel_relocatable_imports_2,
         0,
-        kernel_relocatable_relocations_3,
+        kernel_relocatable_relocations_2,
         0,
-        kernel_relocatable_dependencies_3,
+        kernel_relocatable_dependencies_2,
     },
     {
         "90-math",
@@ -1101,16 +1083,16 @@ static const GeneratedRelocatableModuleDefinition kernel_relocatable_modules[] =
         "flex-low",
         2,
         0,
-        kernel_relocatable_bytes_4,
+        kernel_relocatable_bytes_3,
         1426,
         139,
-        kernel_relocatable_exports_4,
+        kernel_relocatable_exports_3,
         0,
-        kernel_relocatable_imports_4,
+        kernel_relocatable_imports_3,
         76,
-        kernel_relocatable_relocations_4,
+        kernel_relocatable_relocations_3,
         0,
-        kernel_relocatable_dependencies_4,
+        kernel_relocatable_dependencies_3,
     },
     {
         "90-strings",
@@ -1119,16 +1101,16 @@ static const GeneratedRelocatableModuleDefinition kernel_relocatable_modules[] =
         "flex-low",
         2,
         0,
-        kernel_relocatable_bytes_5,
+        kernel_relocatable_bytes_4,
         1069,
         128,
-        kernel_relocatable_exports_5,
+        kernel_relocatable_exports_4,
         14,
-        kernel_relocatable_imports_5,
+        kernel_relocatable_imports_4,
         32,
-        kernel_relocatable_relocations_5,
+        kernel_relocatable_relocations_4,
         1,
-        kernel_relocatable_dependencies_5,
+        kernel_relocatable_dependencies_4,
     },
     {
         "21_logic_pack",
@@ -1137,16 +1119,16 @@ static const GeneratedRelocatableModuleDefinition kernel_relocatable_modules[] =
         "flex-high",
         1,
         0,
-        kernel_relocatable_bytes_6,
+        kernel_relocatable_bytes_5,
         279,
         26,
-        kernel_relocatable_exports_6,
+        kernel_relocatable_exports_5,
         9,
-        kernel_relocatable_imports_6,
+        kernel_relocatable_imports_5,
         12,
-        kernel_relocatable_relocations_6,
+        kernel_relocatable_relocations_5,
         1,
-        kernel_relocatable_dependencies_6,
+        kernel_relocatable_dependencies_5,
     },
     {
         "90-print",
@@ -1155,15 +1137,33 @@ static const GeneratedRelocatableModuleDefinition kernel_relocatable_modules[] =
         "flex-high",
         1,
         0,
-        kernel_relocatable_bytes_7,
+        kernel_relocatable_bytes_6,
         36,
         11,
-        kernel_relocatable_exports_7,
+        kernel_relocatable_exports_6,
         2,
-        kernel_relocatable_imports_7,
+        kernel_relocatable_imports_6,
         0,
-        kernel_relocatable_relocations_7,
+        kernel_relocatable_relocations_6,
         2,
+        kernel_relocatable_dependencies_6,
+    },
+    {
+        "31-cmd-input",
+        "31-cmd-input",
+        "input",
+        "flex-low",
+        2,
+        0,
+        kernel_relocatable_bytes_7,
+        165,
+        16,
+        kernel_relocatable_exports_7,
+        0,
+        kernel_relocatable_imports_7,
+        6,
+        kernel_relocatable_relocations_7,
+        0,
         kernel_relocatable_dependencies_7,
     },
     {
