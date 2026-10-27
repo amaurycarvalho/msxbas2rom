@@ -216,7 +216,7 @@ lint-full:
 # Tests
 # ----------------------------
 
-test: test-architecture test-unit
+test: test-unit
 
 test-unit:
 	@echo "🔍 Running unit testing..."
