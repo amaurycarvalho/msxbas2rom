@@ -8,6 +8,7 @@
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "compiler_tile_parameter.h"
 #include "fix_node.h"
 #include "lexeme.h"
 
@@ -548,6 +549,47 @@ void CompilerSetStatementStrategy::cmd_set_tile(
   unsigned int i, t, tt;
   int result_subtype;
 
+  auto emitBank = [&](shared_ptr<ActionNode> bank_action, bool high_byte) {
+    bool is_literal = false;
+    int literal = normalizedTileBankLiteral(bank_action, is_literal);
+    if (is_literal) {
+      if (high_byte)
+        cpu.addLdH(literal);
+      else
+        cpu.addLdB(literal);
+    } else {
+      result_subtype = expression.evalExpression(bank_action);
+      expression.addCast(result_subtype, Lexeme::subtype_numeric);
+      if (high_byte)
+        cpu.addLdHL();
+      else
+        cpu.addLdBL();
+    }
+  };
+
+  auto emitColorByte = [&](shared_ptr<ActionNode> fc_action,
+                           shared_ptr<ActionNode> bc_action) {
+    result_subtype = expression.evalExpression(fc_action);
+    expression.addCast(result_subtype, Lexeme::subtype_numeric);
+    cpu.addLdAL();
+    cpu.addRLA();
+    cpu.addRLA();
+    cpu.addRLA();
+    cpu.addRLA();
+    cpu.addAnd(0xF0);
+
+    if (bc_action) {
+      cpu.addPushAF();
+      result_subtype = expression.evalExpression(bc_action);
+      expression.addCast(result_subtype, Lexeme::subtype_numeric);
+      cpu.addLdAL();
+      cpu.addAnd(0x0F);
+      cpu.addLdLA();
+      cpu.addPopAF();
+      cpu.addOrL();
+    }
+  };
+
   t = action->actions.size();
   if (t) {
     action = action->actions[0];
@@ -589,33 +631,33 @@ void CompilerSetStatementStrategy::cmd_set_tile(
       if (t >= 2 && t <= 3) {
         // tile number
         sub_action = action->actions[0];
-        // ld hl, parameter value    ; parameter
         result_subtype = expression.evalExpression(sub_action);
         expression.addCast(result_subtype, Lexeme::subtype_numeric);
-        // push hl
         cpu.addPushHL();
 
         // direction
         sub_action = action->actions[1];
-        // ld hl, parameter value    ; parameter
+        int direction = 0;
+        if (getNumericLiteral(sub_action, direction) &&
+            (direction < 0 || direction > 2)) {
+          context->syntaxError("Invalid direction on SET TILE FLIP statement");
+          return;
+        }
         result_subtype = expression.evalExpression(sub_action);
         expression.addCast(result_subtype, Lexeme::subtype_numeric);
-        // pop de
         cpu.addPopDE();
 
         // bank number (optional)
         if (t == 3) {
-          // save direction before evaluating bank (clobbers HL)
+          if (isTileArrayAction(context, action->actions[2])) {
+            context->syntaxError(
+                "Invalid bank parameter on SET TILE FLIP statement");
+            return;
+          }
           cpu.addPushHL();
-          sub_action = action->actions[2];
-          result_subtype = expression.evalExpression(sub_action);
-          expression.addCast(result_subtype, Lexeme::subtype_numeric);
-          // ld b, l
-          cpu.addLdBL();
-          // restore direction to HL
+          emitBank(action->actions[2], false);
           cpu.addPopHL();
         } else {
-          // ld b, 3     ; default = all banks
           cpu.addLdB(0x03);
         }
 
@@ -630,33 +672,34 @@ void CompilerSetStatementStrategy::cmd_set_tile(
       if (t >= 2 && t <= 3) {
         // tile number
         sub_action = action->actions[0];
-        // ld hl, parameter value    ; parameter
         result_subtype = expression.evalExpression(sub_action);
         expression.addCast(result_subtype, Lexeme::subtype_numeric);
-        // push hl
         cpu.addPushHL();
 
         // direction
         sub_action = action->actions[1];
-        // ld hl, parameter value    ; parameter
+        int direction = 0;
+        if (getNumericLiteral(sub_action, direction) &&
+            (direction < 0 || direction > 2)) {
+          context->syntaxError(
+              "Invalid direction on SET TILE ROTATE statement");
+          return;
+        }
         result_subtype = expression.evalExpression(sub_action);
         expression.addCast(result_subtype, Lexeme::subtype_numeric);
-        // pop de
         cpu.addPopDE();
 
         // bank number (optional)
         if (t == 3) {
-          // save direction before evaluating bank (clobbers HL)
+          if (isTileArrayAction(context, action->actions[2])) {
+            context->syntaxError(
+                "Invalid bank parameter on SET TILE ROTATE statement");
+            return;
+          }
           cpu.addPushHL();
-          sub_action = action->actions[2];
-          result_subtype = expression.evalExpression(sub_action);
-          expression.addCast(result_subtype, Lexeme::subtype_numeric);
-          // ld b, l
-          cpu.addLdBL();
-          // restore direction to HL
+          emitBank(action->actions[2], false);
           cpu.addPopHL();
         } else {
-          // ld b, 3     ; default = all banks
           cpu.addLdB(0x03);
         }
 
@@ -668,126 +711,81 @@ void CompilerSetStatementStrategy::cmd_set_tile(
       }
 
     } else if (lexeme->value == "PATTERN") {
-      if (t >= 2) {
-        sub_action = action->actions[1];
-        lexeme = sub_action->lexeme;
+      if (t >= 2 && t <= 3) {
+        shared_ptr<ActionNode> pattern_action = action->actions[1];
+        shared_ptr<ActionNode> buffer_action =
+            getDeclaredArrayIdentifier(context, pattern_action);
+        shared_ptr<ActionNode> bank_action =
+            (t == 3) ? action->actions[2] : nullptr;
 
-        bool isBuffer = false;
-
-        if (lexeme->value == "ARRAY") {
-          if (sub_action->actions.size() == 1 &&
-              sub_action->actions[0]->lexeme->type == Lexeme::type_identifier) {
-            // array variable with (): PB%()
-            sub_action = sub_action->actions[0];
-            isBuffer = true;
-          }
-        } else if (lexeme->type == Lexeme::type_identifier) {
-          // plain identifier without parens: PB%
-          isBuffer = true;
+        if (bank_action && isTileArrayAction(context, bank_action)) {
+          context->syntaxError(
+              "Invalid bank parameter on SET TILE PATTERN statement");
+          return;
         }
 
-        if (isBuffer) {
+        if (buffer_action) {
           // buffer form: <4-int-array> [, <bank>]
-          if (t == 2 || t == 3) {
-          // tile number
           result_subtype = expression.evalExpression(action->actions[0]);
           expression.addCast(result_subtype, Lexeme::subtype_numeric);
           cpu.addLdAL();
           cpu.addPushAF();
 
-          // buffer address
-          sub_lexeme = sub_action->lexeme;
-          if (sub_lexeme->type == Lexeme::type_identifier) {
-            fixup.addFix(sub_lexeme);
-            cpu.addLdHL(0x0000);
-            result_subtype = Lexeme::subtype_numeric;
-          } else {
-            result_subtype = expression.evalExpression(sub_action);
-          }
-          expression.addCast(result_subtype, Lexeme::subtype_numeric);
+          fixup.addFix(buffer_action->lexeme);
+          cpu.addLdHL(0x0000);
 
           if (t == 3) {
-            // push hl (buffer)
             cpu.addPushHL();
-            // bank number
-            result_subtype = expression.evalExpression(action->actions[2]);
-            expression.addCast(result_subtype, Lexeme::subtype_numeric);
-            // ld b, l
-            cpu.addLdBL();
-            // pop hl (buffer)
+            emitBank(bank_action, false);
             cpu.addPopHL();
-            // pop af (tile number)
             cpu.addPopAF();
           } else {
-            // ld b, 3     ; default = all banks
             cpu.addLdB(0x03);
-            // pop af (tile number)
             cpu.addPopAF();
           }
 
-          // call set_tile_pattern_buffer
-          //   a = tile number
-          //   hl = pointer to an 8 bytes buffer
-          //   b = bank (0-2 specific, 3=all)
-          context->getCodeOptimizer()->addKernelCall(DISP_set_tile_pattern_buffer);
-          } else {
-          context->syntaxError(
-              "Wrong parameters count on SET TILE PATTERN statement");
+          context->getCodeOptimizer()->addKernelCall(
+              DISP_set_tile_pattern_buffer);
+
+        } else if (isTileTupleAction(pattern_action)) {
+          // inline tuple form: (<l0>,...,<l7>) [, <bank>]
+          tt = pattern_action->actions.size();
+          if (tt == 0 || tt > 8) {
+            context->syntaxError(
+                "Wrong parameters count on SET TILE PATTERN statement");
+            return;
           }
 
-        } else if (lexeme->value == "ARRAY") {
-          // inline tuple form: (<l0>,...,<l7>) [, <bank>]
-          if (t <= 3) {
-          // tile number
           result_subtype = expression.evalExpression(action->actions[0]);
           expression.addCast(result_subtype, Lexeme::subtype_numeric);
-          // ld (ARG), hl
           cpu.addLdiiHL(def_ARG);
 
-          // bank number
-          if (t == 3) {
-            result_subtype = expression.evalExpression(action->actions[2]);
-            expression.addCast(result_subtype, Lexeme::subtype_numeric);
-            // ld h, l
-            cpu.addLdHL();
-          } else {
-            // ld h, 0x03
+          if (t == 3)
+            emitBank(bank_action, true);
+          else
             cpu.addLdH(0x03);
-          }
-          // ld (ARG2), hl
           cpu.addLdiiHL(def_ARG2);
 
-          // pattern data (always ARRAY at this point)
-          tt = sub_action->actions.size();
-
           for (i = 0; i < tt; i++) {
-            sub_sub_action = sub_action->actions[i];
+            sub_sub_action = pattern_action->actions[i];
             lexeme = sub_sub_action->lexeme;
 
             if (lexeme->type == Lexeme::type_literal &&
                 lexeme->subtype == Lexeme::subtype_null) {
               continue;
-
-            } else {
-              // ld hl, parameter value    ; pattern data parameter
-              result_subtype = expression.evalExpression(sub_sub_action);
-              expression.addCast(result_subtype, Lexeme::subtype_numeric);
-
-              // ld bc, (ARG2)
-              cpu.addLdBCii(def_ARG2);
-              // ld c, l
-              cpu.addLdCL();
-              // ld de, *i*
-              cpu.addLdDE(i);
-              // ld hl, (ARG)
-              cpu.addLdHLii(def_ARG);
-
-              // call set_tile_pattern ; hl = tile number, de = line number, b
-              // = bank number (3=all), c = pattern data
-              context->getCodeOptimizer()->addKernelCall(DISP_set_tile_pattern);
             }
+
+            result_subtype = expression.evalExpression(sub_sub_action);
+            expression.addCast(result_subtype, Lexeme::subtype_numeric);
+
+            cpu.addLdBCii(def_ARG2);
+            cpu.addLdCL();
+            cpu.addLdDE(i);
+            cpu.addLdHLii(def_ARG);
+
+            context->getCodeOptimizer()->addKernelCall(DISP_set_tile_pattern);
           }
-          }
+
         } else {
           context->syntaxError(
               "Wrong parameters count on SET TILE PATTERN statement");
@@ -798,213 +796,156 @@ void CompilerSetStatementStrategy::cmd_set_tile(
       }
 
     } else if (lexeme->value == "COLOR") {
-      if (t < 2) {
+      if (t < 2 || t > 4) {
         context->syntaxError(
             "Wrong parameters count on SET TILE COLOR statement");
-
       } else {
-        sub_action = action->actions[1];
-        sub_lexeme = sub_action->lexeme;
+        shared_ptr<ActionNode> color_action = action->actions[1];
+        shared_ptr<ActionNode> buffer_action =
+            getDeclaredArrayIdentifier(context, color_action);
+        bool color_is_tuple = !buffer_action && isTileTupleAction(color_action);
+        bool color_is_scalar = !buffer_action && !color_is_tuple;
+        shared_ptr<ActionNode> bank_action = nullptr;
+        shared_ptr<ActionNode> bc_action = nullptr;
+        bool has_bc = false;
 
-        // Buffer form: actions[1] is a variable/array identifier
-        if ((sub_lexeme->type == Lexeme::type_identifier) ||
-            (sub_lexeme->value == "ARRAY" && sub_action->actions.size() == 1 &&
-             sub_action->actions[0]->lexeme->type == Lexeme::type_identifier)) {
-          if (t == 2 || t == 3) {
-            // tile number
-            sub_action = action->actions[0];
-            result_subtype = expression.evalExpression(sub_action);
-            expression.addCast(result_subtype, Lexeme::subtype_numeric);
-            cpu.addLdAL();
-            cpu.addPushAF();
-
-            // tile buffer pointer (8 bytes)
-            sub_action = action->actions[1];
-            sub_lexeme = sub_action->lexeme;
-            if (sub_lexeme->type == Lexeme::type_identifier) {
-              fixup.addFix(sub_lexeme);
-              cpu.addLdHL(0x0000);
-              result_subtype = Lexeme::subtype_numeric;
+        if (t == 3) {
+          if (buffer_action) {
+            bank_action = action->actions[2];
+          } else if (color_is_tuple) {
+            if (isTileTupleAction(action->actions[2])) {
+              bc_action = action->actions[2];
+              has_bc = true;
+            } else if (isTileBufferAction(context, action->actions[2])) {
+              context->syntaxError(
+                  "Syntax not supported on SET TILE COLOR statement");
+              return;
             } else {
-              sub_sub_action = sub_action->actions[0];
-              fixup.addFix(sub_sub_action->lexeme);
-              cpu.addLdHL(0x0000);
-              result_subtype = Lexeme::subtype_numeric;
+              bank_action = action->actions[2];
             }
-            expression.addCast(result_subtype, Lexeme::subtype_numeric);
-
-            if (t == 3) {
-              cpu.addPushHL();
-              sub_action = action->actions[2];
-              result_subtype = expression.evalExpression(sub_action);
-              expression.addCast(result_subtype, Lexeme::subtype_numeric);
-              cpu.addLdBL();
-              cpu.addPopHL();
-              cpu.addPopAF();
-            } else {
-              cpu.addLdB(0x03);
-              cpu.addPopAF();
-            }
-
-            context->getCodeOptimizer()->addKernelCall(DISP_set_tile_color_buf);
-
           } else {
-            context->syntaxError(
-                "Wrong parameters count on SET TILE COLOR statement");
-          }
-
-        } else if (t >= 2 && t <= 4) {
-        // tile number
-        sub_action = action->actions[0];
-        // ld hl, parameter value    ; tile number
-        result_subtype = expression.evalExpression(sub_action);
-        expression.addCast(result_subtype, Lexeme::subtype_numeric);
-        // ld (ARG), hl
-        cpu.addLdiiHL(def_ARG);
-
-        // color data
-        sub_action = action->actions[1];
-        lexeme = sub_action->lexeme;
-
-        // bank number
-        if (t == 4) {
-          sub_action = action->actions[3];
-          result_subtype = expression.evalExpression(sub_action);
-          expression.addCast(result_subtype, Lexeme::subtype_numeric);
-          cpu.addLdHL();
-        } else if (t == 3 && lexeme->value == "ARRAY") {
-          sub_lexeme = action->actions[2]->lexeme;
-          if (sub_lexeme->value != "ARRAY" &&
-              sub_lexeme->type != Lexeme::type_identifier) {
-            sub_action = action->actions[2];
-            result_subtype = expression.evalExpression(sub_action);
-            expression.addCast(result_subtype, Lexeme::subtype_numeric);
-            cpu.addLdHL();
-          } else {
-            cpu.addLdH(0x03);
-          }
-        } else {
-          cpu.addLdH(0x03);
-        }
-        cpu.addLdiiHL(def_ARG2);
-
-        if (lexeme->value == "ARRAY") {
-          tt = sub_action->actions.size();
-
-          for (i = 0; i < tt; i++) {
-            sub_sub_action = sub_action->actions[i];
-            lexeme = sub_sub_action->lexeme;
-
-            if (lexeme->type == Lexeme::type_literal &&
-                lexeme->subtype == Lexeme::subtype_null) {
-              continue;
-
-            } else {
-              // ld hl, parameter value    ; color FC data parameter
-              result_subtype = expression.evalExpression(sub_sub_action);
-              expression.addCast(result_subtype, Lexeme::subtype_numeric);
-              // ld a, l
-              cpu.addLdAL();
-              // rla
-              cpu.addRLA();
-              // rla
-              cpu.addRLA();
-              // rla
-              cpu.addRLA();
-              // rla
-              cpu.addRLA();
-              // and 0xF0
-              cpu.addAnd(0xF0);
-
-              if (t >= 3) {
-                sub_sub_action = action->actions[2];
-                lexeme = sub_sub_action->lexeme;
-                if (lexeme->value == "ARRAY") {
-                  if (i < sub_sub_action->actions.size()) {
-                    sub_sub_action = sub_sub_action->actions[i];
-                    lexeme = sub_sub_action->lexeme;
-                    if (!(lexeme->type == Lexeme::type_literal &&
-                          lexeme->subtype == Lexeme::subtype_null)) {
-                      cpu.addPushAF();
-                      result_subtype = expression.evalExpression(sub_sub_action);
-                      expression.addCast(result_subtype, Lexeme::subtype_numeric);
-                      cpu.addPopAF();
-                      cpu.addOrL();
-                    }
-                  }
-                }
-              }
-
-              // ld bc, (ARG2)
-              cpu.addLdBCii(def_ARG2);
-              // ld c, a
-              cpu.addLdCA();
-              // ld de, *i*
-              cpu.addLdDE(i);
-              // ld hl, (ARG)        ; tile number
-              cpu.addLdHLii(def_ARG);
-
-              // call set_tile_color ; hl = tile number, de = line number
-              // (15=all), b = bank number (3=all), c = color data (FC,BC)
-              context->getCodeOptimizer()->addKernelCall(DISP_set_tile_color);
-            }
-          }
-
-        } else {
-          // ld hl, parameter value    ; color FC data parameter
-          result_subtype = expression.evalExpression(sub_action);
-          expression.addCast(result_subtype, Lexeme::subtype_numeric);
-          // ld a, l
-          cpu.addLdAL();
-          // rla
-          cpu.addRLA();
-          // rla
-          cpu.addRLA();
-          // rla
-          cpu.addRLA();
-          // rla
-          cpu.addRLA();
-          // and 0xF0
-          cpu.addAnd(0xF0);
-
-          if (t >= 3) {
-            // color data
-            sub_sub_action = action->actions[2];
-            lexeme = sub_sub_action->lexeme;
-            if (lexeme->value == "ARRAY") {
+            if (isTileArrayAction(context, action->actions[2])) {
               context->syntaxError(
                   "Syntax not supported on SET TILE COLOR statement");
               return;
             }
-            // push af
-            cpu.addPushAF();
-            // ld hl, parameter value    ; color BC data parameter
-            result_subtype = expression.evalExpression(sub_sub_action);
-            expression.addCast(result_subtype, Lexeme::subtype_numeric);
-            // pop af
-            cpu.addPopAF();
-            // or l
-            cpu.addOrL();
+            bc_action = action->actions[2];
+            has_bc = true;
           }
-
-          // ld bc, (ARG2)
-          cpu.addLdBCii(def_ARG2);
-          // ld c, a
-          cpu.addLdCA();
-          // ld de, 0x000F         ; all lines
-          cpu.addLdDE(0x000F);
-          // ld hl, (ARG)        ; tile number
-          cpu.addLdHLii(def_ARG);
-
-          // call set_tile_color ; hl = tile number, de = line number
-          // (15=all), b = bank number (3=all), c = color data (FC,BC)
-          context->getCodeOptimizer()->addKernelCall(DISP_set_tile_color);
+        } else if (t == 4) {
+          if (color_is_tuple) {
+            if (!isTileTupleAction(action->actions[2])) {
+              context->syntaxError(
+                  "Syntax not supported on SET TILE COLOR statement");
+              return;
+            }
+            bc_action = action->actions[2];
+            has_bc = true;
+          } else if (color_is_scalar) {
+            if (isTileArrayAction(context, action->actions[2])) {
+              context->syntaxError(
+                  "Syntax not supported on SET TILE COLOR statement");
+              return;
+            }
+            bc_action = action->actions[2];
+            has_bc = true;
+          } else {
+            context->syntaxError(
+                "Wrong parameters count on SET TILE COLOR statement");
+            return;
+          }
+          bank_action = action->actions[3];
         }
 
-      } else {
-        context->syntaxError(
-            "Wrong parameters count on SET TILE COLOR statement");
-      }
+        if (bank_action && isTileArrayAction(context, bank_action)) {
+          context->syntaxError(
+              "Invalid bank parameter on SET TILE COLOR statement");
+          return;
+        }
+
+        if (buffer_action) {
+          result_subtype = expression.evalExpression(action->actions[0]);
+          expression.addCast(result_subtype, Lexeme::subtype_numeric);
+          cpu.addLdAL();
+          cpu.addPushAF();
+
+          fixup.addFix(buffer_action->lexeme);
+          cpu.addLdHL(0x0000);
+
+          if (t == 3) {
+            cpu.addPushHL();
+            emitBank(bank_action, false);
+            cpu.addPopHL();
+            cpu.addPopAF();
+          } else {
+            cpu.addLdB(0x03);
+            cpu.addPopAF();
+          }
+
+          context->getCodeOptimizer()->addKernelCall(DISP_set_tile_color_buf);
+        } else {
+          result_subtype = expression.evalExpression(action->actions[0]);
+          expression.addCast(result_subtype, Lexeme::subtype_numeric);
+          cpu.addLdiiHL(def_ARG);
+
+          if (bank_action)
+            emitBank(bank_action, true);
+          else
+            cpu.addLdH(0x03);
+          cpu.addLdiiHL(def_ARG2);
+
+          if (color_is_tuple) {
+            tt = color_action->actions.size();
+            if (tt == 0 || tt > 8) {
+              context->syntaxError(
+                  "Wrong parameters count on SET TILE COLOR statement");
+              return;
+            }
+            if (has_bc && bc_action->actions.size() > 8) {
+              context->syntaxError(
+                  "Wrong parameters count on SET TILE COLOR statement");
+              return;
+            }
+
+            for (i = 0; i < tt; i++) {
+              sub_sub_action = color_action->actions[i];
+              lexeme = sub_sub_action->lexeme;
+
+              if (lexeme->type == Lexeme::type_literal &&
+                  lexeme->subtype == Lexeme::subtype_null) {
+                continue;
+              }
+
+              shared_ptr<ActionNode> bc_item = nullptr;
+              if (has_bc && i < bc_action->actions.size()) {
+                bc_item = bc_action->actions[i];
+                shared_ptr<Lexeme> bc_lexeme = bc_item->lexeme;
+                if (bc_lexeme->type == Lexeme::type_literal &&
+                    bc_lexeme->subtype == Lexeme::subtype_null) {
+                  bc_item = nullptr;
+                }
+              }
+
+              emitColorByte(sub_sub_action, bc_item);
+
+              cpu.addLdBCii(def_ARG2);
+              cpu.addLdCA();
+              cpu.addLdDE(i);
+              cpu.addLdHLii(def_ARG);
+
+              context->getCodeOptimizer()->addKernelCall(DISP_set_tile_color);
+            }
+          } else {
+            emitColorByte(color_action, has_bc ? bc_action : nullptr);
+
+            cpu.addLdBCii(def_ARG2);
+            cpu.addLdCA();
+            cpu.addLdDE(0x000F);
+            cpu.addLdHLii(def_ARG);
+
+            context->getCodeOptimizer()->addKernelCall(DISP_set_tile_color);
+          }
+        }
       }
 
     } else {

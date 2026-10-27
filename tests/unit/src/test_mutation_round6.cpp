@@ -118,7 +118,7 @@ TEST_SUITE("Round6Graphics") {
                       kernelCallHex(DISP_set_tile_pattern_buffer));
     checkFragment("r6_pattern_buf_bank",
                   "10 DIM PB%(3)\n20 SET TILE PATTERN 65, PB%(), 2\n30 END\n",
-                  "2141007DF52148C0E521020045E1F1" +
+                  "2141007DF52148C0E50602E1F1" +
                       kernelCallHex(DISP_set_tile_pattern_buffer));
     checkFragment("r6_pattern_tuple",
                   "10 SET TILE PATTERN 65, (255,0,255,0,255,0,255,0)\n20 END\n",
@@ -126,7 +126,7 @@ TEST_SUITE("Round6Graphics") {
     checkFragment(
         "r6_pattern_tuple_bank",
         "10 SET TILE PATTERN 65, (255,0,255,0,255,0,255,0),1\n20 END\n",
-        "2141002247F8210100652249F8");
+        "2141002247F826012249F8");
   }
 
   TEST_CASE("SET TILE COLOR distinguishes buffer, inline and pair forms") {
@@ -136,14 +136,66 @@ TEST_SUITE("Round6Graphics") {
                       kernelCallHex(DISP_set_tile_color_buf));
     checkFragment("r6_color_buf_bank",
                   "10 DIM CB%(7)\n20 SET TILE COLOR 5, CB%(),1\n30 END\n",
-                  "2105007DF52148C0E521010045E1F1" +
+                  "2105007DF52148C0E50601E1F1" +
                       kernelCallHex(DISP_set_tile_color_buf));
     checkFragment("r6_color_tuple",
                   "10 SET TILE COLOR 5, (1,2,3,4)\n20 END\n",
                   "2105002247F826032249F8");
     checkFragment("r6_color_tuple_bank",
                   "10 SET TILE COLOR 5, (1,2,3,4),1\n20 END\n",
-                  "2105002247F8210100652249F8");
+                  "2105002247F826012249F8");
+  }
+
+  TEST_CASE("SET TILE COLOR preserves operands and normalizes banks") {
+    checkFragment("r6_color_scalar_vars",
+                  "10 F%=1:G%=15\n20 SET TILE COLOR 5, F%, G%\n30 END\n",
+                  kernelCallHex(DISP_set_tile_color));
+    CHECK(compileRound6Hex(
+              "r6_color_scalar_vars_nobuf",
+              "10 F%=1:G%=15\n20 SET TILE COLOR 5, F%, G%\n30 END\n")
+              .find(kernelCallHex(DISP_set_tile_color_buf)) ==
+          std::string::npos);
+
+    checkFragment("r6_color_fc_array_bank",
+                  "10 SET TILE COLOR 69, (8,7,6,5,4,3,2,1), 2\n20 END\n",
+                  kernelCallHex(DISP_set_tile_color));
+
+    checkFragment("r6_color_bc_mask", "10 SET TILE COLOR 5, 1, 16\n20 END\n",
+                  "7DE60F6F");
+
+    std::string bank9 = compileRound6Hex(
+        "r6_color_bank9",
+        "10 DIM CB%(7)\n20 SET TILE COLOR 5, CB%(), 9\n30 END\n");
+    CHECK(bank9.find("0609") == std::string::npos);
+    CHECK(bank9.find("0603") != std::string::npos);
+  }
+
+  TEST_CASE("SET TILE PATTERN normalizes bank literals above 2") {
+    std::string bank9 = compileRound6Hex(
+        "r6_pattern_bank9",
+        "10 SET TILE PATTERN 65, (1,2,3,4,5,6,7,8), 9\n20 END\n");
+    CHECK(bank9.find("2609") == std::string::npos);
+    CHECK(bank9.find("2603") != std::string::npos);
+  }
+
+  TEST_CASE("Tile bank literal normalization covers boundary values") {
+    struct Case {
+      int bank;
+      const char* fragment;
+    };
+    const Case cases[] = {{0, "2600"},  {1, "2601"},  {2, "2602"},
+                          {3, "2603"},  {9, "2603"},  {200, "2603"},
+                          {300, "2603"}};
+    for (const auto& item : cases) {
+      std::string program =
+          "10 SET TILE PATTERN 65, (1,2,3,4,5,6,7,8), " +
+          std::to_string(item.bank) + "\n20 END\n";
+      std::string hex = compileRound6Hex(
+          "r6_bank_literal_" + std::to_string(item.bank), program);
+      INFO("bank: " << item.bank);
+      INFO("hex: " << hex);
+      CHECK(hex.find(item.fragment) != std::string::npos);
+    }
   }
 
   TEST_CASE("COLOR covers numeric, null, sprite and restore forms") {
@@ -275,11 +327,11 @@ TEST_SUITE("Round6Graphics") {
     CHECK(round6Size("r6_set_tile_flip", "10 SET TILE FLIP 0,1\n20 END\n") ==
           57);
     CHECK(round6Size("r6_set_tile_flip_bank",
-                     "10 SET TILE FLIP 0,1,2\n20 END\n") == 61);
+                     "10 SET TILE FLIP 0,1,2\n20 END\n") == 59);
     CHECK(round6Size("r6_set_tile_rot", "10 SET TILE ROTATE 0,1\n20 END\n") ==
           57);
     CHECK(round6Size("r6_set_tile_rot_bank",
-                     "10 SET TILE ROTATE 0,1,1\n20 END\n") == 61);
+                     "10 SET TILE ROTATE 0,1,1\n20 END\n") == 59);
     CHECK(round6Size("r6_set_sprite_flip",
                      "10 SET SPRITE FLIP 0,1\n20 END\n") == 55);
     CHECK(round6Size("r6_set_sprite_rot",

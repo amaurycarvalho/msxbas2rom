@@ -19,7 +19,7 @@
  * git checkout -b release/v0.0.0.0 && git push origin release/v0.0.0.0
  * git switch master
  */
-#define app_version "1.4.0.0"
+#define app_version "1.4.1.0"
 
 //! @brief Header information
 const char* info_header = R"(MSXBAS2ROM - MSX-BASIC TO ROM COMPILER
@@ -83,19 +83,19 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char* info_history = R"(
 Version history
 
+## [1.4.1.0] - 2026-10-27
+
+- Add optional offset and size parameters to CMD RSCTORAM
+- Redefine RESOURCE(n) to return a usable RAM pointer
+
 ## [1.4.0.0] - 2026-10-26
 
 - Add a runtime central jump table and relocatable module packer for the kernel
 - Fix TURBO(), VDP(), and MAKER() by routing them through kernel dispatch
 - Add an openMSX-based memory regression workflow for integration tests
 
-## [1.3.1.0] - 2026-10-21
-
-- Refactor compilation boundaries for in-memory testability and enforce Clean Architecture dependency rules
-- Replace global service-locator providers with explicit constructor and composition-root dependency injection
-
 See full changelog:
-https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.4.0.0
+https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.4.1.0
 )";
 
 /***

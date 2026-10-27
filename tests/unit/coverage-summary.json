@@ -1,7 +1,7 @@
 {
-    "branch_covered": 11303,
-    "branch_percent": 52.7,
-    "branch_total": 21435,
+    "branch_covered": 12133,
+    "branch_percent": 51.8,
+    "branch_total": 23413,
     "files": [
         {
             "branch_covered": 0,
@@ -26,6 +26,18 @@
             "line_covered": 1,
             "line_percent": 100.0,
             "line_total": 1
+        },
+        {
+            "branch_covered": 513,
+            "branch_percent": 53.6,
+            "branch_total": 957,
+            "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/builder/kernel_packer.cpp",
+            "function_covered": 12,
+            "function_percent": 100.0,
+            "function_total": 12,
+            "line_covered": 531,
+            "line_percent": 83.8,
+            "line_total": 634
         },
         {
             "branch_covered": 83,
@@ -292,16 +304,16 @@
             "line_total": 141
         },
         {
-            "branch_covered": 164,
-            "branch_percent": 49.1,
-            "branch_total": 334,
+            "branch_covered": 297,
+            "branch_percent": 40.2,
+            "branch_total": 738,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/builder/rom.cpp",
-            "function_covered": 13,
+            "function_covered": 15,
             "function_percent": 100.0,
-            "function_total": 13,
-            "line_covered": 189,
-            "line_percent": 84.4,
-            "line_total": 224
+            "function_total": 15,
+            "line_covered": 309,
+            "line_percent": 69.0,
+            "line_total": 448
         },
         {
             "branch_covered": 0,
@@ -335,9 +347,9 @@
             "function_covered": 1,
             "function_percent": 100.0,
             "function_total": 1,
-            "line_covered": 7,
+            "line_covered": 8,
             "line_percent": 100.0,
-            "line_total": 7
+            "line_total": 8
         },
         {
             "branch_covered": 0,
@@ -352,28 +364,28 @@
             "line_total": 4
         },
         {
-            "branch_covered": 154,
-            "branch_percent": 37.0,
+            "branch_covered": 161,
+            "branch_percent": 38.7,
             "branch_total": 416,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compilation/compilation_use_case.cpp",
             "function_covered": 2,
             "function_percent": 100.0,
             "function_total": 2,
-            "line_covered": 129,
-            "line_percent": 72.1,
-            "line_total": 179
+            "line_covered": 134,
+            "line_percent": 74.4,
+            "line_total": 180
         },
         {
-            "branch_covered": 200,
-            "branch_percent": 55.4,
-            "branch_total": 361,
+            "branch_covered": 208,
+            "branch_percent": 54.9,
+            "branch_total": 379,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/compiler.cpp",
             "function_covered": 22,
             "function_percent": 100.0,
             "function_total": 22,
-            "line_covered": 390,
+            "line_covered": 398,
             "line_percent": 91.3,
-            "line_total": 427
+            "line_total": 436
         },
         {
             "branch_covered": 169,
@@ -563,9 +575,9 @@
             "function_covered": 1,
             "function_percent": 100.0,
             "function_total": 1,
-            "line_covered": 9,
+            "line_covered": 19,
             "line_percent": 100.0,
-            "line_total": 9
+            "line_total": 19
         },
         {
             "branch_covered": 6,
@@ -916,15 +928,15 @@
             "line_total": 14
         },
         {
-            "branch_covered": 11,
-            "branch_percent": 61.1,
+            "branch_covered": 8,
+            "branch_percent": 44.4,
             "branch_total": 18,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/functions/strategies/math/exp/compiler_exp_function_strategy.cpp",
             "function_covered": 1,
             "function_percent": 100.0,
             "function_total": 1,
-            "line_covered": 13,
-            "line_percent": 92.9,
+            "line_covered": 12,
+            "line_percent": 85.7,
             "line_total": 14
         },
         {
@@ -1240,8 +1252,8 @@
             "line_total": 13
         },
         {
-            "branch_covered": 30,
-            "branch_percent": 60.0,
+            "branch_covered": 31,
+            "branch_percent": 62.0,
             "branch_total": 50,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/functions/strategies/string/using/compiler_using_function_strategy.cpp",
             "function_covered": 1,
@@ -1271,21 +1283,21 @@
             "function_covered": 6,
             "function_percent": 85.7,
             "function_total": 7,
-            "line_covered": 61,
-            "line_percent": 95.3,
-            "line_total": 64
+            "line_covered": 64,
+            "line_percent": 95.5,
+            "line_total": 67
         },
         {
             "branch_covered": 0,
             "branch_percent": null,
             "branch_total": 0,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/helpers/context/compiler_context.h",
-            "function_covered": 39,
-            "function_percent": 97.5,
-            "function_total": 40,
-            "line_covered": 41,
-            "line_percent": 97.6,
-            "line_total": 42
+            "function_covered": 42,
+            "function_percent": 97.7,
+            "function_total": 43,
+            "line_covered": 45,
+            "line_percent": 97.8,
+            "line_total": 46
         },
         {
             "branch_covered": 7,
@@ -1348,16 +1360,16 @@
             "line_total": 118
         },
         {
-            "branch_covered": 85,
-            "branch_percent": 75.9,
-            "branch_total": 112,
+            "branch_covered": 92,
+            "branch_percent": 73.0,
+            "branch_total": 126,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/helpers/semantic/compiler_code_optimizer.cpp",
             "function_covered": 6,
             "function_percent": 85.7,
             "function_total": 7,
-            "line_covered": 149,
-            "line_percent": 85.6,
-            "line_total": 174
+            "line_covered": 156,
+            "line_percent": 86.7,
+            "line_total": 180
         },
         {
             "branch_covered": 33,
@@ -1372,15 +1384,15 @@
             "line_total": 55
         },
         {
-            "branch_covered": 699,
-            "branch_percent": 61.8,
+            "branch_covered": 676,
+            "branch_percent": 59.8,
             "branch_total": 1131,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/helpers/semantic/compiler_expression_evaluator.cpp",
             "function_covered": 7,
             "function_percent": 87.5,
             "function_total": 8,
-            "line_covered": 663,
-            "line_percent": 94.3,
+            "line_covered": 658,
+            "line_percent": 93.6,
             "line_total": 703
         },
         {
@@ -1408,27 +1420,27 @@
             "line_total": 93
         },
         {
-            "branch_covered": 96,
-            "branch_percent": 62.3,
+            "branch_covered": 97,
+            "branch_percent": 63.0,
             "branch_total": 154,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/helpers/semantic/compiler_symbol_resolver.cpp",
             "function_covered": 9,
             "function_percent": 90.0,
             "function_total": 10,
-            "line_covered": 186,
-            "line_percent": 88.2,
+            "line_covered": 188,
+            "line_percent": 89.1,
             "line_total": 211
         },
         {
-            "branch_covered": 136,
-            "branch_percent": 48.9,
+            "branch_covered": 134,
+            "branch_percent": 48.2,
             "branch_total": 278,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/helpers/semantic/compiler_variable_emitter.cpp",
             "function_covered": 4,
             "function_percent": 80.0,
             "function_total": 5,
-            "line_covered": 154,
-            "line_percent": 76.6,
+            "line_covered": 153,
+            "line_percent": 76.1,
             "line_total": 201
         },
         {
@@ -1636,15 +1648,15 @@
             "line_total": 27
         },
         {
-            "branch_covered": 122,
-            "branch_percent": 43.3,
+            "branch_covered": 95,
+            "branch_percent": 33.7,
             "branch_total": 282,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/statements/strategies/control/for/compiler_for_statement_strategy.cpp",
             "function_covered": 2,
             "function_percent": 100.0,
             "function_total": 2,
-            "line_covered": 132,
-            "line_percent": 82.5,
+            "line_covered": 112,
+            "line_percent": 70.0,
             "line_total": 160
         },
         {
@@ -1660,27 +1672,27 @@
             "line_total": 20
         },
         {
-            "branch_covered": 16,
-            "branch_percent": 50.0,
+            "branch_covered": 12,
+            "branch_percent": 37.5,
             "branch_total": 32,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/statements/strategies/control/goto/compiler_goto_statement_strategy.cpp",
             "function_covered": 2,
             "function_percent": 100.0,
             "function_total": 2,
-            "line_covered": 19,
-            "line_percent": 95.0,
+            "line_covered": 18,
+            "line_percent": 90.0,
             "line_total": 20
         },
         {
-            "branch_covered": 53,
-            "branch_percent": 44.9,
+            "branch_covered": 41,
+            "branch_percent": 34.7,
             "branch_total": 118,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/statements/strategies/control/if/compiler_if_statement_strategy.cpp",
             "function_covered": 2,
             "function_percent": 100.0,
             "function_total": 2,
-            "line_covered": 64,
-            "line_percent": 84.2,
+            "line_covered": 57,
+            "line_percent": 75.0,
             "line_total": 76
         },
         {
@@ -1732,15 +1744,15 @@
             "line_total": 55
         },
         {
-            "branch_covered": 18,
-            "branch_percent": 75.0,
+            "branch_covered": 20,
+            "branch_percent": 83.3,
             "branch_total": 24,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/statements/strategies/control/start/compiler_start_statement_strategy.cpp",
             "function_covered": 2,
             "function_percent": 100.0,
             "function_total": 2,
-            "line_covered": 36,
-            "line_percent": 92.3,
+            "line_covered": 39,
+            "line_percent": 100.0,
             "line_total": 39
         },
         {
@@ -1828,15 +1840,15 @@
             "line_total": 76
         },
         {
-            "branch_covered": 134,
-            "branch_percent": 48.4,
+            "branch_covered": 112,
+            "branch_percent": 40.4,
             "branch_total": 277,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/statements/strategies/graphics/line/compiler_line_statement_strategy.cpp",
             "function_covered": 2,
             "function_percent": 100.0,
             "function_total": 2,
-            "line_covered": 162,
-            "line_percent": 84.4,
+            "line_covered": 138,
+            "line_percent": 71.9,
             "line_total": 192
         },
         {
@@ -1912,27 +1924,27 @@
             "line_total": 185
         },
         {
-            "branch_covered": 690,
-            "branch_percent": 56.2,
+            "branch_covered": 693,
+            "branch_percent": 56.4,
             "branch_total": 1228,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/statements/strategies/graphics/set/compiler_set_statement_strategy.cpp",
             "function_covered": 16,
             "function_percent": 100.0,
             "function_total": 16,
-            "line_covered": 719,
-            "line_percent": 95.0,
+            "line_covered": 722,
+            "line_percent": 95.4,
             "line_total": 757
         },
         {
-            "branch_covered": 23,
-            "branch_percent": 32.9,
+            "branch_covered": 29,
+            "branch_percent": 41.4,
             "branch_total": 70,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/statements/strategies/graphics/sprite/compiler_sprite_statement_strategy.cpp",
             "function_covered": 3,
             "function_percent": 100.0,
             "function_total": 3,
-            "line_covered": 35,
-            "line_percent": 76.1,
+            "line_covered": 38,
+            "line_percent": 82.6,
             "line_total": 46
         },
         {
@@ -2344,16 +2356,16 @@
             "line_total": 12
         },
         {
-            "branch_covered": 12,
-            "branch_percent": 30.0,
-            "branch_total": 40,
+            "branch_covered": 15,
+            "branch_percent": 57.7,
+            "branch_total": 26,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/statements/strategies/io/cmd/handlers/io/rsctoram/compiler_cmd_rsctoram_handler.cpp",
-            "function_covered": 1,
+            "function_covered": 2,
             "function_percent": 100.0,
-            "function_total": 1,
-            "line_covered": 18,
-            "line_percent": 72.0,
-            "line_total": 25
+            "function_total": 2,
+            "line_covered": 23,
+            "line_percent": 100.0,
+            "line_total": 23
         },
         {
             "branch_covered": 6,
@@ -2428,15 +2440,15 @@
             "line_total": 13
         },
         {
-            "branch_covered": 10,
-            "branch_percent": 29.4,
+            "branch_covered": 16,
+            "branch_percent": 47.1,
             "branch_total": 34,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/statements/strategies/io/cmd/handlers/sound/arkos/plysound/compiler_cmd_plysound_handler.cpp",
             "function_covered": 1,
             "function_percent": 100.0,
             "function_total": 1,
-            "line_covered": 18,
-            "line_percent": 69.2,
+            "line_covered": 24,
+            "line_percent": 92.3,
             "line_total": 26
         },
         {
@@ -2524,15 +2536,15 @@
             "line_total": 7
         },
         {
-            "branch_covered": 99,
-            "branch_percent": 52.7,
+            "branch_covered": 95,
+            "branch_percent": 50.5,
             "branch_total": 188,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/statements/strategies/io/input/compiler_input_statement_strategy.cpp",
             "function_covered": 5,
             "function_percent": 100.0,
             "function_total": 5,
-            "line_covered": 98,
-            "line_percent": 86.0,
+            "line_covered": 95,
+            "line_percent": 83.3,
             "line_total": 114
         },
         {
@@ -2560,15 +2572,15 @@
             "line_total": 21
         },
         {
-            "branch_covered": 13,
-            "branch_percent": 46.4,
+            "branch_covered": 4,
+            "branch_percent": 14.3,
             "branch_total": 28,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/statements/strategies/io/irestore/compiler_irestore_statement_strategy.cpp",
             "function_covered": 2,
             "function_percent": 100.0,
             "function_total": 2,
-            "line_covered": 23,
-            "line_percent": 95.8,
+            "line_covered": 13,
+            "line_percent": 54.2,
             "line_total": 24
         },
         {
@@ -2632,15 +2644,15 @@
             "line_total": 23
         },
         {
-            "branch_covered": 123,
-            "branch_percent": 59.1,
+            "branch_covered": 109,
+            "branch_percent": 52.4,
             "branch_total": 208,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/statements/strategies/io/print/compiler_print_statement_strategy.cpp",
             "function_covered": 5,
             "function_percent": 100.0,
             "function_total": 5,
-            "line_covered": 116,
-            "line_percent": 92.1,
+            "line_covered": 110,
+            "line_percent": 87.3,
             "line_total": 126
         },
         {
@@ -2656,15 +2668,15 @@
             "line_total": 21
         },
         {
-            "branch_covered": 10,
-            "branch_percent": 45.5,
+            "branch_covered": 4,
+            "branch_percent": 18.2,
             "branch_total": 22,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/compiler/statements/strategies/io/restore/compiler_restore_statement_strategy.cpp",
             "function_covered": 2,
             "function_percent": 100.0,
             "function_total": 2,
-            "line_covered": 20,
-            "line_percent": 95.2,
+            "line_covered": 13,
+            "line_percent": 61.9,
             "line_total": 21
         },
         {
@@ -2764,15 +2776,15 @@
             "line_total": 24
         },
         {
-            "branch_covered": 59,
-            "branch_percent": 54.1,
+            "branch_covered": 57,
+            "branch_percent": 52.3,
             "branch_total": 109,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/diagnostics/logger.cpp",
             "function_covered": 28,
             "function_percent": 90.3,
             "function_total": 31,
-            "line_covered": 89,
-            "line_percent": 87.3,
+            "line_covered": 87,
+            "line_percent": 85.3,
             "line_total": 102
         },
         {
@@ -2788,8 +2800,8 @@
             "line_total": 3
         },
         {
-            "branch_covered": 5,
-            "branch_percent": 50.0,
+            "branch_covered": 7,
+            "branch_percent": 70.0,
             "branch_total": 10,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/kernel/in_memory_kernel_image.cpp",
             "function_covered": 7,
@@ -2800,8 +2812,8 @@
             "line_total": 23
         },
         {
-            "branch_covered": 11,
-            "branch_percent": 78.6,
+            "branch_covered": 13,
+            "branch_percent": 92.9,
             "branch_total": 14,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/kernel/kernel_image.cpp",
             "function_covered": 1,
@@ -2822,6 +2834,18 @@
             "line_covered": 1,
             "line_percent": 100.0,
             "line_total": 1
+        },
+        {
+            "branch_covered": 0,
+            "branch_percent": null,
+            "branch_total": 0,
+            "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/kernel/kernel_module_library.h",
+            "function_covered": 7,
+            "function_percent": 100.0,
+            "function_total": 7,
+            "line_covered": 16,
+            "line_percent": 100.0,
+            "line_total": 16
         },
         {
             "branch_covered": 11,
@@ -2932,20 +2956,20 @@
             "line_total": 7
         },
         {
-            "branch_covered": 35,
-            "branch_percent": 83.3,
+            "branch_covered": 34,
+            "branch_percent": 81.0,
             "branch_total": 42,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/lexer/states/implementations/unknown/unknown_state.cpp",
             "function_covered": 1,
             "function_percent": 100.0,
             "function_total": 1,
-            "line_covered": 54,
-            "line_percent": 91.5,
+            "line_covered": 53,
+            "line_percent": 89.8,
             "line_total": 59
         },
         {
-            "branch_covered": 91,
-            "branch_percent": 89.2,
+            "branch_covered": 89,
+            "branch_percent": 87.3,
             "branch_total": 102,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/lexer/states/interface/lexer_line_state.cpp",
             "function_covered": 16,
@@ -3040,20 +3064,20 @@
             "line_total": 49
         },
         {
-            "branch_covered": 286,
-            "branch_percent": 71.5,
+            "branch_covered": 282,
+            "branch_percent": 70.5,
             "branch_total": 400,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/parser/helpers/semantic/expression_evaluator.cpp",
             "function_covered": 7,
             "function_percent": 77.8,
             "function_total": 9,
-            "line_covered": 223,
-            "line_percent": 88.8,
+            "line_covered": 220,
+            "line_percent": 87.6,
             "line_total": 251
         },
         {
-            "branch_covered": 116,
-            "branch_percent": 55.2,
+            "branch_covered": 114,
+            "branch_percent": 54.3,
             "branch_total": 210,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/parser/helpers/semantic/parser_line_evaluator.cpp",
             "function_covered": 5,
@@ -3064,8 +3088,8 @@
             "line_total": 114
         },
         {
-            "branch_covered": 32,
-            "branch_percent": 50.0,
+            "branch_covered": 31,
+            "branch_percent": 48.4,
             "branch_total": 64,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/parser/parser.cpp",
             "function_covered": 17,
@@ -3112,8 +3136,8 @@
             "line_total": 11
         },
         {
-            "branch_covered": 26,
-            "branch_percent": 61.9,
+            "branch_covered": 27,
+            "branch_percent": 64.3,
             "branch_total": 42,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/parser/statements/strategies/cmd/cmd_statement_strategy.cpp",
             "function_covered": 2,
@@ -3220,15 +3244,15 @@
             "line_total": 41
         },
         {
-            "branch_covered": 622,
-            "branch_percent": 56.2,
+            "branch_covered": 611,
+            "branch_percent": 55.2,
             "branch_total": 1107,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/parser/statements/strategies/graphics/graphics_statement_strategy.cpp",
             "function_covered": 6,
             "function_percent": 100.0,
             "function_total": 6,
-            "line_covered": 487,
-            "line_percent": 86.3,
+            "line_covered": 480,
+            "line_percent": 85.1,
             "line_total": 564
         },
         {
@@ -3244,15 +3268,15 @@
             "line_total": 2
         },
         {
-            "branch_covered": 181,
-            "branch_percent": 47.8,
+            "branch_covered": 175,
+            "branch_percent": 46.2,
             "branch_total": 379,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/parser/statements/strategies/if/if_statement_strategy.cpp",
             "function_covered": 3,
             "function_percent": 100.0,
             "function_total": 3,
-            "line_covered": 125,
-            "line_percent": 79.1,
+            "line_covered": 121,
+            "line_percent": 76.6,
             "line_total": 158
         },
         {
@@ -3364,8 +3388,8 @@
             "line_total": 278
         },
         {
-            "branch_covered": 17,
-            "branch_percent": 56.7,
+            "branch_covered": 18,
+            "branch_percent": 60.0,
             "branch_total": 30,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/application/parser/statements/strategies/sprite/sprite_statement_strategy.cpp",
             "function_covered": 3,
@@ -3604,16 +3628,16 @@
             "line_total": 8
         },
         {
-            "branch_covered": 120,
+            "branch_covered": 128,
             "branch_percent": 49.2,
-            "branch_total": 244,
+            "branch_total": 260,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/cli/options/build_options_setup.cpp",
-            "function_covered": 11,
-            "function_percent": 34.4,
-            "function_total": 32,
-            "line_covered": 77,
-            "line_percent": 96.2,
-            "line_total": 80
+            "function_covered": 10,
+            "function_percent": 29.4,
+            "function_total": 34,
+            "line_covered": 83,
+            "line_percent": 94.3,
+            "line_total": 88
         },
         {
             "branch_covered": 44,
@@ -3628,16 +3652,16 @@
             "line_total": 59
         },
         {
-            "branch_covered": 42,
-            "branch_percent": 31.8,
-            "branch_total": 132,
-            "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/cli/runner.cpp",
-            "function_covered": 4,
-            "function_percent": 50.0,
+            "branch_covered": 0,
+            "branch_percent": 0.0,
+            "branch_total": 134,
+            "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/cli/runner/runner.cpp",
+            "function_covered": 0,
+            "function_percent": 0.0,
             "function_total": 8,
-            "line_covered": 40,
-            "line_percent": 49.4,
-            "line_total": 81
+            "line_covered": 0,
+            "line_percent": 0.0,
+            "line_total": 82
         },
         {
             "branch_covered": 41,
@@ -3650,6 +3674,54 @@
             "line_covered": 40,
             "line_percent": 90.9,
             "line_total": 44
+        },
+        {
+            "branch_covered": 5,
+            "branch_percent": 41.7,
+            "branch_total": 12,
+            "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/domain/kernel/dispatch_fixup_resolver.cpp",
+            "function_covered": 1,
+            "function_percent": 100.0,
+            "function_total": 1,
+            "line_covered": 10,
+            "line_percent": 66.7,
+            "line_total": 15
+        },
+        {
+            "branch_covered": 35,
+            "branch_percent": 56.5,
+            "branch_total": 62,
+            "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/domain/kernel/kernel_central_table.cpp",
+            "function_covered": 4,
+            "function_percent": 100.0,
+            "function_total": 4,
+            "line_covered": 44,
+            "line_percent": 88.0,
+            "line_total": 50
+        },
+        {
+            "branch_covered": 157,
+            "branch_percent": 49.2,
+            "branch_total": 319,
+            "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/domain/kernel/kernel_module.cpp",
+            "function_covered": 12,
+            "function_percent": 85.7,
+            "function_total": 14,
+            "line_covered": 172,
+            "line_percent": 68.8,
+            "line_total": 250
+        },
+        {
+            "branch_covered": 59,
+            "branch_percent": 68.6,
+            "branch_total": 86,
+            "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/domain/kernel/kernel_size_map.cpp",
+            "function_covered": 8,
+            "function_percent": 100.0,
+            "function_total": 8,
+            "line_covered": 81,
+            "line_percent": 96.4,
+            "line_total": 84
         },
         {
             "branch_covered": 37,
@@ -3683,9 +3755,9 @@
             "function_covered": 3,
             "function_percent": 75.0,
             "function_total": 4,
-            "line_covered": 26,
-            "line_percent": 55.3,
-            "line_total": 47
+            "line_covered": 27,
+            "line_percent": 56.2,
+            "line_total": 48
         },
         {
             "branch_covered": 23,
@@ -3724,8 +3796,8 @@
             "line_total": 6
         },
         {
-            "branch_covered": 87,
-            "branch_percent": 81.3,
+            "branch_covered": 88,
+            "branch_percent": 82.2,
             "branch_total": 107,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/infrastructure/compression/pletter.cpp",
             "function_covered": 17,
@@ -3844,15 +3916,15 @@
             "line_total": 54
         },
         {
-            "branch_covered": 1,
-            "branch_percent": 50.0,
+            "branch_covered": 0,
+            "branch_percent": 0.0,
             "branch_total": 2,
             "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/infrastructure/kernel/generated_kernel_image.cpp",
-            "function_covered": 6,
-            "function_percent": 100.0,
+            "function_covered": 4,
+            "function_percent": 66.7,
             "function_total": 6,
-            "line_covered": 14,
-            "line_percent": 100.0,
+            "line_covered": 8,
+            "line_percent": 57.1,
             "line_total": 14
         },
         {
@@ -3866,6 +3938,18 @@
             "line_covered": 1,
             "line_percent": 100.0,
             "line_total": 1
+        },
+        {
+            "branch_covered": 67,
+            "branch_percent": 65.7,
+            "branch_total": 102,
+            "filename": "/home/amaury/Documentos/Sources/CodeBlock Projects/msxbas2rom/src/infrastructure/kernel/generated_kernel_module_library.cpp",
+            "function_covered": 5,
+            "function_percent": 100.0,
+            "function_total": 5,
+            "line_covered": 106,
+            "line_percent": 100.0,
+            "line_total": 106
         },
         {
             "branch_covered": 0,
@@ -3892,12 +3976,12 @@
             "line_total": 1
         }
     ],
-    "function_covered": 1081,
-    "function_percent": 91.9,
-    "function_total": 1176,
+    "function_covered": 1129,
+    "function_percent": 91.4,
+    "function_total": 1235,
     "gcovr/summary_format_version": "0.5",
-    "line_covered": 13563,
-    "line_percent": 88.0,
-    "line_total": 15415,
+    "line_covered": 14562,
+    "line_percent": 86.5,
+    "line_total": 16836,
     "root": "."
 }

@@ -1,5 +1,5 @@
 Name: msxbas2rom
-Version: 1.4.0.0
+Version: 1.4.1.0
 Release: 1%{?dist}
 Summary: MSX-BASIC to ROM compiler
 
@@ -32,6 +32,8 @@ install -m 0755 msxbas2rom %{buildroot}/usr/bin/msxbas2rom
 /usr/bin/msxbas2rom
 
 %changelog
+* Tue Oct 27 2026 Amaury Carvalho <amauryspires@gmail.com>
+- Add optional offset and size parameters to CMD RSCTORAM and redefine RESOURCE(n) to return a usable RAM pointer
 * Fri Oct 23 2026 Amaury Carvalho <amauryspires@gmail.com>
 - Fix make lint gate failures and indeterminate Logger::LogEntry fields
 * Mon Jun 29 2026 Amaury Carvalho <amauryspires@gmail.com>

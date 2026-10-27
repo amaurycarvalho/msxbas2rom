@@ -4,8 +4,8 @@ Program: `tests/integration/GRAPH/test94.bas` (ASCII8 MegaROM).
 
 | Mode | Tile/sprite graphics | Paged calls | Code size | ROM size |
 | --- | --- | ---: | ---: | ---: |
-| Resident baseline | resident | 0 | 985 | 128K |
-| Forced overflow | overflow | 3 | 985 | 128K |
+| Resident baseline | resident | 0 | 981 | 128K |
+| Forced overflow | overflow | 3 | 981 | 128K |
 
 Each paged call uses a 6-byte `call dispatcher; db segment; dw address`
 stub instead of a 3-byte `jp` resident stub. The dispatcher saves six

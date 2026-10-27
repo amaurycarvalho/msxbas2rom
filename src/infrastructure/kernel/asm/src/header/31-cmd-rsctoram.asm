@@ -80,6 +80,7 @@ cmd_rsctoram.fail:
   ei
   ret
 
-; Keep the module at the same 165-byte footprint as the former 31-cmd-input
-; slot (0x5492-0x5537) so all subsequent fixed addresses remain unchanged.
-    DEFS 79, 0x00
+; Keep the fixed addresses after this module unchanged. The tile bank
+; normalization grew 31-cmd-tile-sprite by 23 bytes, so this filler is reduced
+; by the same amount.
+    DEFS 56, 0x00

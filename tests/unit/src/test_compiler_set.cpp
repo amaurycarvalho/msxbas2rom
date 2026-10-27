@@ -158,13 +158,15 @@ TEST_SUITE("CompilerSetStatementStrategy") {
   }
 
   TEST_CASE("SET TILE PATTERN null tuple emits defaults") {
-    int plain = compiledCodeSize(
+    std::string plain = compiledCodeHex(
         "set_k.bas", "10 SET TILE PATTERN 65, (255,0,255,0,255,0,255,0)\n20 END\n");
-    int with_bank = compiledCodeSize(
+    std::string with_bank = compiledCodeHex(
         "set_l.bas", "10 SET TILE PATTERN 65, (255,0,255,0,255,0,255,0), 1\n20 END\n");
-    CHECK(plain > 0);
-    CHECK(with_bank > 0);
+    CHECK(!plain.empty());
+    CHECK(!with_bank.empty());
     CHECK(plain != with_bank);
+    CHECK(plain.find("2603") != std::string::npos);
+    CHECK(with_bank.find("2601") != std::string::npos);
   }
 
   TEST_CASE("SET SCROLL with empty parameters is rejected") {
@@ -343,6 +345,147 @@ TEST_SUITE("CompilerSetStatementStrategy") {
           &errors);
       CHECK(ok == true);
       CHECK(errors.empty());
+    }
+  }
+
+  TEST_CASE("Tile buffers require declared arrays") {
+    SUBCASE("Scalar FC and BC variables use the scalar path") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "set_tile_color_scalar_vars.bas",
+          "10 F%=1:G%=15\n20 SET TILE COLOR 5, F%, G%\n30 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("Scalar FC variable uses the scalar path") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "set_tile_color_scalar_fc.bas",
+          "10 F%=1\n20 SET TILE COLOR 5, F%\n30 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("Declared array buffer is accepted") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "set_tile_color_declared_buffer.bas",
+          "10 DIM C%(3)\n20 SET TILE COLOR 5, C%()\n30 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("Parenthesized declared array buffer is accepted") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "set_tile_color_paren_buffer.bas",
+          "10 DIM C%(3)\n20 SET TILE COLOR 5, (C%)\n30 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("GET literal destination is rejected") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "get_tile_pattern_literal.bas", "10 GET TILE PATTERN 65, 1\n20 END\n",
+          &errors);
+      CHECK(ok == false);
+      CHECK(errors.find("GET TILE PATTERN") != std::string::npos);
+    }
+
+    SUBCASE("GET scalar destination is rejected") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "get_tile_color_scalar.bas",
+          "10 A=1\n20 GET TILE COLOR 5, A\n30 END\n", &errors);
+      CHECK(ok == false);
+      CHECK(errors.find("GET TILE COLOR") != std::string::npos);
+    }
+
+    SUBCASE("GET declared array destination is accepted") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "get_tile_pattern_array.bas",
+          "10 DIM Q%(3)\n20 GET TILE PATTERN 65, Q%()\n30 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("GET parenthesized declared array is accepted") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "get_tile_pattern_paren_array.bas",
+          "10 DIM Q%(3)\n20 GET TILE PATTERN 65, (Q%)\n30 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+  }
+
+  TEST_CASE("Tile bank and row validation") {
+    SUBCASE("Array bank is rejected") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "set_tile_pattern_array_bank_arg.bas",
+          "10 SET TILE PATTERN 65, (1,2,3,4,5,6,7,8), (1,2)\n20 END\n",
+          &errors);
+      CHECK(ok == false);
+      CHECK(errors.find("SET TILE PATTERN") != std::string::npos);
+    }
+
+    SUBCASE("Scalar variable bank is accepted with FC array") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "set_tile_color_var_bank.bas",
+          "10 BK%=2\n20 SET TILE COLOR 5, (1,2,3,4), BK%\n30 END\n", &errors);
+      CHECK(ok == true);
+      CHECK(errors.empty());
+    }
+
+    SUBCASE("Inline pattern extra parameter is rejected") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "set_tile_pattern_extra.bas",
+          "10 SET TILE PATTERN 65, (1,2,3,4,5,6,7,8), 1, 2\n20 END\n",
+          &errors);
+      CHECK(ok == false);
+      CHECK(errors.find("SET TILE PATTERN") != std::string::npos);
+    }
+
+    SUBCASE("Nine pattern rows are rejected") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "set_tile_pattern_nine.bas",
+          "10 SET TILE PATTERN 65, (1,2,3,4,5,6,7,8,9)\n20 END\n", &errors);
+      CHECK(ok == false);
+      CHECK(errors.find("SET TILE PATTERN") != std::string::npos);
+    }
+
+    SUBCASE("Nine color rows are rejected") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "set_tile_color_nine.bas",
+          "10 SET TILE COLOR 5, (1,2,3,4,5,6,7,8,9)\n20 END\n", &errors);
+      CHECK(ok == false);
+      CHECK(errors.find("SET TILE COLOR") != std::string::npos);
+    }
+
+    SUBCASE("Literal flip direction is validated") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "set_tile_flip_direction.bas", "10 SET TILE FLIP 65, 3\n20 END\n",
+          &errors);
+      CHECK(ok == false);
+      CHECK(errors.find("SET TILE FLIP") != std::string::npos);
+    }
+
+    SUBCASE("Literal rotate direction is validated") {
+      std::string errors;
+      bool ok = compileStatementProgram(
+          "set_tile_rotate_direction.bas", "10 SET TILE ROTATE 65, 3\n20 END\n",
+          &errors);
+      CHECK(ok == false);
+      CHECK(errors.find("SET TILE ROTATE") != std::string::npos);
     }
   }
 

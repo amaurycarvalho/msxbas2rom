@@ -5,6 +5,7 @@
 #include "compiler_expression_evaluator.h"
 #include "compiler_fixup_resolver.h"
 #include "compiler_hooks.h"
+#include "compiler_tile_parameter.h"
 #include "compiler_variable_emitter.h"
 #include "lexeme.h"
 
@@ -174,6 +175,20 @@ void CompilerGetStatementStrategy::cmd_get_tile(
 
     if (lexeme->value == "PATTERN") {
       if (t == 2 || t == 3) {
+        shared_ptr<ActionNode> buffer_action =
+            getDeclaredArrayIdentifier(context, action->actions[1]);
+        if (!buffer_action) {
+          context->syntaxError(
+              "Invalid buffer parameter on GET TILE PATTERN statement");
+          return;
+        }
+        if (t == 3 &&
+            isTileArrayAction(context, action->actions[2])) {
+          context->syntaxError(
+              "Invalid bank parameter on GET TILE PATTERN statement");
+          return;
+        }
+
         // tile number
         sub_action = action->actions[0];
         result_subtype = expression.evalExpression(sub_action);
@@ -182,41 +197,22 @@ void CompilerGetStatementStrategy::cmd_get_tile(
         cpu.addPushAF();
 
         // tile buffer pointer (8 bytes)
-        sub_action = action->actions[1];
-        sub_lexeme = sub_action->lexeme;
-        if (sub_lexeme->type == Lexeme::type_identifier) {
-          fixup.addFix(sub_lexeme);
-          cpu.addLdHL(0x0000);
-          result_subtype = Lexeme::subtype_numeric;
-        } else {
-          result_subtype = expression.evalExpression(sub_action);
-        }
-        expression.addCast(result_subtype, Lexeme::subtype_numeric);
+        fixup.addFix(buffer_action->lexeme);
+        cpu.addLdHL(0x0000);
 
         if (t == 3) {
-          // push hl (buffer)
           cpu.addPushHL();
-          // bank number
           sub_action = action->actions[2];
           result_subtype = expression.evalExpression(sub_action);
           expression.addCast(result_subtype, Lexeme::subtype_numeric);
-          // ld b, l
           cpu.addLdBL();
-          // pop hl (buffer)
           cpu.addPopHL();
-          // pop af (tile number)
           cpu.addPopAF();
         } else {
-          // ld b, 0     ; default = bank 0
           cpu.addLdB(0x00);
-          // pop af (tile number)
           cpu.addPopAF();
         }
 
-        // call get_tile_pattern
-        //   a = tile number
-        //   hl = pointer to an 8 bytes buffer
-        //   b = bank (0-2)
         context->getCodeOptimizer()->addKernelCall(DISP_get_tile_pattern);
 
       } else {
@@ -226,6 +222,20 @@ void CompilerGetStatementStrategy::cmd_get_tile(
 
     } else if (lexeme->value == "COLOR") {
       if (t == 2 || t == 3) {
+        shared_ptr<ActionNode> buffer_action =
+            getDeclaredArrayIdentifier(context, action->actions[1]);
+        if (!buffer_action) {
+          context->syntaxError(
+              "Invalid buffer parameter on GET TILE COLOR statement");
+          return;
+        }
+        if (t == 3 &&
+            isTileArrayAction(context, action->actions[2])) {
+          context->syntaxError(
+              "Invalid bank parameter on GET TILE COLOR statement");
+          return;
+        }
+
         // tile number
         sub_action = action->actions[0];
         result_subtype = expression.evalExpression(sub_action);
@@ -234,16 +244,8 @@ void CompilerGetStatementStrategy::cmd_get_tile(
         cpu.addPushAF();
 
         // tile buffer pointer (8 bytes)
-        sub_action = action->actions[1];
-        sub_lexeme = sub_action->lexeme;
-        if (sub_lexeme->type == Lexeme::type_identifier) {
-          fixup.addFix(sub_lexeme);
-          cpu.addLdHL(0x0000);
-          result_subtype = Lexeme::subtype_numeric;
-        } else {
-          result_subtype = expression.evalExpression(sub_action);
-        }
-        expression.addCast(result_subtype, Lexeme::subtype_numeric);
+        fixup.addFix(buffer_action->lexeme);
+        cpu.addLdHL(0x0000);
 
         if (t == 3) {
           cpu.addPushHL();

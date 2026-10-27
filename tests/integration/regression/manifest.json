@@ -295,10 +295,28 @@
           "volatile": true
         },
         "test87": {
-          "volatile": true
+          "volatile": true,
+          "vram": {
+            "probes": [
+              {"address": "0x247", "bytes": "FF"},
+              {"address": "0xA47", "bytes": "00"},
+              {"address": "0x1247", "bytes": "00"},
+              {"address": "0x2009", "bytes": "48"}
+            ]
+          }
         },
         "test88": {
-          "volatile": true
+          "volatile": true,
+          "vram": {
+            "probes": [
+              {"address": "0x20F", "bytes": "FF"},
+              {"address": "0xA0F", "bytes": "FF"},
+              {"address": "0x120F", "bytes": "FF"},
+              {"address": "0x2208", "bytes": "48 48 48 48 48 48 48 48"},
+              {"address": "0x2A08", "bytes": "48 48 48 48 48 48 48 48"},
+              {"address": "0x3208", "bytes": "48 48 48 48 48 48 48 48"}
+            ]
+          }
         },
         "test93": {
           "volatile": true
@@ -310,7 +328,74 @@
           "volatile": true
         },
         "test97": {
-          "volatile": true
+          "volatile": true,
+          "vram": {
+            "probes": [
+              {"address": "0x2208", "bytes": "1F 1F 1F 1F 1F 1F 1F 1F"},
+              {"address": "0x2A08", "bytes": "1F 1F 1F 1F 1F 1F 1F 1F"},
+              {"address": "0x3208", "bytes": "1F 1F 1F 1F 1F 1F 1F 1F"},
+              {"address": "0x2A10", "bytes": "28 28 28 28 28 28 28 28"},
+              {"address": "0x2218", "bytes": "10 20 30 40 50 60 70 80"},
+              {"address": "0x2A18", "bytes": "10 20 30 40 50 60 70 80"},
+              {"address": "0x3218", "bytes": "10 20 30 40 50 60 70 80"},
+              {"address": "0x2220", "bytes": "1F 2E 3D 4C 5B 6A 79 88"},
+              {"address": "0x2A20", "bytes": "1F 2E 3D 4C 5B 6A 79 88"},
+              {"address": "0x3220", "bytes": "1F 2E 3D 4C 5B 6A 79 88"},
+              {"address": "0x3228", "bytes": "80 70 60 50 40 30 20 10"},
+              {"address": "0x2230", "bytes": "26 1F 43 34 6A 5B 8D 7C"},
+              {"address": "0x2A30", "bytes": "26 1F 43 34 6A 5B 8D 7C"},
+              {"address": "0x3230", "bytes": "26 1F 43 34 6A 5B 8D 7C"},
+              {"address": "0x2A38", "bytes": "26 1F 43 34 6A 5B 8D 7C"}
+            ]
+          }
+        },
+        "tile_bank_all": {
+          "volatile": true,
+          "vram": {
+            "probes": [
+              {"address": "0x2D0", "bytes": "01 02 03 04 05 06 07 08"},
+              {"address": "0xAD0", "bytes": "01 02 03 04 05 06 07 08"},
+              {"address": "0x12D0", "bytes": "01 02 03 04 05 06 07 08"},
+              {"address": "0x2D8", "bytes": "0B 0C 0D 0E 0F 10 11 12"},
+              {"address": "0xAD8", "bytes": "0B 0C 0D 0E 0F 10 11 12"},
+              {"address": "0x12D8", "bytes": "0B 0C 0D 0E 0F 10 11 12"},
+              {"address": "0x2E0", "bytes": "15 16 17 18 19 1A 1B 1C"},
+              {"address": "0xAE0", "bytes": "15 16 17 18 19 1A 1B 1C"},
+              {"address": "0x12E0", "bytes": "15 16 17 18 19 1A 1B 1C"},
+              {"address": "0x22D0", "bytes": "1F 1F 1F 1F 1F 1F 1F 1F"},
+              {"address": "0x2AD0", "bytes": "1F 1F 1F 1F 1F 1F 1F 1F"},
+              {"address": "0x32D0", "bytes": "1F 1F 1F 1F 1F 1F 1F 1F"},
+              {"address": "0x22D8", "bytes": "2E 2E 2E 2E 2E 2E 2E 2E"},
+              {"address": "0x2AD8", "bytes": "2E 2E 2E 2E 2E 2E 2E 2E"},
+              {"address": "0x32D8", "bytes": "2E 2E 2E 2E 2E 2E 2E 2E"},
+              {"address": "0x22E0", "bytes": "3D 3D 3D 3D 3D 3D 3D 3D"},
+              {"address": "0x2AE0", "bytes": "3D 3D 3D 3D 3D 3D 3D 3D"},
+              {"address": "0x32E0", "bytes": "3D 3D 3D 3D 3D 3D 3D 3D"},
+              {"address": "0x2E8", "bytes": "80 40 20 10 08 04 02 01"},
+              {"address": "0xAE8", "bytes": "80 40 20 10 08 04 02 01"},
+              {"address": "0x12E8", "bytes": "80 40 20 10 08 04 02 01"},
+              {"address": "0x2F0", "bytes": "00 00 00 00 00 00 00 80"},
+              {"address": "0xAF0", "bytes": "00 00 00 00 00 00 00 80"},
+              {"address": "0x12F0", "bytes": "00 00 00 00 00 00 00 80"},
+              {"address": "0x2F8", "bytes": "01 01 01 01 01 01 01 01"},
+              {"address": "0xAF8", "bytes": "01 01 01 01 01 01 01 01"},
+              {"address": "0x12F8", "bytes": "01 01 01 01 01 01 01 01"},
+              {"address": "0x300", "bytes": "01 01 01 01 01 01 01 01"},
+              {"address": "0xB00", "bytes": "01 01 01 01 01 01 01 01"},
+              {"address": "0x1300", "bytes": "01 01 01 01 01 01 01 01"},
+              {"address": "0x2308", "bytes": "1F 1F 1F 1F 1F 1F 1F 1F"},
+              {"address": "0x2B08", "bytes": "1F 1F 1F 1F 1F 1F 1F 1F"},
+              {"address": "0x3308", "bytes": "1F 1F 1F 1F 1F 1F 1F 1F"},
+              {"address": "0x2310", "bytes": "1F 1F 1F 1F 1F 1F 1F 1F"},
+              {"address": "0x2B10", "bytes": "1F 1F 1F 1F 1F 1F 1F 1F"},
+              {"address": "0x3310", "bytes": "1F 1F 1F 1F 1F 1F 1F 1F"},
+              {"address": "0x2318", "bytes": "1F 2E 3D 4C 5B 6A 79 88"},
+              {"address": "0x2B18", "bytes": "1F 2E 3D 4C 5B 6A 79 88"},
+              {"address": "0x3318", "bytes": "1F 2E 3D 4C 5B 6A 79 88"},
+              {"address": "0x2320", "bytes": "10 10 10 10 10 10 10 10"},
+              {"address": "0x3328", "bytes": "10 20 30 40"}
+            ]
+          }
         },
         "tile_flip_rotate": {
           "volatile": true

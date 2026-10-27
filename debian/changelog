@@ -1,3 +1,9 @@
+msxbas2rom (1.4.1.0-0) bionic; urgency=low
+
+  * Add optional offset and size parameters to CMD RSCTORAM and redefine RESOURCE(n) to return a usable RAM pointer
+
+ -- Amaury Carvalho <amauryspires@gmail.com>  Tue, 27 Oct 2026 12:00:00 -0300
+
 msxbas2rom (1.4.0.1-0) bionic; urgency=low
 
   * Fix make lint gate failures and indeterminate Logger::LogEntry fields
