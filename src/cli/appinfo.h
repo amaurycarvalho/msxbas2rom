@@ -85,6 +85,7 @@ Version history
 
 ## [1.4.1.0] - 2026-10-27
 
+- Normalize tile bank values above 2 to all banks and harden tile command parameter validation
 - Add optional offset and size parameters to CMD RSCTORAM
 - Redefine RESOURCE(n) to return a usable RAM pointer
 
