@@ -1,6 +1,6 @@
 ---
 name: changelog
-description: Update CHANGELOG.md and CHANGELOG-ARCHIVE.md, reconciling registered vs unregistered changes from both OpenSpec and SpecKit directory structures.
+description: Update CHANGELOG.md and CHANGELOG-ARCHIVE.md, reconciling registered vs unregistered changes from both OpenSpec and SpecKit directory structures, and refresh the release hyper-summary in appinfo.h info_history, debian/changelog and the rpm spec %changelog.
 license: MIT
 compatibility: Requires OpenSpec or SpecKit directory structure.
 metadata:
@@ -115,6 +115,8 @@ For each change assigned to any destination (release, archive, or unreleased):
    ```
    Only include categories that have at least one item.
 
+   **Unreleased entries are summary-only.** For any change assigned to `## [Unreleased]`, emit only the single-line heading `### [<change-name>](<relative-path>) <summary>`. Do not include `#### Added`, `#### Changed`, `#### Fixed`, or any item bullets until the change is assigned to a release or to the archive. The detailed categories are written only when the change enters a release.
+
 ### 7. Update CHANGELOG.md
 
 7.1. **If version was updated** (step 4.2):
@@ -135,6 +137,7 @@ For each change assigned to any destination (release, archive, or unreleased):
    ## [Unreleased]
    ```
    Append all change entries assigned to Unreleased (step 5.3), ordered alphabetically by change name.
+   Each Unreleased entry must be a single-line heading with the change name, link, and summary only — never category sections (`#### Added`, `#### Changed`, `#### Fixed`, etc.) or item bullets. Details are added only when the change moves into a release or the archive.
    If no changes were assigned to Unreleased, leave the section empty (no items).
 
 7.4. **Rebuild the full CHANGELOG.md**:
@@ -187,16 +190,69 @@ For each change assigned to any destination (release, archive, or unreleased):
      - `[<version>]: ...releases/tag/v<version>`
    - Add the link to the main changelog: `See main [CHANGELOG](CHANGELOG.md) for newer releases.`
 
-### 9. Verify consistency
+### 9. Update release hyper-summary in appinfo.h, debian/changelog and rpm spec
+
+9.1. **Determine the release version and date** from step 4 (the release that received changes in step 5.1). If the release date is today, use today's date; otherwise reuse the existing release date.
+
+9.2. **Build the hyper-summary** from the changes assigned to the release (step 5.1). This is a deliberately terse digest of what actually changed in the current release, not a copy of the full CHANGELOG:
+   - Select the 1–3 most relevant items (prefer user-visible behavior changes and fixes).
+   - Write each as a single short line (ideally ≤ 120 characters) in imperative or past-tense style, matching the existing `info_history` wording.
+   - If the release has no meaningful user-visible changes, use a single line summarizing the maintenance/refactor work.
+   - Keep only the newest entry condensed to at most 3 lines; do not rewrite the history of previous releases.
+
+9.3. **Update `src/cli/appinfo.h` → `info_history`**:
+   - Read the file and locate the `info_history` raw string literal (`R"(...)"`).
+   - If an entry `## [<version>] - YYYY-MM-DD` already exists, replace its bullet list with the hyper-summary bullets.
+   - Otherwise insert a new entry immediately after the `Version history` line (and its blank line), before the previous newest entry:
+     ```text
+     ## [<version>] - YYYY-MM-DD
+
+     - <summary line 1>
+     - <summary line 2>
+     ```
+     Keep a blank line between entries.
+   - Update the trailing `See full changelog:` URL so it points to the current release tag: `https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v<version>`.
+   - Preserve the rest of the file and the surrounding `R"(...)"` delimiters exactly.
+
+9.4. **Update `debian/changelog`**:
+   - Read the file. The first entry follows:
+     ```text
+     msxbas2rom (<version>-0) bionic; urgency=low
+
+       * <summary>
+
+      -- <Maintainer> <email>  <RFC-2822 date>
+     ```
+   - Ensure the first entry's version matches `<version>`; if it does not, add a new entry at the top with today's date.
+   - Replace the summary bullet line(s) of the current release entry with the hyper-summary, joining the selected items into a single `  * <summary>` line (or at most a few `  *` lines if clearly separate topics).
+   - Ensure the trailer line keeps the existing maintainer name/email and uses an RFC-2822 date (e.g. `Tue, 27 Oct 2026 12:00:00 -0300`) for the release date.
+   - Add a blank line between entries.
+
+9.5. **Update `rpmbuild/SPECS/msxbas2rom.spec` → `%changelog`**:
+   - Read the file and locate the `%changelog` section. Each entry follows:
+     ```text
+     * Day Mon DD YYYY <Maintainer> <email>
+     - <summary>
+     ```
+   - Ensure the `Version:` field matches `<version>`; if it does not, update it (or add a new changelog entry at the top).
+   - If an entry for the current release date already exists, replace its `- <summary>` line(s); otherwise insert a new entry immediately after the `%changelog` line, before the previous newest entry.
+   - Use the same hyper-summary as `debian/changelog`, formatted as one `- <summary>` line (or at most a few lines if clearly separate topics).
+   - Use today's date formatted as `Day Mon DD YYYY` (e.g. `Wed Oct 28 2026`) and preserve the existing maintainer name/email.
+   - Do not add blank lines between `%changelog` entries; keep the original section layout.
+
+### 10. Verify consistency
 
 Read back all modified files and verify:
 - `CHANGELOG.md` has the correct release entry with all assigned changes.
 - `CHANGELOG.md` has the Unreleased section (if any changes were assigned there).
 - `CHANGELOG-ARCHIVE.md` has the archived entries properly formatted.
+- `src/cli/appinfo.h` `info_history` has the new/updated entry for the release with a concise hyper-summary and the correct release-tag URL.
+- `debian/changelog` top entry matches the release version and contains the hyper-summary with a valid RFC-2822 date.
+- `rpmbuild/SPECS/msxbas2rom.spec` has the matching `Version:` and a `%changelog` entry for the release with the hyper-summary and the correct `Day Mon DD YYYY` date.
 - No duplicate change references exist.
 - Version compare links are correct and point to the right repository.
 
-### 10. Suggest release-version skill
+### 11. Suggest release-version skill
 
 If the version was updated in step 4.2, suggest the user run the `release-version` skill manually to update the version number across all project files (pyproject.toml, __init__.py, etc.).
 
@@ -233,6 +289,9 @@ If the version was updated in step 4.2, suggest the user run the `release-versio
 **Files updated:**
 - CHANGELOG.md ✓
 - CHANGELOG-ARCHIVE.md ✓
+- src/cli/appinfo.h (info_history) ✓
+- debian/changelog ✓
+- rpmbuild/SPECS/msxbas2rom.spec (%changelog) ✓
 
 **Next steps:** If the version was updated, run the `release-version` skill to update version numbers across the project.
 ```

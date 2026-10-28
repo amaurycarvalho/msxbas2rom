@@ -83,6 +83,12 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char* info_history = R"(
 Version history
 
+## [1.4.2.0] - 2026-10-28
+
+- Fix Pletter heap overflow for small resource blobs
+- Fix string concatenation by giving each temporary string its own 256-byte slot
+- Normalize startup to SCREEN 0 40 columns for a consistent text layout
+
 ## [1.4.1.0] - 2026-10-27
 
 - Normalize tile bank values above 2 to all banks and harden tile command parameter validation
@@ -96,7 +102,7 @@ Version history
 - Add an openMSX-based memory regression workflow for integration tests
 
 See full changelog:
-https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.4.1.0
+https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.4.2.0
 )";
 
 /***

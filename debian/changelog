@@ -1,6 +1,16 @@
 msxbas2rom (1.4.2.0-0) bionic; urgency=low
 
-  * Add optional offset and size parameters to CMD RSCTORAM and redefine RESOURCE(n) to return a usable RAM pointer
+  * Fix Pletter heap overflow for small resource blobs
+  * Fix string concatenation by giving each temporary string its own 256-byte slot
+  * Normalize startup to SCREEN 0 40 columns for a consistent text layout
+
+ -- Amaury Carvalho <amauryspires@gmail.com>  Wed, 28 Oct 2026 12:00:00 -0300
+
+msxbas2rom (1.4.1.0-0) bionic; urgency=low
+
+  * Normalize tile bank values above 2 to all banks and harden tile command parameter validation
+  * Add optional offset and size parameters to CMD RSCTORAM
+  * Redefine RESOURCE(n) to return a usable RAM pointer
 
  -- Amaury Carvalho <amauryspires@gmail.com>  Tue, 27 Oct 2026 12:00:00 -0300
 
