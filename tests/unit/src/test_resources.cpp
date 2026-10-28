@@ -22,6 +22,7 @@
 #include "doctest/doctest.h"
 #include "logger.h"
 #include "parser.h"
+#include "pletter.h"
 #include "resources.h"
 
 #include "in_memory_resource_content_source.h"
@@ -304,6 +305,36 @@ TEST_SUITE("ResourceReader suite") {
     deleteTempFile(fname);
   }
 
+  TEST_CASE("ResourceBlobChunkPackedReader packs an incompressible chunk") {
+    resetResourceSource();
+    std::string fname = "tmp/temp_blobchunk_random.bin";
+    std::string content(256, '\0');
+    unsigned value = 0x12345678u;
+    for (std::size_t i = 0; i < content.size(); i++) {
+      value = value * 1103515245u + 12345u;
+      content[i] = static_cast<char>(value >> 16);
+    }
+    createTempFile(fname, content);
+
+    ResourceBlobChunkPackedReader reader(fname, resourceSource);
+    CHECK(reader.load() == true);
+    CHECK(reader.isPacked == true);
+    REQUIRE(reader.data.size() == 3);  // block count + 2 chunks
+    CHECK(reader.data[0].size() == 2);
+    CHECK(reader.data[0][0] == 2);
+    CHECK(reader.data[0][1] == 0);
+    for (std::size_t block = 1; block < reader.data.size(); block++) {
+      int packedSize = reader.data[block][0];
+      CHECK(packedSize > 0);
+      CHECK(packedSize <= 255);
+      CHECK(reader.data[block].size() ==
+            static_cast<std::size_t>(packedSize) + 1);
+    }
+    CHECK(reader.packedSize > 0);
+
+    deleteTempFile(fname);
+  }
+
   // ------------------------------------------------------------------
   // ResourceBlobPackedReader (pletter edge cases)
   TEST_CASE("ResourceBlobPackedReader packs varied small data patterns") {
@@ -342,6 +373,39 @@ TEST_SUITE("ResourceReader suite") {
     CHECK(reader.load() == true);
     CHECK(reader.isPacked == true);
     CHECK(reader.packedSize > 0);
+
+    deleteTempFile(fname);
+  }
+
+  TEST_CASE("ResourceBlobPackedReader packs blobs of 1 through 6 bytes") {
+    resetResourceSource();
+    for (int n = 1; n <= 6; n++) {
+      std::string fname =
+          "tmp/temp_pletter_" + std::to_string(n) + "bytes.bin";
+      std::string content(n, static_cast<char>(0x40 + n));
+      createTempFile(fname, content);
+
+      ResourceBlobPackedReader reader(fname, resourceSource);
+      CHECK(reader.load() == true);
+      CHECK(reader.isPacked == true);
+      CHECK(reader.packedSize > 0);
+      CHECK(reader.packedSize <= Pletter::maxPackedSize(n));
+      REQUIRE(reader.data.size() == 1);
+      CHECK((int)reader.data[0].size() == reader.packedSize);
+
+      deleteTempFile(fname);
+    }
+  }
+
+  TEST_CASE("ResourceBlobPackedReader rejects an empty blob") {
+    resetResourceSource();
+    std::string fname = "tmp/temp_pletter_empty.bin";
+    createTempFile(fname, "");
+
+    ResourceBlobPackedReader reader(fname, resourceSource);
+    CHECK(reader.load() == false);
+    CHECK(reader.getLogger()->errors().toString().find("empty") !=
+          std::string::npos);
 
     deleteTempFile(fname);
   }
@@ -586,8 +650,9 @@ TEST_SUITE("ResourceReader suite") {
     REQUIRE(reader.unpackedSize == (int)expected.size());
 
     Pletter pl;
-    std::vector<unsigned char> packed(expected.size() * 2);
-    int bytesPacked = pl.pack(expected.data(), (int)expected.size(), packed.data());
+    std::vector<unsigned char> packed;
+    int bytesPacked =
+        pl.pack(expected.data(), (int)expected.size(), packed);
     REQUIRE(bytesPacked > 0);
     REQUIRE(reader.packedSize == bytesPacked);
     REQUIRE(reader.data.size() == 1);
@@ -815,6 +880,7 @@ TEST_SUITE("Slow") {
     CHECK(reader.load() == true);
     CHECK(reader.isPacked == true);
     CHECK(reader.packedSize > 0);
+    CHECK(reader.packedSize <= Pletter::maxPackedSize((int)content.size()));
 
     deleteTempFile(fname);
   }

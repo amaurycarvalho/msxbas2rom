@@ -12,6 +12,18 @@ on:
         default: "master"
 
 jobs:
+  ci-hardened:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Hardened unit testing
+        run: |
+          make test-unit
+      - name: Sanitizer unit testing
+        run: |
+          make test-sanitize
+
   ci-linux:
     runs-on: ubuntu-latest
     steps:

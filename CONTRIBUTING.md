@@ -138,8 +138,15 @@ Also, run linting, unit testing and code coverage:
 ```bash
 make lint        # changed C++ sources only; CI lints the full tree
 make test
+make test-unit
+make test-sanitize
 make test-coverage
 ```
+
+`make test-unit` builds with `_GLIBCXX_ASSERTIONS` so bounds errors fail on
+every Linux toolchain. `make test-sanitize` runs the same unit suite with
+AddressSanitizer and UndefinedBehaviorSanitizer in separate `tests/unit/obj-sanitize`
+and `tests/unit/bin-sanitize` directories, leaving the normal build intact.
 
 Run `make lint-all` for a full local lint, and `make quality-gate` before
 pushing to run the full lint plus architecture, coverage, kernel and

@@ -18,6 +18,10 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 - [set-page-screen4](openspec/changes/set-page-screen4) SET PAGE support for screen 4 compatibility
 - [wishlist](openspec/changes/wishlist) Explore and track potential future improvements not yet scheduled for any sprint
 
+### Fixed
+
+- [fix-pletter-buffer-overflow](openspec/changes/fix-pletter-buffer-overflow) Fix Pletter heap overflow for small resource blobs by returning an owned output buffer and sizing the compressor from the worst-case bound
+
 ## [1.4.1.0] - 2026-10-27
 
 ### [add-rsctoram-offset-size](openspec/changes/archive/2026-10-26-add-rsctoram-offset-size) Add optional offset/size parameters to CMD RSCTORAM for partial resource copies

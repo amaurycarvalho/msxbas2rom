@@ -3,7 +3,7 @@
 # by Amaury Carvalho (2025)                                                    #
 #------------------------------------------------------------------------------#
 
-.PHONY: all clean setup build build-init run coverage
+.PHONY: all clean setup build build-init run sanitize coverage
 
 CC = gcc
 CXX = g++
@@ -16,11 +16,23 @@ TEST_SRC = ./src
 INC = $(shell find $(SRC_ROOT) -type f \( -name "*.h" -o -name "*.hpp" \) -exec dirname {} + | uniq | sort)
 CPPFLAGS = -I. $(foreach dir,$(INC),-I$(dir))
 DEPFLAGS = -MMD -MP
-OBJ = ./obj
-BIN = ./bin
 TMP = ./tmp
-CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG) --coverage -O0
-LDFLAGS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc --coverage -O0
+SANITIZE ?= 0
+
+ifeq ($(SANITIZE),1)
+ OBJ = ./obj-sanitize
+ BIN = ./bin-sanitize
+ CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG) -O0 -D_GLIBCXX_ASSERTIONS \
+          -fsanitize=address,undefined -fno-omit-frame-pointer -g
+ LDFLAGS = -fsanitize=address,undefined -fno-omit-frame-pointer -g -O0
+ SANITIZER_ENV = ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=halt_on_error=1
+else
+ OBJ = ./obj
+ BIN = ./bin
+ CFLAGS = -Wall -fexceptions -std=c++11 $(OSFLAG) --coverage -O0 \
+          -D_GLIBCXX_ASSERTIONS
+ LDFLAGS = -static-libstdc++ -static-libgcc -static -lstdc++ -lgcc --coverage -O0
+endif
 
 SRC_FILES = $(shell find $(SRC_ROOT) -name '*.cpp' ! -path '$(SRC_ROOT)/cli/main.cpp' | sort)
 SRC_OBJ = $(patsubst $(SRC_ROOT)/%.cpp,$(OBJ)/src_%.o,$(SRC_FILES))
@@ -40,7 +52,9 @@ else
  endif
  ifeq ($(UNAME_S),Darwin)
    OSFLAG += -D MacOS
-   LDFLAGS =
+   ifneq ($(SANITIZE),1)
+     LDFLAGS =
+   endif
  endif
 endif
 
@@ -49,8 +63,11 @@ all:
 
 run: build
 	@echo "🧭 Running unit tests..."
-	@./bin/test_unit
+	@$(SANITIZER_ENV) $(TEST_BIN)
 	@echo "✅ Unit testing finished"
+
+sanitize:
+	@$(MAKE) SANITIZE=1 run
 
 build: setup $(TEST_BIN)
 
@@ -58,6 +75,7 @@ clean:
 	@echo "🧹 Cleaning artifacts..."
 	@rm -rf $(BIN)/*
 	@rm -rf $(OBJ)/*
+	@rm -rf ./bin-sanitize ./obj-sanitize
 	@rm -rf $(TMP)/*
 
 setup:

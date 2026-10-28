@@ -22,12 +22,21 @@ class Pletter {
   ~Pletter();
 
   /***
+   * @brief Worst-case compressed size for an input of n bytes
+   * @param n Source data size
+   * @return Maximum number of compressed bytes emitted
+   */
+  static constexpr int maxPackedSize(int n) { return n + (n + 43) / 8; }
+
+  /***
    * @brief Compress data
    * @param pData Source data to be compressed
    * @param dataSize Source data size
-   * @param pDest Destination data buffer
+   * @param out Owned destination buffer for the exact compressed payload
+   * @return Number of compressed bytes, or 0 for invalid input
    */
-  int pack(const unsigned char* pData, int dataSize, unsigned char* pDest);
+  int pack(const unsigned char* pData, int dataSize,
+           std::vector<unsigned char>& out);
 
  protected:
  private:
@@ -55,7 +64,7 @@ class Pletter {
 
   struct saves {
     std::vector<unsigned char> buf;
-    int ep, dp, p, e;
+    int ep, p, e;
     void init(unsigned length);
     void add0();
     void add1();
@@ -65,13 +74,13 @@ class Pletter {
     void adddata(unsigned char d);
     void addevent();
     void claimevent();
-    int done(unsigned char* pDest);
+    int done(std::vector<unsigned char>& out);
   } s;
 
   void initvarcost();
   void createmetadata();
   int getlen(pakdata* p, unsigned q);
-  int save(pakdata* p, unsigned q, unsigned char* pDest);
+  int save(pakdata* p, unsigned q, std::vector<unsigned char>& out);
 };
 
 #endif  // PLETTER_H

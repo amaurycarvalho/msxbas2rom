@@ -46,6 +46,8 @@ tests/**/*.symbol
 tests/deprecated/
 tests/unit/bin/
 tests/unit/obj/
+tests/unit/bin-sanitize/
+tests/unit/obj-sanitize/
 tests/unit/tmp/
 tests/**/.vscode/
 tests/integration/regression/artifacts/*

@@ -270,6 +270,8 @@ int ResourceAkmReader::guessBaseAddress(unsigned char* data, int length) {
 
   /// AKM header
 
+  if (length < 8) return -1;
+
   instrumentIndexTable = data[0] | (data[1] << 8);
   subsongIndexTable = data[6] | (data[7] << 8);
 

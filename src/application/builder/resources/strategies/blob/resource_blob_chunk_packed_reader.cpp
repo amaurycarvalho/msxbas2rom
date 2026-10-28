@@ -13,6 +13,14 @@
 
 #include "logger.h"
 
+namespace {
+
+constexpr int kChunkSize = 200;
+static_assert(Pletter::maxPackedSize(kChunkSize) <= 255,
+              "chunk compression must fit the 1-byte block size");
+
+}  // namespace
+
 ResourceBlobChunkPackedReader::ResourceBlobChunkPackedReader(
     string filename, shared_ptr<ResourceContentSource> contentSource)
     : ResourceBlobPackedReader(filename, contentSource) {
@@ -27,7 +35,7 @@ bool ResourceBlobChunkPackedReader::isIt(string fileext) {
 /// @todo fix 1st block segment disalignment bug
 /// implementing resource block linked list
 bool ResourceBlobChunkPackedReader::load() {
-  unsigned char buffer[1024];
+  std::vector<unsigned char> packed;
   unsigned char* srcBuf;
   int bytesPacked, bytesUnpacked;
   int srcSize, blockCount = 0;
@@ -37,14 +45,14 @@ bool ResourceBlobChunkPackedReader::load() {
     srcBuf = data[0].data();
     srcSize = data[0].size();
     while (srcSize) {
-      bytesUnpacked = min(srcSize, 200);
-      bytesPacked = pletter.pack(srcBuf, bytesUnpacked, buffer);
+      bytesUnpacked = min(srcSize, kChunkSize);
+      bytesPacked = pletter.pack(srcBuf, bytesUnpacked, packed);
       if (bytesPacked <= 0) {
         logger->error("Error while packing resource file with pletter: " +
                       filename);
         return false;
       }
-      if (bytesPacked > 255) {
+      if (packed.size() > 255) {
         logger->error(
             "Block size > 255 bytes (#" + std::to_string(blockCount) +
             ") while packing resource file with pletter: " + filename);
@@ -53,9 +61,9 @@ bool ResourceBlobChunkPackedReader::load() {
       srcBuf += bytesUnpacked;
       srcSize -= bytesUnpacked;
       blockCount++;
-      data.emplace_back(bytesPacked + 1);  // create new block
-      data.back()[0] = bytesPacked;
-      memcpy(data.back().data() + 1, buffer, bytesPacked);
+      data.emplace_back(packed.size() + 1);  // create new block
+      data.back()[0] = static_cast<unsigned char>(packed.size());
+      memcpy(data.back().data() + 1, packed.data(), packed.size());
       packedSize += bytesPacked + 1;
     }
     data[0].resize(2);  //! block count

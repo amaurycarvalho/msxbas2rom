@@ -15,7 +15,7 @@ ResourceBlobPackedReader::ResourceBlobPackedReader(
 
 bool ResourceBlobPackedReader::pack() {
   int bytesPacked = 0;
-  if (!data.size()) {
+  if (data.empty() || data[0].empty()) {
     logger->error(
         "Resource file is empty so it's no possible to pack it with pletter: " +
         filename);
@@ -31,15 +31,15 @@ bool ResourceBlobPackedReader::pack() {
         filename);
     return false;
   }
-  data.emplace_back(data[0].size() * 2);
-  bytesPacked = pletter.pack(data[0].data(), data[0].size(), data[1].data());
+  std::vector<unsigned char> packed;
+  bytesPacked =
+      pletter.pack(data[0].data(), static_cast<int>(data[0].size()), packed);
   if (!bytesPacked) {
     logger->error("Error while packing resource file with pletter: " +
                   filename);
     return false;
   }
-  data.erase(data.begin());     //! removes the uncompressed data
-  data[0].resize(bytesPacked);  //! fix the compressed data size
+  data[0].swap(packed);  //! replaces the uncompressed data
   packedSize = bytesPacked;
   return true;
 }

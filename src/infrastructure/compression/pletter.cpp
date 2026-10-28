@@ -15,8 +15,9 @@ Pletter::Pletter() {}
 Pletter::~Pletter() = default;
 
 void Pletter::saves::init(unsigned length) {
-  ep = dp = p = e = 0;
-  buf.assign(length * 2, 0);
+  ep = p = e = 0;
+  buf.clear();
+  buf.reserve(Pletter::maxPackedSize(static_cast<int>(length)));
 }
 
 void Pletter::saves::add0() {
@@ -65,20 +66,20 @@ void Pletter::saves::addvar(int i) {
 }
 
 void Pletter::saves::adddata(unsigned char d) {
-  buf[dp++] = d;
+  buf.push_back(d);
 }
 
 void Pletter::saves::addevent() {
-  buf[ep] = e;
+  buf[ep] = static_cast<unsigned char>(e);
   e = p = 0;
 }
 
 void Pletter::saves::claimevent() {
-  ep = dp;
-  ++dp;
+  ep = static_cast<int>(buf.size());
+  buf.push_back(0);
 }
 
-int Pletter::saves::done(unsigned char* pDest) {
+int Pletter::saves::done(std::vector<unsigned char>& out) {
   if (p != 0) {
     while (p != 8) {
       e *= 2;
@@ -86,8 +87,8 @@ int Pletter::saves::done(unsigned char* pDest) {
     }
     addevent();
   }
-  memcpy(pDest, buf.data(), dp);
-  return dp;
+  out.assign(buf.begin(), buf.end());
+  return static_cast<int>(buf.size());
 }
 
 void Pletter::initvarcost() {
@@ -184,7 +185,8 @@ int Pletter::getlen(pakdata* p, unsigned q) {
   return p[0].cost;
 }
 
-int Pletter::save(pakdata* p, unsigned q, unsigned char* pDest) {
+int Pletter::save(pakdata* p, unsigned q,
+                  std::vector<unsigned char>& out) {
   s.init(length);
   unsigned i, j;
   if (savelength) {
@@ -240,25 +242,19 @@ int Pletter::save(pakdata* p, unsigned q, unsigned char* pDest) {
 
   for (i = 0; i != 34; ++i) s.add1();
 
-  return s.done(pDest);
+  return s.done(out);
 }
 
 int Pletter::pack(const unsigned char* pData, int dataSize,
-                  unsigned char* pDest) {
+                  std::vector<unsigned char>& out) {
   int packed;
 
-  if (pData == nullptr) {
-    return false;
+  if (pData == nullptr || dataSize == 0) {
+    out.clear();
+    return 0;
   }
 
-  if (dataSize == 0) {
-    return false;
-  }
-
-  if (pDest == nullptr) {
-    return false;
-  }
-
+  out.clear();
   savelength = false;
   offset = 0;
   length = 0;
@@ -286,7 +282,7 @@ int Pletter::pack(const unsigned char* pData, int dataSize,
     }
   }
 
-  packed = save(p[minbl].data(), minbl, pDest);
+  packed = save(p[minbl].data(), minbl, out);
 
   return packed;
 }

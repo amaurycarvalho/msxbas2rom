@@ -3,7 +3,7 @@
 # by Amaury Carvalho (2022-2026)                                               #
 #------------------------------------------------------------------------------#
 
-.PHONY: all clean build debug release lint lint-all test lint-full test-clean test-unit test-integration test-coverage test-kernel test-emulator test-architecture mutation-clean mutation-build mutation-run mutation-check quality-gate debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
+.PHONY: all clean build debug release lint lint-all test lint-full test-clean test-unit test-sanitize test-integration test-coverage test-kernel test-emulator test-architecture mutation-clean mutation-build mutation-run mutation-check quality-gate debian rpm clean_debug before_debug out_debug after_debug clean_release before_release out_release after_release
 
 # ----------------------------
 # Variables
@@ -222,6 +222,11 @@ test-unit:
 	@echo "🔍 Running unit testing..."
 	@$(MAKE) -C tests/unit run
 	@echo "✅ Unit testing passed!"
+
+test-sanitize:
+	@echo "🔍 Running unit testing with ASan/UBSan..."
+	@$(MAKE) -C tests/unit SANITIZE=1 run
+	@echo "✅ Sanitized unit testing passed!"
 
 test-coverage:
 	@echo "🔍 Running code coverage..."
