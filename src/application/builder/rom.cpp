@@ -308,15 +308,6 @@ bool Rom::patchStartCode() {
     return true;
   }
 
-  std::map<std::string, unsigned int>::const_iterator stub =
-      stubs.find("C7369");
-  if (stub == stubs.end()) {
-    logger->error(
-        "start code requires an import stub for 'C7369' (game graphics)");
-    errorFound = true;
-    return false;
-  }
-
   shared_ptr<KernelImage> kernel = compiler->getKernelImage();
   std::size_t startSize = kernel ? kernel->startSize() : 0;
   std::size_t callOffset = 0;
@@ -329,9 +320,23 @@ bool Rom::patchStartCode() {
     callOffset = i;
     matches++;
   }
-  if (matches != 1) {
+  if (matches == 0) {
+    logger->debug(
+        "Start code uses BIOS CHGMOD; no C7369 call to patch");
+    return true;
+  }
+  if (matches > 1) {
     logger->error(
-        "start code must contain exactly one call to 'C7369'");
+        "start code must not contain more than one call to 'C7369'");
+    errorFound = true;
+    return false;
+  }
+
+  std::map<std::string, unsigned int>::const_iterator stub =
+      stubs.find("C7369");
+  if (stub == stubs.end()) {
+    logger->error(
+        "start code requires an import stub for 'C7369' (game graphics)");
     errorFound = true;
     return false;
   }

@@ -1,8 +1,10 @@
 {
-  "capture_time": "5.373403044241656",
-  "capture_trigger": "breakpoint:END_PGM@33581",
-  "generated_at": "2026-10-25T22:24:08-0300",
+  "capture_time": "5.687006030096004",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:32:26-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "MATH/test11",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "MATH",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/MATH/test11.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": " <<< Expression test 3 >>>\n         1 + 2 =  3\n                 1 + 2 * 3 =  7\n                         1 * 2 +\n 3 =  5\n 5 - 2 =  3\n         5.0 - 2.0 =  3\n                 5 / 2 =  2\n                         5.0 / 2\n.0 =  2.5\n 5 mod 2 =  1\n         5.0 mod 2.0 =  1\n                 5 ^ 2 =  25\n                         5.0 ^ 2\n.0 =  25\n SQR( 5 ) =  2.236\n         SQR( 25 ) =  5\n                 &H20 =  32\n                         &O20 =\n 16\n &B11 =  3",
+    "text": " <<< Expression test 3 >>>\n 1 + 2 =  3\n 1 + 2 * 3 =  7\n 1 * 2 + 3 =  5\n 5 - 2 =  3\n 5.0 - 2.0 =  3\n 5 / 2 =  2\n 5.0 / 2.0 =  2.5\n 5 mod 2 =  1\n 5.0 mod 2.0 =  1\n 5 ^ 2 =  25\n 5.0 ^ 2.0 =  25\n SQR( 5 ) =  2.236\n SQR( 25 ) =  5\n &H20 =  32\n &O20 =  16\n &B11 =  3",
     "unstable_regions": []
   }
 }

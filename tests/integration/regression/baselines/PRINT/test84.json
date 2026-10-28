@@ -1,13 +1,15 @@
 {
-  "capture_time": "10.113024420701514",
+  "capture_time": "10.113024700066628",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:28:24-0300",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:36:43-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "PRINT/test84",
   "ram": {
     "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
-    "values": "eNrt2i0OwjAYgOGPvwSJ5wLIbQRPgkFygQlugkISbgRmd8KV4QADhgDr835JU9GkebLKpUgP07vf9wbtGv2om+2sX5/b/WlaN5PdMMXzHDerfawPl2XcNSqralFEtrX+eZG3v8zdn/n7r3L+/pFezhtHPjpfvp6fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fP0f/+Dbpl5e//0Oz2+8/JEmSJElS57sCPEnkUQ==",
+    "values": "eNrt2i0OwjAYgOFv/CRIPBdAboF5EgySC0xwExSScCMwnKswNzBgCLA+75c0FU2aJ6tcivQwRXdfDO9rDKK57uaD5nLfn2fNdbofpXie03Z9iM1xVUencVXVZRnZ1vrrvP2LzP3LzN//MufvH+nlvHHko/Pl6/n5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5c/RP2km/vPz9H5r9fv8hSZIkSZJ63w2QReOa",
     "volatile_ranges": [
       [
         61440,
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "PRINT",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/PRINT/test84.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": "\n\n\n                          12300",
+    "text": "\n\n\n  11550",
     "unstable_regions": []
   }
 }

@@ -1,8 +1,10 @@
 {
-  "capture_time": "10.113021627050365",
+  "capture_time": "10.1130241413364",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:26:40-0300",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:34:50-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "ON/test10",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "ON",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/ON/test10.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": " TEST 1: No effect\n\n                 Press a functio\nn key or ESC key         .",
+    "text": " TEST 1: No effect\n\n Press a function key or ESC key\n .",
     "unstable_regions": []
   }
 }

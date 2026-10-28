@@ -1,8 +1,10 @@
 {
-  "capture_time": "6.386542144322812",
-  "capture_trigger": "breakpoint:END_PGM@34547",
-  "generated_at": "2026-10-25T22:28:19-0300",
+  "capture_time": "6.185155934622975",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:36:38-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "PRINT/test73",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "PRINT",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/PRINT/test73.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": "\n          200.5  -200.5\n                 +200.5  -200.5\n                         200.5\n 200.5-\n 200.5+  200.5-\n         123.4   432.1\n                   12OK .  .. ..\n. ... ... ... ... ... .. 12345\n 10000... ... ... ... ... ... ..\n 12345   00123   00001... ... ..\n. ... .. 25.29OK. ... ..\n                 25.34\n                        1123OK\n\n %-123\n          +123    -123\n                  123+    123-\n                         123\n 123-\n *****123\n         ****-234\n                 $1234\n                         -$1234",
+    "text": "  200.5  -200.5\n +200.5  -200.5\n 200.5   200.5-\n 200.5+  200.5-\n 123.4   432.1\n   12OK\n 12345   10000\n 12345   00123   00001\n 25.29OK\n 25.34\n 123OK\n %-123\n  +123    -123\n  123+    123-\n 123     123-\n *****123\n ****-234\n $1234\n -$1234\n   1,500.28\n  10000000E-03\n   1.0     2.2     4.0",
     "unstable_regions": []
   }
 }

@@ -1,0 +1,59 @@
+{
+  "capture_time": "7.476092073154549",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T11:19:20-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
+  "probes": [],
+  "program": "PRINT/test9",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2jEKgzAUgOGkdujY3Qt4lJzI2Zu1i+d6xk0dpWCJ3/8gZAnhg4yJFLvJ233u6poeuczjkMq37j99md/TM9JxJOm+xak5eexnc/H1/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Px39L/WiX9emvy12c77929XkiRJkqT2WwA/L+V6",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "PRINT",
+  "screen": 2,
+  "screen_stable": true,
+  "source": "tests/integration/PRINT/test9.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {
+      "colour_table": {
+        "length": 6144,
+        "sha256": "b37466c79b1854ca7b69e863cc48b1820a26b704dc705dde4f930630ca283c7b",
+        "start": 8192
+      },
+      "name_table": {
+        "length": 768,
+        "sha256": "f3a25aa93aa2fbba28d79260535bbd6a5eb0fc1c24a8b0f04e12b484c1dfe363",
+        "start": 6144
+      },
+      "pattern_generator": {
+        "length": 6144,
+        "sha256": "ab363c43e5dad9c85c2f97552965cfbd402e15668e70daf6434017985de950a6",
+        "start": 0
+      },
+      "sprite_attributes": {
+        "length": 128,
+        "sha256": "a89990f87b7866f1cb668d10c28cd7ec39fcb7cb451e255a3a775f35863a63dc",
+        "start": 6912
+      },
+      "sprite_patterns": {
+        "length": 2048,
+        "sha256": "e5a00aa9991ac8a5ee3109844d84a55583bd20572ad3ffcd42792f3c36b183ad",
+        "start": 14336
+      }
+    },
+    "screen_stable": true,
+    "size": 16384,
+    "unstable_regions": []
+  }
+}

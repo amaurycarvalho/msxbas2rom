@@ -1,0 +1,45 @@
+{
+  "capture_time": "5.579462473582536",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:37:14-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
+  "probes": [],
+  "program": "STRING/test1",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2jEKwjAUgOHXakGc3J26eQ2LY07jCbyZLj1XbBWkuimC0nz/g5AllI9kbI78NNV0Xy2GNepI/XFXp8uwP29Tvzktc7xOM5xsukdRYuv92M1/KNE/uf+ubduS779If3P3R7nlt+eDI1+dH3+en5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn79E/2qc/M/L7P7YnNf7D0mSJEmSNPuuHJHxCQ==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "STRING",
+  "screen": 0,
+  "screen_stable": true,
+  "source": "tests/integration/STRING/test1.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "expected_text": [
+      "HELLO WORLD!!!",
+      "AAAAA",
+      "BBBBBB",
+      "AAAAABBBBBB!!!",
+      "AAAAABBBBBB",
+      "AAAAA   BBBBBB",
+      "AAAAABBBBB",
+      "AAAAABBBBB",
+      "AAAAABBBBB"
+    ],
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " HELLO WORLD!!!\n AAAAA\n BBBBBB\n AAAAABBBBBB!!!\n AAAAABBBBBB\n AAAAA   BBBBBB\n AAAAABBBBB\n AAAAABBBBB\n\n\n   AAAAABBBBB",
+    "unstable_regions": []
+  }
+}

@@ -1,13 +1,15 @@
 {
-  "capture_time": "10.113021627050365",
+  "capture_time": "10.11302246514571",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:21:09-0300",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:45:59-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "GRAPH/test89",
   "ram": {
     "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
-    "values": "eNrt2jEKgzAUgOGkdujY3Qt4lJzI2Zu1i+d6xk0dpWCJ3/8gZAnhg4yJFLvJ233u6poeuczjkMu37j99md/TM9JxJOm+xak5eexnc/H1/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Px39L/WiX9emvy12c77929XkiRJkqT2WwB/BuV7",
+    "values": "eNrt2jEKgzAUgOGkdujY3Qt4lJzI2Zu1i+d6xk0dpWCJ3/8gZAnhg4yJFLvJ233u6poeuczjkMq37j99md/TM9JxJOm+xak5eexnc/H1/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Px39L/WiX9emvy12c77929XkiRJkqT2WwA/L+V6",
     "volatile_ranges": [
       [
         61440,

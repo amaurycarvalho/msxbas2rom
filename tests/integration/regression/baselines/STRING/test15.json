@@ -1,8 +1,10 @@
 {
-  "capture_time": "10.113022185780595",
+  "capture_time": "10.11302358260617",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:28:53-0300",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:37:19-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "STRING/test15",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "STRING",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/STRING/test15.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": " <<<< STRING FUNCTIONS >>>>\n         TEXT 1: THIS IS\n                 TEXT 2: A TEST\n                         TEXT 1\n+ TEXT 2:\n =>THIS IS A TEST\n         CHR$ 65,66,67: ABC\n                 ASC(ABCDEF) =\n65                       LEN(ABC\nDEF) =  6\n PRESS A KEY...\n         .",
+    "text": " <<<< STRING FUNCTIONS >>>>\n TEXT 1: THIS IS\n TEXT 2: A TEST\n TEXT 1 + TEXT 2:\n =>THIS IS A TEST\n CHR$ 65,66,67: ABC\n ASC(ABCDEF) =  65\n LEN(ABCDEF) =  6\n PRESS A KEY...\n .",
     "unstable_regions": []
   }
 }

@@ -10,6 +10,8 @@
 
 ENASLT:	       equ 0024h
 EXPTBL:        equ 0xFCC1   ; Expanded Slot Table
+CHGMOD:        equ 0x005F   ; BIOS change screen mode
+SOMODE:        equ 0xC024   ; xbasic screen output mode (0=text)
 
 LINL40:        equ 0xF3AE
 LINL32:        equ 0xF3AF
@@ -28,7 +30,6 @@ BASINIT:       equ 0x629A   ; initialize interpreter, basic pointer at start of 
 NEWSTT:        equ 0x4601   ; execute a text (hl=text pointer; text must start with a ":")
 CHGET:         equ 0x009F
 INITIO:        equ 0x003B   ; Initialize I/O devices
-XBASIC_SCREEN: equ 0x7369
 
 STARTUP_CFG_FILEIO:  equ 0x800A  ; disk mode flag
 DISK_ERROR_HANDLER:  equ 0xF323  ; disk error handler address (pointer to pointer)
@@ -52,6 +53,7 @@ startup_cfg_fileio:
   dw msx_basic_pcode_startup
 
 initialize:
+  ; WIDTH 40 (40 columns = LINLEN 39 in MSX text modes)
   ld a, 39
   ld (LINL40), a
   ld (LINLEN), a
@@ -62,10 +64,13 @@ initialize:
   ld a, 14
   ld (CLMSLT), a
   xor a
+  ld (SOMODE), a             ; text output mode
   ld (SCRMOD), a
   ld (OLDSCR), a
   ld (NTMSXP), a
-  call XBASIC_SCREEN         ; xbasic SCREEN mode (in: a = screen mode)
+  ; SCREEN 0 (explicit, independent of the machine boot default)
+  xor a
+  call CHGMOD                ; BIOS change screen mode (in: a = screen mode)
 
 select_basic_on_page_1:
   ld a, (EXPTBL)

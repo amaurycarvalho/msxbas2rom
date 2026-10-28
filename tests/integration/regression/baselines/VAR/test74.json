@@ -1,8 +1,10 @@
 {
-  "capture_time": "5.35182180975515",
-  "capture_trigger": "breakpoint:END_STMT+2@32869",
-  "generated_at": "2026-10-25T22:30:03-0300",
+  "capture_time": "5.627544841592996",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:37:54-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "VAR/test74",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "VAR",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/VAR/test74.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": "\n\n\n\n\n\n\n\n     HOTBIT\n\n     MSX BR\n                             EPC\nOM [Z.F.MANAUS]  985\n                        1\n\n\n          1       1E+04   0\n -10      1E-05\n                          0\n\n 10000001        0       0\n         10001110        1000000\n 11100           0       0\n 0... ... ... ... ... .. 1000010",
+    "text": "  1       1E+04   0      -10      1E-05\n\n  0\n 10000001        0       0\n 10001110        1000000 11100\n 0       0       0\n 10000100        0       10100000\n 1110000 11000101        100111\n -16303 0 123. 4550\n  4550 10 0. 0",
     "unstable_regions": []
   }
 }

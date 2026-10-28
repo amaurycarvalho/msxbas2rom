@@ -1,15 +1,15 @@
 {
-  "capture_time": "5.271005113778427",
-  "capture_trigger": "breakpoint:END_STMT+2@32869",
+  "capture_time": "5.5867455221264155",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
   "effective_fallback_seconds": 10.0,
-  "generated_at": "2026-10-26T15:17:11-0300",
+  "generated_at": "2026-10-28T10:34:10-0300",
   "machine": "Sharp_HB-8000_1.2",
   "machine_class": "msx1",
   "probes": [],
   "program": "MISC/rsc_offset",
   "ram": {
     "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
-    "values": "eNrt2rEKgkAcwOHTCqKpvUWnXqTgBkFo6QV6hubeLFp8rcuarKkkSPT7/UHO4ZBPHS+F9DJZd53N2mvIQ2zO2zze2vV1E5v1ZZ6/7UrhFPdVVRfH+lDtyrIsvrldFR8WNNQWz0/qPUjTLPWantt+Nn9+PD8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/P/80/cvHpCFfRnlqcTz/v3OrkiRJkiSNvzv8O3pD",
+    "values": "eNrt2jEKwjAYgNG0KoiTu0s7eRGFDIWCixfoGZy9mbj0WrE6qZMW0VLf90NIh1Ae7ZgU0sNk9/ts0q0hD7E9rPN47vanVWyXx2n+dCqFJm6rqi729a7alGVZvPO4KF4sDLem+EID9s9unzRI+stSr+l57GPz49fz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz/6d/fp005GWUtxbH8/+7typJkiRJ0vi7ADAkhyc=",
     "volatile_ranges": [
       [
         61440,
@@ -19,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "MISC",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/MISC/rsc_offset.bas",
   "version": 1,
@@ -36,7 +36,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": " EXACT= 247 , 70 , 35\n         CLAMP= 16 , 249 , 201\n                 FULL= 247 , 201\n                         END= 17\n0\n MISS= 170\n         PLET=HELLO",
+    "text": " EXACT= 247 , 70 , 35\n CLAMP= 16 , 249 , 201\n FULL= 247 , 201\n END= 170\n MISS= 170\n PLET=HELLO",
     "unstable_regions": []
   }
 }

@@ -1304,6 +1304,11 @@ int CompilerExpressionEvaluator::evalFunction(shared_ptr<ActionNode> action) {
   lexeme = action->lexeme;
 
   if (lexeme) {
+    if (t > 4) {
+      context->syntaxError("Too many function arguments");
+      return Lexeme::subtype_unknown;
+    }
+
     ICompilerFunctionStrategy* strategy =
         functionFactory->getByKeyword(lexeme->value);
     if (strategy && (lexeme->value == "VARPTR" || lexeme->value == "USING$")) {

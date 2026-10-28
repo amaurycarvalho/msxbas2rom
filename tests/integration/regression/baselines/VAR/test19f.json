@@ -1,8 +1,10 @@
 {
-  "capture_time": "5.338385465191805",
-  "capture_trigger": "breakpoint:END_PGM@33342",
-  "generated_at": "2026-10-25T22:29:38-0300",
+  "capture_time": "5.653122673412403",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:37:28-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "VAR/test19f",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "VAR",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/VAR/test19f.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": "  1  1.1  1.2  1.3  1.4  1.5  1.\n6  1.7   1.8  1.9\n                  2  1.9  1.8  1\n.7  1.6  1.5  1.4  1.3   1.2  1.\n1\n  1  2  3  4  5  6  7  8  9  10",
+    "text": "  1  1.1  1.2  1.3  1.4  1.5  1.6  1.7\n 1.8  1.9\n  2  1.9  1.8  1.7  1.6  1.5  1.4  1.3\n 1.2  1.1\n  1  2  3  4  5  6  7  8  9  10",
     "unstable_regions": []
   }
 }

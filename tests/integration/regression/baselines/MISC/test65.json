@@ -1,8 +1,8 @@
 {
-  "capture_time": "19.939379865318077",
-  "capture_trigger": "breakpoint:END_STMT+2@32869",
+  "capture_time": "20.64782674893038",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
   "effective_fallback_seconds": 30.0,
-  "generated_at": "2026-10-26T12:08:31-0300",
+  "generated_at": "2026-10-28T10:34:36-0300",
   "machine": "Panasonic_FS-A1GT",
   "machine_class": "turboR",
   "probes": [],
@@ -10,7 +10,7 @@
   "ram": null,
   "runs": 3,
   "scenario": "MISC",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/MISC/test65.bas",
   "version": 1,
@@ -23,7 +23,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 131072,
-    "text": " TURBO OFF ELAPSED TIME=  405\n TURBO ON ELAPSED TIME=   147\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n        .  .. ... ... ... ... ... ... ..\n. ... ... ... ... ... ... ... ... ... ..\n. ... ... ... ... ... ... ... ... ... ..\n. ... ... ... ..    ..3...'.Q.'.q.s.a.d.\n.",
+    "text": " TURBO OFF ELAPSED TIME=  404\n TURBO ON ELAPSED TIME=   148",
     "unstable_regions": []
   }
 }

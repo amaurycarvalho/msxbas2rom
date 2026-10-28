@@ -1,13 +1,15 @@
 {
   "capture_time": "10.113024420701514",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:27:51-0300",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:36:03-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "ON/test8",
   "ram": {
     "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
-    "values": "eNrt2iEOwjAUgOGWIZB4LjA9gZhAk/Q4uwCOOyC5CJid6zEcIBcSSPf9L2lqmuZLKhsp3ia/7nMzrWmVyzi0udyn/W1Xxu1pHelzzumYJGmpxYyZdeiL8+Pr+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fmX6N88J/54ia7v+rhc94d6/mzW9P792pUkSZIkqf4esvjp1w==",
+    "values": "eNrt2iEOwjAUgOEWEJN4LoCeQEygSXqcXQDHHZBcBMzO9RgJApALCaT7/pc0NU3zJZWNFG+TX/d5Oa5pkcvQb3O5jfvrpgzr4yrS55zSoYlnSZJmVkyYSYe+OD++np+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn59/jv7mMfHHS7Rd28X5stvX82ezpvfv164kSZIkSfV3B1T+8dc=",
     "volatile_ranges": [
       [
         61440,

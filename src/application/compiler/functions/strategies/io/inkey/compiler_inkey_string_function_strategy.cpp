@@ -23,10 +23,17 @@ int InkeyStringCompilerFunctionStrategy::execute(
 
   // call 0x009C        ; CHSNS
   cpu.addCall(def_CHSNS);
-  // ld hl, temporary string
-  variable.addTempStr(true);
-  // call 0x7e5e   ; xbasic INKEY$ (in: hl=dest; out: hl=result)
+  // call 0x7e5e   ; xbasic INKEY$ (out: hl=BUF)
   optimizer.addKernelCall(DISP_XBASIC_INKEY);
+  // ld de, temporary string
+  variable.addTempStr(false);
+  // push de
+  cpu.addPushDE();
+  //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
+  //   out: hl end of string)
+  optimizer.addKernelCall(DISP_XBASIC_COPY_STRING);
+  // pop hl
+  cpu.addPopHL();
 
   return Lexeme::subtype_string;
 }

@@ -1,8 +1,10 @@
 {
   "capture_time": "10.11302246514571",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:27:42-0300",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:35:53-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "ON/test6",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "ON",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/ON/test6.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": " TEST 1\n         Press a function key or\n space...",
+    "text": " TEST 1\n Press a function key or space...\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n OFF     OFF     OFF     OFF     OFF",
     "unstable_regions": []
   }
 }

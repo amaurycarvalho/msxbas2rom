@@ -1,8 +1,10 @@
 {
-  "capture_time": "5.390272786066386",
-  "capture_trigger": "breakpoint:END_PGM@33373",
-  "generated_at": "2026-10-25T22:24:26-0300",
+  "capture_time": "5.703875771920733",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:32:44-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "MATH/test14a",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "MATH",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/MATH/test14a.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": " <<<< NUMERIC FUNCTIONS >>>>\n         SGN(2) =  1\n                 SGN(2.0) =  1\n                         SGN(-1)\n = -1\n SGN(-1.0) = -1\n         ABS(2) =  2\n                 ABS(2.0) =  2\n                         ABS(-1)\n =  1\n ABS(-1.0) =  1\n         SQR(25) =  5\n                 SQR(2.0) =  1.4\n14                       SIN(2)\n=  .9093\n SIN(2.0) =  .9093\n         COS(2) = -.4162\n                 TAN(2) = -2.185\n                         ATN(2)\n=  1.107",
+    "text": " <<<< NUMERIC FUNCTIONS >>>>\n SGN(2) =  1\n SGN(2.0) =  1\n SGN(-1) = -1\n SGN(-1.0) = -1\n ABS(2) =  2\n ABS(2.0) =  2\n ABS(-1) =  1\n ABS(-1.0) =  1\n SQR(25) =  5\n SQR(2.0) =  1.414\n SIN(2) =  .9093\n SIN(2.0) =  .9093\n COS(2) = -.4162\n TAN(2) = -2.185\n ATN(2) =  1.107",
     "unstable_regions": []
   }
 }

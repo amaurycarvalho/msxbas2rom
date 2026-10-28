@@ -1,14 +1,16 @@
 {
-  "capture_time": "10.11302190641548",
+  "capture_time": "10.113023303241054",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:17:48-0300",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:30:17-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "DATA/test70",
   "ram": null,
   "runs": 3,
   "scenario": "DATA",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/DATA/test70.bas",
   "version": 1,
@@ -17,7 +19,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": "  aut\n         rerum necessitatibus sa\nepe eveniet, ut  et\n                         volupta\ntes repudiandae sint et molestia\n e non\n         recusandae. Itaque earu\nm rerum hic tene tur a\n                         sapient\ne delectus, ut aut reiciendis\n voluptatibus maiores alias cons\nequatur  aut\n                 perferendis dol\noribus asperiores repell1at\n\n dignitate ecpetendum est, eorum\n autem q uae sunt\n                 uae sunt\n                         prima n\naturae propter se nihil est expe\n tendum.\n\n                 Cum vero ilia q\nuae oflicia esse dixi pr oficisc",
+    "text": " e non\n recusandae. Itaque earum rerum hic tene\n tur a\n sapiente delectus, ut aut reiciendis\n voluptatibus maiores alias consequatur\n aut\n perferendis doloribus asperiores repell\n at\n dignitate ecpetendum est, eorum autem q\n uae sunt\n prima naturae propter se nihil est expe\n tendum.\n\n Cum vero ilia quae oflicia esse dixi pr\n oficiscantur ab\n initiis naturaej necesse est ea ad haec\n  referri, ut\n recte dici possit omnia oflicia eo refe\n rri ut adipisca-\n mur principia naturae, nee tamen ut hoc\n  sit bonorum\n ultimiim, propterea quod non inest in p\n rimis naturae\n conciliationibus honesta actio; conseq",
     "unstable_regions": []
   }
 }

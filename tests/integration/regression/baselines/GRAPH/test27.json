@@ -1,8 +1,10 @@
 {
-  "capture_time": "10.11302302387594",
+  "capture_time": "10.11302358260617",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:19:42-0300",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:30:49-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "GRAPH/test27",
   "ram": null,

@@ -1,8 +1,10 @@
 {
-  "capture_time": "5.79423781514131",
-  "capture_trigger": "breakpoint:END_PGM@33411",
-  "generated_at": "2026-10-25T22:24:48-0300",
+  "capture_time": "5.592851605441473",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:33:03-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "MATH/test23",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "MATH",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/MATH/test23.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": "\n          0\n                  5\n                          10\n\n  15\n          160\n                  225   .  .. ..\n. ... ... ... ... ... ..  640 ..\n. ... ... ... ... ... ... ... ..\n  1280 .. ... ... ... ... ... ..\n. ... ..  5000 .. ... ..\n                  0\n                        1 1024\n\n  512\n          341\n                  256\n                          128\n\n  64\n          32\n                  16\n                          15",
+    "text": "  0\n  5\n  10\n  15\n  160\n  225\n  640\n  1280\n  5000\n  0\n  1024\n  512\n  341\n  256\n  128\n  64\n  32\n  16\n  15\n  8\n  4\n  1",
     "unstable_regions": []
   }
 }

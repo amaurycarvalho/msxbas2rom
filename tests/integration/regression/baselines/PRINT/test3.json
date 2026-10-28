@@ -1,8 +1,10 @@
 {
-  "capture_time": "10.11302190641548",
+  "capture_time": "10.113021627050365",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:28:07-0300",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:36:21-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "PRINT/test3",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "PRINT",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/PRINT/test3.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": " GOTO' test - 'GOTO' test - 'GOT\nO' test  - 'GOTO' test - 'GOTO'\ntest - 'GOTO' te st - 'GOTO' tes\nt - 'GOTO' test - 'GOTO'  test -\n 'GOTO' test - 'GOTO' test - 'GO\n TO' test - 'GOTO' test - 'GOTO'\n test -  'GOTO' test - 'GOTO' te\nst - 'GOTO' test  - 'GOTO' test\n- 'GOTO' test - 'GOTO' t est - '\nGOTO' test - 'GOTO' test - 'GOTO\n ' test - 'GOTO' test - 'GOTO' t\nest - 'G OTO' test - 'GOTO' test\n - 'GOTO' test -  'GOTO' test -\n'GOTO' test - 'GOTO' tes t - 'GO\nTO' test - 'GOTO' test - 'GOTO'\n test - 'GOTO' test - 'GOTO' tes\nt - 'GOT O' test - 'GOTO' test -\n 'GOTO' test - ' GOTO' test - 'G\nOTO' test - 'GOTO' test  - 'GOTO\n' test - 'GOTO' test - 'GOTO' te\n st - 'GOTO' test - 'GOTO' test\n- 'GOTO'  test - 'GOTO' test - '\nGOTO' test - 'GO TO' test - 'GOT\nO' test - 'GOTO' test -  'GOTO'",
+    "text": " OTO' test - 'GOTO' test - 'GOTO' test -\n  'GOTO' test - 'GOTO' test - 'GOTO' tes\n t - 'GOTO' test - 'GOTO' test - 'GOTO'\n test - 'GOTO' test - 'GOTO' test - 'GOT\n O' test - 'GOTO' test - 'GOTO' test - '\n GOTO' test - 'GOTO' test - 'GOTO' test\n - 'GOTO' test - 'GOTO' test - 'GOTO' te\n st - 'GOTO' test - 'GOTO' test - 'GOTO'\n st - 'GOTO' test - 'GOTO' test - 'GOTO'\n  test - 'GOTO' test - 'GOTO' test - 'GO\n TO' test - 'GOTO' test - 'GOTO' test -\n 'GOTO' test - 'GOTO' test - 'GOTO' test\n  - 'GOTO' test - 'GOTO' test - 'GOTO' t\n est - 'GOTO' test - 'GOTO' test - 'GOTO\n ' test - 'GOTO' test - 'GOTO' test - 'G\n OTO' test - 'GOTO' test - 'GOTO' test -\n  'GOTO' test - 'GOTO' test - 'GOTO' tes\n t - 'GOTO' test - 'GOTO' test - 'GOTO'\n test - 'GOTO' test - 'GOTO' test - 'GOT\n O' test - 'GOTO' test - 'GOTO' test - '\n GOTO' test - 'GOTO' test - 'GOTO' test\n - 'GOTO' test - 'GOTO' test - 'GOTO' te\n st - 'GOTO' test - 'GOTO' test - 'GOTO'\n  test - 'GOTO' test - 'GOTO' test - 'GO",
     "unstable_regions": []
   }
 }

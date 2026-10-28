@@ -1,14 +1,16 @@
 {
-  "capture_time": "5.251395358907347",
-  "capture_trigger": "breakpoint:END_PGM@33161",
-  "generated_at": "2026-10-25T22:28:32-0300",
+  "capture_time": "5.566126979825648",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:36:52-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "PRINT/test86",
   "ram": null,
   "runs": 3,
   "scenario": "PRINT",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/PRINT/test86.bas",
   "version": 1,
@@ -17,7 +19,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": "  5  >  1.414\n          242  <  244\n\n                          0",
+    "text": "  5  >  1.414\n  261  <  263\n\n  0",
     "unstable_regions": []
   }
 }

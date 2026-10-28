@@ -1,8 +1,10 @@
 {
-  "capture_time": "5.513456877899286",
-  "capture_trigger": "breakpoint:END_STMT+2@32869",
-  "generated_at": "2026-10-25T22:25:08-0300",
+  "capture_time": "5.668882497635873",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:33:25-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "MEGAROM/data",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "MEGAROM",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/MEGAROM/data.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": "\n\n\n\n             HOTBIT\n\n             MSX BR\n\n     EPCOM [Z.F.MANAUS]  985\n\n\n\n                 100000101000001\n0        10000010100000110\n\n 1000001010000011        1000001\n11000001 0\n                 111111110000010\n 1000001001111111        1111111\n10000001 1000000101111111 ... ..\n 111111110000001 100000010111111\n1 ... .. 111111010000001 1000000\n101111110 ... .. 100000011000000\n0        100000001000000 1",
+    "text": " 1000001010000010        100000101000001\n 0\n 1000001010000011        100000111000001\n 0\n 111111110000010 1000001001111111\n 111111110000001 1000000101111111\n 111111110000001 1000000101111111\n 111111010000001 1000000101111110\n 1000000110000000        100000001000000\n 1\n 1000000010000000        100000001000000\n 0\n 111110101111111 111111101111101",
     "unstable_regions": []
   }
 }

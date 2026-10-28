@@ -1,13 +1,15 @@
 {
   "capture_time": "10.113023303241054",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:21:44-0300",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:31:07-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "IF/test1",
   "ram": {
     "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
-    "values": "eNrt2rENgzAQQNGDpEhJzwLZxeNkAZTFoGGug3RJSoQEMu+fZLmxrCe5dEb+TPO9b27rGm2U+fWMMq37sS9zN9wz/ucdknTdcsNsOrTjHHw9Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/P/8V/Y/P5JmXCv9s1vT+/dqVJEmSJKn+Flz35QI=",
+    "values": "eNrt2jEKgzAUgOGn7dDR3aVj75LjeIFCD1YXz/W0m3YUoSV+/4OQJYQPMiYjN9Os981lWaONMg2PKOOyf/dl6p7XjO95xT0k6azljtl16MD58fX8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Gf03z6T/7xU+Gezpvfv164kSZIkSfU3A5Pn5SM=",
     "volatile_ranges": [
       [
         61440,
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "IF",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/IF/test1.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": "\n\n\n\n\n\n\n\n\n             HOTBIT\n\n             MSX BR\n\n     EPCOM [Z.F.MANAUS] 1985",
+    "text": "",
     "unstable_regions": []
   }
 }

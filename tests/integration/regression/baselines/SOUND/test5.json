@@ -1,8 +1,10 @@
 {
-  "capture_time": "5.275666879449762",
-  "capture_trigger": "breakpoint:END_PGM@33004",
-  "generated_at": "2026-10-25T22:28:45-0300",
+  "capture_time": "5.59040408767036",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:37:05-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "SOUND/test5",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "SOUND",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/SOUND/test5.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": " Playing note C...\n         ...call BEEP to stop pl\naying.",
+    "text": " Playing note C...\n ...call BEEP to stop playing.",
     "unstable_regions": []
   }
 }

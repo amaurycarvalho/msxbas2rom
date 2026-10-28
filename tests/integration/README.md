@@ -222,3 +222,17 @@ configuration error.
 }
 ```
 
+Text regression programs that do not issue `SCREEN` or `WIDTH` start in the
+compiler's normalized `SCREEN 0` 40-column layout. Configure their text capture
+with `"name_table": "0x0000"` and `"width": 40`; do not rely on the machine boot
+default. Programs that set their own `SCREEN` must configure the name table and
+width for that mode instead. `PRINT/test5` and `STRING/test1` are the reference
+layouts, including byte probes for tabs, spaces, and concatenated results:
+
+```bash
+make -C tests/integration regression-baseline SCENARIO=PRINT PROGRAM=test5
+make -C tests/integration regression-baseline SCENARIO=STRING PROGRAM=test1
+make -C tests/integration regression SCENARIO=PRINT PROGRAM=test5
+make -C tests/integration regression SCENARIO=STRING PROGRAM=test1
+```
+

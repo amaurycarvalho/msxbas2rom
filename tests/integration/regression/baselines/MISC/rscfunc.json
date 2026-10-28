@@ -1,8 +1,8 @@
 {
-  "capture_time": "5.2503605905219795",
-  "capture_trigger": "breakpoint:END_STMT+2@32869",
+  "capture_time": "5.565091093979821",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
   "effective_fallback_seconds": 10.0,
-  "generated_at": "2026-10-26T16:10:07-0300",
+  "generated_at": "2026-10-28T10:34:14-0300",
   "machine": "Sharp_HB-8000_1.2",
   "machine_class": "msx1",
   "probes": [],
@@ -19,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "MISC",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/MISC/rscfunc.bas",
   "version": 1,
@@ -37,7 +37,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": " SAME= 0\n         B0= 42\n                 B1= 248\n                         B2= 247\n\n INV= 0\n         SIZE= 13\n                 KEEP= 171",
+    "text": " SAME= 0\n B0= 42\n B1= 248\n B2= 247\n INV= 0\n SIZE= 13\n KEEP= 171",
     "unstable_regions": []
   }
 }

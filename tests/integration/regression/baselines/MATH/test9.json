@@ -1,8 +1,10 @@
 {
-  "capture_time": "5.408051861339919",
-  "capture_trigger": "breakpoint:END_PGM@33628",
-  "generated_at": "2026-10-25T22:24:56-0300",
+  "capture_time": "5.721654847194266",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:33:11-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "MATH/test9",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "MATH",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/MATH/test9.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": " <<< Expression test 1 >>>\n         1 =  1\n                 1 + 2 =  3\n                         1 + 2 +\n 3 =  6\n 5 - 2 - 1 =  2\n         1 + 2 + 3 * 4 =  15\n                 1 + 2 + 3 * 4 +\n 50 - 10 =  55           -100 =\n-100\n -100.0 = -100\n         -100 + 200 =  100\n                 +200 - 100 =  1\n00                       -(100 +\n 200) = -300\n +(200 - 100) =  100\n         2 * ( 10 + 3 ) / 4 =  6\n                 200.0 + 100.0 =\n  300                    200.0 -\n 100.0 =  100\n 20.0 * 10.0 =  200\n         20.0 / 10.0 =  2\n                 200.0 + 100 =\n300                      200 + 1",
+    "text": " <<< Expression test 1 >>>\n 1 =  1\n 1 + 2 =  3\n 1 + 2 + 3 =  6\n 5 - 2 - 1 =  2\n 1 + 2 + 3 * 4 =  15\n 1 + 2 + 3 * 4 + 50 - 10 =  55\n -100 = -100\n -100.0 = -100\n -100 + 200 =  100\n +200 - 100 =  100\n -(100 + 200) = -300\n +(200 - 100) =  100\n 2 * ( 10 + 3 ) / 4 =  6\n 200.0 + 100.0 =  300\n 200.0 - 100.0 =  100\n 20.0 * 10.0 =  200\n 20.0 / 10.0 =  2\n 200.0 + 100 =  300\n 200 + 100.0 =  300",
     "unstable_regions": []
   }
 }

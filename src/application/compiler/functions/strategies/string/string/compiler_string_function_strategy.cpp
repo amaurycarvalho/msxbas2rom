@@ -65,10 +65,17 @@ int StringCompilerFunctionStrategy::execute(shared_ptr<CompilerContext> context,
     cpu.addLdAL();
     // ld b, e
     cpu.addLdBE();
-    // ld hl, temporary string
-    variable.addTempStr(true);
-    // call 0x7e4c    ; STRING$ (hl=destination, b=number of chars, a=char)
+    // call 0x7e4c    ; STRING$ (b=number of chars, a=char; out: hl=BUF)
     optimizer.addKernelCall(DISP_XBASIC_STRING);
+    // ld de, temporary string
+    variable.addTempStr(false);
+    // push de
+    cpu.addPushDE();
+    //   call 0x7e9d   ; xbasic copy string (in: hl=source, de=dest;
+    //   out: hl end of string)
+    optimizer.addKernelCall(DISP_XBASIC_COPY_STRING);
+    // pop hl
+    cpu.addPopHL();
 
     return Lexeme::subtype_string;
   }

@@ -1,4 +1,4 @@
-msxbas2rom (1.4.1.0-0) bionic; urgency=low
+msxbas2rom (1.4.2.0-0) bionic; urgency=low
 
   * Add optional offset and size parameters to CMD RSCTORAM and redefine RESOURCE(n) to return a usable RAM pointer
 

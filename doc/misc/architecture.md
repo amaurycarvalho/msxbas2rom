@@ -300,9 +300,14 @@ never needs `pasmo` or external files.
 
 `start.asm` initializes the MSX environment, selects the ROM, initializes BASIC,
 and then enters a small BASIC stub that executes compiled code through
-`DEFUSR9`/`USR9`. The builder patches its file-I/O flag, resource map address,
-and resource map segment. It also patches the single call to the game-graphics
-kernel entry (`C7369`) when that module is movable.
+`DEFUSR9`/`USR9`. Startup explicitly configures 40-column BIOS text variables,
+sets the kernel text output mode, and selects `SCREEN 0` through BIOS `CHGMOD`,
+so the text layout does not depend on the machine boot default. See
+`doc/adr/ADR-002 Initial text screen normalization.md`.
+
+The builder patches the start file-I/O flag, resource map address, and resource
+map segment. It still patches a `C7369` call if a start image contains one, but
+the current startup uses BIOS `CHGMOD` and has no such call.
 
 ### 5.4 Mapper patching
 

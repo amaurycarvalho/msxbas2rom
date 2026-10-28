@@ -1,8 +1,10 @@
 {
-  "capture_time": "5.204267581494296",
-  "capture_trigger": "breakpoint:END_PGM@33022",
-  "generated_at": "2026-10-25T22:26:04-0300",
+  "capture_time": "5.519004789714894",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:34:40-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "MISC/test97",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "MISC",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/MISC/test97.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": "\n\n\n\n\n\n\n\n\n             HOTBIT\n\n             MSX BR\n\n     EPCOM [Z.F.MANAUS] 1985\n\n\n\n                  5       257\n                         B TEST\n\n  6",
+    "text": "  5       257\n B TEST\n  6",
     "unstable_regions": []
   }
 }

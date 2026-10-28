@@ -1,8 +1,8 @@
 {
-  "capture_time": "15.102783174956594",
+  "capture_time": "15.102781498765905",
   "capture_trigger": "fallback",
   "effective_fallback_seconds": 15.0,
-  "generated_at": "2026-10-26T12:12:09-0300",
+  "generated_at": "2026-10-28T10:46:13-0300",
   "machine": "Panasonic_FS-A1WX",
   "machine_class": "msx2plus",
   "probes": [],
@@ -28,7 +28,7 @@
     "regions": {
       "bitmap": {
         "length": 131072,
-        "sha256": "505aa9a51a99af47416ddcb9292928fab6517b28f3923cca607a6b09d0c03ff0",
+        "sha256": "bceccc3ed1fff72e97e51e7b65f7050834ca518bb7dac66f6c665e1cb8549ec6",
         "start": 0
       }
     },

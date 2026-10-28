@@ -1,13 +1,15 @@
 {
   "capture_time": "10.11302246514571",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:24:13-0300",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:32:31-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "MATH/test12",
   "ram": {
     "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
-    "values": "eNrt2rENwjAQQNELpKCkzwKZxmNAywh0ZKukyVxH6AJdJCSQ8/5JlhvLepJLZ+TbNOt9c1zWOESZb32UadmPXZnP9zbjcx5xGeIakrTbcuNsPvDl+fH1/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Px79J9ek/+8VPZfs7b378euJEmSJEn19wQD6ORk",
+    "values": "eNrt2rENwjAQQNELpKCkzwKZxgPAEoxAR7ZKmsx1hC7QRUICOe+fZLmxrCe5dEa+TbPeN8dljUOU+dZHmZb92JX5fG8zPucRlyGuIUm7LTfO5gNfnh9fz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8+/R//pNfnPS2X/NWt7/37sSpIkSZJUf08KouRM",
     "volatile_ranges": [
       [
         61440,
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "MATH",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/MATH/test12.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": "  93  =  187\n          94  =  189\n                  95  =  191\n                          96  =\n 193\n  97  =  195\n          97  =  195\n                  98  =  197\n                          99  =\n 199\n  100  =  201\n          101  =  203\n                  102  =  205\n                          103  =\n  207\n  104  =  209\n          105  =  211\n                  106  =  213\n                          107  =\n  215\n  108  =  217\n          109  =  219\n                  110  =  221\n                          111  =",
+    "text": "  86  =  173\n  87  =  175\n  88  =  177\n  89  =  179\n  90  =  181\n  91  =  183\n  92  =  185\n  93  =  187\n  94  =  189\n  95  =  191\n  96  =  193\n  97  =  195\n  98  =  197\n  99  =  199\n  100  =  201\n  101  =  203\n  102  =  205\n  103  =  207\n  104  =  209\n  105  =  211\n  106  =  213\n  107  =  215\n  108  =  217\n  109  =",
     "unstable_regions": []
   }
 }

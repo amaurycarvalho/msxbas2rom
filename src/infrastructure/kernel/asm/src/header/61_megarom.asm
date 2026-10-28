@@ -110,7 +110,7 @@ GET_NEXT_TEMP_STRING_ADDRESS:
     push bc
       ld a, (TMPSTRIND)      ; temporary string list current position
       ld b, a
-      ld c, 0
+      ld c, 0                ; bc = index * 256 (one slot per string)
       ld hl, (TMPSTRADDR)    ; temporary string list start address
       add hl, bc
       inc a

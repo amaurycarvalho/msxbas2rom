@@ -1,0 +1,39 @@
+{
+  "capture_time": "7.164235398633067",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T11:19:24-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
+  "probes": [],
+  "program": "PRINT/test10",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2jEKgzAUgOGkdujY3Qt4lJzI2Zu1i+d6xk0dpWCJ3/8gZAnhg4yJFLvJ233u6poeuczjkMq37j99md/TM9JxJOm+xak5eexnc/H1/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Px39L/WiX9emvy12c77929XkiRJkqT2WwA/L+V6",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "PRINT",
+  "screen": 3,
+  "screen_stable": true,
+  "source": "tests/integration/PRINT/test10.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {
+      "bitmap": {
+        "length": 16384,
+        "sha256": "8700f0d04c5bd040cb9a0ec5c43c3af36da79f9d92b26ef86e1108922fd2047e",
+        "start": 0
+      }
+    },
+    "screen_stable": true,
+    "size": 16384,
+    "unstable_regions": []
+  }
+}

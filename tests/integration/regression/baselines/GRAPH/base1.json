@@ -1,14 +1,16 @@
 {
-  "capture_time": "10.113022185780595",
+  "capture_time": "10.113021627050365",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:18:04-0300",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:30:34-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "GRAPH/base1",
   "ram": null,
   "runs": 3,
   "scenario": "GRAPH",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/GRAPH/base1.bas",
   "version": 1,
@@ -17,7 +19,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": "  0  =  0         1  =  0\n          2  =  2048      3  =\n0                 4  =  0\n  5  =  6144              6  =\n8192      7  =  0\n  8  =  6912      9  =  14336\n          10  =  6144     11  =\n 8192             12  =  0\n  13  =  6912             14  =\n 14336    15  =  2048\n  16  =  0        17  =  0\n          18  =  6912     19  =\n 14336            20  =  6144\n  21  =  8192             22  =\n 0        23  =  7680\n  24  =  14336    25  =  0\n         .",
+    "text": "  0  =  0         1  =  0\n  2  =  2048      3  =  0\n  4  =  0         5  =  6144\n  6  =  8192      7  =  0\n  8  =  6912      9  =  14336\n  10  =  6144     11  =  8192\n  12  =  0        13  =  6912\n  14  =  14336    15  =  2048\n  16  =  0        17  =  0\n  18  =  6912     19  =  14336\n  20  =  6144     21  =  8192\n  22  =  0        23  =  7680\n  24  =  14336    25  =  0\n .",
     "unstable_regions": []
   }
 }

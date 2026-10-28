@@ -1,0 +1,39 @@
+{
+  "capture_time": "12.051393403351543",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 15.0,
+  "generated_at": "2026-10-28T11:19:31-0300",
+  "machine": "Panasonic_FS-A1WX",
+  "machine_class": "msx2plus",
+  "probes": [],
+  "program": "PRINT/test11",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrtwQENAAAIAyBLvn8UreE+IAsAAAAAAAAAAAAAAHw3AAAAQL0DvPPSGA==",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "PRINT",
+  "screen": 4,
+  "screen_stable": true,
+  "source": "tests/integration/PRINT/test11.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "regions": {
+      "bitmap": {
+        "length": 131072,
+        "sha256": "fb57858b449c0c97ae03e8a875cce96d315d1253cd22c5b7ee279d2998f3b990",
+        "start": 0
+      }
+    },
+    "screen_stable": true,
+    "size": 131072,
+    "unstable_regions": []
+  }
+}

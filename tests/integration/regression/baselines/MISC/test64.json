@@ -1,8 +1,8 @@
 {
-  "capture_time": "12.195003554921087",
-  "capture_trigger": "breakpoint:END_STMT+2@32869",
+  "capture_time": "12.89590744075015",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
   "effective_fallback_seconds": 15.0,
-  "generated_at": "2026-10-26T12:08:22-0300",
+  "generated_at": "2026-10-28T10:34:28-0300",
   "machine": "Panasonic_FS-A1GT",
   "machine_class": "turboR",
   "probes": [],
@@ -10,7 +10,7 @@
   "ram": null,
   "runs": 3,
   "scenario": "MISC",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/MISC/test64.bas",
   "version": 1,
@@ -25,7 +25,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 131072,
-    "text": " MSX = 3\n NTSC =-1\n VDP = 2\n TURBO = 1 , TIME = 26\n TURBO = 0 , TIME = 60\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n        .  .. ... ... ... ... ... ... ..\n. ... ... ... ... ... ... ... ... ... ..\n. ... ... ... ... ... ... ... ... ... ..\n. ... ... ... ..    ..3...'.Q.'.q.s.a.d.\n.",
+    "text": " MSX = 3\n NTSC =-1\n VDP = 2\n TURBO = 1 , TIME = 26\n TURBO = 0 , TIME = 60",
     "unstable_regions": []
   }
 }

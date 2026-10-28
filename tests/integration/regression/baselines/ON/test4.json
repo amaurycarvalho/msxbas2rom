@@ -1,15 +1,15 @@
 {
-  "capture_time": "12.115601843251028",
+  "capture_time": "12.11560491626729",
   "capture_trigger": "fallback",
   "effective_fallback_seconds": 12.0,
-  "generated_at": "2026-10-26T18:34:01-0300",
+  "generated_at": "2026-10-28T10:35:44-0300",
   "machine": "Sharp_HB-8000_1.2",
   "machine_class": "msx1",
   "probes": [],
   "program": "ON/test4",
   "ram": {
     "mask": "eNrt0KEBAAAIAyD/f3rmJYsRTiABAAAAAAAAAAAAAABoc1EEAAAA7xYShqLT",
-    "values": "eNrtm0Fo01AYx7+Xxi3a2mRVZ6SIA9Ht4BAVnezkSQOrB5FCFem07uRBhFGnQ7bXnbwITkS9eJVSxLO3BbRgD+KhR1F28KC3psHpVrf42tK5ZlZd19ax/v9f89773ntJ+nsv770EEoecKmMr08wjQpLISN/sI8MU6Zmgkda47JDbIAiC2ldOXVbnbg2z/3x68IMf/OAHP/jBD37wgx/84Ac/+MEPfvCDH/zgBz/4wQ9+8IMf/OAHP/jBD37wgx/84Ac/+NuRXymas5GDTfnWJq7/unn/qvcxO/bA1nIfl+xY8zuodeTXrbE8tXn/ewPewAtfcfvse0WVmEiSSEpFnyYY69H7DjNNnzoW1KfuRZ4nUlGSphOPj17mo6EhmjZSypDJTjfuulj3ATxC/1z74cQIe0Pv7vzKySajuiebHB3PJjPZpPL2ia1YIs58+DIQDoWvhGfDF89U7Crv3dur+0ujRCmFOvWIMEgnV6TKJSLFmEY028HpRKf82lJlWbS0+KkX5h3GcoVc4fylg/3qgX5/975SihixweqxOIjX+tejQ2gCUkkiGuZdUiWD2y/zZ/n43B5r4g+7iVJuD/Nl3ywvHRH+LL+cVy42TGHpEFdqqlWon+ZadCLDLEW3jx+Jb9RuPzXy6NzA/ghds8asWnUSRO4W++byv7v8eZe/4PILLv+Hy190+UurbgddmgmKqZXEtBpcextMxot/d/JrKYwvYC5oA8nyrbtOMytxfXf3rp07Al2a6t/u827bqnR2bJE9Elv1ZPNbNW9K4nbjj3pfrBo3FmuNzeplZrN9TpiBoDWorseX3E+xis+W",
+    "values": "eNrtm09o01Acx38vjZr+selmnZUiDkQn6A4KsrGTJw1sB4cUpoyCXUHwIMLopkO2V0HwqOK/m3iR0oMXL94WkII9iEKPonjwoLem0elWt/ia0q3LrLqurWP9fn/N771f3kvSz3t5LwkkFlmrjFXnmUt4kkjLTBwmTRf52bCWCXDZIqdBEAS1r6y6rM7NGmb/+fDgBz/4wQ9+8IMf/OAHP/jBD37wgx/84Ac/+MEPfvCDH/zgBz/4wQ9+8IMf/OAHP/jBD37wtyO/UjJrM7st+dYmzv+6ef+qdzEzdtcM5D8smbHmd1DryC8bkwVq8/73dj7zlZbPvpdUSYkkiaR09Eky6PG6j7jfKkEPkUrdN26OPE+moyTdTz48HufjQ4N0R0srgzo71bjzYsM7cAn9c+1703H2it5cX1mTS0VDrlxqfCqXyuZSyutHpmKINPv+S19kKHIh8jFy/nTFLvKefT0hvz1KFNuHqFv4MPVX5colIscYI8oTCf/1saHKsmhr8VPPzVuM5Yv54tnRQ73qwV5/1347JyqygdVjcQCv9W9ER9EEpeFNNMY7pErIzReFYT41t9eY/sNGopSbY3w51suXjlH+tLC8rlys6cIyZ7hSU60C/TTXogNpup1cO3EssVk7/WT8wXDfgRG6ZEwateokiZwt9t0R/3DE8454wREXHfFPR7zoiJfW3A46NBu2J9t+Cq+/DWYSpb878832iQXMBG0gWb56y2pmJR7a07U7uKuzI6D6d/q8HreyY/s22SWxNU82v1XzpiRuNn6vt8VV48pirbFZLXXLfU6YhaB1qK7Hl/wvJrvPdA==",
     "volatile_ranges": [
       [
         61552,
@@ -19,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "ON",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/ON/test4.bas",
   "version": 1,

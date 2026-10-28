@@ -1,13 +1,15 @@
 {
-  "capture_time": "10.113023303241054",
+  "capture_time": "10.113024979431744",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:26:22-0300",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:46:18-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "MTF/mtf4",
   "ram": {
     "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
-    "values": "eNrt2jFKw1AYwPHvvaRJa2vp1sFZ8BBFR7fcwUHe2gMI1gu8bCWCQ9eOXkBdCgq9hJtre4HnFxTFiFFQaLD/3+NL0qah/UPpUBIkfFjGmMj7h5IeR/qMWJstxgeS3enx7V62GExim4TKdQCw3YytFbXrL085z/kmn49btRJ+AQBsq9VfOXnZPVZcvFoBAIDGqP4r+v2SsNm14benn3766aeffvrpp59++umnn3766aeffvrpp59++j+vQblCkzcNN/Xl9t7386U/W49EjD7c3T/qlLfCtdPCybhwRgrX0bE6kc6OTqzT0kl00pvCdXXfk5m7dNdumIu83Rf/vhdZ+id/fCgy919/olPp5f1cRnJ+9etX/eQLCAAAAAAA/rtnH58tmQ==",
+    "values": "eNrt2s1KAlEYgOHvnBnHn1TctWgfXYToqu3cg5vOtivoB1qf2cUELYKuoBsoN4KBN9HKtd3A6RuKopGmoMAh3+fwzVHHQV8QF2KQ8GkZYyLvHwt6O9JHxNp0dnwg6VRvP+yls8FZbJNQug4AtpuxlaJW9eVNznO+zufjRqWEbwAA22r1Vyav21PJ+ZsVAACojfKvot8vCZtdG355+umnn3766aeffvrpp59++umnn3766aeffvrpp399DYoV6nyouUtfHOe+ny38xfNQxOjd3v64bXVv9XInJ7kzkru2jtWJdDo6sU5DJ9Fp3uduR/eu3Lgrd+d2M5H3/8V/7CILv/SHI5Fb//U7OpJu1s9kKKfXv37WTz6AAAAAAADgv3sBMAwtqQ==",
     "volatile_ranges": [
       [
         61440,

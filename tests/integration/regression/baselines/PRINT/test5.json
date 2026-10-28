@@ -1,0 +1,47 @@
+{
+  "capture_time": "5.616233068728008",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:36:30-0300",
+  "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
+  "probes": [],
+  "program": "PRINT/test5",
+  "ram": {
+    "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
+    "values": "eNrt2rENgzAQQNEDUqSkzwKM4omo2Yw0zHWQLqFEkUDm/ZMsN5b1JJfOyJ9pvvdNt63RRlnGIcp728+vsvTTI2M/knTf8tAcPPa3Ofl6fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fv47+p+fySsvVf7arOf9+7crSZIkSVL9rf9E5Xk=",
+    "volatile_ranges": [
+      [
+        61440,
+        65535
+      ]
+    ]
+  },
+  "runs": 3,
+  "scenario": "PRINT",
+  "screen": 0,
+  "screen_stable": true,
+  "source": "tests/integration/PRINT/test5.bas",
+  "version": 1,
+  "volatile": false,
+  "vram": {
+    "expected_text": [
+      "HELLO",
+      "WORLD",
+      "HELLO WORLD!!!",
+      "HELLO WORLD     !!!",
+      "HELLO   WORLD   !!!",
+      "HELLO WORLD!!!",
+      "HELLO           WORLD   !!!",
+      "HELLO   WORLD   !!!",
+      "HELLO   WORLD           !!!",
+      "HELLO   WORLD           !!!",
+      "HELLO   WORLD           !!!"
+    ],
+    "regions": {},
+    "screen_stable": true,
+    "size": 16384,
+    "text": " HELLO\n WORLD\n HELLO WORLD!!!\n HELLO WORLD     !!!\n HELLO   WORLD   !!!\n HELLO WORLD!!!\n HELLO           WORLD   !!!\n HELLO   WORLD   !!!\n HELLO   WORLD           !!!\n HELLO   WORLD           !!!\n HELLO   WORLD           !!!",
+    "unstable_regions": []
+  }
+}

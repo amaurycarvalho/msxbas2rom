@@ -1,15 +1,15 @@
 {
-  "capture_time": "33.569667932656245",
-  "capture_trigger": "breakpoint:END_STMT+2@32869",
+  "capture_time": "10.98979283679909",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
   "effective_fallback_seconds": 45.0,
-  "generated_at": "2026-10-26T12:47:10-0300",
+  "generated_at": "2026-10-28T10:33:38-0300",
   "machine": "Sharp_HB-8000_1.2",
   "machine_class": "msx1",
   "probes": [],
   "program": "MEGAROM/test51",
   "ram": {
     "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
-    "values": "eNrt2jEKwjAUgOFXXRwU3HsBr5ODuNuto3qpdum5nnVTt4KgpN//IGQIhA8yJiPfpnndN9t5jU2U6XyKMs77oS3Tsd9nfM6t7+5jdz1cQpLWWi6ahce/Pj++np+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn59/jf7dc/Kfl6p+a9b3/v3XlSRJkiSp/h7VT+Xp",
+    "values": "eNrt2jEKwjAUgOFX6tDBobsX8C5O0Qt4Ae/gpN5Kl57rtW7qVhCU9PsfhAyB8EHGZOTbNK/7pp3WWEUZTtsoj2l/35ShP68zPuca+1scLsddSNJSy1kz8/jX58fX8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Mv0d89J/95qeq3Zn3v339dSZIkSZLqbwR6LOR+",
     "volatile_ranges": [
       [
         61440,
@@ -28,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": " 477     955     237.1\n 478     957     237.6\n 479     959     238.1\n 480     961     238.6\n 481     963     239.1\n 482     965     239.6\n 483     967     240.1\n 484     969     240.6\n 485     971     241.1\n 486     973     241.6\n 487     975     242.1\n 488     977     242.6\n 489     979     243.1\n 490     981     243.6\n 491     983     244.1\n 492     985     244.6\n 493     987     245.1\n 494     989     245.6\n 495     991     246.1\n 496     993     246.6\n 497     995     247.1\n 498     997     247.6\n 499     999     248.1",
+    "text": " 82      165     39.91\n 83      167     40.4\n 84      169     40.9\n 85      171     41.4\n 86      173     41.89\n 87      175     42.39\n 88      177     42.89\n 89      179     43.39\n 90      181     43.88\n 91      183     44.38\n 92      185     44.88\n 93      187     45.37\n 94      189     45.87\n 95      191     46.37\n 96      193     46.86\n 97      195     47.36\n 98      197     47.86\n 99      199     48.36\n 100     201     48.85\n 101     203     49.35\n 102     205     49.85\n 103     207     50.35\n 104     209     50.84",
     "unstable_regions": []
   }
 }

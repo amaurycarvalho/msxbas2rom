@@ -1,8 +1,10 @@
 {
-  "capture_time": "10.11302190641548",
+  "capture_time": "10.11302358260617",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:26:44-0300",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:34:54-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "ON/test11",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "ON",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/ON/test11.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": " ON STOP ENABLED\n         PRESS STOP KEY TO TEST\nIT               OR SPACE TO DIS\nABLE IT",
+    "text": " ON STOP ENABLED\n PRESS STOP KEY TO TEST IT\n OR SPACE TO DISABLE IT",
     "unstable_regions": []
   }
 }

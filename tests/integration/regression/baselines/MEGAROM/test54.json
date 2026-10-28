@@ -1,13 +1,15 @@
 {
-  "capture_time": "10.113022744510825",
+  "capture_time": "10.11302246514571",
   "capture_trigger": "fallback",
-  "generated_at": "2026-10-25T22:25:30-0300",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:33:48-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "MEGAROM/test54",
   "ram": {
     "mask": "eNrtwQENAAAMAqD3L+1rOAckAAAAAAAAAAAAAABAuwMAAADmPT940sI=",
-    "values": "eNrt2r1OwzAUhmG3MDCys5yNpS1CHRi4gU4M3MFpclSOVNutfzJzZ4iltxWcwMDPgiokkPleS5GVKqqeOE6X9qb/MCbv55OTcjRTszp0l2b1XOZPF6vD+ePp9NNVvVk6lVYbdSwU1epWLEXeqbikbEliFOKw1hTY5jCjKC2lHIlMHd08aExBvVPiJqkvQt4mTj4oWT9InXe0z9ppHPGNhOFsJXyzLLR2XOhELRdZuQHaUKeJiTfiWh4/GtSe7sVJEEo6r8Z/vc+++Gdvy+y3upZ0O8xaKvyy0o13nZRd4sbpnKiexS9dxbLT2Um2+yw0vAlsjgu6E6GCtrTJa7GcXjdITkR2QdRwNQ/AMe+/mtbffPlF+N448rIfG7/89fDDDz/88MMPP/zwww8//PDDDz/88MMPP/zwww8//PDDDz/88MMPP/zwww8//PD/T//ZMPq/fKjyX4v1PP8GIYQQQgghhBBC1fcCFKzdBg==",
+    "values": "eNrt2r9OwzAQBnAXGBjZWW5jaSvEwit0RzzAybmKk2I7dezOvBli6WuFi5AQfxZUIYHM91lK3KRR9Dtf0qWTmz6Mxfv54tS27sRtDvurxebZ5k+Xm8PF49nJp6smd/ugY8maohL7omlJI/eFS8pKIZU6UkyRdlX3OtIoHXnJ81FybeRYfyN8dz3yoBKLcljTnfl2VQJ3IXU1WClkENpqoVrI/FYGotoXXTXjv/EpBIkdz4s6mpR7FWMOfc0m9laFLXvlYlMl+/KK2ln8ef3f8LvKgbRXE7N9SHM17GlQT0GjBrFdtnPWJuS5mQZYapFgPU9SKLO9AObJIHkrvvDrkTXdFxIrgfV+p1GopfV3X34RvjeOvOzHxi/fHn744Ycffvjhhx9++OGHH3744Ycffvjhhx9++OGHH3744Ycffvjhhx9++OGHH/7/6T+fx/SXN03+a7Gd/ncIgiAIgiAIgiAIgjSfF0km3EQ=",
     "volatile_ranges": [
       [
         61440,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": " ut duo sint ultima bononim. Ut enim si\ncui propoaitum sit collineare hostora al\niquo aut sagittam, sicut ' nos ultimum i\nn bonis didmus, sic illi facere omnia qu\nae possit ut collineet: huic in eiusmodi\n similitudine omnia sint facienda ut col\nlineet, et tamen, ut omnia faciat quo pr\nopositum assequatur, sit* hoc quasi ulti\n- mum quale nos summum in vita bonum dtc\nimus, illud autem ut feriat, quasi selig\nendum, non espetendum. Cum autem omnia o\nflicia a principiis naturae proliciscant\nur, ab iisdem necesse est proficisci ips\nam sapientiam. Sed quemadmodum saepe fit\n ut is qui commendatus sit alieui pluris\n cum faciat cui com- mendatus quam ilium\n a quo sit, sic minime mirum itemque et\nratio et perfecta ratio. Ut enim histrio\nni actio, saltatori motus non quivis sed\n certus quidam est datus, sic vita agend\na est certo Renere quodam, non quolibet;\n quod genus conveniens con- sentaneumque\n dicimus. Nee enim gubemationi aut niedi\ncinae similem sapientia",
+    "text": "uens est enim et post oritur, ut dixi. E\nst tamen ea secundum naturam multoque no\ns ad ae espetendam magis hor- tatur quam\n superiora omnia. Sed e hoc primum error\n tollendus est, ne quis seqiii existimet\n ut duo sint ultima bononim. Ut enim si\ncui propoaitum sit collineare hostora al\niquo aut sagittam, sicut ' nos ultimum i\nn bonis didmus, sic illi facere omnia qu\nae possit ut collineet: huic in eiusmodi\n similitudine omnia sint facienda ut col\nlineet, et tamen, ut omnia faciat quo pr\nopositum assequatur, sit* hoc quasi ulti\n- mum quale nos summum in vita bonum dtc\nimus, illud autem ut feriat, quasi selig\nendum, non espetendum. Cum autem omnia o\nflicia a principiis naturae proliciscant\nur, ab iisdem necesse est prproliciscant\nur, ab iisdem necesse est proficisci ips\nam sapientiam. Sed quemadmodum saepe fit\n ut is qui commendatus sit alieui pluris\n cum faciat cui com- mendatus quam ilium\n a quo sit, sic minime mirum itemque et\nratio et perfecta ratio. Ut enim histrio",
     "unstable_regions": []
   }
 }

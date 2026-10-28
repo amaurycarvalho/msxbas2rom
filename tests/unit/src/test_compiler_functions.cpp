@@ -127,6 +127,24 @@ static std::shared_ptr<Compiler> compiledProgram(const std::string& filename,
   return ok ? compiler : nullptr;
 }
 
+static std::shared_ptr<Compiler> attemptedProgram(const std::string& filename,
+                                                  const std::string& program) {
+  const std::string path = createTempBas(filename, program);
+
+  shared_ptr<Z80OpcodeWriter> cpuOpcodeWriter = make_shared<Z80OpcodeWriter>();
+  shared_ptr<Compiler> compiler = makeTestCompiler(cpuOpcodeWriter);
+  shared_ptr<Lexer> lexer = make_shared<Lexer>(testSourceResolver());
+  shared_ptr<Parser> parser = make_shared<Parser>();
+
+  if (lexer->load(path) && lexer->evaluate() && parser->evaluate(lexer)) {
+    compiler->build(parser);
+  }
+
+  std::remove(path.c_str());
+
+  return compiler;
+}
+
 TEST_SUITE("CompilerStringFunctions") {
   TEST_CASE("MID$ function variants compile") {
     SUBCASE("MID$ with two arguments") {
@@ -190,6 +208,81 @@ TEST_SUITE("CompilerStringFunctions") {
       CHECK(ok == true);
       CHECK(errors.empty());
     }
+  }
+
+  TEST_CASE("STRING$ and SPACE$ copy BUF into temporary slots") {
+    struct Case {
+      const char* filename;
+      const char* program;
+      std::size_t expectedCopies;
+    };
+    const Case cases[] = {
+        {"fn_string_concat.bas",
+         "10 A$=STRING$(5,65)+STRING$(6,66)\n20 END\n", 3},
+        {"fn_space_concat.bas", "10 A$=SPACE$(3)+CHR$(65)\n20 END\n", 2},
+        {"fn_inkey_copy.bas", "10 A$=INKEY$\n20 END\n", 2},
+    };
+
+    for (const auto& item : cases) {
+      SUBCASE(item.filename) {
+        auto compiler = compiledProgram(item.filename, item.program);
+        REQUIRE(compiler != nullptr);
+        const auto& used = compiler->getContext()->getUsedDispatch();
+        CHECK(used.count(DISP_XBASIC_COPY_STRING) == 1);
+        const auto& fixups = compiler->getContext()->getDispatchFixups();
+        std::size_t copies = 0;
+        for (const auto& fixup : fixups) {
+          if (fixup.dispatchIndex == DISP_XBASIC_COPY_STRING) copies++;
+        }
+        CHECK(copies == item.expectedCopies);
+      }
+    }
+  }
+
+  TEST_CASE("INKEY$ emits its kernel call before the temporary copy") {
+    auto compiler = compiledProgram("fn_inkey_order.bas",
+                                    "10 A$=INKEY$\n20 END\n");
+    REQUIRE(compiler != nullptr);
+    const auto& used = compiler->getContext()->getUsedDispatch();
+    CHECK(used.count(DISP_XBASIC_INKEY) == 1);
+    CHECK(used.count(DISP_GET_NEXT_TEMP_STRING_ADDRESS) == 1);
+    CHECK(used.count(DISP_XBASIC_COPY_STRING) == 1);
+
+    const auto& fixups = compiler->getContext()->getDispatchFixups();
+    std::size_t inkeyAddress = 0;
+    std::size_t copyAddress = 0;
+    for (const auto& fixup : fixups) {
+      if (fixup.dispatchIndex == DISP_XBASIC_INKEY) inkeyAddress = fixup.address;
+      if (fixup.dispatchIndex == DISP_XBASIC_COPY_STRING)
+        copyAddress = fixup.address;
+    }
+    CHECK(inkeyAddress > 0);
+    CHECK(copyAddress > inkeyAddress);
+  }
+
+  TEST_CASE("STRING$ rejects five arguments before evaluating them") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "fn_string_five.bas",
+        "10 A$=STRING$(3,65,CHR$(66),2,3)\n20 END\n", &errors);
+    CHECK(ok == false);
+    CHECK(errors.find("Too many function arguments") != std::string::npos);
+
+    auto compiler = attemptedProgram(
+        "fn_string_five_attempt.bas",
+        "10 A$=STRING$(3,65,CHR$(66),2,3)\n20 END\n");
+    REQUIRE(compiler != nullptr);
+    const auto& used = compiler->getContext()->getUsedDispatch();
+    CHECK(used.count(DISP_XBASIC_STRING) == 0);
+    CHECK(used.count(DISP_GET_NEXT_TEMP_STRING_ADDRESS) == 0);
+  }
+
+  TEST_CASE("STRING$ two-argument form still compiles") {
+    std::string errors;
+    bool ok = compileStatementProgram(
+        "fn_string_two.bas", "10 A$=STRING$(3,65)\n20 END\n", &errors);
+    CHECK(ok == true);
+    CHECK(errors.empty());
   }
 
   TEST_CASE("USR function variants compile") {

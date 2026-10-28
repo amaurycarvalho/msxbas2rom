@@ -1,8 +1,10 @@
 {
-  "capture_time": "5.411000560127055",
-  "capture_trigger": "breakpoint:END_STMT+2@32869",
-  "generated_at": "2026-10-25T22:29:34-0300",
+  "capture_time": "5.72606658108782",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 10.0,
+  "generated_at": "2026-10-28T10:37:23-0300",
   "machine": "Sharp_HB-8000_1.2",
+  "machine_class": "msx1",
   "probes": [],
   "program": "VAR/test19",
   "ram": {
@@ -17,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "VAR",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/VAR/test19.bas",
   "version": 1,
@@ -26,7 +28,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 16384,
-    "text": "\n         ROUND =  3\n                 COUNT 1 TO 10:\n 1   2   3   4   5   6    7   8\n  9   10\n ODDS 1 TO 20:  1   3   5   7\n9   11    13   15   17   19\n                 ROUND =  2\n                         COUNT 1\n TO 10:  1   2   3   4   5   6\n  7   8   9   10\n         ODDS 1 TO 20:  1   3\n5   7   9   11    13   15   17\n 19                      ROUND =\n  1\n COUNT 1 TO 10:  1   2   3   4\n 5   6    7   8   9   10\n                 ODDS 1 TO 20:\n1   3   5   7   9   11    13   1\n5   17   19",
+    "text": "\n ROUND =  3\n COUNT 1 TO 10:  1   2   3   4   5   6\n  7   8   9   10\n ODDS 1 TO 20:  1   3   5   7   9   11\n  13   15   17   19\n ROUND =  2\n COUNT 1 TO 10:  1   2   3   4   5   6\n  7   8   9   10\n ODDS 1 TO 20:  1   3   5   7   9   11\n  13   15   17   19\n ROUND =  1\n COUNT 1 TO 10:  1   2   3   4   5   6\n  7   8   9   10\n ODDS 1 TO 20:  1   3   5   7   9   11\n  13   15   17   19",
     "unstable_regions": []
   }
 }

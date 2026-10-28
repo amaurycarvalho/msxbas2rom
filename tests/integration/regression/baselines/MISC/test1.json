@@ -1,8 +1,8 @@
 {
-  "capture_time": "10.727364790776482",
-  "capture_trigger": "breakpoint:END_STMT+2@32869",
+  "capture_time": "11.43723685552214",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
   "effective_fallback_seconds": 15.0,
-  "generated_at": "2026-10-26T12:08:14-0300",
+  "generated_at": "2026-10-28T10:34:21-0300",
   "machine": "Panasonic_FS-A1GT",
   "machine_class": "turboR",
   "probes": [],
@@ -19,7 +19,7 @@
   },
   "runs": 3,
   "scenario": "MISC",
-  "screen": 1,
+  "screen": 0,
   "screen_stable": true,
   "source": "tests/integration/MISC/test1.bas",
   "version": 1,
@@ -33,7 +33,7 @@
     "regions": {},
     "screen_stable": true,
     "size": 131072,
-    "text": "  0\n  1\n  0\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n        .  .. ... ... ... ... ... ... ..\n. ... ... ... ... ... ... ... ... ... ..\n. ... ... ... ... ... ... ... ... ... ..\n. ... ... ... ..    ..3...'.Q.'.q.s.a.d.\n.",
+    "text": "  0\n  1\n  0",
     "unstable_regions": []
   }
 }
