@@ -2,6 +2,7 @@ name: CI Quality Gate
 
 on:
   push:
+    branches: ["**"]
   pull_request:
     branches: ["master"]
   workflow_dispatch:
@@ -10,13 +11,14 @@ on:
         description: "Branch to run the workflow on"
         required: true
         default: "master"
+  workflow_call:
 
 jobs:
   ci-hardened:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Hardened unit testing
         run: |
           make test-unit
@@ -28,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install dependencies
         run: |
           sudo apt-get update

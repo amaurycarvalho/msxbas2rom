@@ -13,6 +13,8 @@ Source: msxbas2rom.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 BuildArch: x86_64
 
+%global debug_package %{nil}
+
 %description
 msxbas2rom is a command-line tool that converts MSX-BASIC source files into ROM format.
 

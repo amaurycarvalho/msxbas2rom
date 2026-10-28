@@ -1,7 +1,8 @@
 msxbas2rom (1.4.2.0-0) bionic; urgency=low
 
   * Fix Pletter heap overflow for small resource blobs
-  * Fix string concatenation by giving each temporary string its own 256-byte slot
+  * Fix string concatenation by giving each temporary string its own
+    256-byte slot
   * Normalize startup to SCREEN 0 40 columns for a consistent text layout
 
  -- Amaury Carvalho <amauryspires@gmail.com>  Wed, 28 Oct 2026 12:00:00 -0300

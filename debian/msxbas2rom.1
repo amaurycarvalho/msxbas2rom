@@ -1,0 +1,107 @@
+.TH MSXBAS2ROM 1 "2026-10-28" "msxbas2rom 1.4.2.0" "User Commands"
+.SH NAME
+msxbas2rom \- compile MSX-BASIC source files into ROM images
+.SH SYNOPSIS
+.B msxbas2rom
+.RI [ options ]
+.I file.bas
+.SH DESCRIPTION
+.B msxbas2rom
+is a command-line tool that converts MSX-BASIC source files into ROM
+format. It supports plain ROM images and the ASCII8, ASCII16, ASCII16-X,
+Konami and Konami SCC MegaROM mappers.
+.PP
+By default a plain ROM is generated next to the source file.
+.SH OPTIONS
+.TP
+.BR \-h ", " \-\-help
+Display help.
+.TP
+.BR \-q ", " \-\-quiet
+Suppress verbose output.
+.TP
+.BR \-d ", " \-\-debug
+Enable debug mode with detailed output.
+.TP
+.BR \-D ", " \-\-doc
+Display the quick reference guide.
+.TP
+.BR \-H ", " \-\-history
+Display the application history.
+.TP
+.BR \-v ", " \-\-version
+Display the application version.
+.TP
+.BR \-c
+Plain ROM compile mode (default).
+.TP
+.BR \-a ", " \-\-auto
+Fall back to ASCII8 when the plain ROM overflows.
+.TP
+.BR \-x ", " \-8 ", " \-\-ascii8
+Compile as an ASCII8 MegaROM.
+.TP
+.BR \-6 ", " \-\-ascii16
+Compile as an ASCII16 MegaROM.
+.TP
+.BR \-7 ", " \-\-ascii16x
+Compile as an ASCII16-X MegaROM.
+.TP
+.BR \-4 ", " \-\-konami
+Compile as a Konami MegaROM.
+.TP
+.BR \-k ", " \-\-scc
+Compile as a Konami SCC MegaROM.
+.TP
+.B \-\-pin\-game\-graphics
+Keep game graphics resident or fail.
+.TP
+.BI "\-\-force\-overflow\-module " id
+Force a module to overflow (testing).
+.TP
+.BI "\-i " path
+Input path (default: source file path).
+.TP
+.BI "\-o " path
+Output path (default: source file path).
+.TP
+.BR \-s
+Generate symbols for Z80 debugging (default format: .noi).
+.TP
+.BR \-\-noi ", " \-\-noice
+Generate symbols in .noi format (openMSX).
+.TP
+.B \-\-cdb
+Generate symbols in .cdb format (sdcc).
+.TP
+.B \-\-symbol
+Generate symbols in .symbol format (pasmo).
+.TP
+.B \-\-omds
+Generate symbols in .omds format (openMSX, deprecated).
+.TP
+.B \-\-lin
+Write MSX-BASIC line numbers in the generated binary.
+.TP
+.B \-\-vscode
+Initialize a VSCode MSX-BASIC project in the current directory.
+.SH EXAMPLES
+.TP
+.B msxbas2rom game.bas
+Compile
+.I game.bas
+into a plain ROM.
+.TP
+.B msxbas2rom \-\-ascii8 game.bas
+Compile
+.I game.bas
+as an ASCII8 MegaROM.
+.TP
+.B msxbas2rom \-\-noi game.bas
+Compile and generate openMSX debug symbols.
+.SH SEE ALSO
+Project documentation:
+.UR https://github.com/amaurycarvalho/msxbas2rom/wiki
+.UE
+.SH AUTHOR
+Amaury Carvalho

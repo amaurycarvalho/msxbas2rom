@@ -12,8 +12,13 @@ on:
         default: "master"
 
 jobs:
+  ci:
+    name: CI Quality Gate
+    uses: ./.github/workflows/ci.yml
+
   build:
     name: Build
+    needs: ci
     uses: ./.github/workflows/build.yml
 
   release:

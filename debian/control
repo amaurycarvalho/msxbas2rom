@@ -8,5 +8,7 @@ Homepage: https://github.com/amaurycarvalho/msxbas2rom
 
 Package: msxbas2rom
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends},
+Depends: ${misc:Depends}
 Description: MSX BASIC to ROM compiler
+ msxbas2rom is a command-line tool that converts MSX-BASIC source files
+ into ROM format, supporting plain ROM and MegaROM mappers.
