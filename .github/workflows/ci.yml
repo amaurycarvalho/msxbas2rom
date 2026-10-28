@@ -1,4 +1,4 @@
-name: CI Quality Gate
+name: CI Quality Gate & Unit Testing
 
 on:
   push:
