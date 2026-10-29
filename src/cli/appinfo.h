@@ -19,7 +19,7 @@
  * git checkout -b release/v0.0.0.0 && git push origin release/v0.0.0.0
  * git switch master
  */
-#define app_version "1.4.2.0"
+#define app_version "1.4.3.0"
 
 //! @brief Header information
 const char* info_header = R"(MSXBAS2ROM - MSX-BASIC TO ROM COMPILER
@@ -83,6 +83,12 @@ https://github.com/amaurycarvalho/msxbas2rom/wiki/Usage
 const char* info_history = R"(
 Version history
 
+## [1.4.3.0] - 2026-10-29
+
+- Fix Konami4/KonamiSCC MegaROM boot mapping on MSX turbo R
+- Clamp CMD TURBO to supported Z80 and R800 ROM modes so TURBO() never reports mode 2
+- Add turbo R regression coverage and document R800 DRAM mode as unsupported
+
 ## [1.4.2.0] - 2026-10-28
 
 - Fix Pletter heap overflow for small resource blobs
@@ -102,7 +108,7 @@ Version history
 - Add an openMSX-based memory regression workflow for integration tests
 
 See full changelog:
-https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.4.2.0
+https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.4.3.0
 )";
 
 /***

@@ -1,0 +1,31 @@
+{
+  "capture_time": "11.46266997621206",
+  "capture_trigger": "breakpoint:END_STMT+2@32873",
+  "effective_fallback_seconds": 30.0,
+  "generated_at": "2026-10-29T11:14:11-0300",
+  "machine": "Panasonic_FS-A1GT",
+  "machine_class": "turboR",
+  "probes": [],
+  "program": "MISC/turbo_mode_clamp",
+  "ram": null,
+  "runs": 3,
+  "scenario": "MISC",
+  "screen": 0,
+  "screen_stable": true,
+  "source": "tests/integration/MISC/turbo_mode_clamp.bas",
+  "version": 1,
+  "volatile": true,
+  "vram": {
+    "expected_text": [
+      "TURBO2 START=0",
+      "TURBO2 AFTER=OK",
+      "TURBO2 CANARY=OK",
+      "TURBO2 DONE"
+    ],
+    "regions": {},
+    "screen_stable": true,
+    "size": 131072,
+    "text": " TURBO2 START= 0\n TURBO2 AFTER=OK\n TURBO2 CANARY=OK\n TURBO2 DONE",
+    "unstable_regions": []
+  }
+}

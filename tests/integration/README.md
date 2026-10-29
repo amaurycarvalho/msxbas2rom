@@ -94,12 +94,18 @@ different machine is rejected with a request to regenerate it.
 
 Turbo R coverage distinguishes feature tests from performance-only usage. Feature
 tests declare `"requires": "turboR"` (`MISC/test1`, `MISC/test64`,
-`MISC/test65`, `MISC/turbo_gate`) and run on `Panasonic_FS-A1GT`. Programs that
+`MISC/test65`, `MISC/turbo_gate`, `MISC/turbo_mode_clamp`) and run on
+`Panasonic_FS-A1GT`. Programs that
 use `CMD TURBO` only to speed up drawing or math (`GRAPH/tree`,
 `GRAPH/mexhat`, `GRAPH/test78`, `IO/test48`, `MATH/cos`) stay on
 `Panasonic_FS-A1WX` (MSX2+). Assert stable markers and labels such as
 `MSX = 3` and the turbo timing labels, while leaving elapsed-time values
 volatile.
+
+On MSX turbo R, `CMD TURBO` supports only Z80 mode (`CMD TURBO 0`) and R800 ROM
+mode (`CMD TURBO 1`). R800 DRAM mode is unsupported: `CMD TURBO 2` is clamped to
+mode 0 before `CHGCPU`, so `TURBO()` never reports 2. `MISC/turbo_mode_clamp`
+asserts that clamp and the RAM canary.
 
 ```json
 {

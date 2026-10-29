@@ -20,6 +20,8 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 
 ### [harden-cpp-parameter-validation-tier3](openspec/changes/harden-cpp-parameter-validation-tier3) Introduce strict command/function parameter typing and a unified fixed-table index policy
 
+### [harden-turbo-r-r800-optional](openspec/changes/harden-turbo-r-r800-optional) Validate and harden remaining turbo R PSG, MTF, mouse, and R800 instruction-parity candidates
+
 ### [harden-z80-parameter-guards-tier1](openspec/changes/harden-z80-parameter-guards-tier1) Add runtime guards for sprite tables, resource metadata, RUNASM, and PLYSOUND
 
 ### [harden-z80-parameter-guards-tier2](openspec/changes/harden-z80-parameter-guards-tier2) Extend runtime guards to MTF headers/clipping, pattern/color indices, resource sizes, font/bank, and mode/channel values
@@ -34,41 +36,44 @@ with a MAJOR.MINOR.PATCH.BUILD scheme.
 
 ### [wishlist](openspec/changes/wishlist) Explore and track potential future improvements not yet scheduled for any sprint
 
-## [1.4.2.0] - 2026-10-28
+## [1.4.3.0] - 2026-10-29
 
-### [fix-pletter-buffer-overflow](openspec/changes/archive/2026-10-28-fix-pletter-buffer-overflow) Fix Pletter heap overflow for small resource blobs by returning an owned output buffer and sizing the compressor from the worst-case bound
-
-#### Added
-- Add a single `Pletter::maxPackedSize(n)` bound (the literal worst case) for tests, reservations, and remaining capacity checks.
-- Add regression tests for 1, 2, 3, 4, 5, and 6-byte blobs, the 8K boundary, empty input, and the `packedSize <= maxPackedSize(n)` contract.
-
-#### Changed
-- Replace `Pletter::pack`'s raw `unsigned char*` destination with a `std::vector<unsigned char>` output so the compressor returns an owned buffer with the exact compressed size. **BREAKING** for the two internal C++ call sites; no change to the BASIC language, kernel ABI, or ROM format.
-- Make `Pletter::saves` grow dynamically (`clear`/`reserve`/`push_back`) instead of assuming `length * 2` bytes; this removes the fixed-buffer overflow.
-- Update `ResourceBlobPackedReader` and `ResourceBlobChunkPackedReader` to use the vector output. Preserve the chunked format (1-byte block size, 200-byte chunks) and the 8K resource limit.
-- Keep compressed payloads byte-identical for inputs that already worked; blobs of 1..5 bytes now produce valid output instead of corrupting memory.
-- Harden the unit-test build and CI with `_GLIBCXX_ASSERTIONS` and ASan/UBSan (or Valgrind), so this class of error fails on every Linux toolchain rather than only on the newest Ubuntu.
-- Document and validate the chunk reader's `200`/`255`/`1024` relationship against the new bound.
-
-### [fix-string-temp-buffer-concat](openspec/changes/archive/2026-10-28-fix-string-temp-buffer-concat) Fix temporary string buffer concatenation and normalize startup to SCREEN 0 40 columns
+### [2026-10-29-fix-konami-megarom-boot-mapping](openspec/changes/archive/2026-10-29-fix-konami-megarom-boot-mapping) Fix Konami4/KonamiSCC MegaROM boot mapping on MSX turbo R
 
 #### Added
-- Add probes for both split programs:
-  - `PRINT/test5` for trailing `;`/`,` and tab/separator layout.
-  - `STRING/test1` for literal and variable `STRING$` concatenation.
+- Add a mapper-neutral `DISP_MEGAROM_PATCH_BUGFIX_AB_CHECK` alias for the shared guard patch point.
+- Add `MISC/megaboot.bas`, a machine-independent boot probe run on MSX1, MSX2, MSX2+, and turbo R.
+- Add `MISC/turbo_konami.bas`, a turbo R-focused Konami/KonamiSCC probe that switches turbo off and on.
+- Add builder unit tests for both Konami modes and non-regression checks for ASCII8/ASCII16.
 
 #### Changed
-- Align `STRING$`, `SPACE$`, and `INKEY$` with the existing `BUF` to temporary-string copy pattern used by `LEFT$`, `RIGHT$`, `MID$`, `HEX$`, and `USING$`, so each result survives until concatenation.
-- Normalise startup display explicitly to `SCREEN 0` with `WIDTH 40`, matching `LINL40`/`LINLEN` and producing one deterministic 40-column layout on MSX1, MSX2, MSX2+, and turbo R.
-- Review and regenerate the regression probes/baselines of every program that uses `PRINT`, `?`, or `STRING$`. Existing baselines encode the current 32-column mismatch and must be treated as stale.
-- Document the initial-screen normalization decision in `doc/adr/ADR-002 Initial text screen normalization.md` and update the start-code section of `doc/misc/architecture.md`.
-- Apply the tier-1 hardening for bounded function arity to `STRING$` (reject five or more arguments), reusing `harden-cpp-parameter-validation-tier1` task 4.4.
-- **BREAKING**: the default text layout changes from the inconsistent 32-column display to `SCREEN 0` 40-column text; programs that relied on the old shifted layout render differently.
+- Make the Konami4/KonamiSCC boot bank mapping unconditional by NOPing the 14-byte `AB` guard at `megarom_ascii8_bug_fix`.
+- Keep ASCII8 and ASCII16 behavior unchanged; only Konami4/KonamiSCC get the unconditional mapping.
+- Extend the regression runner with per-program `compile_modes` and `machines` matrices.
 
 #### Fixed
-- Fix `GET_NEXT_TEMP_STRING_ADDRESS` to advance by one 256-byte slot per temporary string instead of one byte.
+- Correct the regression runner's true MSX2 default to `Panasonic_FS-A1` while keeping `Panasonic_FS-A1WX` for MSX2+.
 
-[Unreleased]: https://github.com/amaurycarvalho/msxbas2rom/compare/v1.4.2.0...HEAD
-[1.4.2.0]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.4.2.0
+### [2026-10-29-harden-turbo-r-r800-priority](openspec/changes/archive/2026-10-29-harden-turbo-r-r800-priority) Clamp CMD TURBO on turbo R to supported Z80 and R800 ROM modes
+
+#### Added
+- Promote the `CMD TURBO 2` diagnostic into the permanent `MISC/turbo_mode_clamp` regression program with `requires: turboR`, `volatile: true`, and stable text expectations.
+
+#### Changed
+- Clamp `CMD TURBO` on turbo R to Z80 mode (0) and R800 ROM mode (1) before calling `CHGCPU`, so values outside 0/1 never enter R800 DRAM mode.
+- Keep the RAM canary and mapper state intact and document R800 DRAM mode as unsupported.
+
+### [2026-10-29-spike-turbo-r-r800-fragility](openspec/changes/archive/2026-10-29-spike-turbo-r-r800-fragility) Spike the R800/turbo R failure candidates and record the reproducible breakage matrix
+
+#### Added
+- Add a temporary diagnostic harness under `tests/integration/MISC/` covering VDP resource copy, VDP graphics/scroll, ARKOS/direct PSG, mouse PSG read, integer math, and `CMD TURBO 2`.
+- Produce a breakage matrix/report under the change directory with per-path evidence and suspected mechanisms.
+
+#### Changed
+- Run the diagnostics on openMSX `Panasonic_FS-A1GT` and on real hardware when available, capturing RAM/VRAM artifacts, screenshots, logs, and audio observations.
+- Rewrite the compatibility work into `harden-turbo-r-r800-priority` and `harden-turbo-r-r800-optional`.
+
+[Unreleased]: https://github.com/amaurycarvalho/msxbas2rom/compare/v1.4.3.0...HEAD
+[1.4.3.0]: https://github.com/amaurycarvalho/msxbas2rom/releases/tag/v1.4.3.0
 
 See [CHANGELOG Archive](CHANGELOG-ARCHIVE.md) for older releases.

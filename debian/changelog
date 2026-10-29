@@ -1,3 +1,11 @@
+msxbas2rom (1.4.3.0-0) bionic; urgency=low
+
+  * Fix Konami4/KonamiSCC MegaROM boot mapping on MSX turbo R
+  * Clamp CMD TURBO to supported Z80 and R800 ROM modes so TURBO() never reports mode 2
+  * Add turbo R regression coverage and document R800 DRAM mode as unsupported
+
+ -- Amaury Carvalho <amauryspires@gmail.com>  Thu, 29 Oct 2026 12:00:00 -0300
+
 msxbas2rom (1.4.2.0-0) bionic; urgency=low
 
   * Fix Pletter heap overflow for small resource blobs

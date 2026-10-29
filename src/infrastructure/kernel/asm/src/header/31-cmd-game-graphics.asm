@@ -297,7 +297,7 @@ cmd_ramtoram:
 
 ; cmd_rsctoram moved to the fixed 31-cmd-rsctoram module.
 ; This filler preserves the fixed layout (player.int.control / ARKOS_PLAYER).
-    DEFS 26, 0x00
+    DEFS 24, 0x00
 
 ; disable screen
 cmd_disscr:
@@ -515,6 +515,7 @@ cmd_turbo.turboR:   ; R800 processor type
   cp 0xC3
   ret nz            ; BIOS function CHGCPU doesnt exist
   ld a, (DAC)
+  and 1             ; clamp to Z80 (0) or R800 ROM (1); R800 DRAM (2) is unsupported
   or 0x80           ; update turbo led
   jp CHGCPU
 cmd_turbo.msx2p:    ; msx2+ machine type

@@ -1,5 +1,5 @@
 Name: msxbas2rom
-Version: 1.4.2.0
+Version: 1.4.3.0
 Release: 1%{?dist}
 Summary: MSX-BASIC to ROM compiler
 
@@ -34,6 +34,10 @@ install -m 0755 msxbas2rom %{buildroot}/usr/bin/msxbas2rom
 /usr/bin/msxbas2rom
 
 %changelog
+* Thu Oct 29 2026 Amaury Carvalho <amauryspires@gmail.com>
+- Fix Konami4/KonamiSCC MegaROM boot mapping on MSX turbo R
+- Clamp CMD TURBO to supported Z80 and R800 ROM modes so TURBO() never reports mode 2
+- Add turbo R regression coverage and document R800 DRAM mode as unsupported
 * Wed Oct 28 2026 Amaury Carvalho <amauryspires@gmail.com>
 - Fix Pletter heap overflow for small resource blobs
 - Fix string concatenation by giving each temporary string its own 256-byte slot
