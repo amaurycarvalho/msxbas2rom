@@ -8,7 +8,7 @@ Defines the behavior of the `CMD RSCTORAM` memory command, including its optiona
 
 ### Requirement: CMD RSCTORAM accepts an optional byte offset and copy size
 
-`CMD RSCTORAM <resource>, <dest>[, <pletter>[, <offset>[, <size>]]]` SHALL copy bytes from the resource to RAM. When `offset` is omitted it SHALL default to `0` (first byte of the resource). When `size` is omitted it SHALL default to the number of resource bytes remaining after `offset`. A `size` of `0`, whether omitted or explicitly supplied, SHALL select the full remaining resource (`resource_size - offset`). When `size` is non-zero, the number of bytes actually copied SHALL be `min(size, resource_size - offset)`.
+`CMD RSCTORAM <resource>, <dest>[, <pletter>[, <offset>[, <size>]]]` SHALL copy bytes from the resource to RAM. When `offset` is omitted it SHALL default to `0`. When `size` is omitted it SHALL default to the number of resource bytes remaining after `offset`. A `size` of `0`, whether omitted or explicitly supplied, SHALL select the full remaining resource (`resource_size - offset`). When `size` is non-zero, the number of bytes actually copied SHALL be `min(size, resource_size - offset)`.
 
 #### Scenario: Only resource and destination given
 

@@ -7,9 +7,7 @@ Defines the compiler contract: converting parsed BASIC actions into Z80 machine 
 ## Requirements
 
 ### Requirement: Convert parsed BASIC actions into Z80 machine code
-As a ROM builder user, the system SHALL convert parsed BASIC actions into Z80 machine code and symbol/resource metadata so that the ROM image can be generated reliably.
-
-Compilation SHALL start only when parser output contains tags/actions. The compiler SHALL emit start/end program stubs and generated code for each tag. Duplicate or invalid symbols/flow states (e.g., FOR without NEXT) SHALL be reported as compile errors. DATA/IDATA parser flags SHALL produce corresponding compiler-managed resources. The compiler SHALL track generated code/RAM usage and expose metrics used by the CLI.
+The system SHALL convert parsed BASIC actions into Z80 machine code and symbol/resource metadata so that the ROM image can be generated reliably. Compilation SHALL start only when parser output contains tags/actions, emit start/end program stubs and per-tag code, and report duplicate or invalid symbols/flow states as compile errors. DATA/IDATA flags SHALL produce compiler-managed resources, and the compiler SHALL track code/RAM usage metrics for the CLI.
 
 #### Scenario: Compile valid parser output
 - **WHEN** semantic analysis is executed on a parser result with valid tags and actions

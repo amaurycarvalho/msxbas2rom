@@ -7,9 +7,7 @@ Defines the lexer contract: tokenizing MSX-BASIC source code into classified lex
 ## Requirements
 
 ### Requirement: Tokenize MSX-BASIC source code into classified lexemes
-As an MSX-BASIC developer, the system SHALL tokenize source code lines into classified lexemes so that the parser can consume a normalized stream of tokens.
-
-The lexer SHALL load the input file and process it line by line. Numeric line tags SHALL be preserved as numeric literals for downstream parsing. Reserved keywords and known functions SHALL be classified correctly. String, numeric, operator, separator, and comment tokens SHALL be emitted with consistent subtype metadata. Lexical errors SHALL return a clear message and the failing source line number.
+As an MSX-BASIC developer, the system SHALL tokenize source code lines into classified lexemes so that the parser consumes a normalized token stream. The lexer SHALL process the input line by line, preserve numeric line tags as literals, classify keywords and known functions, emit subtype metadata for strings, numbers, operators, separators, and comments, and report lexical errors with the failing source line number.
 
 #### Scenario: Tokenize a standard BASIC line
 - **WHEN** lexical analysis is executed on input `10 PRINT "HELLO"`

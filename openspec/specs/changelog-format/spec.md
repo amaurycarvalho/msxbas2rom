@@ -7,19 +7,11 @@ Defines the CHANGELOG.md format (Keep a Changelog) and the automated changelog u
 ## Requirements
 
 ### Requirement: CHANGELOG.md follows Keep a Changelog format
-The project SHALL maintain `CHANGELOG.md` following the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format, with the following conventions:
+The project SHALL maintain `CHANGELOG.md` following the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format. Each release SHALL use `## [version] - YYYY-MM-DD`, unreleased changes SHALL be grouped under `## [Unreleased]`, dates SHALL use ISO 8601, and the file SHALL begin with a title plus links to the Keep a Changelog and Semantic Versioning specifications.
 
-- Each release SHALL be formatted as `## [version] - YYYY-MM-DD`
-- Changes not yet released SHALL be grouped under a `## [Unreleased]` header
-- Changes within each release SHALL be categorized using these section headers (in order):
-  - `### Added` for new features
-  - `### Changed` for changes in existing functionality
-  - `### Deprecated` for soon-to-be removed features
-  - `### Removed` for removed features
-  - `### Fixed` for bug fixes
-  - `### Security` for vulnerability fixes
-- Dates SHALL use ISO 8601 format (`YYYY-MM-DD`)
-- The file SHALL start with a title and a link to the Keep a Changelog specification and Semantic Versioning specification
+#### Scenario: Release categories are ordered
+- **WHEN** a release entry lists changes
+- **THEN** they SHALL be grouped under `### Added`, `### Changed`, `### Deprecated`, `### Removed`, `### Fixed`, and `### Security`, in that order
 
 #### Scenario: New release entry follows format
 - **WHEN** a new release entry is added to CHANGELOG.md
@@ -32,7 +24,7 @@ The project SHALL maintain `CHANGELOG.md` following the [Keep a Changelog](https
 - **AND** they SHALL use the same category sections as released entries
 
 ### Requirement: Changelog files are updated by openspec-changelog skill
-All changelog-related files (`CHANGELOG.md`, `CHANGELOG-ARCHIVE.md`, `debian/changelog`, `rpmbuild/SPECS/msxbas2rom.spec`, `info_history` in `src/cli/appinfo.h`) are updated by the `openspec-changelog` skill. See `openspec/specs/governance/spec.md` for the authoritative rule. This spec defines only the format requirements.
+All changelog-related files (`CHANGELOG.md`, `CHANGELOG-ARCHIVE.md`, `debian/changelog`, `rpmbuild/SPECS/msxbas2rom.spec`, `info_history` in `src/cli/appinfo.h`) SHALL be updated by the `openspec-changelog` skill. See `openspec/specs/governance/spec.md` for the authoritative rule. This spec defines only the format requirements.
 
 #### Scenario: info_history is updated by skill
 - **WHEN** a release is created

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -62,7 +63,7 @@ class MachineSelectionTests(unittest.TestCase):
     def test_msx2_requirement_uses_msx2_default(self):
         self.assertEqual(
             self.select("10 SCREEN 1", requires="msx2"),
-            ("msx2", "Panasonic_FS-A1WX"),
+            ("msx2", "Panasonic_FS-A1"),
         )
 
     def test_screen_4_uses_msx2plus_default(self):
@@ -136,6 +137,132 @@ class ManifestMachineAssignmentTests(unittest.TestCase):
                     self.selection(label),
                     ("msx2plus", "Panasonic_FS-A1WX"),
                 )
+
+
+class CompileModeTests(unittest.TestCase):
+    def test_default_compile_mode_is_ascii8(self):
+        self.assertEqual(
+            runner.compile_modes_for({}, make_program()), ["ascii8"]
+        )
+
+    def test_declared_compile_modes_are_normalised_and_deduped(self):
+        self.assertEqual(
+            runner.compile_modes_for(
+                {"compile_modes": ["Konami", "konami", "konamiscc"]},
+                make_program(),
+            ),
+            ["konami", "konamiscc"],
+        )
+
+    def test_unknown_compile_mode_fails(self):
+        with self.assertRaises(SystemExit):
+            runner.compile_modes_for({"compile_modes": ["nope"]}, make_program())
+
+    def test_flag_and_suffix_mapping(self):
+        expected = {
+            "ascii8": ("-x", "ASCII8"),
+            "ascii16": ("-6", "ASCII16"),
+            "ascii16x": ("-7", "ASCII16X"),
+            "konami": ("-4", "Konami"),
+            "konamiscc": ("-k", "KonamiSCC"),
+        }
+        for mode, (flag, suffix) in expected.items():
+            with self.subTest(mode=mode):
+                self.assertEqual(runner.COMPILE_MODES[mode]["flag"], flag)
+                self.assertEqual(runner.COMPILE_MODES[mode]["suffix"], suffix)
+
+    def test_variant_label_includes_mode_and_machine(self):
+        program = runner.Program(
+            "TEST",
+            "probe",
+            runner.ROOT / "tests/integration/TEST/probe.bas",
+            "konami",
+            "msx2plus",
+        )
+        self.assertEqual(program.label, "TEST/probe [konami@msx2plus]")
+        self.assertEqual(program.variant_key, "probe__konami__msx2plus")
+
+    def test_default_variant_keeps_legacy_label_and_baseline(self):
+        program = make_program()
+        self.assertEqual(program.label, "TEST/sample")
+        self.assertEqual(program.variant_key, "sample")
+        self.assertEqual(
+            program.baseline_path,
+            runner.BASELINES / "TEST" / "sample.json",
+        )
+
+
+class MatrixExpansionTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.source = Path(self.tmp.name) / "probe.bas"
+        self.source.write_text("10 END\n", encoding="utf-8")
+        self.program = runner.Program("TEST", "probe", self.source)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def manifest(self, entry: dict) -> dict:
+        return {
+            "version": 1,
+            "defaults": dict(runner.DEFAULTS),
+            "scenarios": {"TEST": {"programs": {"probe": entry}}},
+        }
+
+    def test_matrix_expands_to_cartesian_product(self):
+        manifest = self.manifest(
+            {
+                "compile_modes": ["konami", "konamiscc"],
+                "machines": ["msx1", "msx2", "msx2plus", "turboR"],
+            }
+        )
+        variants = runner.expand_variants(self.program, manifest)
+        self.assertEqual(len(variants), 8)
+        self.assertEqual(
+            {(variant.compile_mode, variant.machine_class) for variant in variants},
+            {
+                ("konami", "msx1"),
+                ("konami", "msx2"),
+                ("konami", "msx2plus"),
+                ("konami", "turboR"),
+                ("konamiscc", "msx1"),
+                ("konamiscc", "msx2"),
+                ("konamiscc", "msx2plus"),
+                ("konamiscc", "turboR"),
+            },
+        )
+
+    def test_matrix_labels_and_baselines_are_unique(self):
+        manifest = self.manifest(
+            {
+                "compile_modes": ["konami", "konamiscc"],
+                "machines": ["msx1", "msx2", "msx2plus", "turboR"],
+            }
+        )
+        variants = runner.expand_variants(self.program, manifest)
+        self.assertEqual(len({variant.label for variant in variants}), 8)
+        self.assertEqual(len({variant.variant_key for variant in variants}), 8)
+        self.assertEqual(len({variant.baseline_path for variant in variants}), 8)
+
+    def test_matrix_machine_selection_uses_correct_defaults(self):
+        manifest = self.manifest(
+            {"compile_modes": ["konami"], "machines": ["msx2", "msx2plus"]}
+        )
+        variants = runner.expand_variants(self.program, manifest)
+        selected = {
+            variant.machine_class: runner.machine_for(
+                variant, runner.program_config(manifest, variant), "10 END\n"
+            )
+            for variant in variants
+        }
+        self.assertEqual(selected["msx2"], "Panasonic_FS-A1")
+        self.assertEqual(selected["msx2plus"], "Panasonic_FS-A1WX")
+
+    def test_program_without_matrix_keeps_single_variant(self):
+        manifest = self.manifest({})
+        variants = runner.expand_variants(self.program, manifest)
+        self.assertEqual(variants, [self.program])
+        self.assertEqual(variants[0].label, "TEST/probe")
 
 
 class BaselineMachineTests(unittest.TestCase):

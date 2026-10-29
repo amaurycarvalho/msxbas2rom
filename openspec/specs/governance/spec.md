@@ -91,15 +91,7 @@ Every change SHALL be associated with a target release version (e.g., `1.0.0.0`)
 - **AND** if the user does not provide it, the agent SHALL ask before proceeding
 
 ### Requirement: Changelog documentation is automated by openspec-changelog skill
-The `openspec-changelog` skill (`.opencode/skills/openspec-changelog/SKILL.md`) is the SOLE mechanism for updating changelog-related files. It MUST be run automatically every time a change is archived, triggered by the `openspec-archive-change` skill. It handles all of the following:
-
-- `CHANGELOG.md` — structured release entries and Unreleased section in Keep a Changelog format
-- `CHANGELOG-ARCHIVE.md` — previous releases moved from CHANGELOG.md
-- `debian/changelog` — Debian packaging entry with ultra-simplified summary
-- `rpmbuild/SPECS/msxbas2rom.spec` — RPM spec %changelog with ultra-simplified summary
-- `src/cli/appinfo.h` (`info_history`) — ultra-simplified summary of current release only
-
-No agent SHALL manually edit any of these files for release history purposes. If the skill fails, the agent SHALL warn the user and offer to run it manually via `/opsx-changelog`.
+The `openspec-changelog` skill (`.opencode/skills/openspec-changelog/SKILL.md`) SHALL be the SOLE mechanism for updating changelog-related files, run automatically whenever a change is archived via `openspec-archive-change`. It SHALL update `CHANGELOG.md`, `CHANGELOG-ARCHIVE.md`, `debian/changelog`, the RPM spec `%changelog`, and `src/cli/appinfo.h` `info_history`. No agent SHALL manually edit these files; if the skill fails, the agent SHALL warn the user and offer to run it manually.
 
 #### Scenario: Changelog is updated by skill on archive
 - **WHEN** a change is archived via `openspec-archive-change`

@@ -49,9 +49,19 @@ SCREEN2_REGIONS = (
     ("sprite_patterns", 0x3800, 2048),
 )
 
+DEFAULT_COMPILE_MODE = "ascii8"
+
+COMPILE_MODES: dict[str, dict[str, str]] = {
+    "ascii8": {"flag": "-x", "suffix": "ASCII8"},
+    "ascii16": {"flag": "-6", "suffix": "ASCII16"},
+    "ascii16x": {"flag": "-7", "suffix": "ASCII16X"},
+    "konami": {"flag": "-4", "suffix": "Konami"},
+    "konamiscc": {"flag": "-k", "suffix": "KonamiSCC"},
+}
+
 DEFAULTS: dict[str, Any] = {
     "msx1_machine": "Sharp_HB-8000_1.2",
-    "msx2_machine": "Panasonic_FS-A1WX",
+    "msx2_machine": "Panasonic_FS-A1",
     "msx2plus_machine": "Panasonic_FS-A1WX",
     "turbo_r_machine": "Panasonic_FS-A1GT",
     "machine_boot_seconds": {
@@ -126,19 +136,43 @@ class Program:
     scenario: str
     rel: str
     source: Path
+    compile_mode: str = DEFAULT_COMPILE_MODE
+    machine_class: str | None = None
 
     @property
     def stem(self) -> str:
         return self.source.stem
 
     @property
+    def is_variant(self) -> bool:
+        return (
+            self.compile_mode != DEFAULT_COMPILE_MODE
+            or self.machine_class is not None
+        )
+
+    @property
+    def variant_key(self) -> str:
+        safe = self.rel.replace("/", "__")
+        if self.compile_mode != DEFAULT_COMPILE_MODE:
+            safe += f"__{self.compile_mode}"
+        if self.machine_class is not None:
+            safe += f"__{self.machine_class}"
+        return safe
+
+    @property
     def label(self) -> str:
-        return f"{self.scenario}/{self.rel}"
+        if not self.is_variant:
+            return f"{self.scenario}/{self.rel}"
+        parts = []
+        if self.compile_mode != DEFAULT_COMPILE_MODE:
+            parts.append(self.compile_mode)
+        if self.machine_class is not None:
+            parts.append(self.machine_class)
+        return f"{self.scenario}/{self.rel} [{ '@'.join(parts) }]"
 
     @property
     def baseline_path(self) -> Path:
-        safe = self.rel.replace("/", "__")
-        return BASELINES / self.scenario / f"{safe}.json"
+        return BASELINES / self.scenario / f"{self.variant_key}.json"
 
 
 def discover_programs() -> list[Program]:
@@ -257,7 +291,78 @@ def machine_for(
     explicit = config.get("machine")
     if explicit:
         return str(explicit)
-    return machine_for_class(machine_class_for(program, config, text), config)
+    machine_class = program.machine_class
+    if machine_class is None:
+        machine_class = machine_class_for(program, config, text)
+    return machine_for_class(machine_class, config)
+
+
+def compile_modes_for(config: dict[str, Any], program: Program) -> list[str]:
+    modes = config.get("compile_modes")
+    if modes is None:
+        return [DEFAULT_COMPILE_MODE]
+    if not isinstance(modes, list) or not modes:
+        fail(f"{program.label} compile_modes must be a non-empty list")
+    result: list[str] = []
+    for mode in modes:
+        text = str(mode).strip().lower()
+        if text not in COMPILE_MODES:
+            fail(
+                f"unknown compile mode {mode!r}; expected one of "
+                f"{', '.join(sorted(COMPILE_MODES))}"
+            )
+        if text not in result:
+            result.append(text)
+    return result
+
+
+def machines_for(
+    program: Program, config: dict[str, Any], text: str
+) -> list[str]:
+    machines = config.get("machines")
+    if machines is None:
+        return [machine_class_for(program, config, text)]
+    if not isinstance(machines, list) or not machines:
+        fail(f"{program.label} machines must be a non-empty list")
+    result: list[str] = []
+    for machine in machines:
+        machine_class = normalise_machine_class(machine)
+        if machine_class not in result:
+            result.append(machine_class)
+    return result
+
+
+def expand_variants(
+    program: Program, manifest: dict[str, Any]
+) -> list[Program]:
+    config = program_config(manifest, program)
+    if "compile_modes" not in config and "machines" not in config:
+        return [program]
+    text = program.source.read_text(encoding="utf-8", errors="replace")
+    modes = compile_modes_for(config, program)
+    machines = machines_for(program, config, text)
+    variants: list[Program] = []
+    for mode in modes:
+        for machine_class in machines:
+            variants.append(
+                Program(
+                    program.scenario,
+                    program.rel,
+                    program.source,
+                    mode,
+                    machine_class,
+                )
+            )
+    return variants
+
+
+def expand_programs(
+    programs: list[Program], manifest: dict[str, Any]
+) -> list[Program]:
+    variants: list[Program] = []
+    for program in programs:
+        variants.extend(expand_variants(program, manifest))
+    return variants
 
 
 def machine_boot_seconds(config: dict[str, Any], machine_class: str) -> float:
@@ -328,10 +433,16 @@ def is_volatile_program(config: dict[str, Any], text: str) -> bool:
 
 def compile_program(program: Program, outdir: Path) -> tuple[Path | None, Path | None, str]:
     outdir.mkdir(parents=True, exist_ok=True)
+    compile_mode = COMPILE_MODES.get(program.compile_mode)
+    if compile_mode is None:
+        fail(
+            f"unknown compile mode {program.compile_mode!r}; expected one of "
+            f"{', '.join(sorted(COMPILE_MODES))}"
+        )
     command = [
         str(APP),
         "-q",
-        "-x",
+        compile_mode["flag"],
         "-s",
         "--noi",
         "-o",
@@ -346,8 +457,9 @@ def compile_program(program: Program, outdir: Path) -> tuple[Path | None, Path |
         fail(f"compiler not found: {APP}. Run 'make release' first.")
     except subprocess.TimeoutExpired:
         return None, None, "compiler timed out"
-    rom = outdir / f"{program.stem}[ASCII8].rom"
-    noi = outdir / f"{program.stem}[ASCII8].noi"
+    suffix = compile_mode["suffix"]
+    rom = outdir / f"{program.stem}[{suffix}].rom"
+    noi = outdir / f"{program.stem}[{suffix}].noi"
     output = (result.stdout + result.stderr).strip()
     if result.returncode != 0 or not rom.exists():
         return None, None, output or f"compiler exited with {result.returncode}"
@@ -982,19 +1094,21 @@ def run_program(
         "program": program.label,
         "scenario": program.scenario,
         "source": str(program.source.relative_to(ROOT)),
+        "compile_mode": program.compile_mode,
         "status": "error",
         "decision": "none",
         "checks": [],
         "failure": None,
         "artifacts": {},
     }
-    program_dir = run_dir / program.scenario / program.rel.replace("/", "__")
+    program_dir = run_dir / program.scenario / program.variant_key
     build_dir = program_dir / "build"
     text = program.source.read_text(encoding="utf-8", errors="replace")
     screen, maximum = screen_modes(text)
-    machine_class = machine_class_for(program, config, text)
+    machine_class = program.machine_class or machine_class_for(program, config, text)
     config["machine"] = machine_for(program, config, text)
     config["machine_class"] = machine_class
+    config["compile_mode"] = program.compile_mode
     config["fallback_seconds"] = effective_fallback_seconds(config, machine_class)
     result["machine_class"] = machine_class
     result["machine"] = config["machine"]
@@ -1179,6 +1293,7 @@ def write_reports(run_dir: Path, results: list[dict[str, Any]], started: str) ->
             f"{item['status'].upper():5} {item['program']} "
             f"({item.get('decision', 'none')}) "
             f"[{item.get('machine_class', '?')}] {item.get('machine', '?')} "
+            f"mode={item.get('compile_mode', '?')} "
             f"fallback={item.get('effective_fallback_seconds', '?')}s"
         )
         if item.get("failure"):
@@ -1193,7 +1308,10 @@ def write_reports(run_dir: Path, results: list[dict[str, Any]], started: str) ->
 
 def command_list(args: argparse.Namespace) -> int:
     manifest = load_manifest()
-    programs = select_programs(discover_programs(), args.scenario, args.program)
+    base_programs = select_programs(
+        discover_programs(), args.scenario, args.program
+    )
+    programs = expand_programs(base_programs, manifest)
     current = None
     for program in programs:
         if program.scenario != current:
@@ -1201,15 +1319,23 @@ def command_list(args: argparse.Namespace) -> int:
             print(f"{current}:")
         config = program_config(manifest, program)
         text = program.source.read_text(encoding="utf-8", errors="replace")
-        machine_class = machine_class_for(program, config, text)
+        machine_class = program.machine_class or machine_class_for(
+            program, config, text
+        )
         machine = machine_for(program, config, text)
-        print(f"  {program.rel} [{machine_class}] {machine}")
+        print(
+            f"  {program.label} [{machine_class}] {machine} "
+            f"({program.compile_mode})"
+        )
     return 0
 
 
 def command_run(args: argparse.Namespace) -> int:
     manifest = load_manifest()
-    programs = select_programs(discover_programs(), args.scenario, args.program)
+    base_programs = select_programs(
+        discover_programs(), args.scenario, args.program
+    )
+    programs = expand_programs(base_programs, manifest)
     run_id = time.strftime("%Y%m%d-%H%M%S")
     run_dir = ARTIFACTS / "runs" / run_id
     latest = ARTIFACTS / "runs" / "latest"
@@ -1248,7 +1374,7 @@ def capture_once(
     run_number: int,
     screenshot_override: bool,
 ) -> tuple[bytes | None, bytes | None, dict[str, str], str]:
-    workdir = base_dir / program.scenario / program.rel.replace("/", "__") / f"run{run_number}"
+    workdir = base_dir / program.scenario / program.variant_key / f"run{run_number}"
     build_dir = workdir / "build"
     rom, noi, compile_output = compile_program(program, build_dir)
     if rom is None:
@@ -1256,9 +1382,10 @@ def capture_once(
 
     text = program.source.read_text(encoding="utf-8", errors="replace")
     screen, _ = screen_modes(text)
-    machine_class = machine_class_for(program, config, text)
+    machine_class = program.machine_class or machine_class_for(program, config, text)
     config["machine"] = machine_for(program, config, text)
     config["machine_class"] = machine_class
+    config["compile_mode"] = program.compile_mode
     config["fallback_seconds"] = effective_fallback_seconds(config, machine_class)
     breakpoints = breakpoints_for(noi) if noi else []
     screenshot = screenshot_override or bool(config.get("screenshot", False))
@@ -1286,7 +1413,10 @@ def capture_once(
 
 def command_baseline(args: argparse.Namespace) -> int:
     manifest = load_manifest()
-    programs = select_programs(discover_programs(), args.scenario, args.program)
+    base_programs = select_programs(
+        discover_programs(), args.scenario, args.program
+    )
+    programs = expand_programs(base_programs, manifest)
     runs = args.runs
     if runs < 2:
         fail("baseline requires at least two runs")

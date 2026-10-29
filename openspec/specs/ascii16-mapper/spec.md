@@ -8,19 +8,23 @@ Defines ASCII16 MegaROM mapper support: 16KB pages with single-bank switching, u
 
 ### Requirement: ASCII16 MegaROM mapper with 16KB pages
 
-The system SHALL support compilation of MSX-BASIC programs into ROM images targeting the ASCII16 MegaROM mapper, using 16KB pages with single-bank switching (upper bank at 0x8000-0xBFFF switched via 0x7000; lower bank at 0x4000-0x7FFF fixed to segment 0), up to 2048KB ROM size. The kernel SHALL be reused from the existing MegaROM kernel binary and patched at build time via dispatch table entries.
+The system SHALL support compilation of MSX-BASIC programs into ROM images targeting the ASCII16 MegaROM mapper, using 16KB pages with single-bank switching, up to 2048KB ROM size. The kernel SHALL be reused from the existing MegaROM kernel binary and patched at build time via dispatch table entries. Resource segment mapping SHALL use the 8KB-pair convention (`resourceSegment = pages.size() * 2`).
 
-The ASCII16 mapper SHALL use the following memory layout:
-- Page 0x4000-0x7FFF (16KB): lower bank, permanently fixed to segment 0 (kernel code). No switch writes target this page — 0x6000 is the hardware switch address but is never written.
-- Page 0x8000-0xBFFF (16KB): upper bank, switched via base address 0x7000, initial segment 0.
+#### Scenario: Lower bank remains fixed at segment 0
+- **WHEN** an ASCII16 ROM executes
+- **THEN** the lower bank at 0x4000-0x7FFF SHALL remain fixed to segment 0 (kernel code)
+- **AND** no segment-switch write SHALL target 0x6000
 
-All normal segment-switch writes SHALL target the base address 0x7000 exclusively. The lower bank SHALL remain permanently fixed — 0x6000 is never written. The OPENMSX autodetection section SHALL use two mirror writes at 0x77FF (within the 0x7000-0x77FF decoding range) to allow openMSX to distinguish ASCII16 from ASCII8 mappers. Mirror addresses (0x6001-0x67FF, 0x7001-0x77FF) SHALL NOT be used for any other purpose.
+#### Scenario: 8KB segment numbers are converted to 16KB pages
+- **WHEN** the compiler emits an 8KB-pair segment number
+- **THEN** `MR_CHANGE_SGM` SHALL convert it to a 16KB page number via `srl a` before writing 0x7000
+- **AND** the compiler SHALL remain unchanged, continuing to emit 8KB-pair segment numbers
+- **AND** `MR_CHANGE_SGM` SHALL preserve `AF` via `push af`/`pop af` for `MR_JUMP` and other callers
 
-The kernel SHALL convert 8KB segment numbers emitted by the compiler to 16KB page numbers via `srl a` (logical shift right by 1) inside `MR_CHANGE_SGM`. The compiler SHALL remain unchanged, continuing to emit 8KB-pair segment numbers. The `MR_CHANGE_SGM` routine SHALL preserve the `AF` register via `push af`/`pop af` to maintain compatibility with `MR_JUMP` and other callers.
-
-The kernel SHALL only switch the upper bank (0x8000-0xBFFF) via 0x7000 writes. The lower bank (0x4000-0x7FFF) SHALL remain fixed at segment 0, containing the kernel code.
-
-ROM alignment SHALL pad to multiples of 8 pages (128KB), same as other MegaROM modes. Maximum ROM size SHALL be 2048KB. Resource segment mapping SHALL use the 8KB-pair convention (`resourceSegment = pages.size() * 2`), identical to other MegaROM modes.
+#### Scenario: Normal switch writes use the base address exclusively
+- **WHEN** an ASCII16 ROM performs a normal segment switch
+- **THEN** the write SHALL target the base address 0x7000 exclusively
+- **AND** mirror addresses SHALL NOT be used except for the OPENMSX autodetection writes at 0x77FF
 
 #### Scenario: Compile a program in ASCII16 mode
 - **WHEN** a valid MSX-BASIC program is compiled with `--ascii16` flag

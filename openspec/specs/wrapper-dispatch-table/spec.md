@@ -8,9 +8,7 @@ Defines the word-pointer dispatch table mechanism in the Z80 kernel that replace
 
 ### Requirement: C compiler emits dispatch sequence via unified addKernelCall
 
-The C++ compiler SHALL emit all wrapper routine calls through the unified `addKernelCall(DISP_xxx)` helper, which resolves the target address by calling `getKernelCallAddr()` to look up the `dw` dispatch table entry. There SHALL be no separate `addKernelDispatch()` emission method.
-
-For conditional calls (e.g., `CALL NZ`), the compiler SHALL provide `addKernelCallNZ(uint8_t index)` and equivalent variants (`addKernelCallZ`, `addKernelCallC`, `addKernelCallNC`) that resolve the target through the `dw` table and emit the corresponding conditional `CALL` instruction.
+The C++ compiler SHALL emit all wrapper routine calls through the unified `addKernelCall(DISP_xxx)` helper, which resolves the target address from the `dw` dispatch table via `getKernelCallAddr()`. There SHALL be no separate `addKernelDispatch()` method. Conditional calls SHALL use `addKernelCallNZ` and the equivalent `Z`, `C`, and `NC` variants, which resolve the target through the same table.
 
 #### Scenario: Unified dispatch call
 

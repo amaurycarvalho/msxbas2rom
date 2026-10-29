@@ -7,9 +7,7 @@ Defines the ON statement family for indexed branching and event-driven control f
 ## Requirements
 
 ### Requirement: Support multi-branch and event-driven control flow with ON statements
-As an MSX-BASIC developer, the system SHALL support ON statement variants for indexed branching and event-driven control flow so that developers can implement indexed jumps and reactive behaviors based on runtime conditions, input devices, and system events.
-
-The compiler SHALL support indexed branching using `ON <expr> GOTO` and `ON <expr> GOSUB`. The compiler SHALL support event-driven constructs: ON INTERVAL GOSUB, ON SPRITE GOSUB, ON STRIG GOSUB, ON KEY GOSUB, ON STOP GOSUB, ON ERROR GOTO. All referenced line numbers SHALL be resolved as symbols and validated during compilation. Event handlers SHALL be registered and triggered via runtime trap/polling mechanism. GOSUB handlers SHALL preserve return address and support nested calls. ON ERROR SHALL perform a non-returning jump (GOTO semantics). Event flags SHALL be reset after handling to avoid repeated triggering. Invalid syntax or missing line references SHALL generate compilation errors. Indexed ON SHALL ignore out-of-range values without raising runtime errors (MSX-compatible behavior).
+The system SHALL support ON statement variants for indexed branching (`ON ... GOTO`/`GOSUB`) and event-driven control flow (`ON INTERVAL`, `ON SPRITE`, `ON STRIG`, `ON KEY`, `ON STOP`, `ON ERROR`). Line references SHALL be resolved and validated, handlers SHALL be registered and triggered via runtime polling, GOSUB handlers SHALL preserve the return address, ON ERROR SHALL jump without returning, event flags SHALL reset after handling, and indexed ON SHALL ignore out-of-range values.
 
 #### Scenario: Indexed ON GOTO
 - **WHEN** `ON X GOTO 100,200,300` and X = 2

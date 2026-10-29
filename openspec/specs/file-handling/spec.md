@@ -7,9 +7,28 @@ Defines file I/O operations for compiled MSX-BASIC programs: OPEN, READ#, PRINT#
 ## Requirements
 
 ### Requirement: Support file I/O operations for MSX-BASIC programs
-As an MSX-BASIC developer, the system SHALL support OPEN, READ#, PRINT#, INPUT#, LINE INPUT#, MAXFILES, and CLOSE commands, plus EOF(), LOC(), LOF(), FPOS(), ERR(), and DSKF() functions so that programs can persist and retrieve data from files across MSX devices (disk, cassette, memory, etc.).
+As an MSX-BASIC developer, the system SHALL support OPEN, READ#, PRINT#, INPUT#, LINE INPUT#, MAXFILES, and CLOSE commands, plus EOF(), LOC(), LOF(), FPOS(), ERR(), and DSKF() functions, so that programs can persist and retrieve data across MSX devices. Sequential access modes SHALL map to the correct BDOS routines, and file state and disk availability SHALL be reported accurately.
 
-The compiler SHALL support the OPEN instruction with device, path, filename, direction, file number, and optional record length. Sequential file access modes (INPUT, OUTPUT, APPEND) SHALL be correctly mapped to BDOS routines. READ#, INPUT#, and LINE INPUT# operations SHALL correctly retrieve data from an opened file. CLOSE SHALL properly release the file handle and flush buffers when needed. Multiple files (up to MAXFILES limit) SHALL be opened and handled independently; when MAXFILES is set, it SHALL adjust the correct memory allocation for disk operation. EOF() conditions SHALL be correctly detected and handled. ERR() SHALL return the error code when file handling errors occur. LOC(), LOF(), and FPOS() SHALL return file state information correctly. DSKF() SHALL return whether the MSX DISK is functional. The system SHALL always check if MSX DISK is functional before every file access statement. Programs using file operations SHALL have access to less free RAM (limited to FILTAB pointed address) than non-file programs (limited to HEAPEND address).
+#### Scenario: File state functions report file state
+- **WHEN** `LOC()`, `LOF()`, or `FPOS()` is evaluated for an open file
+- **THEN** it SHALL return the requested file state information
+
+#### Scenario: ERR returns the file error code
+- **WHEN** a file handling error occurs and `ERR()` is evaluated
+- **THEN** `ERR()` SHALL return the error code
+
+#### Scenario: DSKF reports disk functionality
+- **WHEN** `DSKF()` is evaluated
+- **THEN** it SHALL return whether the MSX DISK is functional
+
+#### Scenario: Disk availability is checked before file access
+- **WHEN** any file access statement executes
+- **THEN** the system SHALL first check that the MSX DISK is functional
+
+#### Scenario: MAXFILES adjusts memory for disk operation
+- **WHEN** `MAXFILES` sets the number of user I/O channels
+- **THEN** it SHALL adjust memory allocation for disk operation
+- **AND** file-using programs SHALL have less free RAM, limited to the `FILTAB` address
 
 #### Scenario: Open a file for writing and save data
 - **WHEN** a program opens `"A:TEST.TXT" FOR OUTPUT AS #1`, writes data using PRINT #1, and closes using CLOSE

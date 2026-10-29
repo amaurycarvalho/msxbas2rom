@@ -43,6 +43,7 @@ static std::vector<unsigned char> makeKernelBytes() {
   setDispatch(DISP_MR_GET_DATA, 0x6789);
   setDispatch(DISP_KONAMI_PATCH_SGM_8000, 0x4100);
   setDispatch(DISP_KONAMI_PATCH_BUGFIX_6800, 0x4200);
+  setDispatch(DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK, 0x4300);
 
   const int konamiPatches[] = {
       DISP_KONAMI_PATCH_SGM_A000,       DISP_KONAMI_PATCH_OMSX_0,
@@ -60,6 +61,7 @@ static std::vector<unsigned char> makeKernelBytes() {
   bytes[0x4100] = 0xC3;  // jp
   bytes[0x4101] = 0x21;
   bytes[0x4102] = 0x43;
+  bytes[0x4300] = 0x3A;  // AB guard first byte, NOPped by the Konami patch
 
   return bytes;
 }
@@ -176,6 +178,7 @@ TEST_SUITE("Kernel image boundary") {
     REQUIRE(romBytes.size() > 0x0202);
     CHECK(romBytes[0x0102] == 0x80);
     CHECK(romBytes[0x0202] == 0x70);
+    CHECK(romBytes[0x0300] == 0x00);
   }
 }
 

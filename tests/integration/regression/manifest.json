@@ -2,7 +2,7 @@
   "version": 1,
   "defaults": {
     "msx1_machine": "Sharp_HB-8000_1.2",
-    "msx2_machine": "Panasonic_FS-A1WX",
+    "msx2_machine": "Panasonic_FS-A1",
     "msx2plus_machine": "Panasonic_FS-A1WX",
     "turbo_r_machine": "Panasonic_FS-A1GT",
     "machine_boot_seconds": {
@@ -675,6 +675,49 @@
               "name_table": "0x0000",
               "width": 40,
               "expected": ["TURBO GATE OK"]
+            }
+          }
+        },
+        "megaboot": {
+          "compile_modes": ["konami", "konamiscc"],
+          "machines": ["msx1", "msx2", "msx2plus", "turboR"],
+          "fallback_seconds": 30,
+          "volatile": true,
+          "vram": {
+            "text": {
+              "name_table": "0x0000",
+              "width": 40,
+              "expected": ["MEGAROM BOOT OK", "SUM=5050"]
+            }
+          }
+        },
+        "turbo_konami": {
+          "compile_modes": ["konami", "konamiscc"],
+          "machines": ["turboR"],
+          "fallback_seconds": 30,
+          "volatile": true,
+          "vram": {
+            "text": {
+              "name_table": "0x0000",
+              "width": 40,
+              "expected": ["TURBO KONAMI OK"]
+            }
+          }
+        },
+        "turbo_mode_clamp": {
+          "requires": "turboR",
+          "fallback_seconds": 30,
+          "volatile": true,
+          "vram": {
+            "text": {
+              "name_table": "0x0000",
+              "width": 40,
+              "expected": [
+                "TURBO2 START=0",
+                "TURBO2 AFTER=OK",
+                "TURBO2 CANARY=OK",
+                "TURBO2 DONE"
+              ]
             }
           }
         }

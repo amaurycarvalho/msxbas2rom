@@ -7,17 +7,19 @@ Defines the contract for the `msxbas2rom` command-line interface: argument valid
 ## Requirements
 
 ### Requirement: Provide CLI that validates options and executes pipeline stages
-As a command-line user, the system SHALL provide a CLI that validates options and executes lexer, parser, compiler, and ROM builder stages with clear diagnostics so that users can convert BASIC sources to ROM artifacts safely.
+As a command-line user, the system SHALL provide a CLI that validates options and runs the lexer, parser, compiler, and ROM builder stages with clear diagnostics. It SHALL reject invalid parameter combinations with a non-zero exit code, enforce input existence and output overwrite behavior, support the compile-mode and informational flags, and report stage-specific errors and success metrics. On Windows it SHALL safely initialize command-line arguments before parsing.
 
-The CLI SHALL validate arguments and return non-zero exit code for invalid parameter combinations. The CLI SHALL support informational commands (`--help`, `--doc`, `--history`, `--ver`) and exit without compilation. The CLI SHALL enforce input file existence and output overwrite behavior. The CLI SHALL execute stages in order: lexical, syntactic, semantic, ROM build. The CLI SHALL report stage-specific errors and success metrics depending on quiet/debug/settings.
+#### Scenario: Compile mode flags select the mapper
+- **WHEN** a compile mode flag is supplied
+- **THEN** `-c`/`--compile` and `-0`/`--plain` SHALL select Plain ROM
+- **AND** `-x`/`--megarom` SHALL select ASCII8 as the default MegaROM mode
+- **AND** `-8`/`--ascii8`, `-k`/`--scc`, `-4`/`--konami`, `-6`/`--ascii16`, and `-7`/`--ascii16x` SHALL select their mappers
+- **AND** `-a`/`--auto` SHALL fall back to ASCII8 when Plain ROM overflows
 
-The CLI SHALL support compile mode selection flags: `-c`/`--compile` (Plain ROM), `-0`/`--plain` (Plain ROM), `-x`/`--megarom` (ASCII8 default), `-8`/`--ascii8` (ASCII8), `-k`/`--scc` (KonamiSCC), `-4`/`--konami` (Konami4), `-6`/`--ascii16` (ASCII16), `-7`/`--ascii16x` (ASCII16-X), and `-a`/`--auto` (auto-fallback to ASCII8 on plain ROM overflow).
-
-On Windows, CLI startup SHALL safely initialize command-line arguments before parsing. If Unicode argv conversion is available and succeeds, the CLI SHALL parse UTF-8 converted arguments. If Unicode argv conversion is unavailable or fails, the CLI SHALL avoid unsafe allocation and continue with the original narrow `argv` instead of crashing or returning silently before informational output.
-
-The `--history` flag SHALL display the `info_history` string, which contains only the current release entry, a summary of the last 2 releases, and a link to the current release on GitHub — not the full changelog. The `info_history` content is maintained by the `openspec-changelog` skill.
-
-The `--help` flag SHALL list all compile mode flags including `-4`/`--konami` and `-6`/`--ascii16`.
+#### Scenario: Informational flags exit without compiling
+- **WHEN** `--help`, `--doc`, `--history`, or `--ver` is supplied
+- **THEN** the requested information is printed
+- **AND** no compilation SHALL run
 
 #### Scenario: Show help and exit cleanly
 - **WHEN** the command `msxbas2rom -h` is executed
@@ -90,7 +92,7 @@ The `--help` flag SHALL list all compile mode flags including `-4`/`--konami` an
 
 ### Requirement: CLI can scaffold a VSCode MSX-BASIC project
 
-The `--vscode` flag SHALL initialize the VSCode MSX-BASIC project scaffolding (a `.vscode` folder containing `launch.json`, `tasks.json`, and `debug.tcl`) in the current project folder (the process working directory). When the current folder already contains a `.vscode` folder, the CLI SHALL report that the project is already initialized and SHALL NOT overwrite or alter any pre-existing file. The full create-or-report contract is defined by the `vscode-scaffolding` capability spec; this requirement records only the flag's externally visible behavior.
+The `--vscode` flag SHALL initialize the VSCode MSX-BASIC project scaffolding (a `.vscode` folder containing `launch.json`, `tasks.json`, and `debug.tcl`) in the current working directory. When `.vscode` already exists, the CLI SHALL report the project as already initialized and SHALL NOT overwrite or alter pre-existing files. The create-or-report contract is defined by the `vscode-scaffolding` capability.
 
 #### Scenario: Initialize a new VSCode project
 - **WHEN** the command `msxbas2rom --vscode` is executed in a directory that does not yet contain a `.vscode` folder
@@ -106,7 +108,7 @@ The `--vscode` flag SHALL initialize the VSCode MSX-BASIC project scaffolding (a
 
 ### Requirement: CLI exports debugger symbol files
 
-The CLI SHALL support exporting debugger symbol files for the compiled ROM. The flags `-s`, `--noi`, and `--noice` SHALL select the NoICE `.noi` format, `--omds` the OpenMSX `.omds` format, `--cdb` the `.cdb` format, `--symbol` the `.symbol` format, and `--elf` the ELF `.elf` format. When a symbol format is selected and the compilation succeeds, the CLI SHALL write the symbol file next to the output ROM (under the output path) and SHALL state in the success summary that a symbols file was created.
+The CLI SHALL export debugger symbol files for the compiled ROM. Flags `-s`, `--noi`, and `--noice` SHALL select NoICE `.noi`, `--omds` OpenMSX `.omds`, `--cdb` `.cdb`, `--symbol` `.symbol`, and `--elf` ELF `.elf`. On success the CLI SHALL write the symbol file under the output path and state in the success summary that it was created.
 
 #### Scenario: Generate NoICE symbols with the short flag
 - **WHEN** the command `msxbas2rom -s program.bas` compiles successfully

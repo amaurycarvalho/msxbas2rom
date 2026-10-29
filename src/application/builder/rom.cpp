@@ -29,6 +29,12 @@
 #include "rom_artifact.h"
 #include "rom_writer.h"
 
+// Shared dispatch entry for the 14-byte AB guard at megarom_ascii8_bug_fix.
+// ASCII16X and Konami use the same generated index; Konami must also NOP the
+// guard so the boot bank mapping always runs.
+static constexpr int DISP_MEGAROM_PATCH_BUGFIX_AB_CHECK =
+    DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK;
+
 //----------------------------------------------------------------------------------------------
 
 Rom::Rom(shared_ptr<RomWriter> outputWriter,
@@ -608,9 +614,24 @@ bool Rom::fixKonamiMapper() {
       patched++;
     }
 
-    if (patched != patchCount) {
+    // NOP the shared AB guard so the boot bank writes run unconditionally.
+    int guardOffset =
+        kernel->dispatchAddress(DISP_MEGAROM_PATCH_BUGFIX_AB_CHECK) - 0x4000;
+    if (guardOffset < 0 || guardOffset > 0x3FFF - 13) {
+      logger->error(
+          "ERROR: Konami ROM format adjust failed (invalid offset " +
+          to_string(guardOffset) + " for AB guard)");
+      errorFound = true;
+      return false;
+    }
+    for (int i = 0; i < 14; i++) {
+      page[guardOffset + i] = 0x00;
+    }
+    patched++;
+
+    if (patched != patchCount + 1) {
       logger->error("ERROR: Konami ROM format adjust failed (" +
-                    to_string(patched) + " of " + to_string(patchCount) +
+                    to_string(patched) + " of " + to_string(patchCount + 1) +
                     " locations)");
       errorFound = true;
       return false;

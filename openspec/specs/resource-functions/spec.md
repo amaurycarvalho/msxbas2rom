@@ -8,11 +8,7 @@ Defines the behavior of the assembled-resource accessor functions `RESOURCE(n)` 
 
 ### Requirement: RESOURCE(n) loads the resource into free RAM and returns its RAM address
 
-The `RESOURCE(n)` function SHALL return the address of a RAM copy of resource `n`, not the ROM resource pointer. It SHALL place the copy at the first free RAM address reported by `HEAP()` and return that same address. `RESOURCE(n)` SHALL return `0` when the resource does not exist.
-
-The amount copied SHALL be `min(resource_size, FRE())`. When the resource is larger than `FRE()`, the copy SHALL be truncated to `FRE()` bytes and the function SHALL still return the destination address. When the resource is smaller than or equal to `FRE()`, the whole resource SHALL be copied.
-
-The resource bytes SHALL be copied verbatim (no decompression, no transformation).
+The `RESOURCE(n)` function SHALL return the address of a RAM copy of resource `n`, not the ROM resource pointer. It SHALL place the copy at the first free RAM address reported by `HEAP()` and return that same address, and SHALL return `0` when the resource does not exist. The amount copied SHALL be `min(resource_size, FRE())`, copying verbatim with no decompression or transformation.
 
 #### Scenario: Existing resource that fits
 

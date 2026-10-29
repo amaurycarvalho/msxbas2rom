@@ -1,0 +1,7 @@
+10 A% = 0
+20 FOR I% = 1 TO 100
+30   A% = A% + I%
+40 NEXT
+50 PRINT "MEGAROM BOOT OK"
+60 PRINT "SUM="; A%
+70 END

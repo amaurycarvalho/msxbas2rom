@@ -50,6 +50,17 @@ static int countMappedAddresses(const std::vector<unsigned char>& bytes,
   return count;
 }
 
+static int kernelOffsetForDispatch(int dispIndex) {
+  int tableAddr = def_wrapper_routines_map_table + dispIndex * 2;
+  int kernelAddr =
+      bin_header_bin[tableAddr] | (bin_header_bin[tableAddr + 1] << 8);
+  return kernelAddr - 0x4000;
+}
+
+static const unsigned char kAbGuard[] = {
+    0x3A, 0x00, 0x80, 0xFE, 0x41, 0x20, 0x14,
+    0x3A, 0x01, 0x80, 0xFE, 0x42, 0x20, 0x0D};
+
 TEST_SUITE("Rom") {
   TEST_CASE("Sets startup file I/O flag to non-disk mode by default") {
     CompilationHarness harness;
@@ -119,7 +130,9 @@ TEST_SUITE("Rom") {
                         countMappedAddresses(bytes, 0x3A, 0xA0);
     CHECK(addrCount8000 > 0);
     CHECK(addrCountA000 > 0);
-    CHECK((addrCount8000 + addrCountA000) >= 14);
+    // Two 0x8000 reads belong to the AB guard, which is NOPped for Konami.
+    CHECK((addrCount8000 + addrCountA000) >= 13);
+    CHECK(countMappedAddresses(bytes, 0x32, 0x70) > 0);
   }
 
   TEST_CASE("Konami4 patches exact bytes at kernel-derived offsets") {
@@ -229,6 +242,89 @@ TEST_SUITE("Rom") {
                         countMappedAddresses(bytes, 0x3A, 0xA0);
     CHECK(addrCount8000 > 0);
     CHECK(addrCountA000 > 0);
+  }
+
+  TEST_CASE("Konami and ASCII16X NOP the shared AB boot guard") {
+    struct ModeCase {
+      const char* name;
+      BuildOptions::CompileMode mode;
+    };
+    const ModeCase modes[] = {
+        {"konami4", BuildOptions::CompileMode::Konami4},
+        {"konamiscc", BuildOptions::CompileMode::KonamiSCC},
+        {"ascii16x", BuildOptions::CompileMode::ASCII16X},
+    };
+
+    for (const auto& entry : modes) {
+      CAPTURE(entry.name);
+      CompilationHarness harness;
+      std::string file =
+          std::string("tmp/rom_ab_guard_") + entry.name + ".bas";
+      auto opts = makeOptions(file, entry.mode, true);
+      auto compiler =
+          compileProgram(harness, file, "10 PRINT \"HI\"\n20 END\n", opts);
+      REQUIRE(compiler != nullptr);
+
+      auto artifact = harness.buildRom(compiler);
+      REQUIRE(artifact != nullptr);
+      auto bytes = artifactBytes(*artifact);
+
+      int offset = kernelOffsetForDispatch(DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK);
+      REQUIRE(offset >= 0);
+      REQUIRE(offset + 14 <= static_cast<int>(bytes.size()));
+      for (int i = 0; i < 14; i++) CHECK(bytes[offset + i] == 0x00);
+    }
+  }
+
+  TEST_CASE("Konami AB guard NOP keeps the boot bank writes") {
+    const BuildOptions::CompileMode modes[] = {
+        BuildOptions::CompileMode::Konami4,
+        BuildOptions::CompileMode::KonamiSCC,
+    };
+
+    for (auto mode : modes) {
+      CAPTURE(static_cast<int>(mode));
+      CompilationHarness harness;
+      std::string file = "tmp/rom_konami_bank_writes.bas";
+      auto opts = makeOptions(file, mode, true);
+      auto compiler =
+          compileProgram(harness, file, "10 PRINT \"HI\"\n20 END\n", opts);
+      REQUIRE(compiler != nullptr);
+
+      auto artifact = harness.buildRom(compiler);
+      REQUIRE(artifact != nullptr);
+      auto bytes = artifactBytes(*artifact);
+
+      CHECK(countMappedAddresses(bytes, 0x32, 0x70) > 0);
+      CHECK(countMappedAddresses(bytes, 0x32, 0x80) > 0);
+      CHECK(countMappedAddresses(bytes, 0x32, 0xA0) > 0);
+    }
+  }
+
+  TEST_CASE("ASCII8 and ASCII16 keep the shared AB boot guard") {
+    const BuildOptions::CompileMode modes[] = {
+        BuildOptions::CompileMode::ASCII8,
+        BuildOptions::CompileMode::ASCII16,
+    };
+
+    for (auto mode : modes) {
+      CAPTURE(static_cast<int>(mode));
+      CompilationHarness harness;
+      std::string file = "tmp/rom_ab_guard_kept.bas";
+      auto opts = makeOptions(file, mode, true);
+      auto compiler =
+          compileProgram(harness, file, "10 PRINT \"HI\"\n20 END\n", opts);
+      REQUIRE(compiler != nullptr);
+
+      auto artifact = harness.buildRom(compiler);
+      REQUIRE(artifact != nullptr);
+      auto bytes = artifactBytes(*artifact);
+
+      int offset = kernelOffsetForDispatch(DISP_ASCII16X_PATCH_BUGFIX_AB_CHECK);
+      REQUIRE(offset >= 0);
+      REQUIRE(offset + 14 <= static_cast<int>(bytes.size()));
+      for (int i = 0; i < 14; i++) CHECK(bytes[offset + i] == kAbGuard[i]);
+    }
   }
 
   TEST_CASE("ASCII8 ROM does NOT have ASCII16X signature") {

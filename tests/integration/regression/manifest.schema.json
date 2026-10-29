@@ -62,6 +62,20 @@
         "requires": {
           "enum": ["msx1", "msx2", "msx2plus", "turboR"]
         },
+        "compile_modes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": ["ascii8", "ascii16", "ascii16x", "konami", "konamiscc"]
+          }
+        },
+        "machines": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": ["msx1", "msx2", "msx2plus", "turboR"]
+          }
+        },
         "fallback_seconds": {"type": "number", "minimum": 0},
         "screenshot": {"type": "boolean"},
         "volatile": {"type": "boolean"},

@@ -27,13 +27,10 @@ MSXBAS2ROM
     └── kernel
 ```
 
-The deliverable SHALL be a CLI tool. Dependencies SHALL flow inward: domain
-shall not depend on application, CLI, or infrastructure; application shall
-depend on domain and abstractions it owns, not concrete filesystem, generated
-kernel, output, or presentation implementations; CLI and infrastructure shall
-implement and compose those abstractions. Application state exposed to
-strategies SHALL be encapsulated behind narrow collaborators rather than a
-public all-purpose context.
+The deliverable SHALL be a CLI tool. Dependencies SHALL flow inward: CLI and
+infrastructure SHALL implement and compose abstractions owned by the
+application. Application state exposed to strategies SHALL be encapsulated
+behind narrow collaborators, not an all-purpose context.
 
 #### Scenario: Source code follows layered structure
 - **WHEN** the source code is inspected

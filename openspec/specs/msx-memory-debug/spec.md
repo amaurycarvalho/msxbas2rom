@@ -177,12 +177,10 @@ Kernel work-area symbols (`SPRTBL`, `HITBOX_TABLE`, `SPRSIZ`, etc.) SHALL be rea
 ### Requirement: CPU-level debugging SHALL use openMSX breakpoints
 
 When the bulk RAM/screenshot capture is insufficient, the workflow SHALL allow a custom
-openMSX Tcl script that sets breakpoints with `debug set_bp`, reads CPU registers with
-`debug read_block "CPU regs" 0 26` and memory with `debug read_block "Main RAM" <addr> <len>`,
-and resumes execution with `debug cont`. Breakpoint callbacks SHALL write results to a file
-because Tcl `puts` output is not reliably visible on the launcher's stdout. The "CPU regs"
-26-byte layout SHALL be treated as `F, A, B, C, D, E, H, L, F', A', B', C', D', E', H', L',
-IXh, IXl, IYh, IYl, SPh, SPl, PCh, PCl, I, R`.
+openMSX Tcl script that sets breakpoints with `debug set_bp`, reads CPU registers and
+memory with `debug read_block`, and resumes execution with `debug cont`. Breakpoint
+callbacks SHALL write results to a file because Tcl `puts` output is not reliably
+visible on the launcher's stdout.
 
 #### Scenario: Breakpoint captures register and memory state
 

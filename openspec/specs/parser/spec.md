@@ -7,9 +7,7 @@ Defines the parser contract: transforming lexed tokens into action and symbol st
 ## Requirements
 
 ### Requirement: Transform lexed tokens into action and symbol structures
-As an MSX-BASIC developer, the parser SHALL transform lexed tokens into action and symbol structures so that valid programs can be compiled into ROM code.
-
-The parser SHALL iterate through lexer lines and build tags/actions for each valid statement. Numeric line labels SHALL be registered and duplicated line numbers SHALL be rejected. Statements split by `:` SHALL be parsed as independent phrases (except protected contexts like IF flow). INCLUDE directives SHALL load extra source only when the parameter is a string literal. Syntax errors SHALL return a clear error message and source line number.
+As an MSX-BASIC developer, the parser SHALL transform lexed tokens into action and symbol structures so valid programs can be compiled into ROM code. It SHALL build tags/actions per statement, register numeric line labels while rejecting duplicates, parse `:`-separated statements as independent phrases except protected contexts, load INCLUDE only for string literals, and report syntax errors with the source line number.
 
 #### Scenario: Build actions from a valid numbered program
 - **WHEN** lexed input with numbered lines and valid commands undergoes syntactic analysis

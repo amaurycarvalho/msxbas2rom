@@ -73,7 +73,7 @@ As an MSX-BASIC developer, the system SHALL support SPRITE ON, SPRITE OFF, SPRIT
 
 ### Requirement: SET SPRITE HITBOX configures per-sprite collision hitboxes
 
-The system SHALL support the `SET SPRITE HITBOX` command to configure collision hitboxes independently per sprite. `SET SPRITE HITBOX ON` SHALL initialize all 32 sprites with zero margins (full rectangle). `SET SPRITE HITBOX OFF` SHALL disable collision for all 32 sprites. `SET SPRITE HITBOX <sprite>` and `SET SPRITE HITBOX <sprite> ON` SHALL reset the specified sprite to zero margins (enabled). `SET SPRITE HITBOX <sprite> OFF` SHALL disable collision for the specified sprite. `SET SPRITE HITBOX <sprite>, <left>, <top>, <right>, <bottom>` SHALL set explicit margins for the specified sprite, with omitted trailing margins defaulting to zero.
+The system SHALL support `SET SPRITE HITBOX` to configure collision hitboxes independently per sprite. `ON`/`OFF` SHALL enable or disable all 32 sprites, `<sprite>` and `<sprite> ON`/`OFF` SHALL target a single sprite, and `<sprite>, <left>, <top>, <right>, <bottom>` SHALL set explicit margins, with omitted trailing margins defaulting to zero.
 
 #### Scenario: ON initializes full hitboxes
 - **WHEN** `SET SPRITE HITBOX ON` is executed
